@@ -1,0 +1,6 @@
+streamlit
+pandas
+openai==2.24.0
+fpdf
+matplotlib
+xlsxwriter
