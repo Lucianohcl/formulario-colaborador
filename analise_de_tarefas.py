@@ -243,7 +243,7 @@ else:
     # CONTROLE DE PÁGINA
     # ============================================================
     if "pagina" not in st.session_state:
-        st.session_state.pagina = "home"
+        st.session_state.pagina = "formulario"  # página inicial real para mostrar sidebar completo 
 
     if btn_formulario:
         st.session_state.pagina = "formulario"
