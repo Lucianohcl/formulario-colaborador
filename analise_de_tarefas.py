@@ -4,6 +4,7 @@ import os
 import json
 from datetime import datetime
 from fpdf import FPDF
+from openai import OpenAI
 
 # ============================================================
 # CONFIGURAÇÃO PÁGINA
@@ -16,6 +17,7 @@ st.set_page_config(page_title="Formulário do Colaborador", page_icon="📊", la
 BASE_DIR = "dados"
 os.makedirs(BASE_DIR, exist_ok=True)
 
+
 # ============================================================
 # OPENAI – CONFIGURAÇÃO SEGURA + FALLBACK
 # ============================================================
@@ -23,13 +25,51 @@ os.makedirs(BASE_DIR, exist_ok=True)
 client = None
 
 try:
-    OPENAI_KEY = st.secrets["OPENAI_KEY"]
+    OPENAI_KEY = st.secrets["OPENAI_KEY"]  # pega a chave do Cloud
     client = OpenAI(api_key=OPENAI_KEY)
     st.success("OpenAI conectado com sucesso ✅")
-except Exception as e:
-    st.warning("OpenAI não configurado — usando modo fallback ⚠️")
+except KeyError:
+    st.warning("OpenAI não encontrado nos Secrets — usando modo fallback ⚠️")
     client = None
+except Exception as e:
+    st.warning("Não foi possível conectar ao OpenAI — usando modo fallback ⚠️")
+    client = None
+import streamlit as st
+import pandas as pd
+import os
+import json
+from datetime import datetime
+from fpdf import FPDF
+from openai import OpenAI
 
+# ============================================================
+# CONFIGURAÇÃO PÁGINA
+# ============================================================
+st.set_page_config(page_title="Formulário do Colaborador", page_icon="📊", layout="wide", initial_sidebar_state="collapsed")
+
+# ============================================================
+# PASTA DE DADOS (CLOUD READY)
+# ============================================================
+BASE_DIR = "dados"
+os.makedirs(BASE_DIR, exist_ok=True)
+
+
+# ============================================================
+# OPENAI – CONFIGURAÇÃO SEGURA + FALLBACK
+# ============================================================
+
+client = None
+
+try:
+    OPENAI_KEY = st.secrets["OPENAI_KEY"]  # pega a chave do Cloud
+    client = OpenAI(api_key=OPENAI_KEY)
+    st.success("OpenAI conectado com sucesso ✅")
+except KeyError:
+    st.warning("OpenAI não encontrado nos Secrets — usando modo fallback ⚠️")
+    client = None
+except Exception as e:
+    st.warning("Não foi possível conectar ao OpenAI — usando modo fallback ⚠️")
+    client = None
 # ============================================================
 # SESSÃO USUÁRIOS / LOGIN
 # ============================================================
