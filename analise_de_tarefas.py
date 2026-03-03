@@ -242,10 +242,65 @@ else:
 
         btn_logout = st.button("🚪 Logout")
 
-    if btn_logout:
-        st.session_state.logged_in = False
-        st.session_state.current_user = None
-        st.experimental_rerun()
+
+
+# ============================================================
+# CONTROLE DE PÁGINA
+# ============================================================
+
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "home"
+
+if btn_formulario:
+    st.session_state.pagina = "formulario"
+
+if btn_analise:
+    st.session_state.pagina = "analise"
+
+if btn_comparar:
+    st.session_state.pagina = "comparar"
+
+if btn_disc:
+    st.session_state.pagina = "disc"
+
+if btn_parecer:
+    st.session_state.pagina = "parecer"
+
+if btn_visualizar:
+    st.session_state.pagina = "visualizar"
+
+if btn_logout:
+    st.session_state.logged_in = False
+    st.session_state.current_user = None
+    st.rerun()
+
+# ============================================================
+# CONTEÚDO PRINCIPAL
+# ============================================================
+
+if st.session_state.pagina == "home":
+    st.title("Sistema de Análise de Tarefas")
+    st.write("Selecione uma opção no menu lateral.")
+
+elif st.session_state.pagina == "formulario":
+    st.title("Formulário Colaborador")
+
+elif st.session_state.pagina == "analise":
+    st.title("Análise Inteligente")
+
+elif st.session_state.pagina == "comparar":
+    st.title("Comparar Real x Ideal")
+
+elif st.session_state.pagina == "disc":
+    st.title("Avaliação DISC")
+
+elif st.session_state.pagina == "parecer":
+    st.title("Parecer Final Executivo")
+
+elif st.session_state.pagina == "visualizar":
+    st.title("Relatórios Salvos")
+
+
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
