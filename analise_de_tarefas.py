@@ -296,10 +296,7 @@ if st.button("Adicionar usuário"):
         st.success(f"✅ Usuário {novo_user} adicionado com sucesso!")
         st.experimental_rerun()
 
-# Salvar infos do colaborador na sessão para Parecer Premium
-st.session_state.nome_colab = nome
-st.session_state.cargo = cargo
-st.session_state.departamento = departamento
+
 
 # ============================================================
 # PARECER FINAL PREMIUM (Admin) – GPT / Fallback
