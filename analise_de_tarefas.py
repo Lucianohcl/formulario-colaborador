@@ -231,75 +231,62 @@ else:
         btn_parecer = st.button("📝 Parecer Final Executivo")
         btn_visualizar = st.button("📂 Relatórios Salvos")
 
+        btn_admin = False
         # Verificação segura de admin
-        if (
-            st.session_state.get("current_user") 
-            and st.session_state["current_user"] in st.session_state.get("users", {})
-            and st.session_state["users"][st.session_state["current_user"]].get("admin", False)
-        ):
+        current_user = st.session_state.get("current_user")
+        if current_user and st.session_state["users"].get(current_user, {}).get("admin", False):
             btn_admin = st.button("⚙️ Administração")
-            
 
         btn_logout = st.button("🚪 Logout")
 
+    # ============================================================
+    # CONTROLE DE PÁGINA
+    # ============================================================
+    if "pagina" not in st.session_state:
+        st.session_state.pagina = "home"
 
+    if btn_formulario:
+        st.session_state.pagina = "formulario"
+    elif btn_analise:
+        st.session_state.pagina = "analise"
+    elif btn_comparar:
+        st.session_state.pagina = "comparar"
+    elif btn_disc:
+        st.session_state.pagina = "disc"
+    elif btn_parecer:
+        st.session_state.pagina = "parecer"
+    elif btn_visualizar:
+        st.session_state.pagina = "visualizar"
 
-# ============================================================
-# CONTROLE DE PÁGINA
-# ============================================================
+    if btn_logout:
+        st.session_state.logged_in = False
+        st.session_state.current_user = None
+        st.experimental_rerun()
 
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "home"
+    # ============================================================
+    # CONTEÚDO PRINCIPAL
+    # ============================================================
+    if st.session_state.pagina == "home":
+        st.title("Sistema de Análise de Tarefas")
+        st.write("Selecione uma opção no menu lateral.")
 
-if btn_formulario:
-    st.session_state.pagina = "formulario"
+    elif st.session_state.pagina == "formulario":
+        st.title("Formulário Colaborador")
 
-if btn_analise:
-    st.session_state.pagina = "analise"
+    elif st.session_state.pagina == "analise":
+        st.title("Análise Inteligente")
 
-if btn_comparar:
-    st.session_state.pagina = "comparar"
+    elif st.session_state.pagina == "comparar":
+        st.title("Comparar Real x Ideal")
 
-if btn_disc:
-    st.session_state.pagina = "disc"
+    elif st.session_state.pagina == "disc":
+        st.title("Avaliação DISC")
 
-if btn_parecer:
-    st.session_state.pagina = "parecer"
+    elif st.session_state.pagina == "parecer":
+        st.title("Parecer Final Executivo")
 
-if btn_visualizar:
-    st.session_state.pagina = "visualizar"
-
-if btn_logout:
-    st.session_state.logged_in = False
-    st.session_state.current_user = None
-    st.rerun()
-
-# ============================================================
-# CONTEÚDO PRINCIPAL
-# ============================================================
-
-if st.session_state.pagina == "home":
-    st.title("Sistema de Análise de Tarefas")
-    st.write("Selecione uma opção no menu lateral.")
-
-elif st.session_state.pagina == "formulario":
-    st.title("Formulário Colaborador")
-
-elif st.session_state.pagina == "analise":
-    st.title("Análise Inteligente")
-
-elif st.session_state.pagina == "comparar":
-    st.title("Comparar Real x Ideal")
-
-elif st.session_state.pagina == "disc":
-    st.title("Avaliação DISC")
-
-elif st.session_state.pagina == "parecer":
-    st.title("Parecer Final Executivo")
-
-elif st.session_state.pagina == "visualizar":
-    st.title("Relatórios Salvos")
-
+    elif st.session_state.pagina == "visualizar":
+        st.title("Relatórios Salvos")    
 
 
 # ==========================================================
