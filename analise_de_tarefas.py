@@ -202,11 +202,20 @@ if not st.session_state.logged_in:
         if user and user["password"] == hash_senha(senha):
             st.session_state.logged_in = True
             st.session_state.current_user = usuario
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Usuário ou senha incorretos")
 
 else:
+
+    # 🔒 Blindagem contra sessão corrompida
+    if (
+        not st.session_state.get("current_user")
+        or st.session_state["current_user"] not in st.session_state.get("users", {})
+    ):
+        st.session_state.logged_in = False
+        st.session_state.current_user = None
+        st.rerun()
 
     # ============================================================
     # SIDEBAR
