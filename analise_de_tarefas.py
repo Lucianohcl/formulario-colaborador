@@ -42,16 +42,21 @@ def hash_senha(senha):
 # ============================================================
 # USUÁRIOS (SECRETS OU FALLBACK LOCAL)
 # ============================================================
+
 if "users" not in st.session_state:
 
     # Prioriza usuários via secrets (produção)
     if "USERS" in st.secrets:
         st.session_state.users = json.loads(st.secrets["USERS"])
     else:
-        # Fallback apenas para ambiente de teste
+        # Fallback local (desenvolvimento)
         st.session_state.users = {
             "admin": {
                 "password": hash_senha("admin123"),
+                "admin": True
+            },
+            "Luciano": {
+                "password": hash_senha("123"),
                 "admin": True
             }
         }
@@ -217,8 +222,14 @@ else:
         btn_parecer = st.button("📝 Parecer Final Executivo")
         btn_visualizar = st.button("📂 Relatórios Salvos")
 
-        if st.session_state.users[st.session_state.current_user]["admin"]:
+        # Verificação segura de admin
+        if (
+            st.session_state.get("current_user") 
+            and st.session_state["current_user"] in st.session_state.get("users", {})
+            and st.session_state["users"][st.session_state["current_user"]].get("admin", False)
+        ):
             btn_admin = st.button("⚙️ Administração")
+            
 
         btn_logout = st.button("🚪 Logout")
 
