@@ -157,56 +157,128 @@ def gerar_pdf(relatorio, nome_colab):
 # ============================================================
 # FORMULÁRIO COLABORADOR
 # ============================================================
+
 if btn_exportar:
+
     st.title("🧾 Levantamento & Diagnóstico do Colaborador")
     st.markdown("---")
+
+    # 🔹 Inicialização segura do session_state
+    if "nome_colab" not in st.session_state:
+        st.session_state.nome_colab = ""
+    if "cargo" not in st.session_state:
+        st.session_state.cargo = ""
+    if "departamento" not in st.session_state:
+        st.session_state.departamento = ""
+
+    # ============================================================
     # Campos de identificação
+    # ============================================================
+
     col1, col2 = st.columns(2)
+
     with col1:
         entrega = st.text_input("Entregue em (data/hora)")
         empresa = st.text_input("Empresa / Unidade")
-        nome = st.text_input("Nome do Colaborador")
-        departamento = st.text_input("Departamento")
+        nome = st.text_input("Nome do Colaborador", value=st.session_state.nome_colab)
+        departamento = st.text_input("Departamento", value=st.session_state.departamento)
         inicio = st.text_input("Início no Cargo")
+
     with col2:
         devolucao = st.text_input("Devolver preenchido em (data/hora)")
         escolaridade = st.text_input("Escolaridade")
-        cargo = st.text_input("Cargo")
+        cargo = st.text_input("Cargo", value=st.session_state.cargo)
         chefe = st.text_input("Chefe Imediato")
+
     cursos = st.text_area("Cursos obrigatórios ou diferenciais", height=80)
+
     st.markdown("---")
+
+    # ============================================================
     # Resumo
+    # ============================================================
+
     resumo = st.text_area("Descreva seu trabalho e principal objetivo:", height=150)
+
     st.markdown("---")
+
+    # ============================================================
     # Atividades
+    # ============================================================
+
     st.subheader("🔹 Atividades Executadas")
-    df_atividades = pd.DataFrame({"N°": list(range(1,21)), "Descrição da Atividade": ["" for _ in range(20)], "Frequência": ["" for _ in range(20)], "Tempo": ["" for _ in range(20)]})
+
+    df_atividades = pd.DataFrame({
+        "N°": list(range(1, 21)),
+        "Descrição da Atividade": ["" for _ in range(20)],
+        "Frequência": ["" for _ in range(20)],
+        "Tempo": ["" for _ in range(20)]
+    })
+
     df_atividades = st.data_editor(df_atividades, use_container_width=True, num_rows="fixed")
+
     st.markdown("---")
+
+    # ============================================================
     # Dificuldades
+    # ============================================================
+
     st.subheader("🔹 Dificuldades na Execução")
-    df_dificuldades = pd.DataFrame({"Descrição da Dificuldade": ["" for _ in range(20)], "Frequência": ["" for _ in range(20)], "Tempo": ["" for _ in range(20)], "Setor / Parceiro": ["" for _ in range(20)]})
+
+    df_dificuldades = pd.DataFrame({
+        "Descrição da Dificuldade": ["" for _ in range(20)],
+        "Frequência": ["" for _ in range(20)],
+        "Tempo": ["" for _ in range(20)],
+        "Setor / Parceiro": ["" for _ in range(20)]
+    })
+
     df_dificuldades = st.data_editor(df_dificuldades, use_container_width=True, num_rows="fixed")
+
     st.markdown("---")
+
+    # ============================================================
     # DISC
+    # ============================================================
+
     st.subheader("🔹 Questionário Comportamental (DISC)")
-    perguntas_disc = [f"Pergunta {i}" for i in range(1,21)]
+
+    perguntas_disc = [f"Pergunta {i}" for i in range(1, 21)]
     respostas_disc = {}
+
     for i, pergunta in enumerate(perguntas_disc, start=1):
-        respostas_disc[f"Q{i}"] = st.radio(f"{i}. {pergunta}", ["A","B","C","D"], horizontal=True, key=f"disc_{i}")
+        respostas_disc[f"Q{i}"] = st.radio(
+            f"{i}. {pergunta}",
+            ["A", "B", "C", "D"],
+            horizontal=True,
+            key=f"disc_{i}"
+        )
+
     st.markdown("---")
+
+    # ============================================================
     # Envio
+    # ============================================================
+
     if st.button("📨 Finalizar e Enviar Questionário"):
+
         if not nome or not empresa:
             st.error("❗ Preencha pelo menos Nome e Empresa.")
         else:
-            arquivo = salvar_respostas(nome, entrega, devolucao, empresa, escolaridade, departamento, cargo, inicio, chefe, cursos, resumo, df_atividades, df_dificuldades, respostas_disc)
+
+            arquivo = salvar_respostas(
+                nome, entrega, devolucao, empresa, escolaridade,
+                departamento, cargo, inicio, chefe, cursos,
+                resumo, df_atividades, df_dificuldades, respostas_disc
+            )
+
+            # 🔹 Salva no session_state de forma segura
             st.session_state.df_atividades = df_atividades
             st.session_state.df_dificuldades = df_dificuldades
             st.session_state.respostas_disc = respostas_disc
             st.session_state.nome_colab = nome
             st.session_state.cargo = cargo
             st.session_state.departamento = departamento
+
             st.success(f"✅ Formulário enviado! Arquivo: {arquivo}")
 
 # ============================================================
