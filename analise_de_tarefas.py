@@ -152,10 +152,37 @@ def calcular_disc(respostas_disc):
 
 
 # ============================================================
+# IMPORTS NECESSÁRIOS
+# ============================================================
+import os
+import streamlit as st
+from fpdf import FPDF
+
+# ============================================================
+# CONFIGURAÇÃO DE DIRETÓRIO BASE
+# ============================================================
+if "BASE_DIR" not in globals():
+    BASE_DIR = os.getcwd()  # usa diretório atual como fallback
+
+# ============================================================
+# INICIALIZAÇÃO DE SESSÃO
+# ============================================================
+if "users" not in st.session_state:
+    st.session_state.users = {}  # garante que exista
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
+
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "formulario"  # página inicial padrão
+
+# ============================================================
 # GERAÇÃO PDF EXECUTIVO
 # ============================================================
 def gerar_pdf(relatorio, nome_colab):
-
     pdf = FPDF()
     pdf.add_page()
 
@@ -166,7 +193,6 @@ def gerar_pdf(relatorio, nome_colab):
     pdf.set_font("Arial", '', 11)
 
     for secao, conteudo in relatorio.items():
-
         pdf.set_font("Arial", 'B', 12)
         pdf.cell(0, 8, secao, ln=True)
         pdf.set_font("Arial", '', 11)
@@ -181,9 +207,7 @@ def gerar_pdf(relatorio, nome_colab):
 
     arquivo_pdf = os.path.join(BASE_DIR, f"Parecer_{nome_colab}.pdf")
     pdf.output(arquivo_pdf)
-
     return arquivo_pdf
-
 
 # ============================================================
 # LOGIN
@@ -195,26 +219,26 @@ if not st.session_state.logged_in:
     senha = st.text_input("Senha", type="password")
 
     if st.button("Login"):
-        user = st.session_state.users.get(usuario)
-        if user and user["password"] == hash_senha(senha):
+        user = st.session_state.get("users", {}).get(usuario)
+        if user and user.get("password") == hash_senha(senha):
             st.session_state.logged_in = True
             st.session_state.current_user = usuario
             st.experimental_rerun()
         else:
             st.error("Usuário ou senha incorretos")
 
+# ============================================================
+# PÁGINA PRINCIPAL (apenas usuários logados)
+# ============================================================
 else:
-    # Inicializa página principal só para usuários logados
-    if "pagina" not in st.session_state:
-        st.session_state.pagina = "formulario"  # página inicial real
-
     # 🔒 Blindagem contra sessão corrompida
     if (
         not st.session_state.get("current_user")
-        or st.session_state["current_user"] not in st.session_state.get("users", {})
+        or st.session_state.get("current_user") not in st.session_state.get("users", {})
     ):
         st.session_state.logged_in = False
         st.session_state.current_user = None
+        st.session_state.pagina = "formulario"
         st.experimental_rerun()
 
     # ============================================================
@@ -236,11 +260,10 @@ else:
             btn_admin = st.button("⚙️ Administração")
 
         # Logout
-        btn_logout = st.button("🚪 Logout")
-        if btn_logout:
+        if st.button("🚪 Logout"):
             st.session_state.logged_in = False
             st.session_state.current_user = None
-            st.session_state.pagina = "formulario"  # garante que volte à página inicial
+            st.session_state.pagina = "formulario"
             st.experimental_rerun()
 
     # ============================================================
