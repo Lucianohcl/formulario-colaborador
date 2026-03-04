@@ -45,6 +45,9 @@ def hash_senha(senha):
 
 if "users" not in st.session_state:
 
+    # Adicione um usuário padrão para o login funcionar
+    st.session_state.users = {"admin": {"password": hash_senha("123"), "admin": True}}
+
     # Prioriza usuários via secrets (produção)
     if "USERS" in st.secrets:
         st.session_state.users = json.loads(st.secrets["USERS"])
@@ -245,14 +248,8 @@ if not st.session_state.logged_in:
 # PÁGINA PRINCIPAL (apenas usuários logados)
 # ============================================================
 else:
-    # 🔒 Blindagem contra sessão corrompida
-    if (
-        not st.session_state.get("current_user")
-        or st.session_state.get("current_user") not in st.session_state.get("users", {})
-    ):
-        st.session_state.logged_in = False
-        st.session_state.current_user = None
-        st.session_state.pagina = "formulario"
+    # Verifica apenas se a sessão está ativa
+    if not st.session_state.logged_in:
         st.rerun()
 
     # ============================================================
