@@ -17,6 +17,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+
 # --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
 perguntas_disc = [
     "No trabalho, eu prefiro agir com rapidez e focar em resultados?",
@@ -31,6 +32,17 @@ perguntas_disc = [
 # ============================================================
 BASE_DIR = "dados"
 os.makedirs(BASE_DIR, exist_ok=True)
+
+# --- COLOQUE O BLOCO DE LIMPEZA AQUI (LOGO ABAIXO) ---
+if 'limpeza_feita' not in st.session_state:
+    if os.path.exists(BASE_DIR):
+        for f in os.listdir(BASE_DIR):
+            if f.endswith(".xlsx"):
+                try:
+                    os.remove(os.path.join(BASE_DIR, f))
+                except:
+                    continue
+    st.session_state['limpeza_feita'] = True
 
 # ============================================================
 # OPENAI – CONFIGURAÇÃO SEGURA + FALLBACK
