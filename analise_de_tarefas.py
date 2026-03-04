@@ -191,22 +191,23 @@ def gerar_pdf(relatorio, nome_colab):
 if not st.session_state.logged_in:
 
     st.title("🔐 Login")
-
     usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
 
     if st.button("Login"):
-
         user = st.session_state.users.get(usuario)
-
         if user and user["password"] == hash_senha(senha):
             st.session_state.logged_in = True
             st.session_state.current_user = usuario
-            st.rerun()
+            st.experimental_rerun()
         else:
             st.error("Usuário ou senha incorretos")
 
 else:
+
+    # Inicializa página principal só para usuários logados
+    if "pagina" not in st.session_state:
+        st.session_state.pagina = "formulario"  # página inicial real
 
     # 🔒 Blindagem contra sessão corrompida
     if (
@@ -215,15 +216,13 @@ else:
     ):
         st.session_state.logged_in = False
         st.session_state.current_user = None
-        st.rerun()
+        st.experimental_rerun()
 
     # ============================================================
     # SIDEBAR
     # ============================================================
     with st.sidebar:
-
         st.markdown("### Menu")
-
         btn_formulario = st.button("🧾 Formulário Colaborador")
         btn_analise = st.button("📊 Análise Inteligente")
         btn_comparar = st.button("📈 Comparar Real x Ideal")
@@ -232,12 +231,16 @@ else:
         btn_visualizar = st.button("📂 Relatórios Salvos")
 
         btn_admin = False
-        # Verificação segura de admin
         current_user = st.session_state.get("current_user")
         if current_user and st.session_state["users"].get(current_user, {}).get("admin", False):
             btn_admin = st.button("⚙️ Administração")
 
         btn_logout = st.button("🚪 Logout")
+        if btn_logout:
+            st.session_state.logged_in = False
+            st.session_state.current_user = None
+            st.experimental_rerun()
+
 
     # ============================================================
     # CONTROLE DE PÁGINA
