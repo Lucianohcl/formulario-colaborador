@@ -277,26 +277,46 @@ else:
         st.session_state.pagina = "visualizar"
         st.rerun()
     # ============================================================
-    # 🖼️ ÁREA DE EXIBIÇÃO DO CONTEÚDO (IDENTAÇÃO 4 ESPAÇOS)
+    # 🖼️ ÁREA DE EXIBIÇÃO DO CONTEÚDO (VERSÃO FINAL)
     # ============================================================
     
     if st.session_state.pagina == "home":
         st.title("🏠 Sistema de Análise de Tarefas")
-        st.info("O sistema está pronto. Use o menu lateral para navegar.")
+        st.info("Bem-vindo! Use o menu lateral para navegar.")
 
     elif st.session_state.pagina == "formulario":
         st.title("📝 Formulário do Colaborador")
-        st.write("Preencha as atividades reais abaixo:")
-        # Aqui entrarão os campos de input do seu formulário
+        with st.form("meu_formulario"):
+            nome = st.text_input("Nome do Colaborador", value=st.session_state.get("current_user", ""))
+            atividades = st.text_area("Descreva suas principais atividades:")
+            horas = st.number_input("Total de horas semanais", min_value=1, max_value=100, value=44)
+            
+            enviado = st.form_submit_button("Salvar Dados")
+            if enviado:
+                st.session_state.dados_salvos = {"Nome": nome, "Atividades": atividades, "Horas": horas}
+                st.success("Dados salvos com sucesso!")
 
     elif st.session_state.pagina == "analise":
         st.title("📊 Análise Inteligente")
-        st.write("Resumo da carga horária e aderência ao cargo.")
         
-        # O botão que você solicitou conforme a instrução de [2026-02-23]
+        # Margem de 50% ajustável [2026-02-27]
+        margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
+        
         if st.button('📥 BAIXAR EXCEL FINAL'):
-            st.success("Preparando planilha consolidada...")
-            # A lógica de exportação do Excel entrará aqui
+            if "dados_salvos" in st.session_state:
+                df = pd.DataFrame([st.session_state.dados_salvos])
+                df["Margem"] = f"{margem}%"
+                
+                # Gerando o CSV/Excel para download
+                csv = df.to_csv(index=False).encode('utf-8-sig')
+                st.download_button(
+                    label="Confirmar Download do Arquivo",
+                    data=csv,
+                    file_name=f"Analise_{st.session_state.current_user}.csv",
+                    mime="text/csv"
+                )
+            else:
+                st.warning("Por favor, preencha o formulário primeiro.")
 
     elif st.session_state.pagina == "comparar":
         st.title("⚖️ Comparativo: Real x Ideal")
@@ -308,8 +328,9 @@ else:
 
     elif st.session_state.pagina == "parecer":
         st.title("📋 Parecer Final Executivo")
-        st.write("Diagnóstico estratégico gerado pela IA.")
-        # Aqui você chamará a função gerar_pdf(parecer, nome)
+        # Aqui você chama a sua função gerar_pdf() do ReportLab
+        if st.button("Gerar PDF"):
+            st.info("Gerando PDF com ReportLab...")
 
     elif st.session_state.pagina == "visualizar":
         st.title("📂 Histórico de Relatórios")
