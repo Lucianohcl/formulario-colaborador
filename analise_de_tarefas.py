@@ -488,69 +488,90 @@ elif st.session_state.pagina == "analise":
             st.error("Erro ao processar os arquivos. Verifique se estão no formato correto.")
 
 elif st.session_state.pagina == "visualizar":
-    st.title("👁️ Visualização Completa de Envios")
-    st.info("Clique na seta (Expander) para conferir o formulário integral de cada colaborador.")
+    st.title("👁️ Espelho Fiel de Respostas")
+    st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
 
-    # 1. Lista arquivos salvos
+    # Busca os arquivos na pasta
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
         st.warning("⚠️ Nenhum formulário encontrado no servidor.")
     else:
-        st.subheader(f"📂 Formulários Recebidos: {len(arquivos)}")
-        
         for arq in arquivos:
             try:
-                # Lendo todas as abas para mostrar o formulário COMPLETO
+                # Lendo todas as abas do Excel
                 df_id = pd.read_excel(arq, sheet_name="ID")
                 df_ativ = pd.read_excel(arq, sheet_name="Atividades")
                 df_dif = pd.read_excel(arq, sheet_name="Dificuldades")
                 df_sug = pd.read_excel(arq, sheet_name="Sugestões")
-                df_disc = pd.read_excel(arq, sheet_name="DISC")
+                df_disc_salvo = pd.read_excel(arq, sheet_name="DISC")
 
-                # Pega o Nome Completo real escrito na célula do Excel
-                nome_colaborador = df_id.iloc[1, 1] 
-                empresa_colaborador = df_id.iloc[0, 1]
+                # Pegando o Nome Completo real da célula
+                nome_colab = df_id.iloc[1, 1] 
+                empresa_colab = df_id.iloc[0, 1]
 
-                # 2. O EXPANDER (Setinha) com Nome Completo
-                with st.expander(f"👤 COLABORADOR: {nome_colaborador} ({empresa_colaborador})"):
+                # 1. O EXPANDER (Setinha) com o Nome Completo
+                with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
                     
-                    st.write(f"**🗓️ Arquivo:** `{arq}`")
+                    st.write(f"**🏢 Empresa:** {empresa_colab}")
+                    st.write(f"**📄 Arquivo original:** `{arq}`")
                     st.markdown("---")
 
-                    # Exibição das Atividades
-                    st.write("### 📋 Atividades Executadas")
+                    # --- SEÇÃO 1: ATIVIDADES (O ESPELHO DA TABELA) ---
+                    st.subheader("📝 1. Atividades Executadas")
+                    # Mostra apenas o que não está vazio
                     df_ativ_ok = df_ativ[df_ativ["Descrição da Atividade"].notna()]
                     st.table(df_ativ_ok)
 
-                    # Exibição das Dificuldades
-                    st.write("### ⚠️ Dificuldades Encontradas")
-                    df_dif_ok = df_dif[df_dif["Descrição da Dificuldade"].notna()]
-                    st.table(df_dif_ok) if not df_dif_ok.empty else st.write("Nada relatado.")
+                    # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.subheader("⚠️ 2. Dificuldades")
+                        df_dif_ok = df_dif[df_dif["Descrição da Dificuldade"].notna()]
+                        st.table(df_dif_ok) if not df_dif_ok.empty else st.write("Nada relatado.")
+                    
+                    with col2:
+                        st.subheader("💡 3. Sugestões")
+                        df_sug_ok = df_sug[df_sug["Descrição da Sugestão"].notna()]
+                        st.table(df_sug_ok) if not df_sug_ok.empty else st.write("Nada relatado.")
 
-                    # Exibição das Sugestões
-                    st.write("### 💡 Sugestões de Melhoria")
-                    df_sug_ok = df_sug[df_sug["Descrição da Sugestão"].notna()]
-                    st.table(df_sug_ok) if not df_sug_ok.empty else st.write("Nada relatado.")
+                    st.markdown("---")
 
-                    # Exibição do DISC
-                    st.write("### 🧠 Perfil DISC")
-                    st.dataframe(df_disc.T)
+                    # --- SEÇÃO 3: DISC (PERGUNTA + RESPOSTA) ---
+                    st.subheader("🧠 4. Questionário DISC (Espelho)")
+                    
+                    # Reconstrói a lista de perguntas e respostas
+                    lista_espelho_disc = []
+                    # Transforma o DF do DISC em um dicionário para busca rápida
+                    respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
 
-                    # Botão de Download Individual
+                    for i, texto_pergunta in enumerate(perguntas_disc, 1):
+                        chave = f"Q{i}"
+                        res_letra = respostas_dict.get(chave, "Não respondido")
+                        lista_espelho_disc.append({
+                            "Nº": i,
+                            "Pergunta": texto_pergunta,
+                            "Resposta Escolhida": res_letra
+                        })
+                    
+                    # Exibe como uma tabela limpa para o gestor ler
+                    st.table(lista_espelho_disc)
+
+                    # Botão de segurança para baixar este arquivo específico
                     with open(os.path.join(BASE_DIR, arq), "rb") as f:
                         st.download_button(
-                            label="📥 Baixar este Excel",
+                            label=f"📥 Baixar Original de {nome_colab}",
                             data=f,
                             file_name=arq,
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            key=f"dl_ind_{arq}"
+                            key=f"btn_espelho_{arq}"
                         )
+
             except Exception as e:
-                st.error(f"Erro ao ler {arq}: {e}")
+                st.error(f"Erro ao processar espelho de {arq}: {e}")
 
         st.markdown("---")
-        if st.button("🗑️ LIMPAR TODOS OS REGISTROS DO SERVIDOR"):
+        if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
              for a in arquivos:
                  os.remove(a)
              st.rerun()
