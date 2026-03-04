@@ -208,9 +208,7 @@ if "pagina" not in st.session_state:
             pdf.multi_cell(0, 6, str(conteudo))
             pdf.ln(2)
 
-    arquivo_pdf = os.path.join(BASE_DIR, f"Parecer_{nome_colab}.pdf")
-    pdf.output(arquivo_pdf)
-    return arquivo_pdf
+    
 
 # ============================================================
 # INICIALIZAÇÃO DE SESSÃO
