@@ -631,10 +631,10 @@ elif st.session_state.pagina == "visualizar":
                                    st.success(txt_sug)
                          except:
                               st.info("Nenhuma sugestão relatada.")
+                    
                     # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
-                    # Dicionário de respostas: Coluna 0 (Q1...) -> Coluna 1 (A, B...)
                     respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
                     
                     lista_espelho_disc = []
@@ -642,26 +642,23 @@ elif st.session_state.pagina == "visualizar":
                          chave = f"Q{i}"
                          res_letra = respostas_dict.get(chave, "Não respondido")
                          
-                         # --- LÓGICA DE TRADUÇÃO DA LETRA ---
                          significado = ""
                          if res_letra != "Não respondido" and "|" in texto_pergunta:
                               partes = texto_pergunta.split("|")
                               for p in partes:
                                    if f"({res_letra})" in p:
-                                        # Extrai o texto após a letra, ex: "Age rápido"
                                         significado = p.split(")")[-1].strip()
                          
                          exibicao_resposta = f"{res_letra} - {significado}" if significado else res_letra
                          
                          lista_espelho_disc.append({
                               "Nº": i,
-                              "Pergunta": texto_pergunta.split(":")[0], # Tira o enunciado antes dos ":"
+                              "Pergunta": texto_pergunta.split(":")[0],
                               "Resposta Escolhida": exibicao_resposta
                          })
                     
                     st.table(lista_espelho_disc)
 
-                    # Botão para baixar este arquivo específico
                     with open(caminho_completo, "rb") as f:
                          st.download_button(
                               label=f"📥 Baixar Original de {nome_colab}",
@@ -684,6 +681,7 @@ elif st.session_state.pagina == "visualizar":
                          continue
                st.success("✅ Todos os registros foram excluídos!")
                st.rerun()
+                                        
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
