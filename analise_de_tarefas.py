@@ -486,6 +486,31 @@ elif st.session_state.pagina == "analise":
                 # st.error(f"Erro ao ler {arq}: {e}") # Opcional para debug
                 continue
 
+        # 2. Se houver atividades, consolida e exibe
+        if lista_atividades:
+            df_final = pd.concat(lista_atividades, ignore_index=True)
+
+            st.success(f"📈 Análise pronta: {len(arquivos)} colaboradores processados.")
+            st.dataframe(df_final, use_container_width=True)
+
+            # --- CONFIGURAÇÕES SOLICITADAS ---
+            # O valor para o 50% margin é ajustável
+            margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
+            
+            # Botão de baixar excel final exatamente como solicitado
+            nome_saida = "RELATORIO_CONSOLIDADO_FINAL.xlsx"
+            df_final.to_excel(nome_saida, index=False)
+            
+            with open(nome_saida, "rb") as f:
+                st.download_button(
+                    label="📥 BAIXAR EXCEL FINAL",
+                    data=f,
+                    file_name=nome_saida,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.error("⚠️ Nenhum dado válido foi encontrado nos arquivos processados.")
+
         if lista_atividades:
             # 3. Junta tudo em um Super Excel
             df_final = pd.concat(lista_atividades, ignore_index=True)
@@ -510,9 +535,7 @@ elif st.session_state.pagina == "analise":
                 )
         else:
             st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
-        else:
-            st.error("Erro ao processar os arquivos. Verifique se estão no formato correto.")
-
+        
 elif st.session_state.pagina == "visualizar":
     st.title("👁️ Espelho Fiel de Respostas")
     st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
