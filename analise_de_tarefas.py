@@ -570,34 +570,47 @@ elif st.session_state.pagina == "visualizar":
 
                     with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
                          
-                         # --- 🔹 IDENTIFICAÇÃO (ESPELHO EXATO DO FORMULÁRIO) ---
+                         # --- 🔹 IDENTIFICAÇÃO (VERSÃO SEGURA CONTRA ERROS DE ÍNDICE) ---
                          st.subheader("🔹 Identificação")
+                         
+                         # Função interna para ler sem travar se a linha não existir no arquivo
+                         def ler_safe(df, indice):
+                              try:
+                                   # Verifica se o dataframe tem a linha e se o valor não é nulo
+                                   if len(df) > indice:
+                                        valor = df.iloc[indice, 1]
+                                        return str(valor) if pd.notna(valor) else "Não informado"
+                                   return "Não informado"
+                              except:
+                                   return "Não informado"
+
                          c1, c2 = st.columns(2)
                          with c1:
-                              st.write(f"**Entregue em (data/hora):** {df_id.iloc[0, 1]}")
-                              st.write(f"**Empresa / Unidade:** {df_id.iloc[1, 1]}")
-                              st.write(f"**Nome do Colaborador:** {df_id.iloc[2, 1]}")
-                              st.write(f"**Departamento:** {df_id.iloc[3, 1]}")
+                              st.write(f"**Entregue em (data/hora):** {ler_safe(df_id, 0)}")
+                              st.write(f"**Empresa / Unidade:** {ler_safe(df_id, 1)}")
+                              st.write(f"**Nome do Colaborador:** {ler_safe(df_id, 2)}")
+                              st.write(f"**Departamento:** {ler_safe(df_id, 3)}")
                          with c2:
-                              st.write(f"**Devolver preenchido em:** {df_id.iloc[4, 1]}")
-                              st.write(f"**Escolaridade:** {df_id.iloc[5, 1]}")
-                              st.write(f"**Cargo:** {df_id.iloc[6, 1]}")
-                              st.write(f"**Chefe Imediato:** {df_id.iloc[7, 1]}")
+                              # Corrigido de df_safe para df_id abaixo:
+                              st.write(f"**Devolver preenchido em:** {ler_safe(df_id, 4)}") 
+                              st.write(f"**Escolaridade:** {ler_safe(df_id, 5)}")
+                              st.write(f"**Cargo:** {ler_safe(df_id, 6)}")
+                              st.write(f"**Chefe Imediato:** {ler_safe(df_id, 7)}")
                          
                          st.write(f"**Cursos obrigatórios ou diferenciais:**")
-                         st.write(df_id.iloc[8, 1])
+                         st.info(ler_safe(df_id, 8))
                          st.write(f"**Trabalho e principal objetivo:**")
-                         st.write(df_id.iloc[9, 1])
+                         st.info(ler_safe(df_id, 9))
 
                          # --- 🔹 ATIVIDADES EXECUTADAS (FILTRADAS) ---
                          st.markdown("---")
                          st.subheader("🔹 Atividades Executadas")
                          st.info("""📋 **LEGENDA DE FREQUÊNCIA:**
 DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual""")
-                         # Filtra para não mostrar as 20 linhas vazias, apenas o conteúdo
+                         
+                         # Filtra para não mostrar as 20 linhas vazias, apenas o conteúdo real
                          df_ativ_f = df_ativ[df_ativ["Descrição da Atividade"].fillna("").str.strip() != ""]
                          st.table(df_ativ_f)
-
                          # --- 🔹 DIFICULDADES NA EXECUÇÃO (FILTRADAS) ---
                          st.subheader("🔹 Dificuldades na Execução")
                          df_dif_f = df_dif[df_dif["Descrição da Dificuldade"].fillna("").str.strip() != ""]
