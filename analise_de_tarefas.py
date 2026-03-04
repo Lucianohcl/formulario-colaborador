@@ -20,11 +20,26 @@ st.set_page_config(
 
 # --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
 perguntas_disc = [
-    "No trabalho, eu prefiro agir com rapidez e focar em resultados?",
-    "Eu gosto de convencer as pessoas e trabalhar em equipe?",
-    "Eu prefiro manter um ritmo constante e ajudar os colegas?",
-    "Eu sou detalhista e prefiro seguir regras e processos?"
-    # Adicione aqui TODAS as suas perguntas na ordem exata do formulário
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
 ]
 
 # ============================================================
@@ -398,28 +413,7 @@ elif st.session_state.pagina == "formulario":
     # 🔹 DISC (20 PERGUNTAS)
     st.markdown("---")
     st.subheader("🧠 Questionário Comportamental (DISC)")
-    perguntas_disc = [
-        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-        "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-        "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-        "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-        "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-        "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-        "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-        "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-        "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-        "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-        "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-        "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-        "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-        "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-        "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
-    ]
+   
     respostas_disc = {}
     for i, p in enumerate(perguntas_disc, 1):
         respostas_disc[f"Q{i}"] = st.radio(f"{i}. {p}", ["A", "B", "C", "D"], horizontal=True, key=f"d_v1_{i}")
@@ -589,28 +583,54 @@ elif st.session_state.pagina == "visualizar":
                     st.write(f"**📄 Arquivo original:** `{arq}`")
                     st.markdown("---")
 
-                    # --- SEÇÃO 1: ATIVIDADES ---
-                    st.subheader("📝 1. Atividades Executadas")
-                    df_ativ_ok = df_ativ.dropna(how='all')
-                    if not df_ativ_ok.empty:
-                        st.table(df_ativ_ok)
-                    else:
-                        st.write("Nenhuma atividade registrada.")
+                    # --- SEÇÃO 1: IDENTIFICAÇÃO ---
+                    st.subheader("👤 1. Identificação do Colaborador")
+                    try:
+                         # Extraímos os dados garantindo que sejam texto puro
+                         nome_colab = str(df_id.iloc[0, 0])
+                         empresa_colab = str(df_id.iloc[1, 0])
+                         cargo_colab = str(df_id.iloc[2, 0])
+                         escolaridade_colab = str(df_id.iloc[3, 0])
+
+                         c1, c2, c3, c4 = st.columns(4)
+                         c1.metric("Nome", nome_colab)
+                         c2.metric("Empresa", empresa_colab)
+                         c3.metric("Cargo", cargo_colab)
+                         c4.metric("Escolaridade", escolaridade_colab)
+                    except Exception as e:
+                         st.error(f"Erro ao carregar Identificação: {e}")
 
                     # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
                     st.markdown("---")
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.subheader("⚠️ 2. Dificuldades")
-                        msg_dif = df_dif.iloc[0, 0] if not df_dif.empty else "Nada relatado."
-                        st.info(msg_dif) if msg_dif and str(msg_dif) != "nan" else st.write("Nada relatado.")
-                    with c2:
-                        st.subheader("💡 3. Sugestões")
-                        msg_sug = df_sug.iloc[0, 0] if not df_sug.empty else "Nada relatado."
-                        st.success(msg_sug) if msg_sug and str(msg_sug) != "nan" else st.write("Nada relatado.")
+                    col_esq, col_dir = st.columns(2)
+                    
+                    with col_esq:
+                         st.subheader("⚠️ 2. Dificuldades")
+                         try:
+                              # Pegamos o valor bruto e limpamos
+                              val_dif = df_dif.iloc[0, 0]
+                              txt_dif = str(val_dif).strip() if pd.notna(val_dif) else "Nada relatado."
+                              
+                              if txt_dif == "" or txt_dif == "nan" or txt_dif == "None":
+                                   st.info("Nenhuma dificuldade relatada.")
+                              else:
+                                   st.warning(txt_dif)
+                         except:
+                              st.info("Nenhuma dificuldade relatada.")
 
-                    st.markdown("---")
-
+                    with col_dir:
+                         st.subheader("💡 3. Sugestões")
+                         try:
+                              # Pegamos o valor bruto e limpamos
+                              val_sug = df_sug.iloc[0, 0]
+                              txt_sug = str(val_sug).strip() if pd.notna(val_sug) else "Nada relatado."
+                              
+                              if txt_sug == "" or txt_sug == "nan" or txt_sug == "None":
+                                   st.info("Nenhuma sugestão relatada.")
+                              else:
+                                   st.success(txt_sug)
+                         except:
+                              st.info("Nenhuma sugestão relatada.")
                     # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
@@ -619,39 +639,51 @@ elif st.session_state.pagina == "visualizar":
                     
                     lista_espelho_disc = []
                     for i, texto_pergunta in enumerate(perguntas_disc, 1):
-                        chave = f"Q{i}"
-                        res_letra = respostas_dict.get(chave, "Não respondido")
-                        lista_espelho_disc.append({
-                            "Nº": i,
-                            "Pergunta": texto_pergunta,
-                            "Resposta Escolhida": res_letra
-                        })
+                         chave = f"Q{i}"
+                         res_letra = respostas_dict.get(chave, "Não respondido")
+                         
+                         # --- LÓGICA DE TRADUÇÃO DA LETRA ---
+                         significado = ""
+                         if res_letra != "Não respondido" and "|" in texto_pergunta:
+                              partes = texto_pergunta.split("|")
+                              for p in partes:
+                                   if f"({res_letra})" in p:
+                                        # Extrai o texto após a letra, ex: "Age rápido"
+                                        significado = p.split(")")[-1].strip()
+                         
+                         exibicao_resposta = f"{res_letra} - {significado}" if significado else res_letra
+                         
+                         lista_espelho_disc.append({
+                              "Nº": i,
+                              "Pergunta": texto_pergunta.split(":")[0], # Tira o enunciado antes dos ":"
+                              "Resposta Escolhida": exibicao_resposta
+                         })
                     
                     st.table(lista_espelho_disc)
 
                     # Botão para baixar este arquivo específico
                     with open(caminho_completo, "rb") as f:
-                        st.download_button(
-                            label=f"📥 Baixar Original de {nome_colab}",
-                            data=f,
-                            file_name=arq,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            key=f"btn_espelho_{arq}"
-                        )
+                         st.download_button(
+                              label=f"📥 Baixar Original de {nome_colab}",
+                              data=f,
+                              file_name=arq,
+                              mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                              key=f"btn_espelho_{arq}"
+                         )
 
-            except Exception as e:
-                st.error(f"Erro ao processar o arquivo {arq}: {e}")
+               except Exception as e:
+                    st.error(f"Erro ao processar o arquivo {arq}: {e}")
 
-        # --- FINAL DA PÁGINA (FORA DO LOOP) ---
-        st.markdown("---")
-        if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
-            for a in arquivos:
-                try:
-                    os.remove(os.path.join(BASE_DIR, a))
-                except:
-                    continue
-            st.success("✅ Todos os registros foram excluídos!")
-            st.rerun()
+          # --- FINAL DA PÁGINA (FORA DO LOOP) ---
+          st.markdown("---")
+          if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
+               for a in arquivos:
+                    try:
+                         os.remove(os.path.join(BASE_DIR, a))
+                    except:
+                         continue
+               st.success("✅ Todos os registros foram excluídos!")
+               st.rerun()
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
