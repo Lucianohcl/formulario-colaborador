@@ -210,10 +210,24 @@ def gerar_pdf(relatorio, nome_colab):
     return arquivo_pdf
 
 # ============================================================
+# INICIALIZAÇÃO DE SESSÃO
+# ============================================================
+if "users" not in st.session_state:
+    st.session_state.users = {}
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "current_user" not in st.session_state:
+    st.session_state.current_user = None
+
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "formulario"
+
+# ============================================================
 # LOGIN
 # ============================================================
 if not st.session_state.logged_in:
-
     st.title("🔐 Login")
     usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
