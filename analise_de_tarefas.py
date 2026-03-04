@@ -427,6 +427,34 @@ elif st.session_state.pagina == "analise":
     if st.button('📥 BAIXAR EXCEL FINAL'):
         st.info("Processando download...")
 
+elif st.session_state.pagina == "visualizar":
+    st.title("👁️ Gerenciador de Arquivos Enviados")
+    st.info("Aqui você encontra os formulários salvos pelos colaboradores no servidor.")
+
+    # Lista arquivos que começam com 'Colaborador_'
+    arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
+
+    if not arquivos:
+        st.warning("⚠️ Nenhum formulário foi encontrado no servidor no momento.")
+        st.caption("Nota: Se o servidor reiniciar, os arquivos temporários são limpos. Baixe-os assim que forem enviados.")
+    else:
+        st.subheader(f"📂 Arquivos Disponíveis: {len(arquivos)}")
+        
+        # Cria uma tabela simples para baixar os arquivos
+        for arq in arquivos:
+            col_nome, col_btn = st.columns([3, 1])
+            with col_nome:
+                st.write(f"📄 {arq}")
+            with col_btn:
+                with open(os.path.join(BASE_DIR, arq), "rb") as f:
+                    st.download_button(
+                        label="📥 Resgatar",
+                        data=f,
+                        file_name=arq,
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        key=f"btn_{arq}"
+                    )
+
 # FIM DO ARQUIVO
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
