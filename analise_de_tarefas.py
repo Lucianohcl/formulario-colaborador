@@ -204,7 +204,6 @@ if not st.session_state.logged_in:
             st.error("Usuário ou senha incorretos")
 
 else:
-
     # Inicializa página principal só para usuários logados
     if "pagina" not in st.session_state:
         st.session_state.pagina = "formulario"  # página inicial real
@@ -239,15 +238,12 @@ else:
         if btn_logout:
             st.session_state.logged_in = False
             st.session_state.current_user = None
+            st.session_state.pagina = "formulario"  # garante que volte à página inicial
             st.experimental_rerun()
-
 
     # ============================================================
     # CONTROLE DE PÁGINA
     # ============================================================
-    if "pagina" not in st.session_state:
-        st.session_state.pagina = "formulario"  # página inicial real para mostrar sidebar completo 
-
     if btn_formulario:
         st.session_state.pagina = "formulario"
     elif btn_analise:
@@ -261,10 +257,36 @@ else:
     elif btn_visualizar:
         st.session_state.pagina = "visualizar"
 
-    if btn_logout:
-        st.session_state.logged_in = False
-        st.session_state.current_user = None
-        st.experimental_rerun()
+    # ============================================================
+    # CONTEÚDO PRINCIPAL
+    # ============================================================
+    if st.session_state.pagina == "home":
+        st.title("Sistema de Análise de Tarefas")
+        st.write("Selecione uma opção no menu lateral.")
+
+    elif st.session_state.pagina == "formulario":
+        st.title("Formulário Colaborador")
+        # Aqui você pode colocar o formulário real com campos, tabelas, etc.
+
+    elif st.session_state.pagina == "analise":
+        st.title("Análise Inteligente")
+        # Coloque aqui a lógica do motor de análise
+
+    elif st.session_state.pagina == "comparar":
+        st.title("Comparar Real x Ideal")
+        # Coloque aqui a tela de comparação
+
+    elif st.session_state.pagina == "disc":
+        st.title("Avaliação DISC")
+        # Coloque aqui a tela DISC
+
+    elif st.session_state.pagina == "parecer":
+        st.title("Parecer Final Executivo")
+        # Coloque aqui a tela de parecer
+
+    elif st.session_state.pagina == "visualizar":
+        st.title("Relatórios Salvos")
+        # Coloque aqui a tela de visualização
 
     # ============================================================
     # CONTEÚDO PRINCIPAL
@@ -311,7 +333,16 @@ from reportlab.lib.units import inch
 def gerar_atividades_ideais(cargo, setor):
 
     if client is None:
-        return []
+        # Retorna atividade de exemplo caso o GPT não esteja disponível
+        return [
+            {
+                "nome_atividade": "Atividade de exemplo",
+                "descricao": "Descrição de exemplo",
+                "frequencia_ideal": "semanal",
+                "tempo_medio_minutos": 60,
+                "justificativa_tecnica": "Exemplo de justificativa"
+            }
+        ]
 
     prompt = f"""
     Gere 12 atividades ideais para:
@@ -339,8 +370,16 @@ def gerar_atividades_ideais(cargo, setor):
         return json.loads(response.choices[0].message.content)
 
     except:
-        return []
-
+        # Em caso de erro na resposta do GPT, retorna atividade de exemplo
+        return [
+            {
+                "nome_atividade": "Atividade de exemplo",
+                "descricao": "Descrição de exemplo",
+                "frequencia_ideal": "semanal",
+                "tempo_medio_minutos": 60,
+                "justificativa_tecnica": "Exemplo de justificativa"
+            }
+        ]
 
 # ==========================================================
 # 2️⃣ CARGA HORÁRIA + SOBRE/SUBUTILIZAÇÃO
