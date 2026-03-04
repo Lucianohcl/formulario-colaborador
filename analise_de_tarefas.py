@@ -239,28 +239,88 @@ import pandas as pd
 import os
 from datetime import datetime
 
+import streamlit as st
+import pandas as pd
+import os
+from datetime import datetime
+
+import streamlit as st
+import pandas as pd
+import os
+from datetime import datetime
+
 # ============================================================
-# Configurações Iniciais
+# 1. TRAVA DE SEGURANÇA
+# ============================================================
+if 'logado' not in st.session_state:
+    st.session_state.logado = False
+
+if not st.session_state.logado:
+    st.title("🔑 Acesso ao Sistema")
+    user = st.text_input("Usuário")
+    password = st.text_input("Senha", type="password")
+    
+    if st.button("Acessar"):
+        if user == "admin" and password == "123": # <--- Ajuste sua senha aqui
+            st.session_state.logado = True
+            st.session_state.pagina = "home"
+            st.rerun()
+        else:
+            st.error("Credenciais inválidas")
+    st.stop() 
+
+# ============================================================
+# 2. CONFIGURAÇÕES E SIDEBAR (SÓ RODA SE LOGADO)
 # ============================================================
 BASE_DIR = "."
+
 if 'pagina' not in st.session_state:
     st.session_state.pagina = "home"
 
-# --- SIDEBAR / MENU ---
 st.sidebar.title("📌 Menu de Navegação")
+
+# 1. Definição dos Botões
 btn_home = st.sidebar.button("🏠 Home")
 btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
 btn_analise = st.sidebar.button("📊 Análise Inteligente")
+btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
+btn_disc = st.sidebar.button("🧠 Perfil DISC")
+btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
+btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
 
+st.sidebar.markdown("---") 
+btn_logout = st.sidebar.button("🚪 Sair / Logout")
+
+# 2. Lógica de Redirecionamento
 if btn_home: 
     st.session_state.pagina = "home"
     st.rerun()
-if btn_formulario: 
+elif btn_formulario: 
     st.session_state.pagina = "formulario"
     st.rerun()
-if btn_analise: 
+elif btn_analise: 
     st.session_state.pagina = "analise"
     st.rerun()
+elif btn_comparar:
+    st.session_state.pagina = "comparar"
+    st.rerun()
+elif btn_disc:
+    st.session_state.pagina = "disc"
+    st.rerun()
+elif btn_parecer:
+    st.session_state.pagina = "parecer"
+    st.rerun()
+elif btn_visualizar:
+    st.session_state.pagina = "visualizar"
+    st.rerun()
+elif btn_logout:
+    st.session_state.clear() 
+    st.rerun() # O rerun vai voltar pro topo e cair no login automaticamente
+
+# ============================================================
+# 3. EXIBIÇÃO DAS PÁGINAS (Área Central)
+# ============================================================
+# Aqui continua o seu código: if st.session_state.pagina == "home": ...
 
 # ============================================================
 # 🖼️ ÁREA DE EXIBIÇÃO DO CONTEÚDO
