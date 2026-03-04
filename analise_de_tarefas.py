@@ -589,41 +589,52 @@ elif st.session_state.pagina == "visualizar":
                     # --- SEÇÃO 3: DISC (PERGUNTA + RESPOSTA) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
-                    # Reconstrói a lista de perguntas e respostas
-                    lista_espelho_disc = []
-                    # Transforma o DF do DISC em um dicionário para busca rápida
-                    respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
+                    try:
+                        # 1. Transforma o DF do DISC em um dicionário para busca rápida
+                        # Assume que o Excel salvou 'Questão' na Coluna 0 e 'Resposta' na Coluna 1
+                        respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
 
-                    for i, texto_pergunta in enumerate(perguntas_disc, 1):
-                        chave = f"Q{i}"
-                        res_letra = respostas_dict.get(chave, "Não respondido")
-                        lista_espelho_disc.append({
-                            "Nº": i,
-                            "Pergunta": texto_pergunta,
-                            "Resposta Escolhida": res_letra
-                        })
-                    
-                    # Exibe como uma tabela limpa para o gestor ler
-                    st.table(lista_espelho_disc)
+                        lista_espelho_disc = []
 
-                    # Botão de segurança para baixar este arquivo específico
-                    with open(os.path.join(BASE_DIR, arq), "rb") as f:
-                        st.download_button(
-                            label=f"📥 Baixar Original de {nome_colab}",
-                            data=f,
-                            file_name=arq,
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            key=f"btn_espelho_{arq}"
-                        )
+                        # 2. Percorre a lista GLOBAL 'perguntas_disc' (que deve ter as 20 no topo do código)
+                        for i, texto_pergunta in enumerate(perguntas_disc, 1):
+                            chave = f"Q{i}"
+                            # Busca a letra respondida. Se o arquivo for antigo, mostra "Não respondido"
+                            res_letra = respostas_dict.get(chave, "Não respondido")
+                            
+                            lista_espelho_disc.append({
+                                "Nº": i,
+                                "Pergunta": texto_pergunta,
+                                "Resposta Escolhida": res_letra
+                            })
+                        
+                        # 3. Exibe a tabela formatada para o gestor
+                        st.table(lista_espelho_disc)
 
-            except Exception as e:
-                st.error(f"Erro ao processar espelho de {arq}: {e}")
+                        # 4. Botão para baixar este arquivo específico (Original)
+                        caminho_arquivo = os.path.join(BASE_DIR, arq)
+                        with open(caminho_arquivo, "rb") as f:
+                            st.download_button(
+                                label=f"📥 Baixar Original de {nome_colab}",
+                                data=f,
+                                file_name=arq,
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                key=f"btn_espelho_{arq}"
+                            )
 
+                    except Exception as e:
+                        st.error(f"Erro ao processar espelho DISC de {nome_colab}: {e}")
+
+        # --- FINAL DA PÁGINA: BOTÃO DE LIMPEZA (FORA DO LOOP DOS ARQUIVOS) ---
         st.markdown("---")
         if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
-             for a in arquivos:
-                 os.remove(a)
-             st.rerun()
+            for a in arquivos:
+                try:
+                    os.remove(os.path.join(BASE_DIR, a))
+                except:
+                    continue
+            st.success("✅ Todos os registros foram excluídos com sucesso!")
+            st.rerun()
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
