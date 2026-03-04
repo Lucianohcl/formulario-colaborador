@@ -570,15 +570,36 @@ elif st.session_state.pagina == "visualizar":
 
                     with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
                          
-                         # --- 🔹 IDENTIFICAÇÃO (VERSÃO SEGURA CONTRA ERROS DE ÍNDICE) ---
+                         # --- 🔹 IDENTIFICAÇÃO (Mapeamento Inteligente por Nome de Campo) ---
+                         # 1. Busca o nome de forma inteligente para o título do expander
+                    def buscar_simples(df, etiqueta):
+                         try:
+                              filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
+                              return str(filtro.iloc[0, 1]) if not filtro.empty else "Colaborador"
+                         except:
+                              return "Colaborador"
+
+                    # 1. Busca o nome de forma inteligente antes de abrir o expander
+                    def buscar_simples(df, etiqueta):
+                         try:
+                              filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
+                              return str(filtro.iloc[0, 1]) if not filtro.empty else "Colaborador"
+                         except:
+                              return "Colaborador"
+
+                    nome_exibicao = buscar_simples(df_id, 'Nome')
+
+                    # 2. O EXPANDER ÚNICO
+                    with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
+                         
+                         # --- 🔹 IDENTIFICAÇÃO (Mapeamento Inteligente) ---
                          st.subheader("🔹 Identificação")
                          
-                         # Função interna para ler sem travar se a linha não existir no arquivo
-                         def ler_safe(df, indice):
+                         def buscar_valor(df, etiqueta):
                               try:
-                                   # Verifica se o dataframe tem a linha e se o valor não é nulo
-                                   if len(df) > indice:
-                                        valor = df.iloc[indice, 1]
+                                   filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
+                                   if not filtro.empty:
+                                        valor = filtro.iloc[0, 1]
                                         return str(valor) if pd.notna(valor) else "Não informado"
                                    return "Não informado"
                               except:
@@ -586,22 +607,20 @@ elif st.session_state.pagina == "visualizar":
 
                          c1, c2 = st.columns(2)
                          with c1:
-                              st.write(f"**Entregue em (data/hora):** {ler_safe(df_id, 0)}")
-                              st.write(f"**Empresa / Unidade:** {ler_safe(df_id, 1)}")
-                              st.write(f"**Nome do Colaborador:** {ler_safe(df_id, 2)}")
-                              st.write(f"**Departamento:** {ler_safe(df_id, 3)}")
+                              st.write(f"**Entregue em (data/hora):** {buscar_valor(df_id, 'Entregue em')}")
+                              st.write(f"**Empresa / Unidade:** {buscar_valor(df_id, 'Empresa')}")
+                              st.write(f"**Nome do Colaborador:** {buscar_valor(df_id, 'Nome')}")
+                              st.write(f"**Departamento:** {buscar_valor(df_id, 'Departamento')}")
                          with c2:
-                              # Corrigido de df_safe para df_id abaixo:
-                              st.write(f"**Devolver preenchido em:** {ler_safe(df_id, 4)}") 
-                              st.write(f"**Escolaridade:** {ler_safe(df_id, 5)}")
-                              st.write(f"**Cargo:** {ler_safe(df_id, 6)}")
-                              st.write(f"**Chefe Imediato:** {ler_safe(df_id, 7)}")
+                              st.write(f"**Devolver preenchido em:** {buscar_valor(df_id, 'Devolver')}") 
+                              st.write(f"**Escolaridade:** {buscar_valor(df_id, 'Escolaridade')}")
+                              st.write(f"**Cargo:** {buscar_valor(df_id, 'Cargo')}")
+                              st.write(f"**Chefe Imediato:** {buscar_valor(df_id, 'Chefe')}")
                          
                          st.write(f"**Cursos obrigatórios ou diferenciais:**")
-                         st.info(ler_safe(df_id, 8))
+                         st.info(buscar_valor(df_id, 'Cursos'))
                          st.write(f"**Trabalho e principal objetivo:**")
-                         st.info(ler_safe(df_id, 9))
-
+                         st.info(buscar_valor(df_id, 'objetivo'))
                          # --- 🔹 ATIVIDADES EXECUTADAS (FILTRADAS) ---
                          st.markdown("---")
                          st.subheader("🔹 Atividades Executadas")
