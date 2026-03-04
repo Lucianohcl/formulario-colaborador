@@ -185,7 +185,7 @@ if "pagina" not in st.session_state:
 # ============================================================
 # GERAÇÃO PDF EXECUTIVO
 # ============================================================
-def gerar_pdf(relatorio, nome_colab):
+
     pdf = FPDF()
     pdf.add_page()
 
@@ -274,50 +274,51 @@ else:
         if st.button("🚪 Logout"):
             st.session_state.logged_in = False
             st.session_state.current_user = None
-            st.session_state.pagina = "formulario"
+            
             st.rerun()
 
     # ============================================================
-    # CONTROLE DE PÁGINA
+    # CONTROLE DE PÁGINA (CORRIGIDO)
     # ============================================================
     if btn_formulario:
         st.session_state.pagina = "formulario"
+        st.rerun()
     elif btn_analise:
         st.session_state.pagina = "analise"
+        st.rerun()
     elif btn_comparar:
         st.session_state.pagina = "comparar"
+        st.rerun()
     elif btn_disc:
         st.session_state.pagina = "disc"
+        st.rerun()
     elif btn_parecer:
         st.session_state.pagina = "parecer"
+        st.rerun()
     elif btn_visualizar:
         st.session_state.pagina = "visualizar"
-
+        st.rerun()
     # ============================================================
-    # CONTEÚDO PRINCIPAL
+    # CONTROLE DE PÁGINA (SUBSTITUIÇÃO CORRIGIDA)
     # ============================================================
-    if st.session_state.pagina == "home":
-        st.title("Sistema de Análise de Tarefas")
-        st.write("Selecione uma opção no menu lateral.")
-
-    elif st.session_state.pagina == "formulario":
-        st.title("Formulário Colaborador")
-
-    elif st.session_state.pagina == "analise":
-        st.title("Análise Inteligente")
-
-    elif st.session_state.pagina == "comparar":
-        st.title("Comparar Real x Ideal")
-
-    elif st.session_state.pagina == "disc":
-        st.title("Avaliação DISC")
-
-    elif st.session_state.pagina == "parecer":
-        st.title("Parecer Final Executivo")
-
-    elif st.session_state.pagina == "visualizar":
-        st.title("Relatórios Salvos")
-
+    if btn_formulario:
+        st.session_state.pagina = "formulario"
+        st.rerun()
+    elif btn_analise:
+        st.session_state.pagina = "analise"
+        st.rerun()
+    elif btn_comparar:
+        st.session_state.pagina = "comparar"
+        st.rerun()
+    elif btn_disc:
+        st.session_state.pagina = "disc"
+        st.rerun()
+    elif btn_parecer:
+        st.session_state.pagina = "parecer"
+        st.rerun()
+    elif btn_visualizar:
+        st.session_state.pagina = "visualizar"
+        st.rerun()
     
 
 # ==========================================================
@@ -594,13 +595,9 @@ def gerar_analise_corporativa(dados):
     return parecer, indicadores
 
 
-# ==========================================================
-# 8️⃣ PDF
-# ==========================================================
-
 def gerar_pdf(parecer, nome):
-
-    doc = SimpleDocTemplate(f"{nome}_parecer.pdf")
+    nome_arquivo = f"{nome}_parecer.pdf" # Criamos uma variável para o nome
+    doc = SimpleDocTemplate(nome_arquivo)
     elements = []
     styles = getSampleStyleSheet()
 
@@ -608,7 +605,9 @@ def gerar_pdf(parecer, nome):
     elements.append(Spacer(1, 0.5 * inch))
 
     for linha in parecer.split("\n"):
-        elements.append(Paragraph(linha, styles["Normal"]))
-        elements.append(Spacer(1, 0.2 * inch))
+        if linha.strip(): # Evita parágrafos vazios que dão erro
+            elements.append(Paragraph(linha, styles["Normal"]))
+            elements.append(Spacer(1, 0.2 * inch))
 
     doc.build(elements)
+    return nome_arquivo  # <--- ADICIONE ISSO PARA PODER BAIXAR
