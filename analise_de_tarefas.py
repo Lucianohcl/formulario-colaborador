@@ -223,7 +223,7 @@ if not st.session_state.logged_in:
         if user and user.get("password") == hash_senha(senha):
             st.session_state.logged_in = True
             st.session_state.current_user = usuario
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Usuário ou senha incorretos")
 
@@ -239,7 +239,7 @@ else:
         st.session_state.logged_in = False
         st.session_state.current_user = None
         st.session_state.pagina = "formulario"
-        st.experimental_rerun()
+        st.rerun()
 
     # ============================================================
     # SIDEBAR
@@ -264,7 +264,7 @@ else:
             st.session_state.logged_in = False
             st.session_state.current_user = None
             st.session_state.pagina = "formulario"
-            st.experimental_rerun()
+            st.rerun()
 
     # ============================================================
     # CONTROLE DE PÁGINA
