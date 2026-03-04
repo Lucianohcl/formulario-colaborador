@@ -541,6 +541,9 @@ elif st.session_state.pagina == "visualizar":
     st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
 
     # 1. Busca os arquivos na pasta correta
+    if not os.path.exists(BASE_DIR):
+        os.makedirs(BASE_DIR)
+        
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
@@ -548,7 +551,6 @@ elif st.session_state.pagina == "visualizar":
     else:
         for arq in arquivos:
             try:
-                # IMPORTANTE: Construir o caminho completo para leitura
                 caminho_completo = os.path.join(BASE_DIR, arq)
                 
                 # Lendo todas as abas do Excel
@@ -558,41 +560,57 @@ elif st.session_state.pagina == "visualizar":
                 df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
                 df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                # Pegando dados de identificação
-                nome_colab = df_id.loc[df_id['Campo'] == 'Nome', 'Valor'].values[0]
-                empresa_colab = df_id.loc[df_id['Campo'] == 'Empresa', 'Valor'].values[0]
+                # Pega o nome para o título do expander (geralmente está na linha 2, coluna 1)
+                # Tentamos pegar pelo conteúdo se a busca por nome falhar
+                try:
+                    nome_colab = df_id.iloc[2, 1] 
+                except:
+                    nome_colab = "Colaborador"
 
                 # 2. O EXPANDER com o Nome Completo
-                with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
-                    st.write(f"**🏢 Empresa:** {empresa_colab}")
+                with st.expander(f"👤 FORMULÁRIO DE: {str(nome_colab).upper()}"):
+                    
+                    st.subheader("🔹 Identificação")
+                    # Lista tudo o que estiver na aba ID dinamicamente
+                    for _, linha in df_id.iterrows():
+                        # linha[0] é o rótulo (Ex: Cargo), linha[1] é a resposta
+                        st.write(f"**{linha[0]}:** {linha[1]}")
+                    
                     st.write(f"**📄 Arquivo original:** `{arq}`")
                     st.markdown("---")
 
                     # --- SEÇÃO 1: ATIVIDADES ---
                     st.subheader("📝 1. Atividades Executadas")
-                    df_ativ_ok = df_ativ.dropna(subset=["Descrição da Atividade"])
-                    st.table(df_ativ_ok)
+                    # Remove linhas totalmente vazias para não poluir a tela
+                    df_ativ_ok = df_ativ.dropna(how='all')
+                    if not df_ativ_ok.empty:
+                        st.table(df_ativ_ok)
+                    else:
+                        st.write("Nenhuma atividade registrada.")
 
                     # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
+                    st.markdown("---")
                     c1, c2 = st.columns(2)
                     with c1:
                         st.subheader("⚠️ 2. Dificuldades")
-                        df_dif_ok = df_dif.dropna(subset=["Descrição da Dificuldade"])
-                        st.table(df_dif_ok) if not df_dif_ok.empty else st.write("Nada relatado.")
+                        # Pega o texto da primeira célula da aba Dificuldades
+                        msg_dif = df_dif.iloc[0, 0] if not df_dif.empty else "Nada relatado."
+                        st.info(msg_dif) if msg_dif and str(msg_dif) != "nan" else st.write("Nada relatado.")
                     with c2:
                         st.subheader("💡 3. Sugestões")
-                        df_sug_ok = df_sug.dropna(subset=["Descrição da Sugestão"])
-                        st.table(df_sug_ok) if not df_sug_ok.empty else st.write("Nada relatado.")
+                        msg_sug = df_sug.iloc[0, 0] if not df_sug.empty else "Nada relatado."
+                        st.success(msg_sug) if msg_sug and str(msg_sug) != "nan" else st.write("Nada relatado.")
 
                     st.markdown("---")
 
                     # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
-                    # Dicionário de respostas salvas
-                    respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
+                    # Criamos um dicionário a partir do Excel: Chave (Q1, Q2...) -> Valor (A, B...)
+                    # Usamos iloc para ignorar nomes de colunas
+                    respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
+                    
                     lista_espelho_disc = []
-
                     for i, texto_pergunta in enumerate(perguntas_disc, 1):
                         chave = f"Q{i}"
                         res_letra = respostas_dict.get(chave, "Não respondido")
@@ -613,6 +631,7 @@ elif st.session_state.pagina == "visualizar":
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                             key=f"btn_espelho_{arq}"
                         )
+
             except Exception as e:
                 st.error(f"Erro ao processar o arquivo {arq}: {e}")
 
