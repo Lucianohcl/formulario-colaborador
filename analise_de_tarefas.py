@@ -407,55 +407,135 @@ elif st.session_state.pagina == "formulario":
         if not nome or not empresa:
             st.error("Preencha Nome e Empresa.")
         else:
-            # Salvando os dados no Excel
-            nome_arq = f"Colaborador_{nome.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-            caminho_salvar = os.path.join(BASE_DIR, nome_arq)
+            # Criamos um dicionário com tudo o que foi preenchido
+            nova_resposta = {
+                "nome": nome,
+                "empresa": empresa,
+                "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
+                "atividades": edit_ativ[edit_ativ["Descrição da Atividade"] != ""].to_dict('records'),
+                "dificuldades": edit_dif[edit_dif["Descrição da Dificuldade"] != ""].to_dict('records'),
+                "sugestoes": edit_sug[edit_sug["Descrição da Sugestão"] != ""].to_dict('records'),
+                "disc": respostas_disc
+            }
             
-            with pd.ExcelWriter(caminho_salvar, engine="xlsxwriter") as writer:
-                pd.DataFrame({"Campo": ["Empresa", "Nome"], "Resposta": [empresa, nome]}).to_excel(writer, sheet_name="ID", index=False)
-                edit_ativ.to_excel(writer, sheet_name="Atividades", index=False)
-                edit_dif.to_excel(writer, sheet_name="Dificuldades", index=False)
-                edit_sug.to_excel(writer, sheet_name="Sugestões", index=False)
-                pd.DataFrame.from_dict(respostas_disc, orient="index").to_excel(writer, sheet_name="DISC")
+            # Salva na memória global do App (Session State)
+            if 'banco_de_dados' not in st.session_state:
+                st.session_state.banco_de_dados = []
+            
+            st.session_state.banco_de_dados.append(nova_resposta)
+            
+            # Mantemos o Excel em segundo plano apenas por segurança (opcional)
+            nome_arq = f"Colaborador_{nome.replace(' ', '_')}.xlsx"
+            pd.DataFrame([nova_resposta]).to_excel(nome_arq) 
 
-            st.success(f"Formulário salvo localmente! Arquivo: {nome_arq}")
+            st.success(f"✅ Enviado com sucesso! Dados de {nome} recebidos.")
             st.balloons()
 
 elif st.session_state.pagina == "analise":
     st.title("📊 Análise Inteligente")
-    margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
-    if st.button('📥 BAIXAR EXCEL FINAL'):
-        st.info("Processando download...")
+    st.info("A inteligência está consolidando todos os formulários encontrados.")
 
-elif st.session_state.pagina == "visualizar":
-    st.title("👁️ Gerenciador de Arquivos Enviados")
-    st.info("Aqui você encontra os formulários salvos pelos colaboradores no servidor.")
-
-    # Lista arquivos que começam com 'Colaborador_'
+    # 1. Localiza todos os arquivos que começam com 'Colaborador_'
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
-        st.warning("⚠️ Nenhum formulário foi encontrado no servidor no momento.")
-        st.caption("Nota: Se o servidor reiniciar, os arquivos temporários são limpos. Baixe-os assim que forem enviados.")
+        st.warning("⚠️ Nenhum dado encontrado. Peça aos colaboradores para enviarem os formulários primeiro.")
     else:
-        st.subheader(f"📂 Arquivos Disponíveis: {len(arquivos)}")
-        
-        # Cria uma tabela simples para baixar os arquivos
-        for arq in arquivos:
-            col_nome, col_btn = st.columns([3, 1])
-            with col_nome:
-                st.write(f"📄 {arq}")
-            with col_btn:
-                with open(os.path.join(BASE_DIR, arq), "rb") as f:
-                    st.download_button(
-                        label="📥 Resgatar",
-                        data=f,
-                        file_name=arq,
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                        key=f"btn_{arq}"
-                    )
+        # 2. Cria uma lista para juntar as tabelas
+        lista_atividades = []
 
-# FIM DO ARQUIVO
+        for arq in arquivos:
+            try:
+                # Lê a aba de Atividades e a de Identificação
+                df_ativ = pd.read_excel(arq, sheet_name="Atividades")
+                df_id = pd.read_excel(arq, sheet_name="ID")
+                
+                # Pega o nome do colaborador da aba ID
+                nome_colab = df_id.iloc[1, 1] 
+                
+                # Adiciona o nome do dono em cada linha de atividade
+                df_ativ["Colaborador"] = nome_colab
+                
+                # Remove as linhas que o colaborador deixou vazias (das 20 originais)
+                df_ativ = df_ativ[df_ativ["Descrição da Atividade"].notna()]
+                
+                lista_atividades.append(df_ativ)
+            except:
+                continue
+
+        if lista_atividades:
+            # 3. Junta tudo em um Super Excel
+            df_final = pd.concat(lista_atividades, ignore_index=True)
+
+            st.success(f"📈 Análise pronta: {len(arquivos)} colaboradores processados.")
+            st.dataframe(df_final, use_container_width=True) # Mostra a prévia na tela
+
+            # O seu Slider (Conforme instrução: valor padrão 50%)
+            margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
+            
+            # 4. BOTÃO REAL DE DOWNLOAD (Conforme instrução: 📥 BAIXAR EXCEL FINAL)
+            nome_saida = "RELATORIO_CONSOLIDADO_FINAL.xlsx"
+            df_final.to_excel(nome_saida, index=False)
+            
+            with open(nome_saida, "rb") as f:
+                st.download_button(
+                    label="📥 BAIXAR EXCEL FINAL",
+                    data=f,
+                    file_name=nome_saida,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            st.error("Erro ao processar os arquivos. Verifique se estão no formato correto.")
+
+elif st.session_state.pagina == "visualizar":
+    st.title("👁️ Visualização Direta de Envios")
+    st.info("Clique na seta ao lado do nome para ver o que o colaborador preencheu.")
+
+    # 1. Pega a lista de arquivos salvos
+    arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
+
+    if not arquivos:
+        st.warning("⚠️ Nenhum formulário foi encontrado no servidor.")
+    else:
+        st.subheader(f"📂 Formulários Recebidos: {len(arquivos)}")
+        
+        for arq in arquivos:
+            # 2. O EXPANDER (A setinha que você pediu para expandir)
+            with st.expander(f"👤 Ver dados de: {arq.split('_')[1]} {arq.split('_')[2]}"):
+                try:
+                    # 3. A Inteligência lê o arquivo para mostrar na tela
+                    df_id = pd.read_excel(arq, sheet_name="ID")
+                    df_ativ = pd.read_excel(arq, sheet_name="Atividades")
+                    df_disc = pd.read_excel(arq, sheet_name="DISC")
+
+                    # Mostra os dados organizados
+                    st.write("**🆔 Empresa:**", df_id.iloc[0, 1])
+                    
+                    st.write("**📋 Atividades Preenchidas:**")
+                    # Filtra para não mostrar as linhas vazias (das 20)
+                    df_filtrado = df_ativ[df_ativ["Descrição da Atividade"].notna()]
+                    st.dataframe(df_filtrado, use_container_width=True)
+
+                    st.write("**🧠 Respostas DISC:**")
+                    st.write(df_disc.to_dict()) # Mostra as letras escolhidas
+
+                    # Botão discreto caso precise baixar o arquivo original
+                    with open(os.path.join(BASE_DIR, arq), "rb") as f:
+                        st.download_button(
+                            label=f"📥 Baixar Original ({arq})",
+                            data=f,
+                            file_name=arq,
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key=f"dl_{arq}"
+                        )
+                except Exception as e:
+                    st.error(f"Erro ao abrir {arq}: {e}")
+
+        st.markdown("---")
+        if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
+             for a in arquivos:
+                 os.remove(a)
+             st.rerun()
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
 # ==========================================================
