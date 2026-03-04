@@ -182,31 +182,7 @@ if "current_user" not in st.session_state:
 if "pagina" not in st.session_state:
     st.session_state.pagina = "formulario"  # página inicial padrão
 
-# ============================================================
-# GERAÇÃO PDF EXECUTIVO
-# ============================================================
 
-    pdf = FPDF()
-    pdf.add_page()
-
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(0, 10, f"RELATÓRIO EXECUTIVO – {nome_colab}", ln=True, align='C')
-    pdf.ln(5)
-
-    pdf.set_font("Arial", '', 11)
-
-    for secao, conteudo in relatorio.items():
-        pdf.set_font("Arial", 'B', 12)
-        pdf.cell(0, 8, secao, ln=True)
-        pdf.set_font("Arial", '', 11)
-
-        if isinstance(conteudo, list):
-            for item in conteudo:
-                pdf.multi_cell(0, 6, str(item))
-                pdf.ln(1)
-        else:
-            pdf.multi_cell(0, 6, str(conteudo))
-            pdf.ln(2)
 
     
 
