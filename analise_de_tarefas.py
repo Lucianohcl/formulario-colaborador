@@ -543,137 +543,107 @@ elif st.session_state.pagina == "analise":
             st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         
 elif st.session_state.pagina == "visualizar":
-         st.title("👁️ Espelho Fiel de Respostas")
-         st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
+     st.title("👁️ Espelho Fiel de Respostas")
+     st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
 
-         # 1. Busca os arquivos na pasta correta
-         if not os.path.exists(BASE_DIR):
-              os.makedirs(BASE_DIR)
-              
-         arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
+     if not os.path.exists(BASE_DIR):
+          os.makedirs(BASE_DIR)
+          
+     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
-         if not arquivos:
-              st.warning("⚠️ Nenhum formulário encontrado no servidor.")
-         else:
-              for arq in arquivos:
-                   try:
-                        caminho_completo = os.path.join(BASE_DIR, arq)
-                        
-                        # Lendo todas as abas do Excel
-                        df_id = pd.read_excel(caminho_completo, sheet_name="ID")
-                        df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
-                        df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
-                        df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
-                        df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
+     if not arquivos:
+          st.warning("⚠️ Nenhum formulário encontrado no servidor.")
+     else:
+          for arq in arquivos:
+               try:
+                    caminho_completo = os.path.join(BASE_DIR, arq)
+                    
+                    # Lendo todas as abas salvos pelo formulário
+                    df_id = pd.read_excel(caminho_completo, sheet_name="ID")
+                    df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
+                    df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
+                    df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
+                    df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                        # Pega o nome para o título do expander
-                        try:
-                             nome_colab = df_id.loc[df_id.iloc[:, 0].str.contains('Nome', na=False), df_id.columns[1]].values[0]
-                        except:
-                             nome_colab = "Colaborador"
+                    # Nome do colaborador (Linha 2, Coluna 1 da aba ID)
+                    nome_colab = str(df_id.iloc[2, 1]) if len(df_id) > 2 else "Colaborador"
 
-                        # 2. O EXPANDER com o Nome Completo
-                        with st.expander(f"👤 FORMULÁRIO DE: {str(nome_colab).upper()}"):
-                             
-                             st.subheader("🔹 Identificação")
-                             for _, linha in df_id.iterrows():
-                                  st.write(f"**{linha[0]}:** {linha[1]}")
-                             
-                             st.write(f"**📄 Arquivo original:** `{arq}`")
-                             st.markdown("---")
+                    with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
+                         
+                         # --- 🔹 IDENTIFICAÇÃO (ESPELHO EXATO DO FORMULÁRIO) ---
+                         st.subheader("🔹 Identificação")
+                         c1, c2 = st.columns(2)
+                         with c1:
+                              st.write(f"**Entregue em (data/hora):** {df_id.iloc[0, 1]}")
+                              st.write(f"**Empresa / Unidade:** {df_id.iloc[1, 1]}")
+                              st.write(f"**Nome do Colaborador:** {df_id.iloc[2, 1]}")
+                              st.write(f"**Departamento:** {df_id.iloc[3, 1]}")
+                         with c2:
+                              st.write(f"**Devolver preenchido em:** {df_id.iloc[4, 1]}")
+                              st.write(f"**Escolaridade:** {df_id.iloc[5, 1]}")
+                              st.write(f"**Cargo:** {df_id.iloc[6, 1]}")
+                              st.write(f"**Chefe Imediato:** {df_id.iloc[7, 1]}")
+                         
+                         st.write(f"**Cursos obrigatórios ou diferenciais:**")
+                         st.write(df_id.iloc[8, 1])
+                         st.write(f"**Trabalho e principal objetivo:**")
+                         st.write(df_id.iloc[9, 1])
 
-                             # --- SEÇÃO 1: IDENTIFICAÇÃO (Métricas) ---
-                             st.subheader("👤 1. Identificação do Colaborador")
-                             try:
-                                  n_val = str(df_id.iloc[0, 1]) if len(df_id) > 0 else "N/A"
-                                  e_val = str(df_id.iloc[1, 1]) if len(df_id) > 1 else "N/A"
-                                  c_val = str(df_id.iloc[2, 1]) if len(df_id) > 2 else "N/A"
-                                  s_val = str(df_id.iloc[3, 1]) if len(df_id) > 3 else "N/A"
+                         # --- 🔹 ATIVIDADES EXECUTADAS (FILTRADAS) ---
+                         st.markdown("---")
+                         st.subheader("🔹 Atividades Executadas")
+                         st.info("""📋 **LEGENDA DE FREQUÊNCIA:**
+DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual""")
+                         # Filtra para não mostrar as 20 linhas vazias, apenas o conteúdo
+                         df_ativ_f = df_ativ[df_ativ["Descrição da Atividade"].fillna("").str.strip() != ""]
+                         st.table(df_ativ_f)
 
-                                  c1, c2, c3, c4 = st.columns(4)
-                                  c1.metric("Nome", n_val)
-                                  c2.metric("Empresa", e_val)
-                                  c3.metric("Cargo", c_val)
-                                  c4.metric("Escolaridade", s_val)
-                             except:
-                                  st.write("Dados de identificação resumidos indisponíveis.")
+                         # --- 🔹 DIFICULDADES NA EXECUÇÃO (FILTRADAS) ---
+                         st.subheader("🔹 Dificuldades na Execução")
+                         df_dif_f = df_dif[df_dif["Descrição da Dificuldade"].fillna("").str.strip() != ""]
+                         st.table(df_dif_f)
 
-                             # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
-                             st.markdown("---")
-                             col_esq, col_dir = st.columns(2)
-                             
-                             with col_esq:
-                                  st.subheader("⚠️ 2. Dificuldades")
-                                  try:
-                                       val_dif = df_dif.iloc[0, 0]
-                                       txt_dif = str(val_dif).strip() if pd.notna(val_dif) else "Nada relatado."
-                                       if txt_dif in ["", "nan", "None"]:
-                                            st.info("Nenhuma dificuldade relatada.")
-                                       else:
-                                            st.warning(txt_dif)
-                                  except:
-                                       st.info("Nenhuma dificuldade relatada.")
+                         # --- 🔹 SUGESTÕES DE MELHORIA (FILTRADAS) ---
+                         st.subheader("💡 Sugestões de Melhoria")
+                         df_sug_f = df_sug[df_sug["Descrição da Sugestão"].fillna("").str.strip() != ""]
+                         st.table(df_sug_f)
 
-                             with col_dir:
-                                  st.subheader("💡 3. Sugestões")
-                                  try:
-                                       val_sug = df_sug.iloc[0, 0]
-                                       txt_sug = str(val_sug).strip() if pd.notna(val_sug) else "Nada relatado."
-                                       if txt_sug in ["", "nan", "None"]:
-                                            st.info("Nenhuma sugestão relatada.")
-                                       else:
-                                            st.success(txt_sug)
-                                  except:
-                                       st.info("Nenhuma sugestão relatada.")
-                             
-                             # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
-                             st.subheader("🧠 4. Questionário DISC (Espelho)")
-                             
-                             respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
-                             lista_espelho_disc = []
-                             
-                             for i, texto_pergunta in enumerate(perguntas_disc, 1):
-                                  chave = f"Q{i}"
-                                  res_letra = respostas_dict.get(chave, "Não respondido")
-                                  significado = ""
-                                  if res_letra != "Não respondido" and "|" in texto_pergunta:
-                                       partes = texto_pergunta.split("|")
-                                       for p in partes:
-                                            if f"({res_letra})" in p:
-                                                 significado = p.split(")")[-1].strip()
-                                  
-                                  exibicao_resposta = f"{res_letra} - {significado}" if significado else res_letra
-                                  lista_espelho_disc.append({
-                                       "Nº": i,
-                                       "Pergunta": texto_pergunta.split(":")[0],
-                                       "Resposta Escolhida": exibicao_resposta
-                                  })
-                             
-                             st.table(lista_espelho_disc)
+                         # --- 🧠 QUESTIONÁRIO DISC (JÁ OK) ---
+                         st.markdown("---")
+                         st.subheader("🧠 4. Questionário DISC (Espelho)")
+                         respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
+                         lista_disc = []
+                         for i, pergunta in enumerate(perguntas_disc, 1):
+                              letra = respostas_dict.get(f"Q{i}", "-")
+                              sig = ""
+                              if letra != "-" and "|" in pergunta:
+                                   for p in pergunta.split("|"):
+                                        if f"({letra})" in p: sig = p.split(")")[-1].strip()
+                              lista_disc.append({
+                                   "Nº": i, 
+                                   "Pergunta": pergunta.split(":")[0], 
+                                   "Resposta": f"{letra} - {sig}" if sig else letra
+                              })
+                         st.table(lista_disc)
 
-                             with open(caminho_completo, "rb") as f:
-                                  st.download_button(
-                                       label=f"📥 Baixar Original de {nome_colab}",
-                                       data=f,
-                                       file_name=arq,
-                                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                       key=f"btn_espelho_{arq}"
-                                  )
+                         with open(caminho_completo, "rb") as f:
+                              st.download_button(
+                                   label=f"📥 Baixar Original de {nome_colab}",
+                                   data=f,
+                                   file_name=arq,
+                                   key=f"dl_esp_{arq}"
+                              )
 
-                   except Exception as e:
-                        st.error(f"Erro ao processar o arquivo {arq}: {e}")
+               except Exception as e:
+                    st.error(f"Erro ao processar o arquivo {arq}: {e}")
 
-              # --- FINAL DA PÁGINA (FORA DO LOOP) ---
-              st.markdown("---")
-              if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
-                   for a in arquivos:
-                        try:
-                             os.remove(os.path.join(BASE_DIR, a))
-                        except:
-                             continue
-                   st.success("✅ Todos os registros foram excluídos!")
-                   st.rerun()
-                                        
+          st.markdown("---")
+          if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
+               for a in arquivos:
+                    try: os.remove(os.path.join(BASE_DIR, a))
+                    except: continue
+               st.success("✅ Todos os registros foram excluídos!")
+               st.rerun()                                        
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
