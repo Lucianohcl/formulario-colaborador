@@ -229,11 +229,13 @@ else:
         btn_parecer = st.button("📝 Parecer Final Executivo")
         btn_visualizar = st.button("📂 Relatórios Salvos")
 
+        # Admin
         btn_admin = False
         current_user = st.session_state.get("current_user")
-        if current_user and st.session_state["users"].get(current_user, {}).get("admin", False):
+        if current_user and st.session_state.get("users", {}).get(current_user, {}).get("admin", False):
             btn_admin = st.button("⚙️ Administração")
 
+        # Logout
         btn_logout = st.button("🚪 Logout")
         if btn_logout:
             st.session_state.logged_in = False
@@ -266,53 +268,23 @@ else:
 
     elif st.session_state.pagina == "formulario":
         st.title("Formulário Colaborador")
-        # Aqui você pode colocar o formulário real com campos, tabelas, etc.
 
     elif st.session_state.pagina == "analise":
         st.title("Análise Inteligente")
-        # Coloque aqui a lógica do motor de análise
 
     elif st.session_state.pagina == "comparar":
         st.title("Comparar Real x Ideal")
-        # Coloque aqui a tela de comparação
 
     elif st.session_state.pagina == "disc":
         st.title("Avaliação DISC")
-        # Coloque aqui a tela DISC
 
     elif st.session_state.pagina == "parecer":
         st.title("Parecer Final Executivo")
-        # Coloque aqui a tela de parecer
 
     elif st.session_state.pagina == "visualizar":
         st.title("Relatórios Salvos")
-        # Coloque aqui a tela de visualização
 
-    # ============================================================
-    # CONTEÚDO PRINCIPAL
-    # ============================================================
-    if st.session_state.pagina == "home":
-        st.title("Sistema de Análise de Tarefas")
-        st.write("Selecione uma opção no menu lateral.")
-
-    elif st.session_state.pagina == "formulario":
-        st.title("Formulário Colaborador")
-
-    elif st.session_state.pagina == "analise":
-        st.title("Análise Inteligente")
-
-    elif st.session_state.pagina == "comparar":
-        st.title("Comparar Real x Ideal")
-
-    elif st.session_state.pagina == "disc":
-        st.title("Avaliação DISC")
-
-    elif st.session_state.pagina == "parecer":
-        st.title("Parecer Final Executivo")
-
-    elif st.session_state.pagina == "visualizar":
-        st.title("Relatórios Salvos")    
-
+    
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
