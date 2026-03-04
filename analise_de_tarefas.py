@@ -543,144 +543,136 @@ elif st.session_state.pagina == "analise":
             st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         
 elif st.session_state.pagina == "visualizar":
-    st.title("👁️ Espelho Fiel de Respostas")
-    st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
+         st.title("👁️ Espelho Fiel de Respostas")
+         st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
 
-    # 1. Busca os arquivos na pasta correta
-    if not os.path.exists(BASE_DIR):
-        os.makedirs(BASE_DIR)
-        
-    arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
+         # 1. Busca os arquivos na pasta correta
+         if not os.path.exists(BASE_DIR):
+              os.makedirs(BASE_DIR)
+              
+         arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
-    if not arquivos:
-        st.warning("⚠️ Nenhum formulário encontrado no servidor.")
-    else:
-        for arq in arquivos:
-            try:
-                caminho_completo = os.path.join(BASE_DIR, arq)
-                
-                # Lendo todas as abas do Excel
-                df_id = pd.read_excel(caminho_completo, sheet_name="ID")
-                df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
-                df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
-                df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
-                df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
+         if not arquivos:
+              st.warning("⚠️ Nenhum formulário encontrado no servidor.")
+         else:
+              for arq in arquivos:
+                   try:
+                        caminho_completo = os.path.join(BASE_DIR, arq)
+                        
+                        # Lendo todas as abas do Excel
+                        df_id = pd.read_excel(caminho_completo, sheet_name="ID")
+                        df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
+                        df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
+                        df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
+                        df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                # Pega o nome para o título do expander (Busca na coluna 1 onde a coluna 0 é 'Nome')
-                try:
-                    nome_colab = df_id.loc[df_id.iloc[:, 0].str.contains('Nome', na=False), df_id.columns[1]].values[0]
-                except:
-                    nome_colab = "Colaborador"
+                        # Pega o nome para o título do expander
+                        try:
+                             nome_colab = df_id.loc[df_id.iloc[:, 0].str.contains('Nome', na=False), df_id.columns[1]].values[0]
+                        except:
+                             nome_colab = "Colaborador"
 
-                # 2. O EXPANDER com o Nome Completo
-                with st.expander(f"👤 FORMULÁRIO DE: {str(nome_colab).upper()}"):
-                    
-                    st.subheader("🔹 Identificação")
-                    # Lista tudo o que estiver na aba ID dinamicamente (Escolaridade, Cargo, etc.)
-                    for _, linha in df_id.iterrows():
-                        st.write(f"**{linha[0]}:** {linha[1]}")
-                    
-                    st.write(f"**📄 Arquivo original:** `{arq}`")
-                    st.markdown("---")
+                        # 2. O EXPANDER com o Nome Completo
+                        with st.expander(f"👤 FORMULÁRIO DE: {str(nome_colab).upper()}"):
+                             
+                             st.subheader("🔹 Identificação")
+                             for _, linha in df_id.iterrows():
+                                  st.write(f"**{linha[0]}:** {linha[1]}")
+                             
+                             st.write(f"**📄 Arquivo original:** `{arq}`")
+                             st.markdown("---")
 
-                    # --- SEÇÃO 1: IDENTIFICAÇÃO ---
-                    st.subheader("👤 1. Identificação do Colaborador")
-                    try:
-                         # Extraímos os dados garantindo que sejam texto puro
-                         nome_colab = str(df_id.iloc[0, 0])
-                         empresa_colab = str(df_id.iloc[1, 0])
-                         cargo_colab = str(df_id.iloc[2, 0])
-                         escolaridade_colab = str(df_id.iloc[3, 0])
+                             # --- SEÇÃO 1: IDENTIFICAÇÃO (Métricas) ---
+                             st.subheader("👤 1. Identificação do Colaborador")
+                             try:
+                                  n_val = str(df_id.iloc[0, 1]) if len(df_id) > 0 else "N/A"
+                                  e_val = str(df_id.iloc[1, 1]) if len(df_id) > 1 else "N/A"
+                                  c_val = str(df_id.iloc[2, 1]) if len(df_id) > 2 else "N/A"
+                                  s_val = str(df_id.iloc[3, 1]) if len(df_id) > 3 else "N/A"
 
-                         c1, c2, c3, c4 = st.columns(4)
-                         c1.metric("Nome", nome_colab)
-                         c2.metric("Empresa", empresa_colab)
-                         c3.metric("Cargo", cargo_colab)
-                         c4.metric("Escolaridade", escolaridade_colab)
-                    except Exception as e:
-                         st.error(f"Erro ao carregar Identificação: {e}")
+                                  c1, c2, c3, c4 = st.columns(4)
+                                  c1.metric("Nome", n_val)
+                                  c2.metric("Empresa", e_val)
+                                  c3.metric("Cargo", c_val)
+                                  c4.metric("Escolaridade", s_val)
+                             except:
+                                  st.write("Dados de identificação resumidos indisponíveis.")
 
-                    # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
-                    st.markdown("---")
-                    col_esq, col_dir = st.columns(2)
-                    
-                    with col_esq:
-                         st.subheader("⚠️ 2. Dificuldades")
-                         try:
-                              # Pegamos o valor bruto e limpamos
-                              val_dif = df_dif.iloc[0, 0]
-                              txt_dif = str(val_dif).strip() if pd.notna(val_dif) else "Nada relatado."
-                              
-                              if txt_dif == "" or txt_dif == "nan" or txt_dif == "None":
-                                   st.info("Nenhuma dificuldade relatada.")
-                              else:
-                                   st.warning(txt_dif)
-                         except:
-                              st.info("Nenhuma dificuldade relatada.")
+                             # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
+                             st.markdown("---")
+                             col_esq, col_dir = st.columns(2)
+                             
+                             with col_esq:
+                                  st.subheader("⚠️ 2. Dificuldades")
+                                  try:
+                                       val_dif = df_dif.iloc[0, 0]
+                                       txt_dif = str(val_dif).strip() if pd.notna(val_dif) else "Nada relatado."
+                                       if txt_dif in ["", "nan", "None"]:
+                                            st.info("Nenhuma dificuldade relatada.")
+                                       else:
+                                            st.warning(txt_dif)
+                                  except:
+                                       st.info("Nenhuma dificuldade relatada.")
 
-                    with col_dir:
-                         st.subheader("💡 3. Sugestões")
-                         try:
-                              # Pegamos o valor bruto e limpamos
-                              val_sug = df_sug.iloc[0, 0]
-                              txt_sug = str(val_sug).strip() if pd.notna(val_sug) else "Nada relatado."
-                              
-                              if txt_sug == "" or txt_sug == "nan" or txt_sug == "None":
-                                   st.info("Nenhuma sugestão relatada.")
-                              else:
-                                   st.success(txt_sug)
-                         except:
-                              st.info("Nenhuma sugestão relatada.")
-                    
-                    # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
-                    st.subheader("🧠 4. Questionário DISC (Espelho)")
-                    
-                    respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
-                    
-                    lista_espelho_disc = []
-                    for i, texto_pergunta in enumerate(perguntas_disc, 1):
-                         chave = f"Q{i}"
-                         res_letra = respostas_dict.get(chave, "Não respondido")
-                         
-                         significado = ""
-                         if res_letra != "Não respondido" and "|" in texto_pergunta:
-                              partes = texto_pergunta.split("|")
-                              for p in partes:
-                                   if f"({res_letra})" in p:
-                                        significado = p.split(")")[-1].strip()
-                         
-                         exibicao_resposta = f"{res_letra} - {significado}" if significado else res_letra
-                         
-                         lista_espelho_disc.append({
-                              "Nº": i,
-                              "Pergunta": texto_pergunta.split(":")[0],
-                              "Resposta Escolhida": exibicao_resposta
-                         })
-                    
-                    st.table(lista_espelho_disc)
+                             with col_dir:
+                                  st.subheader("💡 3. Sugestões")
+                                  try:
+                                       val_sug = df_sug.iloc[0, 0]
+                                       txt_sug = str(val_sug).strip() if pd.notna(val_sug) else "Nada relatado."
+                                       if txt_sug in ["", "nan", "None"]:
+                                            st.info("Nenhuma sugestão relatada.")
+                                       else:
+                                            st.success(txt_sug)
+                                  except:
+                                       st.info("Nenhuma sugestão relatada.")
+                             
+                             # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
+                             st.subheader("🧠 4. Questionário DISC (Espelho)")
+                             
+                             respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
+                             lista_espelho_disc = []
+                             
+                             for i, texto_pergunta in enumerate(perguntas_disc, 1):
+                                  chave = f"Q{i}"
+                                  res_letra = respostas_dict.get(chave, "Não respondido")
+                                  significado = ""
+                                  if res_letra != "Não respondido" and "|" in texto_pergunta:
+                                       partes = texto_pergunta.split("|")
+                                       for p in partes:
+                                            if f"({res_letra})" in p:
+                                                 significado = p.split(")")[-1].strip()
+                                  
+                                  exibicao_resposta = f"{res_letra} - {significado}" if significado else res_letra
+                                  lista_espelho_disc.append({
+                                       "Nº": i,
+                                       "Pergunta": texto_pergunta.split(":")[0],
+                                       "Resposta Escolhida": exibicao_resposta
+                                  })
+                             
+                             st.table(lista_espelho_disc)
 
-                    with open(caminho_completo, "rb") as f:
-                         st.download_button(
-                              label=f"📥 Baixar Original de {nome_colab}",
-                              data=f,
-                              file_name=arq,
-                              mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                              key=f"btn_espelho_{arq}"
-                         )
+                             with open(caminho_completo, "rb") as f:
+                                  st.download_button(
+                                       label=f"📥 Baixar Original de {nome_colab}",
+                                       data=f,
+                                       file_name=arq,
+                                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                       key=f"btn_espelho_{arq}"
+                                  )
 
-               except Exception as e:
-                    st.error(f"Erro ao processar o arquivo {arq}: {e}")
+                   except Exception as e:
+                        st.error(f"Erro ao processar o arquivo {arq}: {e}")
 
-          # --- FINAL DA PÁGINA (FORA DO LOOP) ---
-          st.markdown("---")
-          if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
-               for a in arquivos:
-                    try:
-                         os.remove(os.path.join(BASE_DIR, a))
-                    except:
-                         continue
-               st.success("✅ Todos os registros foram excluídos!")
-               st.rerun()
+              # --- FINAL DA PÁGINA (FORA DO LOOP) ---
+              st.markdown("---")
+              if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
+                   for a in arquivos:
+                        try:
+                             os.remove(os.path.join(BASE_DIR, a))
+                        except:
+                             continue
+                   st.success("✅ Todos os registros foram excluídos!")
+                   st.rerun()
                                         
 
 # ==========================================================
