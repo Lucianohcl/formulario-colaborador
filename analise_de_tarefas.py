@@ -17,6 +17,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
+perguntas_disc = [
+    "No trabalho, eu prefiro agir com rapidez e focar em resultados?",
+    "Eu gosto de convencer as pessoas e trabalhar em equipe?",
+    "Eu prefiro manter um ritmo constante e ajudar os colegas?",
+    "Eu sou detalhista e prefiro seguir regras e processos?"
+    # Adicione aqui TODAS as suas perguntas na ordem exata do formulário
+]
+
 # ============================================================
 # PASTA BASE (CLOUD READY)
 # ============================================================
@@ -405,62 +414,76 @@ elif st.session_state.pagina == "formulario":
 
     if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
         if not nome or not empresa:
-            st.error("Preencha Nome e Empresa.")
+            st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
         else:
-            # Criamos um dicionário com tudo o que foi preenchido
-            nova_resposta = {
-                "nome": nome,
-                "empresa": empresa,
-                "data": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                "atividades": edit_ativ[edit_ativ["Descrição da Atividade"] != ""].to_dict('records'),
-                "dificuldades": edit_dif[edit_dif["Descrição da Dificuldade"] != ""].to_dict('records'),
-                "sugestoes": edit_sug[edit_sug["Descrição da Sugestão"] != ""].to_dict('records'),
-                "disc": respostas_disc
-            }
-            
-            # Salva na memória global do App (Session State)
-            if 'banco_de_dados' not in st.session_state:
-                st.session_state.banco_de_dados = []
-            
-            st.session_state.banco_de_dados.append(nova_resposta)
-            
-            # Mantemos o Excel em segundo plano apenas por segurança (opcional)
-            nome_arq = f"Colaborador_{nome.replace(' ', '_')}.xlsx"
-            pd.DataFrame([nova_resposta]).to_excel(nome_arq) 
+            # Cria o nome do arquivo com data e hora para não sobrescrever
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nome_arq = f"Colaborador_{nome.replace(' ', '_')}_{timestamp}.xlsx"
+            caminho_salvar = os.path.join(BASE_DIR, nome_arq)
 
-            st.success(f"✅ Enviado com sucesso! Dados de {nome} recebidos.")
-            st.balloons()
+            try:
+                with pd.ExcelWriter(caminho_salvar, engine="xlsxwriter") as writer:
+                    # Aba ID
+                    df_id_save = pd.DataFrame({
+                        "Campo": ["Empresa", "Nome", "Data", "Departamento", "Cargo"],
+                        "Valor": [empresa, nome, datetime.now().strftime("%d/%m/%Y %H:%M"), departamento, cargo]
+                    })
+                    df_id_save.to_excel(writer, sheet_name="ID", index=False)
+
+                    # Aba Atividades (apenas as preenchidas)
+                    df_ativ_save = edit_ativ[edit_ativ["Descrição da Atividade"] != ""]
+                    df_ativ_save.to_excel(writer, sheet_name="Atividades", index=False)
+
+                    # Aba Dificuldades
+                    df_dif_save = edit_dif[edit_dif["Descrição da Dificuldade"] != ""]
+                    df_dif_save.to_excel(writer, sheet_name="Dificuldades", index=False)
+
+                    # Aba Sugestões
+                    df_sug_save = edit_sug[edit_sug["Descrição da Sugestão"] != ""]
+                    df_sug_save.to_excel(writer, sheet_name="Sugestões", index=False)
+
+                    # Aba DISC (Questão e Resposta)
+                    df_disc_save = pd.DataFrame(list(respostas_disc.items()), columns=["Questão", "Resposta"])
+                    df_disc_save.to_excel(writer, sheet_name="DISC", index=False)
+
+                st.success(f"✅ Enviado com sucesso! Arquivo: {nome_arq}")
+                st.balloons()
+            except Exception as e:
+                st.error(f"Erro ao salvar arquivo: {e}")
 
 elif st.session_state.pagina == "analise":
     st.title("📊 Análise Inteligente")
-    st.info("A inteligência está consolidando todos os formulários encontrados.")
+    st.info(f"A inteligência está consolidando os formulários da pasta: {BASE_DIR}")
 
-    # 1. Localiza todos os arquivos que começam com 'Colaborador_'
+    # 1. Localiza arquivos dentro da pasta 'dados' (BASE_DIR)
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
-        st.warning("⚠️ Nenhum dado encontrado. Peça aos colaboradores para enviarem os formulários primeiro.")
+        st.warning("⚠️ Nenhum dado encontrado na pasta 'dados'. Peça aos colaboradores para enviarem os formulários.")
     else:
-        # 2. Cria uma lista para juntar as tabelas
         lista_atividades = []
 
         for arq in arquivos:
             try:
-                # Lê a aba de Atividades e a de Identificação
-                df_ativ = pd.read_excel(arq, sheet_name="Atividades")
-                df_id = pd.read_excel(arq, sheet_name="ID")
+                # IMPORTANTE: Construir o caminho completo do arquivo
+                caminho_completo = os.path.join(BASE_DIR, arq)
                 
-                # Pega o nome do colaborador da aba ID
-                nome_colab = df_id.iloc[1, 1] 
+                # Lê a aba de Atividades e a de Identificação
+                df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
+                df_id = pd.read_excel(caminho_completo, sheet_name="ID")
+                
+                # Pega o nome do colaborador (Coluna 'Valor' onde 'Campo' é 'Nome')
+                nome_colab = df_id.loc[df_id['Campo'] == 'Nome', 'Valor'].values[0]
                 
                 # Adiciona o nome do dono em cada linha de atividade
                 df_ativ["Colaborador"] = nome_colab
                 
-                # Remove as linhas que o colaborador deixou vazias (das 20 originais)
-                df_ativ = df_ativ[df_ativ["Descrição da Atividade"].notna()]
+                # Garante que não pegamos linhas vazias
+                df_ativ = df_ativ.dropna(subset=["Descrição da Atividade"])
                 
                 lista_atividades.append(df_ativ)
-            except:
+            except Exception as e:
+                # st.error(f"Erro ao ler {arq}: {e}") # Opcional para debug
                 continue
 
         if lista_atividades:
@@ -468,12 +491,13 @@ elif st.session_state.pagina == "analise":
             df_final = pd.concat(lista_atividades, ignore_index=True)
 
             st.success(f"📈 Análise pronta: {len(arquivos)} colaboradores processados.")
-            st.dataframe(df_final, use_container_width=True) # Mostra a prévia na tela
+            st.dataframe(df_final, use_container_width=True)
 
-            # O seu Slider (Conforme instrução: valor padrão 50%)
+            # --- CONFIGURAÇÕES SOLICITADAS ---
+            # 1. Slider com valor padrão 50%
             margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
             
-            # 4. BOTÃO REAL DE DOWNLOAD (Conforme instrução: 📥 BAIXAR EXCEL FINAL)
+            # 2. Botão EXATAMENTE como solicitado: 📥 BAIXAR EXCEL FINAL
             nome_saida = "RELATORIO_CONSOLIDADO_FINAL.xlsx"
             df_final.to_excel(nome_saida, index=False)
             
@@ -484,6 +508,8 @@ elif st.session_state.pagina == "analise":
                     file_name=nome_saida,
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
+        else:
+            st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         else:
             st.error("Erro ao processar os arquivos. Verifique se estão no formato correto.")
 
