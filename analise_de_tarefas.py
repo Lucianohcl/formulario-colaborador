@@ -488,54 +488,73 @@ elif st.session_state.pagina == "analise":
             st.error("Erro ao processar os arquivos. Verifique se estão no formato correto.")
 
 elif st.session_state.pagina == "visualizar":
-    st.title("👁️ Visualização Direta de Envios")
-    st.info("Clique na seta ao lado do nome para ver o que o colaborador preencheu.")
+    st.title("👁️ Visualização Completa de Envios")
+    st.info("Clique na seta (Expander) para conferir o formulário integral de cada colaborador.")
 
-    # 1. Pega a lista de arquivos salvos
+    # 1. Lista arquivos salvos
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
-        st.warning("⚠️ Nenhum formulário foi encontrado no servidor.")
+        st.warning("⚠️ Nenhum formulário encontrado no servidor.")
     else:
         st.subheader(f"📂 Formulários Recebidos: {len(arquivos)}")
         
         for arq in arquivos:
-            # 2. O EXPANDER (A setinha que você pediu para expandir)
-            with st.expander(f"👤 Ver dados de: {arq.split('_')[1]} {arq.split('_')[2]}"):
-                try:
-                    # 3. A Inteligência lê o arquivo para mostrar na tela
-                    df_id = pd.read_excel(arq, sheet_name="ID")
-                    df_ativ = pd.read_excel(arq, sheet_name="Atividades")
-                    df_disc = pd.read_excel(arq, sheet_name="DISC")
+            try:
+                # Lendo todas as abas para mostrar o formulário COMPLETO
+                df_id = pd.read_excel(arq, sheet_name="ID")
+                df_ativ = pd.read_excel(arq, sheet_name="Atividades")
+                df_dif = pd.read_excel(arq, sheet_name="Dificuldades")
+                df_sug = pd.read_excel(arq, sheet_name="Sugestões")
+                df_disc = pd.read_excel(arq, sheet_name="DISC")
 
-                    # Mostra os dados organizados
-                    st.write("**🆔 Empresa:**", df_id.iloc[0, 1])
+                # Pega o Nome Completo real escrito na célula do Excel
+                nome_colaborador = df_id.iloc[1, 1] 
+                empresa_colaborador = df_id.iloc[0, 1]
+
+                # 2. O EXPANDER (Setinha) com Nome Completo
+                with st.expander(f"👤 COLABORADOR: {nome_colaborador} ({empresa_colaborador})"):
                     
-                    st.write("**📋 Atividades Preenchidas:**")
-                    # Filtra para não mostrar as linhas vazias (das 20)
-                    df_filtrado = df_ativ[df_ativ["Descrição da Atividade"].notna()]
-                    st.dataframe(df_filtrado, use_container_width=True)
+                    st.write(f"**🗓️ Arquivo:** `{arq}`")
+                    st.markdown("---")
 
-                    st.write("**🧠 Respostas DISC:**")
-                    st.write(df_disc.to_dict()) # Mostra as letras escolhidas
+                    # Exibição das Atividades
+                    st.write("### 📋 Atividades Executadas")
+                    df_ativ_ok = df_ativ[df_ativ["Descrição da Atividade"].notna()]
+                    st.table(df_ativ_ok)
 
-                    # Botão discreto caso precise baixar o arquivo original
+                    # Exibição das Dificuldades
+                    st.write("### ⚠️ Dificuldades Encontradas")
+                    df_dif_ok = df_dif[df_dif["Descrição da Dificuldade"].notna()]
+                    st.table(df_dif_ok) if not df_dif_ok.empty else st.write("Nada relatado.")
+
+                    # Exibição das Sugestões
+                    st.write("### 💡 Sugestões de Melhoria")
+                    df_sug_ok = df_sug[df_sug["Descrição da Sugestão"].notna()]
+                    st.table(df_sug_ok) if not df_sug_ok.empty else st.write("Nada relatado.")
+
+                    # Exibição do DISC
+                    st.write("### 🧠 Perfil DISC")
+                    st.dataframe(df_disc.T)
+
+                    # Botão de Download Individual
                     with open(os.path.join(BASE_DIR, arq), "rb") as f:
                         st.download_button(
-                            label=f"📥 Baixar Original ({arq})",
+                            label="📥 Baixar este Excel",
                             data=f,
                             file_name=arq,
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                            key=f"dl_{arq}"
+                            key=f"dl_ind_{arq}"
                         )
-                except Exception as e:
-                    st.error(f"Erro ao abrir {arq}: {e}")
+            except Exception as e:
+                st.error(f"Erro ao ler {arq}: {e}")
 
         st.markdown("---")
-        if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
+        if st.button("🗑️ LIMPAR TODOS OS REGISTROS DO SERVIDOR"):
              for a in arquivos:
                  os.remove(a)
              st.rerun()
+
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
 # ==========================================================
