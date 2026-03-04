@@ -540,7 +540,7 @@ elif st.session_state.pagina == "visualizar":
     st.title("👁️ Espelho Fiel de Respostas")
     st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
 
-    # Busca os arquivos na pasta
+    # 1. Busca os arquivos na pasta correta
     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
 
     if not arquivos:
@@ -548,84 +548,75 @@ elif st.session_state.pagina == "visualizar":
     else:
         for arq in arquivos:
             try:
+                # IMPORTANTE: Construir o caminho completo para leitura
+                caminho_completo = os.path.join(BASE_DIR, arq)
+                
                 # Lendo todas as abas do Excel
-                df_id = pd.read_excel(arq, sheet_name="ID")
-                df_ativ = pd.read_excel(arq, sheet_name="Atividades")
-                df_dif = pd.read_excel(arq, sheet_name="Dificuldades")
-                df_sug = pd.read_excel(arq, sheet_name="Sugestões")
-                df_disc_salvo = pd.read_excel(arq, sheet_name="DISC")
+                df_id = pd.read_excel(caminho_completo, sheet_name="ID")
+                df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
+                df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
+                df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
+                df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                # Pegando o Nome Completo real da célula
-                nome_colab = df_id.iloc[1, 1] 
-                empresa_colab = df_id.iloc[0, 1]
+                # Pegando dados de identificação
+                nome_colab = df_id.loc[df_id['Campo'] == 'Nome', 'Valor'].values[0]
+                empresa_colab = df_id.loc[df_id['Campo'] == 'Empresa', 'Valor'].values[0]
 
-                # 1. O EXPANDER (Setinha) com o Nome Completo
+                # 2. O EXPANDER com o Nome Completo
                 with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
-                    
                     st.write(f"**🏢 Empresa:** {empresa_colab}")
                     st.write(f"**📄 Arquivo original:** `{arq}`")
                     st.markdown("---")
 
-                    # --- SEÇÃO 1: ATIVIDADES (O ESPELHO DA TABELA) ---
+                    # --- SEÇÃO 1: ATIVIDADES ---
                     st.subheader("📝 1. Atividades Executadas")
-                    # Mostra apenas o que não está vazio
-                    df_ativ_ok = df_ativ[df_ativ["Descrição da Atividade"].notna()]
+                    df_ativ_ok = df_ativ.dropna(subset=["Descrição da Atividade"])
                     st.table(df_ativ_ok)
 
                     # --- SEÇÃO 2: DIFICULDADES E SUGESTÕES ---
-                    col1, col2 = st.columns(2)
-                    with col1:
+                    c1, c2 = st.columns(2)
+                    with c1:
                         st.subheader("⚠️ 2. Dificuldades")
-                        df_dif_ok = df_dif[df_dif["Descrição da Dificuldade"].notna()]
+                        df_dif_ok = df_dif.dropna(subset=["Descrição da Dificuldade"])
                         st.table(df_dif_ok) if not df_dif_ok.empty else st.write("Nada relatado.")
-                    
-                    with col2:
+                    with c2:
                         st.subheader("💡 3. Sugestões")
-                        df_sug_ok = df_sug[df_sug["Descrição da Sugestão"].notna()]
+                        df_sug_ok = df_sug.dropna(subset=["Descrição da Sugestão"])
                         st.table(df_sug_ok) if not df_sug_ok.empty else st.write("Nada relatado.")
 
                     st.markdown("---")
 
-                    # --- SEÇÃO 3: DISC (PERGUNTA + RESPOSTA) ---
+                    # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
-                    try:
-                        # 1. Transforma o DF do DISC em um dicionário para busca rápida
-                        # Assume que o Excel salvou 'Questão' na Coluna 0 e 'Resposta' na Coluna 1
-                        respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
+                    # Dicionário de respostas salvas
+                    respostas_dict = df_disc_salvo.set_index(df_disc_salvo.columns[0]).to_dict()[df_disc_salvo.columns[1]]
+                    lista_espelho_disc = []
 
-                        lista_espelho_disc = []
+                    for i, texto_pergunta in enumerate(perguntas_disc, 1):
+                        chave = f"Q{i}"
+                        res_letra = respostas_dict.get(chave, "Não respondido")
+                        lista_espelho_disc.append({
+                            "Nº": i,
+                            "Pergunta": texto_pergunta,
+                            "Resposta Escolhida": res_letra
+                        })
+                    
+                    st.table(lista_espelho_disc)
 
-                        # 2. Percorre a lista GLOBAL 'perguntas_disc' (que deve ter as 20 no topo do código)
-                        for i, texto_pergunta in enumerate(perguntas_disc, 1):
-                            chave = f"Q{i}"
-                            # Busca a letra respondida. Se o arquivo for antigo, mostra "Não respondido"
-                            res_letra = respostas_dict.get(chave, "Não respondido")
-                            
-                            lista_espelho_disc.append({
-                                "Nº": i,
-                                "Pergunta": texto_pergunta,
-                                "Resposta Escolhida": res_letra
-                            })
-                        
-                        # 3. Exibe a tabela formatada para o gestor
-                        st.table(lista_espelho_disc)
+                    # Botão para baixar este arquivo específico
+                    with open(caminho_completo, "rb") as f:
+                        st.download_button(
+                            label=f"📥 Baixar Original de {nome_colab}",
+                            data=f,
+                            file_name=arq,
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            key=f"btn_espelho_{arq}"
+                        )
+            except Exception as e:
+                st.error(f"Erro ao processar o arquivo {arq}: {e}")
 
-                        # 4. Botão para baixar este arquivo específico (Original)
-                        caminho_arquivo = os.path.join(BASE_DIR, arq)
-                        with open(caminho_arquivo, "rb") as f:
-                            st.download_button(
-                                label=f"📥 Baixar Original de {nome_colab}",
-                                data=f,
-                                file_name=arq,
-                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                key=f"btn_espelho_{arq}"
-                            )
-
-                    except Exception as e:
-                        st.error(f"Erro ao processar espelho DISC de {nome_colab}: {e}")
-
-        # --- FINAL DA PÁGINA: BOTÃO DE LIMPEZA (FORA DO LOOP DOS ARQUIVOS) ---
+        # --- FINAL DA PÁGINA (FORA DO LOOP) ---
         st.markdown("---")
         if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
             for a in arquivos:
@@ -633,7 +624,7 @@ elif st.session_state.pagina == "visualizar":
                     os.remove(os.path.join(BASE_DIR, a))
                 except:
                     continue
-            st.success("✅ Todos os registros foram excluídos com sucesso!")
+            st.success("✅ Todos os registros foram excluídos!")
             st.rerun()
 
 # ==========================================================
