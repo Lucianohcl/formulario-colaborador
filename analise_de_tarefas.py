@@ -542,6 +542,7 @@ elif st.session_state.pagina == "analise":
         else:
             st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         
+
 elif st.session_state.pagina == "visualizar":
      st.title("👁️ Espelho Fiel de Respostas")
      st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
@@ -554,57 +555,35 @@ elif st.session_state.pagina == "visualizar":
      if not arquivos:
           st.warning("⚠️ Nenhum formulário encontrado no servidor.")
      else:
+          # --- FUNÇÃO DE BUSCA (Definida aqui para funcionar em todo o loop) ---
+          def buscar_valor(df, etiqueta):
+               try:
+                    filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
+                    if not filtro.empty:
+                         valor = filtro.iloc[0, 1]
+                         return str(valor) if pd.notna(valor) else "Não informado"
+                    return "Não informado"
+               except:
+                    return "Não informado"
+
           for arq in arquivos:
                try:
                     caminho_completo = os.path.join(BASE_DIR, arq)
                     
-                    # Lendo todas as abas salvos pelo formulário
+                    # Lendo todas as abas
                     df_id = pd.read_excel(caminho_completo, sheet_name="ID")
                     df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
                     df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
                     df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
                     df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                    # Nome do colaborador (Linha 2, Coluna 1 da aba ID)
-                    nome_colab = str(df_id.iloc[2, 1]) if len(df_id) > 2 else "Colaborador"
+                    # Busca o nome para o título do expander
+                    nome_exibicao = buscar_valor(df_id, 'Nome')
 
-                    with st.expander(f"👤 FORMULÁRIO DE: {nome_colab.upper()}"):
-                         
-                         # --- 🔹 IDENTIFICAÇÃO (Mapeamento Inteligente por Nome de Campo) ---
-                         # 1. Busca o nome de forma inteligente para o título do expander
-                    def buscar_simples(df, etiqueta):
-                         try:
-                              filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
-                              return str(filtro.iloc[0, 1]) if not filtro.empty else "Colaborador"
-                         except:
-                              return "Colaborador"
-
-                    # 1. Busca o nome de forma inteligente antes de abrir o expander
-                    def buscar_simples(df, etiqueta):
-                         try:
-                              filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
-                              return str(filtro.iloc[0, 1]) if not filtro.empty else "Colaborador"
-                         except:
-                              return "Colaborador"
-
-                    nome_exibicao = buscar_simples(df_id, 'Nome')
-
-                    # 2. O EXPANDER ÚNICO
                     with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
                          
-                         # --- 🔹 IDENTIFICAÇÃO (Mapeamento Inteligente) ---
                          st.subheader("🔹 Identificação")
                          
-                         def buscar_valor(df, etiqueta):
-                              try:
-                                   filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
-                                   if not filtro.empty:
-                                        valor = filtro.iloc[0, 1]
-                                        return str(valor) if pd.notna(valor) else "Não informado"
-                                   return "Não informado"
-                              except:
-                                   return "Não informado"
-
                          c1, c2 = st.columns(2)
                          with c1:
                               st.write(f"**Entregue em (data/hora):** {buscar_valor(df_id, 'Entregue em')}")
@@ -621,26 +600,26 @@ elif st.session_state.pagina == "visualizar":
                          st.info(buscar_valor(df_id, 'Cursos'))
                          st.write(f"**Trabalho e principal objetivo:**")
                          st.info(buscar_valor(df_id, 'objetivo'))
-                         # --- 🔹 ATIVIDADES EXECUTADAS (FILTRADAS) ---
+
+                         # --- 🔹 ATIVIDADES EXECUTADAS ---
                          st.markdown("---")
                          st.subheader("🔹 Atividades Executadas")
-                         st.info("""📋 **LEGENDA DE FREQUÊNCIA:**
-DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual""")
+                         st.info("📋 **LEGENDA DE FREQUÊNCIA:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
                          
-                         # Filtra para não mostrar as 20 linhas vazias, apenas o conteúdo real
                          df_ativ_f = df_ativ[df_ativ["Descrição da Atividade"].fillna("").str.strip() != ""]
                          st.table(df_ativ_f)
-                         # --- 🔹 DIFICULDADES NA EXECUÇÃO (FILTRADAS) ---
+
+                         # --- 🔹 DIFICULDADES ---
                          st.subheader("🔹 Dificuldades na Execução")
                          df_dif_f = df_dif[df_dif["Descrição da Dificuldade"].fillna("").str.strip() != ""]
                          st.table(df_dif_f)
 
-                         # --- 🔹 SUGESTÕES DE MELHORIA (FILTRADAS) ---
+                         # --- 🔹 SUGESTÕES ---
                          st.subheader("💡 Sugestões de Melhoria")
                          df_sug_f = df_sug[df_sug["Descrição da Sugestão"].fillna("").str.strip() != ""]
                          st.table(df_sug_f)
 
-                         # --- 🧠 QUESTIONÁRIO DISC (JÁ OK) ---
+                         # --- 🧠 DISC ---
                          st.markdown("---")
                          st.subheader("🧠 4. Questionário DISC (Espelho)")
                          respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
@@ -658,9 +637,10 @@ DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal 
                               })
                          st.table(lista_disc)
 
+                         # Botão de download
                          with open(caminho_completo, "rb") as f:
                               st.download_button(
-                                   label=f"📥 Baixar Original de {nome_colab}",
+                                   label=f"📥 Baixar Original de {nome_exibicao}",
                                    data=f,
                                    file_name=arq,
                                    key=f"dl_esp_{arq}"
@@ -675,7 +655,8 @@ DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal 
                     try: os.remove(os.path.join(BASE_DIR, a))
                     except: continue
                st.success("✅ Todos os registros foram excluídos!")
-               st.rerun()                                        
+               st.rerun()
+
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
