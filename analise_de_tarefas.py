@@ -229,146 +229,145 @@ else:
     if not st.session_state.logged_in:
         st.rerun()
 
-    # ============================================================
-    # SIDEBAR
-    # ============================================================
-    with st.sidebar:
-        st.markdown("### Menu")
-        btn_formulario = st.button("🧾 Formulário Colaborador")
-        btn_analise = st.button("📊 Análise Inteligente")
-        btn_comparar = st.button("📈 Comparar Real x Ideal")
-        btn_disc = st.button("🧩 Avaliação DISC")
-        btn_parecer = st.button("📝 Parecer Final Executivo")
-        btn_visualizar = st.button("📂 Relatórios Salvos")
+    import streamlit as st
+import pandas as pd
+import os
+from datetime import datetime
 
-        # Admin
-        btn_admin = False
-        current_user = st.session_state.get("current_user")
-        if current_user and st.session_state.get("users", {}).get(current_user, {}).get("admin", False):
-            btn_admin = st.button("⚙️ Administração")
+import streamlit as st
+import pandas as pd
+import os
+from datetime import datetime
 
-        # Logout
-        if st.button("🚪 Logout"):
-            st.session_state.logged_in = False
-            st.session_state.current_user = None
+# ============================================================
+# Configurações Iniciais
+# ============================================================
+BASE_DIR = "."
+if 'pagina' not in st.session_state:
+    st.session_state.pagina = "home"
+
+# --- SIDEBAR / MENU ---
+st.sidebar.title("📌 Menu de Navegação")
+btn_home = st.sidebar.button("🏠 Home")
+btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
+btn_analise = st.sidebar.button("📊 Análise Inteligente")
+
+if btn_home: 
+    st.session_state.pagina = "home"
+    st.rerun()
+if btn_formulario: 
+    st.session_state.pagina = "formulario"
+    st.rerun()
+if btn_analise: 
+    st.session_state.pagina = "analise"
+    st.rerun()
+
+# ============================================================
+# 🖼️ ÁREA DE EXIBIÇÃO DO CONTEÚDO
+# ============================================================
+
+if st.session_state.pagina == "home":
+    st.title("🏠 Sistema de Análise de Tarefas")
+    st.info("Bem-vindo! Use o menu lateral para navegar entre o formulário e as análises.")
+
+elif st.session_state.pagina == "formulario":
+    st.title("🧾 Levantamento & Diagnóstico do Colaborador")
+    st.caption("Preencha com atenção. Este formulário será analisado pela equipe responsável.")
+    st.markdown("---")
+
+    # 🔹 IDENTIFICAÇÃO
+    st.subheader("🔹 Identificação")
+    col1, col2 = st.columns(2)
+    with col1:
+        entrega = st.text_input("Entregue em (data/hora)")
+        empresa = st.text_input("Empresa / Unidade")
+        nome = st.text_input("Nome do Colaborador")
+        departamento = st.text_input("Departamento")
+    with col2:
+        devolucao = st.text_input("Devolver preenchido em")
+        escolaridade = st.text_input("Escolaridade")
+        cargo = st.text_input("Cargo")
+        chefe = st.text_input("Chefe Imediato")
+    
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais", height=68)
+    resumo_trabalho = st.text_area("Descreva seu trabalho e principal objetivo:", height=80)
+
+    # 🔹 ATIVIDADES (COM LEGENDA COMPLETA)
+    st.markdown("---")
+    st.subheader("🔹 Atividades Executadas")
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+    """)
+    
+    df_ativ = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Atividade": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20})
+    edit_ativ = st.data_editor(df_ativ, use_container_width=True, num_rows="fixed", key="ativ_final_v1")
+
+    # 🔹 DIFICULDADES (20 LINHAS)
+    st.subheader("🔹 Dificuldades na Execução")
+    df_dif = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Dificuldade": [""]*20, "Setor/Parceiro": [""]*20})
+    edit_dif = st.data_editor(df_dif, use_container_width=True, num_rows="fixed", key="dif_final_v1")
+
+    # 🔹 SUGESTÕES (20 LINHAS)
+    st.subheader("💡 Sugestões de Melhoria")
+    df_sug = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Sugestão": [""]*20, "Impacto Esperado": [""]*20})
+    edit_sug = st.data_editor(df_sug, use_container_width=True, num_rows="fixed", key="sug_final_v1")
+
+    # 🔹 DISC (20 PERGUNTAS)
+    st.markdown("---")
+    st.subheader("🧠 Questionário Comportamental (DISC)")
+    perguntas_disc = [
+        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+        "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+        "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+        "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+        "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+        "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+        "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+        "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+        "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+        "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+        "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+        "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+        "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+        "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+        "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+    ]
+    respostas_disc = {}
+    for i, p in enumerate(perguntas_disc, 1):
+        respostas_disc[f"Q{i}"] = st.radio(f"{i}. {p}", ["A", "B", "C", "D"], horizontal=True, key=f"d_v1_{i}")
+
+    if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
+        if not nome or not empresa:
+            st.error("Preencha Nome e Empresa.")
+        else:
+            # Salvando os dados no Excel
+            nome_arq = f"Colaborador_{nome.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+            caminho_salvar = os.path.join(BASE_DIR, nome_arq)
             
-            st.rerun()
+            with pd.ExcelWriter(caminho_salvar, engine="xlsxwriter") as writer:
+                pd.DataFrame({"Campo": ["Empresa", "Nome"], "Resposta": [empresa, nome]}).to_excel(writer, sheet_name="ID", index=False)
+                edit_ativ.to_excel(writer, sheet_name="Atividades", index=False)
+                edit_dif.to_excel(writer, sheet_name="Dificuldades", index=False)
+                edit_sug.to_excel(writer, sheet_name="Sugestões", index=False)
+                pd.DataFrame.from_dict(respostas_disc, orient="index").to_excel(writer, sheet_name="DISC")
 
-    
-    # ============================================================
-    # CONTROLE DE PÁGINA (SUBSTITUIÇÃO CORRIGIDA)
-    # ============================================================
-    if btn_formulario:
-        st.session_state.pagina = "formulario"
-        st.rerun()
-    elif btn_analise:
-        st.session_state.pagina = "analise"
-        st.rerun()
-    elif btn_comparar:
-        st.session_state.pagina = "comparar"
-        st.rerun()
-    elif btn_disc:
-        st.session_state.pagina = "disc"
-        st.rerun()
-    elif btn_parecer:
-        st.session_state.pagina = "parecer"
-        st.rerun()
-    elif btn_visualizar:
-        st.session_state.pagina = "visualizar"
-        st.rerun()
-    # ============================================================
-    # 🖼️ ÁREA DE EXIBIÇÃO DO CONTEÚDO (VERSÃO COMPLETA REVISADA)
-    # ============================================================
-    
-    if st.session_state.pagina == "home":
-        st.title("🏠 Sistema de Análise de Tarefas")
-        st.info("Bem-vindo! Use o menu lateral para navegar.")
+            st.success(f"Formulário salvo localmente! Arquivo: {nome_arq}")
+            st.balloons()
 
-    elif st.session_state.pagina == "formulario":
-        st.title("🧾 Levantamento & Diagnóstico do Colaborador")
-        st.caption("Preencha com atenção. Este formulário será analisado pela equipe responsável.")
-        st.markdown("---")
+elif st.session_state.pagina == "analise":
+    st.title("📊 Análise Inteligente")
+    margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
+    if st.button('📥 BAIXAR EXCEL FINAL'):
+        st.info("Processando download...")
 
-        # ================= IDENTIFICAÇÃO =================
-        st.subheader("🔹 Identificação")
-        col1, col2 = st.columns(2)
-        with col1:
-            entrega = st.text_input("Entregue em (data/hora)")
-            empresa = st.text_input("Empresa / Unidade")
-            nome = st.text_input("Nome do Colaborador")
-            departamento = st.text_input("Departamento")
-            inicio = st.text_input("Início no Cargo")
-        with col2:
-            devolucao = st.text_input("Devolver preenchido em (data/hora)")
-            escolaridade = st.text_input("Escolaridade")
-            cargo = st.text_input("Cargo")
-            chefe = st.text_input("Chefe Imediato")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", height=80)
-        resumo_trabalho = st.text_area("Descreva seu trabalho e principal objetivo:", height=100)
-
-        # ================= TABELAS OPERACIONAIS (20 LINHAS CADA) =================
-        st.markdown("---")
-        st.subheader("🔹 Atividades Executadas")
-        df_atividades = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Atividade": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20})
-        edit_atividades = st.data_editor(df_atividades, use_container_width=True, num_rows="fixed", key="edit_ativ")
-
-        st.subheader("🔹 Dificuldades na Execução")
-        df_dificuldades = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Dificuldade": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20, "Setor/Parceiro": [""]*20})
-        edit_dificuldades = st.data_editor(df_dificuldades, use_container_width=True, num_rows="fixed", key="edit_dif")
-
-        st.subheader("💡 Sugestões de Melhoria")
-        df_sugestoes = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Sugestão": [""]*20, "Impacto Esperado": [""]*20})
-        edit_sugestoes = st.data_editor(df_sugestoes, use_container_width=True, num_rows="fixed", key="edit_sug")
-
-        # ================= QUESTIONÁRIO DISC =================
-        st.markdown("---")
-        st.subheader("🔹 Questionário Comportamental (DISC)")
-        perguntas_disc = [
-            "Quando surge um problema inesperado, você:", "Em situações de pressão, você:",
-            "Ao receber uma tarefa difícil, você:", "No trabalho em equipe você:",
-            "Em reuniões você:", "Ao lidar com conflitos você:",
-            "Seu ritmo de trabalho é:", "Você prefere tarefas:",
-            "Seu foco principal é:", "Ao decidir você:",
-            "Você confia mais em:", "Você prefere decisões:",
-            "Seu estilo de organização é:", "Você lida melhor com:",
-            "Você prefere trabalhar:", "Seu maior ponto forte é:",
-            "Você se considera mais:", "Você se motiva mais por:",
-            "Você reage a cobranças:", "Você prefere ambientes:"
-        ]
-        respostas_disc = {}
-        for i, pergunta in enumerate(perguntas_disc, start=1):
-            respostas_disc[f"Q{i}"] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], horizontal=True, key=f"d_{i}")
-
-        # ================= BOTÃO DE ENVIO =================
-        if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
-            if not nome or not empresa:
-                st.error("❗ Por favor, preencha o Nome e a Empresa.")
-            else:
-                nome_arq = f"Colaborador_{nome.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-                caminho_salvar = os.path.join(BASE_DIR, nome_arq)
-
-                with pd.ExcelWriter(caminho_salvar, engine="xlsxwriter") as writer:
-                    df_id = pd.DataFrame({"Campo": ["Empresa", "Nome", "Cargo", "Departamento"], "Resposta": [empresa, nome, cargo, departamento]})
-                    df_id.to_excel(writer, sheet_name="Identificação", index=False)
-                    edit_atividades.to_excel(writer, sheet_name="Atividades", index=False)
-                    edit_dificuldades.to_excel(writer, sheet_name="Dificuldades", index=False)
-                    edit_sugestoes.to_excel(writer, sheet_name="Sugestões", index=False)
-                    pd.DataFrame.from_dict(respostas_disc, orient="index", columns=["Resposta"]).to_excel(writer, sheet_name="DISC")
-
-                st.success(f"✅ Enviado! Arquivo: {nome_arq}")
-                st.session_state.dados_prontos = True # Sinaliza que já pode analisar
-                st.balloons()
-
-    elif st.session_state.pagina == "analise":
-        st.title("📊 Análise Inteligente")
-        margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50) # Conforme nota [2026-02-27]
-        
-        if st.button('📥 BAIXAR EXCEL FINAL'): # Conforme nota [2026-02-23]
-            st.info("Processando relatório consolidado...")
-            # Aqui entra sua lógica de gerar_relatorio_gpt ou leitura dos arquivos 'Colaborador_*.xlsx'
-
-    # ... (restante das abas manter como estão)
+# FIM DO ARQUIVO
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
 # ==========================================================
