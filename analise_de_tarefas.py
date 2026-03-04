@@ -560,10 +560,9 @@ elif st.session_state.pagina == "visualizar":
                 df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
                 df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
 
-                # Pega o nome para o título do expander (geralmente está na linha 2, coluna 1)
-                # Tentamos pegar pelo conteúdo se a busca por nome falhar
+                # Pega o nome para o título do expander (Busca na coluna 1 onde a coluna 0 é 'Nome')
                 try:
-                    nome_colab = df_id.iloc[2, 1] 
+                    nome_colab = df_id.loc[df_id.iloc[:, 0].str.contains('Nome', na=False), df_id.columns[1]].values[0]
                 except:
                     nome_colab = "Colaborador"
 
@@ -571,9 +570,8 @@ elif st.session_state.pagina == "visualizar":
                 with st.expander(f"👤 FORMULÁRIO DE: {str(nome_colab).upper()}"):
                     
                     st.subheader("🔹 Identificação")
-                    # Lista tudo o que estiver na aba ID dinamicamente
+                    # Lista tudo o que estiver na aba ID dinamicamente (Escolaridade, Cargo, etc.)
                     for _, linha in df_id.iterrows():
-                        # linha[0] é o rótulo (Ex: Cargo), linha[1] é a resposta
                         st.write(f"**{linha[0]}:** {linha[1]}")
                     
                     st.write(f"**📄 Arquivo original:** `{arq}`")
@@ -581,7 +579,6 @@ elif st.session_state.pagina == "visualizar":
 
                     # --- SEÇÃO 1: ATIVIDADES ---
                     st.subheader("📝 1. Atividades Executadas")
-                    # Remove linhas totalmente vazias para não poluir a tela
                     df_ativ_ok = df_ativ.dropna(how='all')
                     if not df_ativ_ok.empty:
                         st.table(df_ativ_ok)
@@ -593,7 +590,6 @@ elif st.session_state.pagina == "visualizar":
                     c1, c2 = st.columns(2)
                     with c1:
                         st.subheader("⚠️ 2. Dificuldades")
-                        # Pega o texto da primeira célula da aba Dificuldades
                         msg_dif = df_dif.iloc[0, 0] if not df_dif.empty else "Nada relatado."
                         st.info(msg_dif) if msg_dif and str(msg_dif) != "nan" else st.write("Nada relatado.")
                     with c2:
@@ -606,8 +602,7 @@ elif st.session_state.pagina == "visualizar":
                     # --- SEÇÃO 3: DISC (ESPELHO FIEL) ---
                     st.subheader("🧠 4. Questionário DISC (Espelho)")
                     
-                    # Criamos um dicionário a partir do Excel: Chave (Q1, Q2...) -> Valor (A, B...)
-                    # Usamos iloc para ignorar nomes de colunas
+                    # Dicionário de respostas: Coluna 0 (Q1...) -> Coluna 1 (A, B...)
                     respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
                     
                     lista_espelho_disc = []
