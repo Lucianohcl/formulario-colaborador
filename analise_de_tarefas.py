@@ -117,7 +117,7 @@ header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# Lista de perguntas DISC
+# --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -138,7 +138,11 @@ perguntas_disc = [
     "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
     "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
     "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
 # Detectar modo formulário
@@ -160,21 +164,28 @@ if modo_formulario:
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
     objetivo = st.text_area("Trabalho e principal objetivo")
 
-    # --- ATIVIDADES ---
+    # --- ATIVIDADES (20 LINHAS COM FREQUÊNCIA) ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
-    st.info("📋 LEGENDA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-    atividades = st.text_area("Liste as atividades separadas por linha")
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+    """)
+    df_ativ = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Atividade": [""]*20, "Frequência": [""]*20})
+    edit_ativ = st.data_editor(df_ativ, use_container_width=True, num_rows="fixed", key="ativ_final_v1")
 
-    # --- DIFICULDADES ---
+    # --- DIFICULDADES (20 LINHAS) ---
     st.markdown("---")
     st.subheader("🔹 Dificuldades na Execução")
-    dificuldades = st.text_area("Descreva as dificuldades encontradas")
+    df_dif = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Dificuldade": [""]*20, "Setor/Parceiro": [""]*20})
+    edit_dif = st.data_editor(df_dif, use_container_width=True, num_rows="fixed", key="dif_final_v1")
 
-    # --- SUGESTÕES ---
+    # --- SUGESTÕES (20 LINHAS) ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria")
-    sugestoes = st.text_area("Sugestões para melhoria do processo")
+    df_sug = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Sugestão": [""]*20, "Impacto Esperado": [""]*20})
+    edit_sug = st.data_editor(df_sug, use_container_width=True, num_rows="fixed", key="sug_final_v1")
 
     # --- DISC ---
     st.markdown("---")
@@ -196,9 +207,9 @@ if modo_formulario:
             "Devolver": devolucao,
             "Cursos": cursos,
             "Objetivo": objetivo,
-            "Atividades": atividades,
-            "Dificuldades": dificuldades,
-            "Sugestoes": sugestoes,
+            "Atividades": edit_ativ.to_dict(orient="records"),
+            "Dificuldades": edit_dif.to_dict(orient="records"),
+            "Sugestoes": edit_sug.to_dict(orient="records"),
             **{f"Q{i+1}": r for i, r in enumerate(respostas_disc)}
         }])
 
