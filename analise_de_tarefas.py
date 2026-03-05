@@ -70,12 +70,6 @@ except Exception:
     client = None
 
 # ============================================================
-# FUNÇÃO HASH DE SENHA (SEGURANÇA)
-# ============================================================
-def hash_senha(senha):
-    return hashlib.sha256(senha.encode()).hexdigest()
-
-# ============================================================
 # FUNÇÕES GERAIS
 # ============================================================
 
@@ -182,42 +176,43 @@ import json
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
+
 # ============================================================
-# 2. TELA DE LOGIN
+# LOGIN MINIMALISTA
 # ============================================================
 if not st.session_state.logged_in:
 
     st.title("🔐 Acesso")
 
-    u = st.text_input("Usuário", key="u")
-    p = st.text_input("Senha", type="password", key="p")
+    u = st.text_input("Usuário")
+    p = st.text_input("Senha", type="password")
 
-    if st.button("Entrar", type="primary"):
+    if st.button("Entrar"):
 
-        if u == "admin" and p == "admin123":
+        if (u == "admin" and p == "admin123") or (u == "Luciano" and p == "123"):
             st.session_state.logged_in = True
-            st.session_state.user_nome = "admin"
+            st.session_state.user_nome = u
             st.session_state.is_admin = True
             st.rerun()
+
         else:
-            st.error("Credenciais inválidas")
+            st.error("Usuário ou senha incorretos")
 
     st.stop()
 
+
 # ============================================================
-# 3. CARREGAR USUÁRIOS
+# CARREGAR USUÁRIOS
 # ============================================================
 if "users" not in st.session_state:
-    st.session_state.users = {"admin": {"admin": True}}
+    st.session_state.users = {
+        "admin": {"admin": True},
+        "Luciano": {"admin": True}
+    }
 
-    if "USERS" in st.secrets:
-        try:
-            st.session_state.users.update(json.loads(st.secrets["USERS"]))
-        except:
-            pass 
 
 # ============================================================
-# PÓS-LOGIN (Só chega aqui quem passou pelo st.stop())
+# PÓS LOGIN
 # ============================================================
 if "pagina" not in st.session_state:
     st.session_state.pagina = "formulario"
