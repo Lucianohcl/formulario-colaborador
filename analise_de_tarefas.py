@@ -75,51 +75,36 @@ except Exception:
 def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-# ============================================================
-# USUÁRIOS (ESTRUTURA ESTÁVEL)
-# ============================================================
-
-# Só entra aqui se a lista de usuários ainda não existir na memória
-if "users" not in st.session_state:
-    st.session_state.users = {}
-    
-    # 1. Define o Admin padrão uma única vez
-    st.session_state.users["admin"] = {
-        "password": hash_senha("admin123"),
-        "admin": True
-    }
-
-    # 2. Traz usuários do Cloud (Secrets) se houver
-    if "USERS" in st.secrets:
-        try:
-            usuarios_cloud = json.loads(st.secrets["USERS"])
-            st.session_state.users.update(usuarios_cloud)
-        except:
-            pass
-
-# ============================================================
-# SESSÃO LOGIN (VERSÃO DESTRATA-TUDO)
-# ============================================================
+# 1. INICIALIZAÇÃO SIMPLES
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
+# 2. TELA DE LOGIN
 if not st.session_state.logged_in:
-    st.title("🔐 Acesso ao Sistema")
+    st.title("🔐 Acesso")
     
-    user_input = st.text_input("Usuário", key="login_user")
-    pass_input = st.text_input("Senha", type="password", key="login_pass")
-
+    # Usar keys curtas evita conflitos de cache
+    u = st.text_input("Usuário", key="u")
+    p = st.text_input("Senha", type="password", key="p")
+    
     if st.button("Entrar", type="primary"):
-        # Teste direto sem HASH para não ter erro de compatibilidade
-        if user_input == "admin" and pass_input == "admin123":
+        # Comparação direta: sem hash, sem dicionário, sem erro.
+        if u == "admin" and p == "admin123":
             st.session_state.logged_in = True
             st.session_state.user_nome = "admin"
             st.session_state.is_admin = True
-            st.success("Logado com sucesso!")
             st.rerun()
         else:
-            st.error("Usuário ou senha incorretos.")
-    st.stop()
+            st.error("Credenciais inválidas")
+    st.stop() # Interrompe o script aqui se não estiver logado
+
+# 3. CARREGAR OUTROS (Só roda depois que logar)
+if "users" not in st.session_state:
+    st.session_state.users = {"admin": {"admin": True}}
+    if "USERS" in st.secrets:
+        try:
+            st.session_state.users.update(json.loads(st.secrets["USERS"]))
+        except: pass
 
 # ============================================================
 # FUNÇÕES GERAIS
