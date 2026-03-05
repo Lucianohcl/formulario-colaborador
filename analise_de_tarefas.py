@@ -165,7 +165,7 @@ if modo_formulario:
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
     objetivo = st.text_area("Trabalho e principal objetivo")
 
-    # --- ATIVIDADES (20 LINHAS COM TEMPO E FREQUÊNCIA) ---
+    # --- ATIVIDADES (20 LINHAS COM FREQUÊNCIA E TEMPO) ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
     st.info("""
@@ -174,10 +174,9 @@ if modo_formulario:
     * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
     """)
     df_ativ = pd.DataFrame({
-        "N°": list(range(1, 21)),
         "Descrição da Atividade": [""]*20,
-        "Tempo": [""]*20,
-        "Frequência": [""]*20
+        "Frequência": [""]*20,
+        "Tempo": [""]*20
     })
     edit_ativ = st.data_editor(df_ativ, use_container_width=True, num_rows="fixed", key="ativ_final_v1")
 
@@ -185,18 +184,16 @@ if modo_formulario:
     st.markdown("---")
     st.subheader("🔹 Dificuldades na Execução")
     df_dif = pd.DataFrame({
-        "N°": list(range(1, 21)),
         "Descrição da Dificuldade": [""]*20,
-        "Tempo": [""]*20,
-        "Setor/Parceiro": [""]*20
+        "Setor/Parceiro": [""]*20,
+        "Tempo": [""]*20
     })
     edit_dif = st.data_editor(df_dif, use_container_width=True, num_rows="fixed", key="dif_final_v1")
 
-    # --- SUGESTÕES (20 LINHAS) ---
+    # --- SUGESTÕES (20 LINHAS COM IMPACTO ESPERADO) ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria")
     df_sug = pd.DataFrame({
-        "N°": list(range(1, 21)),
         "Descrição da Sugestão": [""]*20,
         "Impacto Esperado": [""]*20
     })
