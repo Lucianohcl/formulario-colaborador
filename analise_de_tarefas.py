@@ -245,25 +245,7 @@ import pandas as pd
 import os
 from datetime import datetime
 
-# ============================================================
-# 1. TRAVA DE SEGURANÇA
-# ============================================================
-if 'logado' not in st.session_state:
-    st.session_state.logado = False
 
-if not st.session_state.logado:
-    st.title("🔑 Acesso ao Sistema")
-    user = st.text_input("Usuário")
-    password = st.text_input("Senha", type="password")
-    
-    if st.button("Acessar"):
-        if user == "admin" and password == "123": # <--- Ajuste sua senha aqui
-            st.session_state.logado = True
-            st.session_state.pagina = "home"
-            st.rerun()
-        else:
-            st.error("Credenciais inválidas")
-    st.stop() 
 
 # ============================================================
 # 2. CONFIGURAÇÕES E SIDEBAR (SÓ RODA SE LOGADO)
