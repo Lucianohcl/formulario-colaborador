@@ -75,37 +75,6 @@ except Exception:
 def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-# 1. INICIALIZAÇÃO SIMPLES
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-
-# 2. TELA DE LOGIN
-if not st.session_state.logged_in:
-    st.title("🔐 Acesso")
-    
-    # Usar keys curtas evita conflitos de cache
-    u = st.text_input("Usuário", key="u")
-    p = st.text_input("Senha", type="password", key="p")
-    
-    if st.button("Entrar", type="primary"):
-        # Comparação direta: sem hash, sem dicionário, sem erro.
-        if u == "admin" and p == "admin123":
-            st.session_state.logged_in = True
-            st.session_state.user_nome = "admin"
-            st.session_state.is_admin = True
-            st.rerun()
-        else:
-            st.error("Credenciais inválidas")
-    st.stop() # Interrompe o script aqui se não estiver logado
-
-# 3. CARREGAR OUTROS (Só roda depois que logar)
-if "users" not in st.session_state:
-    st.session_state.users = {"admin": {"admin": True}}
-    if "USERS" in st.secrets:
-        try:
-            st.session_state.users.update(json.loads(st.secrets["USERS"]))
-        except: pass
-
 # ============================================================
 # FUNÇÕES GERAIS
 # ============================================================
@@ -204,51 +173,48 @@ if "BASE_DIR" not in globals():
 
    
 
-# ============================================================
-# INICIALIZAÇÃO DE SESSÃO
-# ============================================================
-if "users" not in st.session_state:
-    st.session_state.users = {}
+import streamlit as st
+import json
 
+# ============================================================
+# 1. INICIALIZAÇÃO
+# ============================================================
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
-if "current_user" not in st.session_state:
-    st.session_state.current_user = None
-
 # ============================================================
-# LOGIN
+# 2. TELA DE LOGIN
 # ============================================================
 if not st.session_state.logged_in:
-    st.title("🔐 Login")
-    usuario = st.text_input("Usuário")
-    senha = st.text_input("Senha", type="password")
 
-    if st.button("Login"):
-        user = st.session_state.get("users", {}).get(usuario)
-        # Fallback para teste rápido se o banco estiver vazio
-        if usuario == "admin" and senha == "admin123":
-             st.session_state.logged_in = True
-             st.session_state.current_user = usuario
-             st.session_state.pagina = "formulario"
-             st.rerun()
-        elif user and user.get("password") == hash_senha(senha):
+    st.title("🔐 Acesso")
+
+    u = st.text_input("Usuário", key="u")
+    p = st.text_input("Senha", type="password", key="p")
+
+    if st.button("Entrar", type="primary"):
+
+        if u == "admin" and p == "admin123":
             st.session_state.logged_in = True
-            st.session_state.current_user = usuario
-            st.session_state.pagina = "formulario"
+            st.session_state.user_nome = "admin"
+            st.session_state.is_admin = True
             st.rerun()
         else:
-            st.error("Usuário ou senha incorretos")
-    
-    # O stop fica AQUI (dentro do if not logged_in)
-    # Ele impede que qualquer coisa abaixo apareça para quem não logou
-    st.stop() 
+            st.error("Credenciais inválidas")
+
+    st.stop()
 
 # ============================================================
-# PÓS-LOGIN (Só chega aqui quem está logado)
+# 3. CARREGAR USUÁRIOS
 # ============================================================
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "formulario"
+if "users" not in st.session_state:
+    st.session_state.users = {"admin": {"admin": True}}
+
+    if "USERS" in st.secrets:
+        try:
+            st.session_state.users.update(json.loads(st.secrets["USERS"]))
+        except:
+            pass 
 
 # ============================================================
 # PÓS-LOGIN (Só chega aqui quem passou pelo st.stop())
