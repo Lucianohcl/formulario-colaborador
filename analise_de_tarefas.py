@@ -76,65 +76,49 @@ def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
 # ============================================================
-# USUÁRIOS (RESET FORÇADO DE SESSÃO)
+# USUÁRIOS (ESTRUTURA ESTÁVEL)
 # ============================================================
 
-# Se a sessão existe mas o admin sumiu, limpamos tudo para recomeçar do zero
-if "users" in st.session_state and "admin" not in st.session_state.users:
-    st.session_state.users = {}
-
+# Só entra aqui se a lista de usuários ainda não existir na memória
 if "users" not in st.session_state:
     st.session_state.users = {}
+    
+    # 1. Define o Admin padrão uma única vez
+    st.session_state.users["admin"] = {
+        "password": hash_senha("admin123"),
+        "admin": True
+    }
 
-# Forçamos o registro do Admin como primeira ação
-st.session_state.users["admin"] = {
-    "password": hash_senha("admin123"),
-    "admin": True
-}
-
-# Trazemos os outros usuários do Cloud
-if "USERS" in st.secrets:
-    try:
-        usuarios_cloud = json.loads(st.secrets["USERS"])
-        st.session_state.users.update(usuarios_cloud)
-    except:
-        pass
+    # 2. Traz usuários do Cloud (Secrets) se houver
+    if "USERS" in st.secrets:
+        try:
+            usuarios_cloud = json.loads(st.secrets["USERS"])
+            st.session_state.users.update(usuarios_cloud)
+        except:
+            pass
 
 # ============================================================
-# SESSÃO LOGIN E VALIDAÇÃO
+# SESSÃO LOGIN (VERSÃO DESTRATA-TUDO)
 # ============================================================
-if "logged_in" not in st.session_state or not st.session_state.logged_in:
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if not st.session_state.logged_in:
     st.title("🔐 Acesso ao Sistema")
     
-    # Usamos 'key' para evitar que o Streamlit perca o que foi digitado
-    user_input = st.text_input("Usuário", key="input_usuario")
-    pass_input = st.text_input("Senha", type="password", key="input_senha")
+    user_input = st.text_input("Usuário", key="login_user")
+    pass_input = st.text_input("Senha", type="password", key="login_pass")
 
     if st.button("Entrar", type="primary"):
-        # Validação Direta do Admin (Acaba com a 'manobra do Luciano')
-        senha_admin_hash = hash_senha("admin123")
-        
-        if user_input == "admin" and hash_senha(pass_input) == senha_admin_hash:
+        # Teste direto sem HASH para não ter erro de compatibilidade
+        if user_input == "admin" and pass_input == "admin123":
             st.session_state.logged_in = True
             st.session_state.user_nome = "admin"
             st.session_state.is_admin = True
-            st.success("Login realizado com sucesso!")
+            st.success("Logado com sucesso!")
             st.rerun()
-        
-        # Validação de outros usuários (caso existam no st.session_state.users)
-        elif "users" in st.session_state and user_input in st.session_state.users:
-            u_data = st.session_state.users[user_input]
-            if hash_senha(pass_input) == u_data["password"]:
-                st.session_state.logged_in = True
-                st.session_state.user_nome = user_input
-                st.session_state.is_admin = u_data.get("admin", False)
-                st.rerun()
-            else:
-                st.error("Senha incorreta.")
         else:
-            st.error("Usuário não encontrado.")
-    
-    # Para o script aqui enquanto não estiver logado
+            st.error("Usuário ou senha incorretos.")
     st.stop()
 
 # ============================================================
