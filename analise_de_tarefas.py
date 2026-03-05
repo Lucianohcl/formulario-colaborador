@@ -34,18 +34,23 @@ header {visibility: hidden;}
 
 if modo_formulario:
 
+    # Título do formulário
     st.title("Formulário de Análise de Tarefas")
 
+    # Campos essenciais
     nome = st.text_input("Nome do colaborador")
     setor = st.text_input("Setor")
     cargo = st.text_input("Cargo")
 
     tarefas = st.text_area("Descreva suas tarefas")
 
+    # Botão de envio
     if st.button("Enviar formulário"):
 
+        # Validação: todos os campos preenchidos
         if nome and setor and cargo and tarefas:
 
+            # Cria DataFrame com a nova submissão
             novo = pd.DataFrame([{
                 "Nome": nome,
                 "Setor": setor,
@@ -55,12 +60,14 @@ if modo_formulario:
 
             arquivo = "dados_formulario.csv"
 
+            # Se arquivo já existe, concatena; senão, cria novo
             if os.path.exists(arquivo):
                 antigo = pd.read_csv(arquivo)
                 df = pd.concat([antigo, novo], ignore_index=True)
             else:
                 df = novo
 
+            # Salva o CSV
             df.to_csv(arquivo, index=False)
 
             st.success("Formulário enviado com sucesso!")
@@ -68,6 +75,7 @@ if modo_formulario:
         else:
             st.warning("Preencha todos os campos.")
 
+    # Interrompe execução para que o restante do app não apareça
     st.stop()
 
 
