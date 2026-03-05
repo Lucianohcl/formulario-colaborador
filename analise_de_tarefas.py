@@ -29,90 +29,150 @@ header {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 # ============================================================
-# MODO FORMULÁRIO COMPLETO (ACESSO POR LINK)
+# CONFIGURAÇÃO DA PÁGINA
 # ============================================================
+import streamlit as st
+import pandas as pd
+import os
+from datetime import datetime
 
+st.set_page_config(
+    page_title="Formulário do Colaborador",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# ============================================================
+# QUERY PARAMS PARA MODO FORMULÁRIO
+# ============================================================
+query_params = st.query_params
+modo_formulario = query_params.get("page") == ["formulario"]
+
+# ============================================================
+# ESTILO MINIMALISTA
+# ============================================================
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
+# PASTA BASE (CLOUD READY)
+# ============================================================
+BASE_DIR = "dados"
+os.makedirs(BASE_DIR, exist_ok=True)
+ARQUIVO_CSV = os.path.join(BASE_DIR, "dados_formulario.csv")
+
+# ============================================================
+# LISTA DE PERGUNTAS DISC (GLOBAL)
+# ============================================================
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+]
+
+# ============================================================
+# FORMULÁRIO COMPLETO
+# ============================================================
 if modo_formulario:
 
-    st.title("📋 Formulário Completo do Colaborador")
-    st.info("Preencha todos os campos e clique em Enviar.")
+    st.title("🧾 Levantamento & Diagnóstico do Colaborador")
+    st.write("Preencha com atenção. Este formulário será analisado pela equipe responsável.")
 
-    # --- IDENTIFICAÇÃO ---
+    # --- Identificação ---
     st.subheader("🔹 Identificação")
-    nome = st.text_input("Nome do colaborador")
-    setor = st.text_input("Setor")
+    entregue_em = st.text_input("Entregue em (data/hora)", value=datetime.now().strftime("%d/%m/%Y %H:%M"))
+    empresa = st.text_input("Empresa / Unidade")
+    nome = st.text_input("Nome do Colaborador")
+    departamento = st.text_input("Departamento")
+    devolver = st.text_input("Devolver preenchido em")
+    escolaridade = st.text_input("Escolaridade")
     cargo = st.text_input("Cargo")
+    chefe = st.text_input("Chefe Imediato")
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+    objetivo = st.text_area("Descreva seu trabalho e principal objetivo")
 
-    # --- ATIVIDADES ---
-    st.subheader("🔹 Atividades")
+    # --- Atividades ---
+    st.markdown("---")
+    st.subheader("🔹 Atividades Executadas")
+    st.info("📋 LEGENDA DE FREQUÊNCIA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
     tarefas = st.text_area("Descreva suas tarefas")
 
-    # --- DIFICULDADES ---
-    st.subheader("🔹 Dificuldades na execução")
+    # --- Dificuldades ---
+    st.markdown("---")
+    st.subheader("🔹 Dificuldades na Execução")
     dificuldades = st.text_area("Descreva as dificuldades encontradas")
 
-    # --- SUGESTÕES ---
-    st.subheader("💡 Sugestões de melhoria")
+    # --- Sugestões ---
+    st.markdown("---")
+    st.subheader("💡 Sugestões de Melhoria")
     sugestoes = st.text_area("Descreva sugestões ou ideias de melhoria")
 
     # --- DISC ---
+    st.markdown("---")
     st.subheader("🧠 Questionário DISC")
     respostas_disc = {}
-
-    perguntas_disc = [
-        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-        "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-        "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-        "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-        "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-        "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-        "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-        "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-        "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-        "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-        "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-        "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-        "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-        "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-        "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
-    ]
-
     for i, pergunta in enumerate(perguntas_disc, 1):
-        respostas_disc[f"Q{i}"] = st.radio(pergunta, ["A","B","C","D"], key=f"disc_{i}")
+        respostas_disc[f"Q{i}"] = st.radio(pergunta, ["A", "B", "C", "D"], key=f"disc_{i}")
 
     # --- BOTÃO ENVIAR ---
-    if st.button("📤 Enviar formulário"):
+    if st.button("Enviar formulário"):
 
-        if not all([nome, setor, cargo, tarefas]):
-            st.warning("Preencha todos os campos de identificação e tarefas.")
-        else:
-            # Criar DataFrame com todas as respostas
-            dados_novos = {
+        # Validação básica
+        campos_obrigatorios = [nome, cargo, departamento, tarefas]
+        if all(campos_obrigatorios):
+
+            # Salvar CSV
+            novo = pd.DataFrame([{
+                "Entregue_em": entregue_em,
+                "Empresa": empresa,
                 "Nome": nome,
-                "Setor": setor,
+                "Departamento": departamento,
+                "Devolver": devolver,
+                "Escolaridade": escolaridade,
                 "Cargo": cargo,
+                "Chefe": chefe,
+                "Cursos": cursos,
+                "Objetivo": objetivo,
                 "Tarefas": tarefas,
                 "Dificuldades": dificuldades,
-                "Sugestoes": sugestoes
-            }
-            dados_novos.update(respostas_disc)
-            novo = pd.DataFrame([dados_novos])
+                "Sugestoes": sugestoes,
+                **respostas_disc
+            }])
 
-            arquivo = "dados_formulario.csv"
-
-            if os.path.exists(arquivo):
-                antigo = pd.read_csv(arquivo)
+            if os.path.exists(ARQUIVO_CSV):
+                antigo = pd.read_csv(ARQUIVO_CSV)
                 df = pd.concat([antigo, novo], ignore_index=True)
             else:
                 df = novo
 
-            df.to_csv(arquivo, index=False)
-            st.success("✅ Formulário enviado com sucesso!")
+            df.to_csv(ARQUIVO_CSV, index=False)
+
+            st.success("Formulário enviado com sucesso!")
+        else:
+            st.warning("Preencha todos os campos obrigatórios (Nome, Cargo, Departamento, Tarefas).")
 
     st.stop()
 
