@@ -442,6 +442,8 @@ btn_logout = st.sidebar.button("🚪 Sair / Logout")
 # 2. LÓGICA DE NAVEGAÇÃO
 # ============================================================
 
+pagina_anterior = st.session_state.get("pagina")
+
 if btn_home:
     st.session_state.pagina = "home"
 
@@ -465,8 +467,11 @@ elif btn_logout:
     st.session_state.current_user = None
     st.session_state.pagina = "home"
 
-# rerun apenas uma vez
-st.rerun()
+# rerun somente se mudou de página
+if pagina_anterior != st.session_state.pagina:
+    st.rerun()
+
+
 # ============================================================
 # 3. EXIBIÇÃO DAS PÁGINAS (Área Central)
 # ============================================================
@@ -642,27 +647,10 @@ elif st.session_state.pagina == "analise":
             # 1. Slider com valor padrão 50%
             margem = st.slider("Ajustar Margem de Aceitação (%)", 0, 100, 50)
             
-            # 2. Botão EXATAMENTE como solicitado: 📥 BAIXAR EXCEL FINAL
-            nome_saida = "RELATORIO_CONSOLIDADO_FINAL.xlsx"
-            df_final.to_excel(nome_saida, index=False)
             
-            with open(nome_saida, "rb") as f:
-                st.download_button(
-                    label="📥 BAIXAR EXCEL FINAL",
-                    data=f,
-                    file_name=nome_saida,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
-        else:
-            st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         
 
-# ============================================================
-# VISUALIZAÇÃO FIEL DOS FORMULÁRIOS (em memória)
-# ============================================================
 
-import streamlit as st
-import pandas as pd
 
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = []  # lista de formulários preenchidos
