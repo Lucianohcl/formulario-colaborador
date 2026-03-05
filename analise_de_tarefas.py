@@ -76,25 +76,27 @@ def hash_senha(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
 # ============================================================
-# USUÁRIOS (SECRETS OU FALLBACK LOCAL)
+# USUÁRIOS (ESTRUTURA PERSISTENTE)
 # ============================================================
 
+# 1. Garante que o dicionário de usuários exista no estado da sessão
 if "users" not in st.session_state:
-    # Prioriza usuários via secrets (produção no Cloud)
-    if "USERS" in st.secrets:
-        try:
-            st.session_state.users = json.loads(st.secrets["USERS"])
-        except Exception as e:
-            st.error(f"Erro ao carregar usuários do Secrets: {e}")
-            st.session_state.users = {}
-    else:
-        # Fallback local (desenvolvimento - Agora só com Admin)
-        st.session_state.users = {
-            "admin": {
-                "password": hash_senha("admin123"),
-                "admin": True
-            }
-        }
+    st.session_state.users = {}
+
+# 2. Define o ADMIN como padrão (Sempre disponível)
+st.session_state.users["admin"] = {
+    "password": hash_senha("admin123"),
+    "admin": True
+}
+
+# 3. Carrega usuários extras do Cloud (Secrets), se existirem
+if "USERS" in st.secrets:
+    try:
+        usuarios_cloud = json.loads(st.secrets["USERS"])
+        # .update() adiciona os novos sem apagar o admin que criamos acima
+        st.session_state.users.update(usuarios_cloud)
+    except Exception as e:
+        st.error(f"⚠️ Erro ao carregar usuários adicionais: {e}")
 
 # ============================================================
 # SESSÃO LOGIN
