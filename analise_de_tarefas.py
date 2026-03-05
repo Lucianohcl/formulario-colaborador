@@ -17,15 +17,59 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+query_params = st.query_params
+modo_formulario = query_params.get("page") == "formulario"
+
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
 # ============================================================
-# DETECTAR LINK DIRETO DO FORMULÁRIO
+# MODO FORMULÁRIO (ACESSO POR LINK)
 # ============================================================
 
-query = st.query_params
+if modo_formulario:
 
-if "formulario" in query:
-    st.session_state.logged_in = True
-    st.session_state.pagina = "formulario"
+    st.title("Formulário de Análise de Tarefas")
+
+    nome = st.text_input("Nome do colaborador")
+    setor = st.text_input("Setor")
+    cargo = st.text_input("Cargo")
+
+    tarefas = st.text_area("Descreva suas tarefas")
+
+    if st.button("Enviar formulário"):
+
+        if nome and setor and cargo and tarefas:
+
+            novo = pd.DataFrame([{
+                "Nome": nome,
+                "Setor": setor,
+                "Cargo": cargo,
+                "Tarefas": tarefas
+            }])
+
+            arquivo = "dados_formulario.csv"
+
+            if os.path.exists(arquivo):
+                antigo = pd.read_csv(arquivo)
+                df = pd.concat([antigo, novo], ignore_index=True)
+            else:
+                df = novo
+
+            df.to_csv(arquivo, index=False)
+
+            st.success("Formulário enviado com sucesso!")
+
+        else:
+            st.warning("Preencha todos os campos.")
+
+    st.stop()
+
 
 
 # --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
@@ -234,27 +278,6 @@ else:
     # Verifica apenas se a sessão está ativa
     if not st.session_state.logged_in:
         st.rerun()
-
-    import streamlit as st
-import pandas as pd
-import os
-from datetime import datetime
-
-import streamlit as st
-import pandas as pd
-import os
-from datetime import datetime
-
-import streamlit as st
-import pandas as pd
-import os
-from datetime import datetime
-
-import streamlit as st
-import pandas as pd
-import os
-from datetime import datetime
-
 
 
 # ============================================================
