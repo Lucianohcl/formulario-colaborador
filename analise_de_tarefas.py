@@ -438,30 +438,35 @@ btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
 st.sidebar.markdown("---") 
 btn_logout = st.sidebar.button("🚪 Sair / Logout")
 
-# 2. Lógica de Redirecionamento
-if btn_home: 
-    st.session_state.pagina = "home"
-    st.rerun()
+# ============================================================
+# 2. LÓGICA DE NAVEGAÇÃO
+# ============================================================
 
-elif btn_analise: 
+if btn_home:
+    st.session_state.pagina = "home"
+
+elif btn_analise:
     st.session_state.pagina = "analise"
-    st.rerun()
+
 elif btn_comparar:
     st.session_state.pagina = "comparar"
-    st.rerun()
+
 elif btn_disc:
     st.session_state.pagina = "disc"
-    st.rerun()
+
 elif btn_parecer:
     st.session_state.pagina = "parecer"
-    st.rerun()
+
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
-    st.rerun()
+
 elif btn_logout:
     st.session_state.logged_in = False
     st.session_state.current_user = None
-    st.rerun()
+    st.session_state.pagina = "home"
+
+# rerun apenas uma vez
+st.rerun()
 # ============================================================
 # 3. EXIBIÇÃO DAS PÁGINAS (Área Central)
 # ============================================================
