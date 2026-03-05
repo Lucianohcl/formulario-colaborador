@@ -93,6 +93,7 @@ perguntas_disc = [
     "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
 ]
 
+
 # ============================================================
 # FORMULÁRIO COMPLETO PARA COLABORADOR
 # ============================================================
@@ -164,7 +165,7 @@ if modo_formulario:
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
     objetivo = st.text_area("Trabalho e principal objetivo")
 
-    # --- ATIVIDADES (20 LINHAS COM FREQUÊNCIA) ---
+    # --- ATIVIDADES (20 LINHAS COM TEMPO E FREQUÊNCIA) ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
     st.info("""
@@ -172,19 +173,33 @@ if modo_formulario:
     * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
     * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
     """)
-    df_ativ = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Atividade": [""]*20, "Frequência": [""]*20})
+    df_ativ = pd.DataFrame({
+        "N°": list(range(1, 21)),
+        "Descrição da Atividade": [""]*20,
+        "Tempo": [""]*20,
+        "Frequência": [""]*20
+    })
     edit_ativ = st.data_editor(df_ativ, use_container_width=True, num_rows="fixed", key="ativ_final_v1")
 
-    # --- DIFICULDADES (20 LINHAS) ---
+    # --- DIFICULDADES (20 LINHAS COM TEMPO) ---
     st.markdown("---")
     st.subheader("🔹 Dificuldades na Execução")
-    df_dif = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Dificuldade": [""]*20, "Setor/Parceiro": [""]*20})
+    df_dif = pd.DataFrame({
+        "N°": list(range(1, 21)),
+        "Descrição da Dificuldade": [""]*20,
+        "Tempo": [""]*20,
+        "Setor/Parceiro": [""]*20
+    })
     edit_dif = st.data_editor(df_dif, use_container_width=True, num_rows="fixed", key="dif_final_v1")
 
     # --- SUGESTÕES (20 LINHAS) ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria")
-    df_sug = pd.DataFrame({"N°": list(range(1, 21)), "Descrição da Sugestão": [""]*20, "Impacto Esperado": [""]*20})
+    df_sug = pd.DataFrame({
+        "N°": list(range(1, 21)),
+        "Descrição da Sugestão": [""]*20,
+        "Impacto Esperado": [""]*20
+    })
     edit_sug = st.data_editor(df_sug, use_container_width=True, num_rows="fixed", key="sug_final_v1")
 
     # --- DISC ---
