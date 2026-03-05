@@ -427,7 +427,8 @@ st.sidebar.title("📌 Menu de Navegação")
 
 # 1. Definição dos Botões
 btn_home = st.sidebar.button("🏠 Home")
-#btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
+# btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
+btn_formulario = False  # Garantir que a variável existe mesmo se não tiver botão
 btn_analise = st.sidebar.button("📊 Análise Inteligente")
 btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
 btn_disc = st.sidebar.button("🧠 Perfil DISC")
@@ -441,9 +442,7 @@ btn_logout = st.sidebar.button("🚪 Sair / Logout")
 if btn_home: 
     st.session_state.pagina = "home"
     st.rerun()
-elif btn_formulario: 
-    st.session_state.pagina = "formulario"
-    st.rerun()
+
 elif btn_analise: 
     st.session_state.pagina = "analise"
     st.rerun()
@@ -460,9 +459,9 @@ elif btn_visualizar:
     st.session_state.pagina = "visualizar"
     st.rerun()
 elif btn_logout:
-    st.session_state.clear() 
-    st.rerun() # O rerun vai voltar pro topo e cair no login automaticamente
-
+    st.session_state.logged_in = False
+    st.session_state.current_user = None
+    st.rerun()
 # ============================================================
 # 3. EXIBIÇÃO DAS PÁGINAS (Área Central)
 # ============================================================
