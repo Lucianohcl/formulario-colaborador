@@ -29,97 +29,93 @@ header {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 # ============================================================
-# MODO FORMULÁRIO (ACESSO POR LINK)
+# MODO FORMULÁRIO COMPLETO (ACESSO POR LINK)
 # ============================================================
 
 if modo_formulario:
 
-    # Título do formulário
-    st.title("Formulário de Análise de Tarefas")
+    st.title("📋 Formulário Completo do Colaborador")
+    st.info("Preencha todos os campos e clique em Enviar.")
 
-    # Campos essenciais
+    # --- IDENTIFICAÇÃO ---
+    st.subheader("🔹 Identificação")
     nome = st.text_input("Nome do colaborador")
     setor = st.text_input("Setor")
     cargo = st.text_input("Cargo")
 
+    # --- ATIVIDADES ---
+    st.subheader("🔹 Atividades")
     tarefas = st.text_area("Descreva suas tarefas")
 
-    # Botão de envio
-    if st.button("Enviar formulário"):
+    # --- DIFICULDADES ---
+    st.subheader("🔹 Dificuldades na execução")
+    dificuldades = st.text_area("Descreva as dificuldades encontradas")
 
-        # Validação: todos os campos preenchidos
-        if nome and setor and cargo and tarefas:
+    # --- SUGESTÕES ---
+    st.subheader("💡 Sugestões de melhoria")
+    sugestoes = st.text_area("Descreva sugestões ou ideias de melhoria")
 
-            # Cria DataFrame com a nova submissão
-            novo = pd.DataFrame([{
+    # --- DISC ---
+    st.subheader("🧠 Questionário DISC")
+    respostas_disc = {}
+
+    perguntas_disc = [
+        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+        "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+        "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+        "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+        "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+        "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+        "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+        "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+        "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+        "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+        "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+        "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+        "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+        "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+        "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+    ]
+
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        respostas_disc[f"Q{i}"] = st.radio(pergunta, ["A","B","C","D"], key=f"disc_{i}")
+
+    # --- BOTÃO ENVIAR ---
+    if st.button("📤 Enviar formulário"):
+
+        if not all([nome, setor, cargo, tarefas]):
+            st.warning("Preencha todos os campos de identificação e tarefas.")
+        else:
+            # Criar DataFrame com todas as respostas
+            dados_novos = {
                 "Nome": nome,
                 "Setor": setor,
                 "Cargo": cargo,
-                "Tarefas": tarefas
-            }])
+                "Tarefas": tarefas,
+                "Dificuldades": dificuldades,
+                "Sugestoes": sugestoes
+            }
+            dados_novos.update(respostas_disc)
+            novo = pd.DataFrame([dados_novos])
 
             arquivo = "dados_formulario.csv"
 
-            # Se arquivo já existe, concatena; senão, cria novo
             if os.path.exists(arquivo):
                 antigo = pd.read_csv(arquivo)
                 df = pd.concat([antigo, novo], ignore_index=True)
             else:
                 df = novo
 
-            # Salva o CSV
             df.to_csv(arquivo, index=False)
+            st.success("✅ Formulário enviado com sucesso!")
 
-            st.success("Formulário enviado com sucesso!")
-
-        else:
-            st.warning("Preencha todos os campos.")
-
-    # Interrompe execução para que o restante do app não apareça
     st.stop()
 
-
-
-# --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
-perguntas_disc = [
-    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
-]
-
-# ============================================================
-# PASTA BASE (CLOUD READY)
-# ============================================================
-BASE_DIR = "dados"
-os.makedirs(BASE_DIR, exist_ok=True)
-
-# --- COLOQUE O BLOCO DE LIMPEZA AQUI (LOGO ABAIXO) ---
-if 'limpeza_feita' not in st.session_state:
-    if os.path.exists(BASE_DIR):
-        for f in os.listdir(BASE_DIR):
-            if f.endswith(".xlsx"):
-                try:
-                    os.remove(os.path.join(BASE_DIR, f))
-                except:
-                    continue
-    st.session_state['limpeza_feita'] = True
 
 # ============================================================
 # OPENAI – CONFIGURAÇÃO SEGURA + FALLBACK
