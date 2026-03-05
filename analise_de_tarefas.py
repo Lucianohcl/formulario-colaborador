@@ -427,7 +427,7 @@ st.sidebar.title("📌 Menu de Navegação")
 
 # 1. Definição dos Botões
 btn_home = st.sidebar.button("🏠 Home")
-btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
+#btn_formulario = st.sidebar.button("📝 Formulário do Colaborador")
 btn_analise = st.sidebar.button("📊 Análise Inteligente")
 btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
 btn_disc = st.sidebar.button("🧠 Perfil DISC")
@@ -653,120 +653,86 @@ elif st.session_state.pagina == "analise":
             st.error("Erro ao processar os arquivos. Verifique se o formato das abas está correto.")
         
 
-elif st.session_state.pagina == "visualizar":
-     st.title("👁️ Espelho Fiel de Respostas")
-     st.info("Abaixo você vê exatamente o que o colaborador preencheu, campo a campo.")
+# ============================================================
+# VISUALIZAÇÃO FIEL DOS FORMULÁRIOS (em memória)
+# ============================================================
 
-     if not os.path.exists(BASE_DIR):
-          os.makedirs(BASE_DIR)
-          
-     arquivos = [f for f in os.listdir(BASE_DIR) if f.startswith('Colaborador_') and f.endswith('.xlsx')]
+import streamlit as st
+import pandas as pd
 
-     if not arquivos:
-          st.warning("⚠️ Nenhum formulário encontrado no servidor.")
-     else:
-          # --- FUNÇÃO DE BUSCA (Definida aqui para funcionar em todo o loop) ---
-          def buscar_valor(df, etiqueta):
-               try:
-                    filtro = df[df.iloc[:, 0].astype(str).str.contains(etiqueta, case=False, na=False)]
-                    if not filtro.empty:
-                         valor = filtro.iloc[0, 1]
-                         return str(valor) if pd.notna(valor) else "Não informado"
-                    return "Não informado"
-               except:
-                    return "Não informado"
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []  # lista de formulários preenchidos
 
-          for arq in arquivos:
-               try:
-                    caminho_completo = os.path.join(BASE_DIR, arq)
-                    
-                    # Lendo todas as abas
-                    df_id = pd.read_excel(caminho_completo, sheet_name="ID")
-                    df_ativ = pd.read_excel(caminho_completo, sheet_name="Atividades")
-                    df_dif = pd.read_excel(caminho_completo, sheet_name="Dificuldades")
-                    df_sug = pd.read_excel(caminho_completo, sheet_name="Sugestões")
-                    df_disc_salvo = pd.read_excel(caminho_completo, sheet_name="DISC")
+if st.session_state.get("pagina") == "visualizar":
+    st.title("👁️ Espelho Fiel de Respostas")
+    st.info("Veja exatamente o que cada colaborador preencheu, campo a campo.")
 
-                    # Busca o nome para o título do expander
-                    nome_exibicao = buscar_valor(df_id, 'Nome')
+    if not st.session_state["formularios"]:
+        st.warning("⚠️ Nenhum formulário preenchido ainda.")
+    else:
+        for idx, form in enumerate(st.session_state["formularios"], 1):
+            nome_exibicao = form.get("Nome", f"Colaborador {idx}")
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
+                
+                # --- IDENTIFICAÇÃO ---
+                st.subheader("🔹 Identificação")
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.write(f"**Nome:** {form.get('Nome','Não informado')}")
+                    st.write(f"**Cargo:** {form.get('Cargo','Não informado')}")
+                    st.write(f"**Setor:** {form.get('Setor','Não informado')}")
+                    st.write(f"**Chefe:** {form.get('Chefe','Não informado')}")
+                with c2:
+                    st.write(f"**Departamento:** {form.get('Departamento','Não informado')}")
+                    st.write(f"**Empresa / Unidade:** {form.get('Empresa','Não informado')}")
+                    st.write(f"**Escolaridade:** {form.get('Escolaridade','Não informado')}")
+                    st.write(f"**Devolver preenchido em:** {form.get('Devolver','Não informado')}")
+                
+                st.write("**Cursos obrigatórios ou diferenciais:**")
+                st.info(form.get("Cursos","Não informado"))
+                st.write("**Trabalho e principal objetivo:**")
+                st.info(form.get("Objetivo","Não informado"))
 
-                    with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
-                         
-                         st.subheader("🔹 Identificação")
-                         
-                         c1, c2 = st.columns(2)
-                         with c1:
-                              st.write(f"**Entregue em (data/hora):** {buscar_valor(df_id, 'Entregue em')}")
-                              st.write(f"**Empresa / Unidade:** {buscar_valor(df_id, 'Empresa')}")
-                              st.write(f"**Nome do Colaborador:** {buscar_valor(df_id, 'Nome')}")
-                              st.write(f"**Departamento:** {buscar_valor(df_id, 'Departamento')}")
-                         with c2:
-                              st.write(f"**Devolver preenchido em:** {buscar_valor(df_id, 'Devolver')}") 
-                              st.write(f"**Escolaridade:** {buscar_valor(df_id, 'Escolaridade')}")
-                              st.write(f"**Cargo:** {buscar_valor(df_id, 'Cargo')}")
-                              st.write(f"**Chefe Imediato:** {buscar_valor(df_id, 'Chefe')}")
-                         
-                         st.write(f"**Cursos obrigatórios ou diferenciais:**")
-                         st.info(buscar_valor(df_id, 'Cursos'))
-                         st.write(f"**Trabalho e principal objetivo:**")
-                         st.info(buscar_valor(df_id, 'objetivo'))
+                # --- ATIVIDADES ---
+                st.markdown("---")
+                st.subheader("🔹 Atividades Executadas")
+                st.info("📋 LEGENDA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+                df_ativ = pd.DataFrame(form.get("Atividades", []))
+                st.table(df_ativ)
 
-                         # --- 🔹 ATIVIDADES EXECUTADAS ---
-                         st.markdown("---")
-                         st.subheader("🔹 Atividades Executadas")
-                         st.info("📋 **LEGENDA DE FREQUÊNCIA:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-                         
-                         df_ativ_f = df_ativ[df_ativ["Descrição da Atividade"].fillna("").str.strip() != ""]
-                         st.table(df_ativ_f)
+                # --- DIFICULDADES ---
+                st.subheader("🔹 Dificuldades na Execução")
+                df_dif = pd.DataFrame(form.get("Dificuldades", []))
+                st.table(df_dif)
 
-                         # --- 🔹 DIFICULDADES ---
-                         st.subheader("🔹 Dificuldades na Execução")
-                         df_dif_f = df_dif[df_dif["Descrição da Dificuldade"].fillna("").str.strip() != ""]
-                         st.table(df_dif_f)
+                # --- SUGESTÕES ---
+                st.subheader("💡 Sugestões de Melhoria")
+                df_sug = pd.DataFrame(form.get("Sugestoes", []))
+                st.table(df_sug)
 
-                         # --- 🔹 SUGESTÕES ---
-                         st.subheader("💡 Sugestões de Melhoria")
-                         df_sug_f = df_sug[df_sug["Descrição da Sugestão"].fillna("").str.strip() != ""]
-                         st.table(df_sug_f)
+                # --- DISC ---
+                st.markdown("---")
+                st.subheader("🧠 Questionário DISC")
+                respostas_disc = {k:v for k,v in form.items() if k.startswith("Q")}
+                lista_disc = []
+                for i, pergunta in enumerate(perguntas_disc, 1):
+                    letra = respostas_disc.get(f"Q{i}", "-")
+                    sig = ""
+                    if letra != "-" and "|" in pergunta:
+                        for p in pergunta.split("|"):
+                            if f"({letra})" in p: sig = p.split(")")[-1].strip()
+                    lista_disc.append({
+                        "Nº": i,
+                        "Pergunta": pergunta.split(":")[0],
+                        "Resposta": f"{letra} - {sig}" if sig else letra
+                    })
+                st.table(lista_disc)
 
-                         # --- 🧠 DISC ---
-                         st.markdown("---")
-                         st.subheader("🧠 4. Questionário DISC (Espelho)")
-                         respostas_dict = dict(zip(df_disc_salvo.iloc[:, 0], df_disc_salvo.iloc[:, 1]))
-                         lista_disc = []
-                         for i, pergunta in enumerate(perguntas_disc, 1):
-                              letra = respostas_dict.get(f"Q{i}", "-")
-                              sig = ""
-                              if letra != "-" and "|" in pergunta:
-                                   for p in pergunta.split("|"):
-                                        if f"({letra})" in p: sig = p.split(")")[-1].strip()
-                              lista_disc.append({
-                                   "Nº": i, 
-                                   "Pergunta": pergunta.split(":")[0], 
-                                   "Resposta": f"{letra} - {sig}" if sig else letra
-                              })
-                         st.table(lista_disc)
-
-                         # Botão de download
-                         with open(caminho_completo, "rb") as f:
-                              st.download_button(
-                                   label=f"📥 Baixar Original de {nome_exibicao}",
-                                   data=f,
-                                   file_name=arq,
-                                   key=f"dl_esp_{arq}"
-                              )
-
-               except Exception as e:
-                    st.error(f"Erro ao processar o arquivo {arq}: {e}")
-
-          st.markdown("---")
-          if st.button("🗑️ LIMPAR TODOS OS REGISTROS"):
-               for a in arquivos:
-                    try: os.remove(os.path.join(BASE_DIR, a))
-                    except: continue
-               st.success("✅ Todos os registros foram excluídos!")
-               st.rerun()
-
+        st.markdown("---")
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
+            st.session_state["formularios"] = []
+            st.success("✅ Todos os formulários foram removidos da memória!")
+            st.experimental_rerun()
 
 # ==========================================================
 # 🚀 PARTE 2 – MOTOR CORPORATIVO TOTAL
