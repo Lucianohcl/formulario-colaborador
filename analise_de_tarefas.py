@@ -99,12 +99,43 @@ if "USERS" in st.secrets:
         st.session_state.users.update(usuarios_cloud)
     except:
         pass
+
 # ============================================================
-# SESSÃO LOGIN
+# SESSÃO LOGIN E VALIDAÇÃO
 # ============================================================
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-    st.session_state.current_user = None
+if "logged_in" not in st.session_state or not st.session_state.logged_in:
+    st.title("🔐 Acesso ao Sistema")
+    
+    # Usamos 'key' para evitar que o Streamlit perca o que foi digitado
+    user_input = st.text_input("Usuário", key="input_usuario")
+    pass_input = st.text_input("Senha", type="password", key="input_senha")
+
+    if st.button("Entrar", type="primary"):
+        # Validação Direta do Admin (Acaba com a 'manobra do Luciano')
+        senha_admin_hash = hash_senha("admin123")
+        
+        if user_input == "admin" and hash_senha(pass_input) == senha_admin_hash:
+            st.session_state.logged_in = True
+            st.session_state.user_nome = "admin"
+            st.session_state.is_admin = True
+            st.success("Login realizado com sucesso!")
+            st.rerun()
+        
+        # Validação de outros usuários (caso existam no st.session_state.users)
+        elif "users" in st.session_state and user_input in st.session_state.users:
+            u_data = st.session_state.users[user_input]
+            if hash_senha(pass_input) == u_data["password"]:
+                st.session_state.logged_in = True
+                st.session_state.user_nome = user_input
+                st.session_state.is_admin = u_data.get("admin", False)
+                st.rerun()
+            else:
+                st.error("Senha incorreta.")
+        else:
+            st.error("Usuário não encontrado.")
+    
+    # Para o script aqui enquanto não estiver logado
+    st.stop()
 
 # ============================================================
 # FUNÇÕES GERAIS
