@@ -80,22 +80,18 @@ def hash_senha(senha):
 # ============================================================
 
 if "users" not in st.session_state:
-
-    # Adicione um usuário padrão para o login funcionar
-    st.session_state.users = {"admin": {"password": hash_senha("123"), "admin": True}}
-
-    # Prioriza usuários via secrets (produção)
+    # Prioriza usuários via secrets (produção no Cloud)
     if "USERS" in st.secrets:
-        st.session_state.users = json.loads(st.secrets["USERS"])
+        try:
+            st.session_state.users = json.loads(st.secrets["USERS"])
+        except Exception as e:
+            st.error(f"Erro ao carregar usuários do Secrets: {e}")
+            st.session_state.users = {}
     else:
-        # Fallback local (desenvolvimento)
+        # Fallback local (desenvolvimento - Agora só com Admin)
         st.session_state.users = {
             "admin": {
                 "password": hash_senha("admin123"),
-                "admin": True
-            },
-            "Luciano": {
-                "password": hash_senha("123"),
                 "admin": True
             }
         }
