@@ -94,88 +94,136 @@ perguntas_disc = [
 ]
 
 # ============================================================
-# FORMULÁRIO COMPLETO
+# FORMULÁRIO COMPLETO PARA COLABORADOR
 # ============================================================
+import streamlit as st
+import pandas as pd
+import os
+
+# Configuração da página
+st.set_page_config(
+    page_title="Formulário do Colaborador",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
+# Esconder menu e rodapé
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+# Lista de perguntas DISC
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+]
+
+# Detectar modo formulário
+modo_formulario = st.query_params.get("page") == "formulario"
+
 if modo_formulario:
+    st.title("📋 Formulário Completo do Colaborador")
 
-    st.title("🧾 Levantamento & Diagnóstico do Colaborador")
-    st.write("Preencha com atenção. Este formulário será analisado pela equipe responsável.")
-
-    # --- Identificação ---
+    # --- IDENTIFICAÇÃO ---
     st.subheader("🔹 Identificação")
-    entregue_em = st.text_input("Entregue em (data/hora)", value=datetime.now().strftime("%d/%m/%Y %H:%M"))
-    empresa = st.text_input("Empresa / Unidade")
-    nome = st.text_input("Nome do Colaborador")
-    departamento = st.text_input("Departamento")
-    devolver = st.text_input("Devolver preenchido em")
-    escolaridade = st.text_input("Escolaridade")
+    nome = st.text_input("Nome do colaborador")
+    setor = st.text_input("Setor")
     cargo = st.text_input("Cargo")
-    chefe = st.text_input("Chefe Imediato")
+    chefe = st.text_input("Chefe imediato")
+    departamento = st.text_input("Departamento")
+    empresa = st.text_input("Empresa / Unidade")
+    escolaridade = st.text_input("Escolaridade")
+    devolucao = st.text_input("Devolver preenchido em")
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-    objetivo = st.text_area("Descreva seu trabalho e principal objetivo")
+    objetivo = st.text_area("Trabalho e principal objetivo")
 
-    # --- Atividades ---
+    # --- ATIVIDADES ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
-    st.info("📋 LEGENDA DE FREQUÊNCIA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-    tarefas = st.text_area("Descreva suas tarefas")
+    st.info("📋 LEGENDA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+    atividades = st.text_area("Liste as atividades separadas por linha")
 
-    # --- Dificuldades ---
+    # --- DIFICULDADES ---
     st.markdown("---")
     st.subheader("🔹 Dificuldades na Execução")
     dificuldades = st.text_area("Descreva as dificuldades encontradas")
 
-    # --- Sugestões ---
+    # --- SUGESTÕES ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria")
-    sugestoes = st.text_area("Descreva sugestões ou ideias de melhoria")
+    sugestoes = st.text_area("Sugestões para melhoria do processo")
 
     # --- DISC ---
     st.markdown("---")
     st.subheader("🧠 Questionário DISC")
-    respostas_disc = {}
+    respostas_disc = []
     for i, pergunta in enumerate(perguntas_disc, 1):
-        respostas_disc[f"Q{i}"] = st.radio(pergunta, ["A", "B", "C", "D"], key=f"disc_{i}")
+        respostas_disc.append(st.radio(pergunta, ["A", "B", "C", "D"], key=f"disc_{i}"))
 
     # --- BOTÃO ENVIAR ---
     if st.button("Enviar formulário"):
+        df_novo = pd.DataFrame([{
+            "Nome": nome,
+            "Setor": setor,
+            "Cargo": cargo,
+            "Chefe": chefe,
+            "Departamento": departamento,
+            "Empresa": empresa,
+            "Escolaridade": escolaridade,
+            "Devolver": devolucao,
+            "Cursos": cursos,
+            "Objetivo": objetivo,
+            "Atividades": atividades,
+            "Dificuldades": dificuldades,
+            "Sugestoes": sugestoes,
+            **{f"Q{i+1}": r for i, r in enumerate(respostas_disc)}
+        }])
 
-        # Validação básica
-        campos_obrigatorios = [nome, cargo, departamento, tarefas]
-        if all(campos_obrigatorios):
-
-            # Salvar CSV
-            novo = pd.DataFrame([{
-                "Entregue_em": entregue_em,
-                "Empresa": empresa,
-                "Nome": nome,
-                "Departamento": departamento,
-                "Devolver": devolver,
-                "Escolaridade": escolaridade,
-                "Cargo": cargo,
-                "Chefe": chefe,
-                "Cursos": cursos,
-                "Objetivo": objetivo,
-                "Tarefas": tarefas,
-                "Dificuldades": dificuldades,
-                "Sugestoes": sugestoes,
-                **respostas_disc
-            }])
-
-            if os.path.exists(ARQUIVO_CSV):
-                antigo = pd.read_csv(ARQUIVO_CSV)
-                df = pd.concat([antigo, novo], ignore_index=True)
-            else:
-                df = novo
-
-            df.to_csv(ARQUIVO_CSV, index=False)
-
-            st.success("Formulário enviado com sucesso!")
+        arquivo = "dados_formulario.csv"
+        if os.path.exists(arquivo):
+            df_antigo = pd.read_csv(arquivo)
+            df = pd.concat([df_antigo, df_novo], ignore_index=True)
         else:
-            st.warning("Preencha todos os campos obrigatórios (Nome, Cargo, Departamento, Tarefas).")
+            df = df_novo
+
+        df.to_csv(arquivo, index=False)
+        st.success("✅ Formulário enviado com sucesso!")
 
     st.stop()
 
+# ============================================================
+# ADMIN / VISUALIZAÇÃO
+# ============================================================
+st.title("👁️ Visualização de Formulários")
+arquivo = "dados_formulario.csv"
+if os.path.exists(arquivo):
+    df = pd.read_csv(arquivo)
+    st.dataframe(df)
+else:
+    st.warning("Nenhum formulário enviado ainda.")
 
 # ============================================================
 # OPENAI – CONFIGURAÇÃO SEGURA + FALLBACK
