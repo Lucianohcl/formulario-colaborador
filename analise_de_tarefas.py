@@ -17,6 +17,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# ============================================================
+# DETECTAR LINK DIRETO DO FORMULÁRIO
+# ============================================================
+
+query = st.query_params
+
+if "formulario" in query:
+    st.session_state.logged_in = True
+    st.session_state.pagina = "formulario"
+
 
 # --- LISTA DE PERGUNTAS DISC (GLOBAL) ---
 perguntas_disc = [
