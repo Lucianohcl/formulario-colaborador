@@ -219,10 +219,12 @@ if modo_formulario:
         st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", index=None, horizontal=True)
 
     # --- BOTÃO ENVIAR (JSON PURO) ---
+    # --- BOTÃO ENVIAR (UNIFICADO) ---
     if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
         if not nome:
             st.error("Por favor, preencha o nome do colaborador.")
         else:
+            # 1. Monta o dicionário com os dados
             dados = {
                 "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
                 "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
@@ -231,22 +233,33 @@ if modo_formulario:
                 "Dificuldades": edit_dif.to_dict(orient="records"),
                 "Sugestoes": edit_sug.to_dict(orient="records"),
                 "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
-
             }
-            # Adicionar respostas DISC
+            
+            # 2. Adiciona as respostas DISC
             for i in range(1, 25):
                 dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-            # Salvar em JSON na pasta 'dados'
-            os.makedirs("dados", exist_ok=True)
-            nome_arquivo = f"dados/{nome.replace(' ', '_')}.json"
-            
-            with open(nome_arquivo, "w", encoding="utf-8") as f:
-                json.dump(dados, f, ensure_ascii=False, indent=4)
-            
-            st.success("✅ Formulário enviado com sucesso!")
-            st.balloons()
-
+            # 3. SALVAMENTO UNIFICADO (Lógica para evitar o erro de leitura)
+            try:
+                # Carrega o que já existe no JSON_MASTER
+                if os.path.exists(JSON_MASTER):
+                    with open(JSON_MASTER, "r", encoding="utf-8") as f:
+                        lista_formularios = json.load(f)
+                else:
+                    lista_formularios = []
+                
+                # Adiciona o novo e salva
+                lista_formularios.append(dados)
+                with open(JSON_MASTER, "w", encoding="utf-8") as f:
+                    json.dump(lista_formularios, f, ensure_ascii=False, indent=4)
+                
+                # Atualiza a sessão para o "Espelho" ler na hora
+                st.session_state["formularios"] = lista_formularios
+                
+                st.success("✅ Formulário enviado e registrado com sucesso!")
+                st.balloons()
+            except Exception as e:
+                st.error(f"Erro ao salvar: {e}")
 
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
