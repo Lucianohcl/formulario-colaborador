@@ -228,10 +228,14 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Detecta qual página estamos acessando (versão segura)
-query_params = st.experimental_get_query_params() or {}
-modo_formulario = query_params.get("page", [""])[0] == "formulario"
+# Detecta qual página estamos acessando (versão robusta)
+try:
+    query_params = st.experimental_get_query_params() or {}
+except:
+    query_params = {}
 
+modo_formulario = query_params.get("page", [""])[0] == "formulario"
+modo_visualizar = query_params.get("page", [""])[0] == "visualizar"
 # ===========================
 # PÁGINA DE FORMULÁRIO
 # ===========================
@@ -667,38 +671,7 @@ def salvar_formulario_json(formulario):
     # Atualiza sessão do Streamlit para espelho imediato
     st.session_state["formularios"] = dados_existentes
 
-# ============================================================
-# BOTÃO ENVIAR FORMULÁRIO
-# ============================================================
 
-if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
-    # Valida campos mínimos
-    if not nome or not empresa:
-        st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
-    else:
-        # Monta dicionário completo do formulário
-        formulario = {
-            "Nome": nome,
-            "Setor": setor,
-            "Cargo": cargo,
-            "Chefe": chefe,
-            "Departamento": departamento,
-            "Empresa": empresa,
-            "Escolaridade": escolaridade,
-            "Devolver": devolucao,
-            "Cursos": cursos,
-            "Objetivo": resumo_trabalho,
-            "Atividades": edit_ativ.to_dict(orient="records"),
-            "Dificuldades": edit_dif.to_dict(orient="records"),
-            "Sugestoes": edit_sug.to_dict(orient="records"),
-            **{f"Q{i+1}": r for i,r in enumerate(respostas_disc)}
-        }
-
-        # Salva em JSON
-        salvar_formulario_json(formulario)
-
-        st.success(f"✅ Formulário de {nome} enviado e salvo com sucesso!")
-        st.balloons()
 
 # ============================================================
 # PÁGINA VISUALIZAÇÃO – ESPALHO FIEL
