@@ -280,7 +280,7 @@ if modo_formulario:
                 
                 st.success("✅ Formulário enviado e registrado com sucesso!")
                 st.balloons()
-                st.rerun() # O rerun limpa a tela e evita erros de estado
+                st.rerun() 
             except Exception as e:
                 st.error(f"Erro crítico ao salvar: {e}")
 
