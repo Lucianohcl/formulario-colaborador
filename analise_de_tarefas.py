@@ -283,7 +283,8 @@ if modo_formulario:
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO
 # ===========================
-if st.experimental_get_query_params().get("page", [""])[0] == "visualizar":
+
+if modo_visualizar:
     st.title("👁️ Espelho Fiel de Respostas")
     st.info("Veja exatamente o que cada colaborador preencheu, campo a campo.")
 
