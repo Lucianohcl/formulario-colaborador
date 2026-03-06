@@ -70,6 +70,8 @@ btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
 btn_disc = st.sidebar.button("🧠 Perfil DISC")
 btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
 btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
+btn_produtividade = st.sidebar.button("🚀 Produtividade")
+
 
 st.sidebar.markdown("---")
 
