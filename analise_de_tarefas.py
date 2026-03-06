@@ -108,6 +108,7 @@ import os
 import json 
 
 # Configuração da página
+
 st.set_page_config(
     page_title="Formulário do Colaborador",
     page_icon="📊",
@@ -115,12 +116,18 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Esconder menu e rodapé
-st.markdown("""
-<style>
-#MainMenu {visibility: hidden;}, footer {visibility: hidden;}, header {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
+# --- BLOCO ÚNICO DE CSS PARA OCULTAÇÃO ---
+if st.query_params.get("page") == "formulario":
+    st.markdown("""
+    <style>
+        /* Esconde a Sidebar inteira */
+        [data-testid="stSidebar"] {display: none !important;}
+        
+        /* Esconde o menu do topo, rodapé e header */
+        #MainMenu, footer, header {visibility: hidden !important;}
+    </style>
+    """, unsafe_allow_html=True)
+# ----------------------------------------
 
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
