@@ -151,7 +151,7 @@ if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
             "Chefe": chefe,
             "Escolaridade": escolaridade,
             "Cursos": cursos,
-            "Objetivo": resumo_trabalho,
+            "Objetivo": objetivo,
 
             "Atividades": edit_ativ.to_dict("records"),
             "Dificuldades": edit_dif.to_dict("records"),
@@ -170,44 +170,214 @@ if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
 
         st.balloons()
 
-elif st.session_state.pagina == "visualizar":
+# ============================================================
+# APP COMPLETO – FORMULÁRIO + VISUALIZAÇÃO
+# ============================================================
 
-    st.title("👁️ Espelho dos Formulários")
+import streamlit as st
+import pandas as pd
+import os
+import json
+
+# Configuração da página
+st.set_page_config(
+    page_title="Formulário do Colaborador",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Esconder menu e rodapé
+st.markdown("""
+<style>
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+</style>
+""", unsafe_allow_html=True)
+
+# Pasta onde os formulários JSON serão salvos
+BASE_DIR = "formularios_json"
+os.makedirs(BASE_DIR, exist_ok=True)
+
+# Lista de perguntas DISC
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+# Detecta qual página estamos acessando
+modo_formulario = st.experimental_get_query_params().get("page", [""])[0] == "formulario"
+
+# ===========================
+# PÁGINA DE FORMULÁRIO
+# ===========================
+if modo_formulario:
+    st.title("📋 Formulário do Colaborador")
+
+    # --- IDENTIFICAÇÃO ---
+    st.subheader("🔹 Identificação")
+    nome = st.text_input("Nome do colaborador")
+    setor = st.text_input("Setor")
+    cargo = st.text_input("Cargo")
+    chefe = st.text_input("Chefe imediato")
+    departamento = st.text_input("Departamento")
+    empresa = st.text_input("Empresa / Unidade")
+    escolaridade = st.text_input("Escolaridade")
+    devolucao = st.text_input("Devolver preenchido em")
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+    objetivo = st.text_area("Trabalho e principal objetivo")
+
+    # --- ATIVIDADES ---
+    st.markdown("---")
+    st.subheader("🔹 Atividades Executadas")
+    st.info("📋 LEGENDA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+    df_ativ = pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20})
+    edit_ativ = st.data_editor(df_ativ, num_rows="fixed", use_container_width=True, key="ativ_final_v2")
+
+    # --- DIFICULDADES ---
+    st.markdown("---")
+    st.subheader("🔹 Dificuldades na Execução")
+    df_dif = pd.DataFrame({"Descrição": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20})
+    edit_dif = st.data_editor(df_dif, num_rows="fixed", use_container_width=True, key="dif_final_v2")
+
+    # --- SUGESTÕES ---
+    st.markdown("---")
+    st.subheader("💡 Sugestões de Melhoria")
+    df_sug = pd.DataFrame({"Descrição": [""]*20, "Impacto Esperado": [""]*20})
+    edit_sug = st.data_editor(df_sug, num_rows="fixed", use_container_width=True, key="sug_final_v2")
+
+    # --- DISC ---
+    st.markdown("---")
+    st.subheader("🧠 Questionário DISC")
+    respostas_disc = [st.radio(p, ["A","B","C","D"], key=f"disc_{i}") for i, p in enumerate(perguntas_disc, 1)]
+
+    # --- BOTÃO ENVIAR ---
+    if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
+        if not nome or not empresa:
+            st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
+        else:
+            # Salva JSON individual
+            form_dict = {
+                "Nome": nome,
+                "Setor": setor,
+                "Cargo": cargo,
+                "Chefe": chefe,
+                "Departamento": departamento,
+                "Empresa": empresa,
+                "Escolaridade": escolaridade,
+                "Devolver": devolucao,
+                "Cursos": cursos,
+                "Objetivo": objetivo,
+                "Atividades": edit_ativ.to_dict(orient="records"),
+                "Dificuldades": edit_dif.to_dict(orient="records"),
+                "Sugestoes": edit_sug.to_dict(orient="records"),
+                **{f"Q{i+1}": r for i,r in enumerate(respostas_disc)}
+            }
+            arquivo_json = os.path.join(BASE_DIR, f"{nome.replace(' ','_')}.json")
+            with open(arquivo_json, "w", encoding="utf-8") as f:
+                json.dump(form_dict, f, ensure_ascii=False, indent=4)
+            st.success("✅ Formulário enviado com sucesso!")
+    st.stop()
+
+
+# ===========================
+# PÁGINA DE VISUALIZAÇÃO
+# ===========================
+if st.experimental_get_query_params().get("page", [""])[0] == "visualizar":
+    st.title("👁️ Espelho Fiel de Respostas")
+    st.info("Veja exatamente o que cada colaborador preencheu, campo a campo.")
 
     arquivos = [f for f in os.listdir(BASE_DIR) if f.endswith(".json")]
 
     if not arquivos:
-
-        st.warning("Nenhum formulário encontrado.")
-
+        st.warning("⚠️ Nenhum formulário enviado ainda.")
     else:
-
         for arq in arquivos:
-
-            caminho = os.path.join(BASE_DIR,arq)
-
-            with open(caminho,encoding="utf-8") as f:
+            caminho = os.path.join(BASE_DIR, arq)
+            with open(caminho, encoding="utf-8") as f:
                 form = json.load(f)
 
-            nome = form.get("Nome","Colaborador")
+            nome_exibicao = form.get("Nome", "Colaborador")
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
+                # --- IDENTIFICAÇÃO ---
+                st.subheader("🔹 Identificação")
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.write(f"**Nome:** {form.get('Nome','Não informado')}")
+                    st.write(f"**Cargo:** {form.get('Cargo','Não informado')}")
+                    st.write(f"**Setor:** {form.get('Setor','Não informado')}")
+                    st.write(f"**Chefe:** {form.get('Chefe','Não informado')}")
+                with c2:
+                    st.write(f"**Departamento:** {form.get('Departamento','Não informado')}")
+                    st.write(f"**Empresa / Unidade:** {form.get('Empresa','Não informado')}")
+                    st.write(f"**Escolaridade:** {form.get('Escolaridade','Não informado')}")
+                    st.write(f"**Devolver preenchido em:** {form.get('Devolver','Não informado')}")
+                    st.write("**Cursos obrigatórios ou diferenciais:**")
+                    st.info(form.get("Cursos","Não informado"))
+                    st.write("**Trabalho e principal objetivo:**")
+                    st.info(form.get("Objetivo","Não informado"))
 
-            with st.expander(f"👤 {nome}"):
+                # --- ATIVIDADES ---
+                st.markdown("---")
+                st.subheader("🔹 Atividades Executadas")
+                st.table(pd.DataFrame(form.get("Atividades", [])))
 
-                st.subheader("Identificação")
+                # --- DIFICULDADES ---
+                st.subheader("🔹 Dificuldades na Execução")
+                st.table(pd.DataFrame(form.get("Dificuldades", [])))
 
-                st.write(form)
+                # --- SUGESTÕES ---
+                st.subheader("💡 Sugestões de Melhoria")
+                st.table(pd.DataFrame(form.get("Sugestoes", [])))
 
-                st.subheader("Atividades")
-                st.table(pd.DataFrame(form.get("Atividades",[])))
+                # --- DISC ---
+                st.markdown("---")
+                st.subheader("🧠 Questionário DISC")
+                respostas_disc = {k:v for k,v in form.items() if k.startswith("Q")}
+                lista_disc = []
+                for i, pergunta in enumerate(perguntas_disc, 1):
+                    letra = respostas_disc.get(f"Q{i}", "-")
+                    sig = ""
+                    if letra != "-" and "|" in pergunta:
+                        for p in pergunta.split("|"):
+                            if f"({letra})" in p:
+                                sig = p.split(")")[-1].strip()
+                    lista_disc.append({
+                        "Nº": i,
+                        "Pergunta": pergunta.split(":")[0],
+                        "Resposta": f"{letra} - {sig}" if sig else letra
+                    })
+                st.table(lista_disc)
 
-                st.subheader("Dificuldades")
-                st.table(pd.DataFrame(form.get("Dificuldades",[])))
-
-                st.subheader("Sugestões")
-                st.table(pd.DataFrame(form.get("Sugestoes",[])))
-
-                st.subheader("DISC")
-                st.write(form.get("DISC",{}))
+        # BOTÃO LIMPAR TODOS OS FORMULÁRIOS
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_formularios"):
+            for arq in arquivos:
+                os.remove(os.path.join(BASE_DIR, arq))
+            st.success("✅ Todos os formulários foram removidos da memória!")
+            st.experimental_rerun()
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
@@ -492,12 +662,8 @@ def gerar_pdf(parecer, nome):
 
 # ============================================================
 # PASTA BASE PARA FORMULÁRIOS (JSON)
-# ============================================================
-JSON_DIR = os.path.join(BASE_DIR, "formularios_json")
-os.makedirs(JSON_DIR, exist_ok=True)
-
-# Arquivo mestre JSON
-JSON_MASTER = os.path.join(JSON_DIR, "formularios.json")
+os.makedirs(BASE_DIR, exist_ok=True)
+JSON_MASTER = os.path.join(BASE_DIR, "formularios.json")
 
 # Inicializa arquivo JSON se não existir
 if not os.path.exists(JSON_MASTER):
@@ -551,7 +717,7 @@ if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionari
             "Atividades": edit_ativ.to_dict(orient="records"),
             "Dificuldades": edit_dif.to_dict(orient="records"),
             "Sugestoes": edit_sug.to_dict(orient="records"),
-            **{f"Q{i+1}": r for i,r in enumerate(respostas_disc.values())}
+            **{f"Q{i+1}": r for i,r in enumerate(respostas_disc)}
         }
 
         # Salva em JSON
@@ -627,9 +793,8 @@ if st.session_state.get("pagina") == "visualizar":
                     })
                 st.table(lista_disc)
 
-        # BOTÃO LIMPAR TODOS FORMULÁRIOS
-        if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
+        # BOTÃO LIMPAR TODOS FORMULÁRIOS – correto
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_formularios"):
             st.session_state["formularios"] = []
             st.success("✅ Todos os formulários foram removidos da memória!")
             st.experimental_rerun()
-
