@@ -565,8 +565,7 @@ if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
 # ============================================================
 
 if st.session_state.get("pagina") == "visualizar":
-    st.title("👁️ Espelho Fiel de Respostas")
-    st.info("Veja exatamente o que cada colaborador preencheu, campo a campo.")
+    
 
     # Carrega formulários da sessão
     if not st.session_state.get("formularios"):
