@@ -185,9 +185,33 @@ if modo_formulario:
     """)
 
     # --- TABELAS ---
-    edit_ativ = st.data_editor(pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), num_rows="fixed")
-    edit_dif = st.data_editor(pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), num_rows="fixed")
-    edit_sug = st.data_editor(pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}), num_rows="fixed")
+    st.subheader("🔹 Atividades Principais")
+    edit_ativ = st.data_editor(
+        pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), 
+        num_rows="fixed", 
+        use_container_width=True, 
+        key="editor_ativ"
+    )
+
+    st.markdown("---")
+    
+    st.subheader("🔹 Dificuldades na Execução")
+    edit_dif = st.data_editor(
+        pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), 
+        num_rows="fixed", 
+        use_container_width=True, 
+        key="editor_dif"
+    )
+
+    st.markdown("---")
+    
+    st.subheader("💡 Sugestões de Melhoria")
+    edit_sug = st.data_editor(
+        pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}), 
+        num_rows="fixed", 
+        use_container_width=True, 
+        key="editor_sug"
+    )
 
     # --- DISC ---
     st.subheader("🧠 Questionário DISC")
