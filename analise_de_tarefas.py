@@ -257,32 +257,43 @@ if modo_formulario:
         st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", index=None, horizontal=True)
 
     
-    # 3. SALVAMENTO UNIFICADO (BLINDADO)
-            try:
-                # Carrega o arquivo com verificação de tipo
-                lista_formularios = []
-                if os.path.exists(JSON_MASTER):
-                    try:
-                        with open(JSON_MASTER, "r", encoding="utf-8") as f:
-                            conteudo = json.load(f)
-                            # A garantia: só aceita se for realmente uma lista
-                            lista_formularios = conteudo if isinstance(conteudo, list) else []
-                    except:
-                        lista_formularios = []
-                
-                # Adiciona o novo e salva
-                lista_formularios.append(dados)
-                with open(JSON_MASTER, "w", encoding="utf-8") as f:
-                    json.dump(lista_formularios, f, ensure_ascii=False, indent=4)
-                
-                # Atualiza o estado da sessão e força o refresh
-                st.session_state["formularios"] = lista_formularios
-                
-                st.success("✅ Formulário enviado e registrado com sucesso!")
-                st.balloons()
-                st.rerun() 
-            except Exception as e:
-                st.error(f"Erro crítico ao salvar: {e}")
+# --- BOTÃO DE ENVIO (COM SALVAMENTO BLINDADO DENTRO) ---
+    if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
+        # 1. Monta o dicionário com os dados
+        dados = {
+            "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
+            "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
+            "Devolver": devolucao, "Cursos": cursos, "Objetivo": objetivo,
+            "Atividades": edit_ativ.to_dict(orient="records"),
+            "Dificuldades": edit_dif.to_dict(orient="records"),
+            "Sugestoes": edit_sug.to_dict(orient="records"),
+            "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+        }
+        # 2. Adiciona as respostas DISC
+        for i in range(1, 25):
+            dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+
+        # 3. SALVAMENTO BLINDADO
+        try:
+            lista_formularios = []
+            if os.path.exists(JSON_MASTER):
+                try:
+                    with open(JSON_MASTER, "r", encoding="utf-8") as f:
+                        conteudo = json.load(f)
+                        lista_formularios = conteudo if isinstance(conteudo, list) else []
+                except:
+                    lista_formularios = []
+            
+            lista_formularios.append(dados)
+            with open(JSON_MASTER, "w", encoding="utf-8") as f:
+                json.dump(lista_formularios, f, ensure_ascii=False, indent=4)
+            
+            st.session_state["formularios"] = lista_formularios
+            st.success("✅ Formulário enviado e registrado com sucesso!")
+            st.balloons()
+            st.rerun() 
+        except Exception as e:
+            st.error(f"Erro crítico ao salvar: {e}")    
 
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
