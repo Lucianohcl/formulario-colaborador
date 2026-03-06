@@ -134,7 +134,7 @@ def salvar_formulario_json(dados):
 
     return arquivo
 
-if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
+# if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
 
     if not nome or not empresa:
 
@@ -170,115 +170,6 @@ if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
 
         st.balloons()
 
-# ============================================================
-# APP COMPLETO – FORMULÁRIO + VISUALIZAÇÃO
-# ============================================================
-
-import streamlit as st
-import pandas as pd
-import os
-import json
-
-# Configuração da página
-st.set_page_config(
-    page_title="Formulário do Colaborador",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Esconder menu e rodapé
-st.markdown("""
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-header {visibility: hidden;}
-</style>
-""", unsafe_allow_html=True)
-
-# Pasta onde os formulários JSON serão salvos
-BASE_DIR = "formularios_json"
-os.makedirs(BASE_DIR, exist_ok=True)
-
-# Lista de perguntas DISC
-perguntas_disc = [
-    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
-    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
-    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
-    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
-    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
-]
-
-
-# A SOLUÇÃO DEFINITIVA (Coloque isso logo após seus imports)
-query_params = st.query_params
-modo_formulario = query_params.get("page") == "formulario"
-modo_visualizar = query_params.get("page") == "visualizar"
-
-#
-# ===========================
-# PÁGINA DE FORMULÁRIO
-# ===========================
-if modo_formulario:
-    st.title("📋 Formulário do Colaborador")
-
-    # --- IDENTIFICAÇÃO ---
-    st.subheader("🔹 Identificação")
-    nome = st.text_input("Nome do colaborador")
-    setor = st.text_input("Setor")
-    cargo = st.text_input("Cargo")
-    chefe = st.text_input("Chefe imediato")
-    departamento = st.text_input("Departamento")
-    empresa = st.text_input("Empresa / Unidade")
-    escolaridade = st.text_input("Escolaridade")
-    devolucao = st.text_input("Devolver preenchido em")
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-    objetivo = st.text_area("Trabalho e principal objetivo")
-
-    # --- ATIVIDADES ---
-    st.markdown("---")
-    st.subheader("🔹 Atividades Executadas")
-    st.info("📋 LEGENDA: DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-    df_ativ = pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20})
-    edit_ativ = st.data_editor(df_ativ, num_rows="fixed", use_container_width=True, key="ativ_final_v2")
-
-    # --- DIFICULDADES ---
-    st.markdown("---")
-    st.subheader("🔹 Dificuldades na Execução")
-    df_dif = pd.DataFrame({"Descrição": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20})
-    edit_dif = st.data_editor(df_dif, num_rows="fixed", use_container_width=True, key="dif_final_v2")
-
-    # --- SUGESTÕES ---
-    st.markdown("---")
-    st.subheader("💡 Sugestões de Melhoria")
-    df_sug = pd.DataFrame({"Descrição": [""]*20, "Impacto Esperado": [""]*20})
-    edit_sug = st.data_editor(df_sug, num_rows="fixed", use_container_width=True, key="sug_final_v2")
-
-    # --- DISC ---
-    st.markdown("---")
-    st.subheader("🧠 Questionário DISC")
-    respostas_disc = [st.radio(p, ["A","B","C","D"], key=f"disc_{i}") for i, p in enumerate(perguntas_disc, 1)]
-
-    
 
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO
