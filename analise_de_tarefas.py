@@ -280,10 +280,7 @@ if modo_formulario:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
             st.success("✅ Enviado com sucesso!")
             st.balloons()
-            st.rerun()
-        except Exception as e:
-            st.error(f"Erro no salvamento: {e}")
-
+            
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
 # ===========================
