@@ -228,12 +228,13 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Detecta qual página estamos acessando (Versão atualizada para Streamlit 1.30+)
-query_params = st.query_params
 
-# O .get() agora retorna diretamente o valor ou o padrão definido
+# A SOLUÇÃO DEFINITIVA (Coloque isso logo após seus imports)
+query_params = st.query_params
 modo_formulario = query_params.get("page") == "formulario"
 modo_visualizar = query_params.get("page") == "visualizar"
+
+#
 # ===========================
 # PÁGINA DE FORMULÁRIO
 # ===========================
