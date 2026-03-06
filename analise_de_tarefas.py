@@ -15,28 +15,66 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 
 # ============================================================
+
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
+
 # ============================================================
+
 st.set_page_config(
+
     page_title="Sistema de Análise de Tarefas",
+
     page_icon="📊",
+
     layout="wide",
+
     initial_sidebar_state="expanded"
+
 )
 
+
+
 # Inicialização centralizada
+
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
 if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
 if "formularios" not in st.session_state: st.session_state["formularios"] = []
 
+
+
 # Leitura da URL (Prioridade total para permitir acesso ao formulário)
+
 query_params = st.query_params
+
 if "page" in query_params:
+
     st.session_state.pagina = query_params["page"]
 
-# Diretório Base
+
+
+# --- DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS ---
+JSON_MASTER = "formularios.json"
 BASE_DIR = "dados"
 if not os.path.exists(BASE_DIR): os.makedirs(BASE_DIR)
+
+# Função para garantir que os dados carregados sejam sempre uma lista de dicionários
+def carregar_dados_seguro():
+    caminho = os.path.join(BASE_DIR, JSON_MASTER) if not os.path.exists(JSON_MASTER) else JSON_MASTER
+    if os.path.exists(caminho):
+        try:
+            with open(caminho, "r", encoding="utf-8") as f:
+                dados = json.load(f)
+                # O segredo: Filtra tudo que não for dicionário
+                return [d for d in dados if isinstance(d, dict)] if isinstance(dados, list) else []
+        except:
+            return []
+    return []
+
+# Inicializa o session_state com os dados já limpos
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = carregar_dados_seguro()
 
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
@@ -239,27 +277,32 @@ if modo_formulario:
             for i in range(1, 25):
                 dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-            # 3. SALVAMENTO UNIFICADO (Lógica para evitar o erro de leitura)
+            # 3. SALVAMENTO UNIFICADO (BLINDADO)
             try:
-                # Carrega o que já existe no JSON_MASTER
+                # Carrega o arquivo com verificação de tipo
+                lista_formularios = []
                 if os.path.exists(JSON_MASTER):
-                    with open(JSON_MASTER, "r", encoding="utf-8") as f:
-                        lista_formularios = json.load(f)
-                else:
-                    lista_formularios = []
+                    try:
+                        with open(JSON_MASTER, "r", encoding="utf-8") as f:
+                            conteudo = json.load(f)
+                            # A garantia: só aceita se for realmente uma lista
+                            lista_formularios = conteudo if isinstance(conteudo, list) else []
+                    except:
+                        lista_formularios = []
                 
                 # Adiciona o novo e salva
                 lista_formularios.append(dados)
                 with open(JSON_MASTER, "w", encoding="utf-8") as f:
                     json.dump(lista_formularios, f, ensure_ascii=False, indent=4)
                 
-                # Atualiza a sessão para o "Espelho" ler na hora
+                # Atualiza o estado da sessão e força o refresh
                 st.session_state["formularios"] = lista_formularios
                 
                 st.success("✅ Formulário enviado e registrado com sucesso!")
                 st.balloons()
+                st.rerun() # O rerun limpa a tela e evita erros de estado
             except Exception as e:
-                st.error(f"Erro ao salvar: {e}")
+                st.error(f"Erro crítico ao salvar: {e}")
 
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
