@@ -58,7 +58,7 @@ if not st.session_state.logged_in:
     usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
 
-    if st.button("Entrar"):
+    if st.button("Entrar", key="login_button"):
 
         if (usuario == "admin" and senha == "admin123") or (usuario == "Luciano" and senha == "123"):
 
@@ -134,7 +134,7 @@ def salvar_formulario_json(dados):
 
     return arquivo
 
-if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
+if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_disc"):
 
     if not nome or not empresa:
 
@@ -531,7 +531,7 @@ def salvar_formulario_json(formulario):
 # BOTÃO ENVIAR FORMULÁRIO
 # ============================================================
 
-if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO"):
+if if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
     # Valida campos mínimos
     if not nome or not empresa:
         st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
@@ -628,7 +628,7 @@ if st.session_state.get("pagina") == "visualizar":
                 st.table(lista_disc)
 
         # BOTÃO LIMPAR TODOS FORMULÁRIOS
-        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
+        if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
             st.session_state["formularios"] = []
             st.success("✅ Todos os formulários foram removidos da memória!")
             st.experimental_rerun()
