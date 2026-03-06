@@ -175,6 +175,13 @@ if modo_formulario:
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
     objetivo = st.text_area("Trabalho e principal objetivo")
 
+    # --- AQUI É O LUGAR EXATO DA LEGENDA ---
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal 
+    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+    """)
+
     # --- TABELAS ---
     edit_ativ = st.data_editor(pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), num_rows="fixed")
     edit_dif = st.data_editor(pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), num_rows="fixed")
