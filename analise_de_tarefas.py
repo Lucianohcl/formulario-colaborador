@@ -258,28 +258,47 @@ if modo_formulario:
         st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", index=None, horizontal=True)
 
     
-# --- BOTÃO DE ENVIO MINIMALISTA ---
+# --- BOTÃO DE ENVIO MINIMALISTA (4 ESPAÇOS DE INDENTAÇÃO) ---
     if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
         # 1. Monta o dicionário
         dados = {
-            "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
-            "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
-            "Devolver": devolucao, "Cursos": cursos, "Objetivo": objetivo,
+            "Nome": nome, 
+            "Setor": setor, 
+            "Cargo": cargo, 
+            "Chefe": chefe,
+            "Departamento": departamento, 
+            "Empresa": empresa, 
+            "Escolaridade": escolaridade,
+            "Devolver": devolucao, 
+            "Cursos": cursos, 
+            "Objetivo": objetivo,
             "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, 'to_dict') else [],
             "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, 'to_dict') else [],
             "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, 'to_dict') else []
         }
+        
         for i in range(1, 25):
             dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+        
         dados["DataEnvio"] = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
 
         # 2. Salvamento Direto
         try:
+            # Garante que a pasta existe antes de salvar
+            os.makedirs("dados", exist_ok=True)
+            
             nome_arquivo = f"{nome.strip().replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json"
-            with open(os.path.join("dados", nome_arquivo), "w", encoding="utf-8") as f:
+            caminho_completo = os.path.join("dados", nome_arquivo)
+            
+            with open(caminho_completo, "w", encoding="utf-8") as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
+            
             st.success("✅ Enviado com sucesso!")
             st.balloons()
+            st.rerun()
+            
+        except Exception as e:
+            st.error(f"Erro no salvamento: {e}")
             
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
