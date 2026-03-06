@@ -228,8 +228,9 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Detecta qual página estamos acessando
-modo_formulario = st.experimental_get_query_params().get("page", [""])[0] == "formulario"
+# Detecta qual página estamos acessando (versão segura)
+query_params = st.experimental_get_query_params() or {}
+modo_formulario = query_params.get("page", [""])[0] == "formulario"
 
 # ===========================
 # PÁGINA DE FORMULÁRIO
