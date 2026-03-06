@@ -171,11 +171,12 @@ def salvar_formulario_json(dados):
         st.balloons()
 
 
+
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO
 # ===========================
-
-if modo_visualizar:
+if st.session_state.pagina == "visualizar":    
+    
     st.title("👁️ Espelho Fiel de Respostas")
     st.info("Veja exatamente o que cada colaborador preencheu, campo a campo.")
 
