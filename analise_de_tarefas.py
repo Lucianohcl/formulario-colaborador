@@ -218,7 +218,7 @@ if modo_formulario:
     for i, pergunta in enumerate(perguntas_disc, 1):
         st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", index=None, horizontal=True)
 
-    # --- BOTÃO ENVIAR (JSON PURO) ---
+    
     # --- BOTÃO ENVIAR (UNIFICADO) ---
     if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
         if not nome:
@@ -656,74 +656,69 @@ def salvar_formulario_json(formulario):
 
 
 # ============================================================
-# PÁGINA VISUALIZAÇÃO – ESPALHO FIEL
+# PÁGINA VISUALIZAÇÃO – ESPELHO FIEL
 # ============================================================
 
 if st.session_state.get("pagina") == "visualizar":
     
-
-    # Carrega formulários da sessão
-    if not st.session_state.get("formularios"):
+    # 1. Carrega dados garantindo segurança
+    formularios = st.session_state.get("formularios", [])
+    
+    if not isinstance(formularios, list) or len(formularios) == 0:
         st.warning("⚠️ Nenhum formulário preenchido ainda.")
     else:
-        for idx, form in enumerate(st.session_state["formularios"], 1):
+        for idx, form in enumerate(formularios, 1):
+            
+            # --- PROTEÇÃO CRÍTICA CONTRA O ERRO ---
+            if not isinstance(form, dict):
+                continue # Pula este item se não for um dicionário
+            
+            # Agora sim, podemos usar o .get() com segurança
             nome_exibicao = form.get("Nome", f"Colaborador {idx}")
+            
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
                 # IDENTIFICAÇÃO
                 st.subheader("🔹 Identificação")
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.write(f"**Nome:** {form.get('Nome','Não informado')}")
-                    st.write(f"**Cargo:** {form.get('Cargo','Não informado')}")
-                    st.write(f"**Setor:** {form.get('Setor','Não informado')}")
-                    st.write(f"**Chefe:** {form.get('Chefe','Não informado')}")
+                    st.write(f"**Nome:** {form.get('Nome', 'Não informado')}")
+                    st.write(f"**Cargo:** {form.get('Cargo', 'Não informado')}")
+                    st.write(f"**Setor:** {form.get('Setor', 'Não informado')}")
+                    st.write(f"**Chefe:** {form.get('Chefe', 'Não informado')}")
                 with c2:
-                    st.write(f"**Departamento:** {form.get('Departamento','Não informado')}")
-                    st.write(f"**Empresa / Unidade:** {form.get('Empresa','Não informado')}")
-                    st.write(f"**Escolaridade:** {form.get('Escolaridade','Não informado')}")
-                    st.write(f"**Devolver preenchido em:** {form.get('Devolver','Não informado')}")
-                    st.write("**Cursos obrigatórios ou diferenciais:**")
-                    st.info(form.get("Cursos","Não informado"))
-                    st.write("**Trabalho e principal objetivo:**")
-                    st.info(form.get("Objetivo","Não informado"))
+                    st.write(f"**Departamento:** {form.get('Departamento', 'Não informado')}")
+                    st.write(f"**Empresa / Unidade:** {form.get('Empresa', 'Não informado')}")
+                    st.write(f"**Escolaridade:** {form.get('Escolaridade', 'Não informado')}")
+                
+                st.info(f"**Objetivo:** {form.get('Objetivo', 'Não informado')}")
 
-                # ATIVIDADES
+                # ATIVIDADES (Usa DataFrame com proteção)
                 st.markdown("---")
                 st.subheader("🔹 Atividades Executadas")
                 df_ativ = pd.DataFrame(form.get("Atividades", []))
-                st.table(df_ativ)
+                st.table(df_ativ) if not df_ativ.empty else st.write("Nenhuma atividade.")
 
-                # DIFICULDADES
+                # DIFICULDADES E SUGESTÕES
                 st.subheader("🔹 Dificuldades na Execução")
                 df_dif = pd.DataFrame(form.get("Dificuldades", []))
-                st.table(df_dif)
+                st.table(df_dif) if not df_dif.empty else st.write("Nenhuma dificuldade.")
 
-                # SUGESTÕES
                 st.subheader("💡 Sugestões de Melhoria")
                 df_sug = pd.DataFrame(form.get("Sugestoes", []))
-                st.table(df_sug)
+                st.table(df_sug) if not df_sug.empty else st.write("Nenhuma sugestão.")
 
                 # DISC
-                st.markdown("---")
                 st.subheader("🧠 Questionário DISC")
-                respostas_disc = {k:v for k,v in form.items() if k.startswith("Q")}
+                # Filtra apenas as chaves que começam com Q
+                respostas_disc = {k: v for k, v in form.items() if str(k).startswith("Q")}
                 lista_disc = []
                 for i, pergunta in enumerate(perguntas_disc, 1):
                     letra = respostas_disc.get(f"Q{i}", "-")
-                    sig = ""
-                    if letra != "-" and "|" in pergunta:
-                        for p in pergunta.split("|"):
-                            if f"({letra})" in p:
-                                sig = p.split(")")[-1].strip()
-                    lista_disc.append({
-                        "Nº": i,
-                        "Pergunta": pergunta.split(":")[0],
-                        "Resposta": f"{letra} - {sig}" if sig else letra
-                    })
-                st.table(lista_disc)
+                    lista_disc.append({"Nº": i, "Resposta": letra})
+                st.table(pd.DataFrame(lista_disc))
 
-        # BOTÃO LIMPAR TODOS FORMULÁRIOS – correto
+        # BOTÃO LIMPAR (Usa a sintaxe atual do Streamlit)
         if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_formularios"):
             st.session_state["formularios"] = []
-            st.success("✅ Todos os formulários foram removidos da memória!")
-            st.experimental_rerun()
+            st.success("✅ Limpeza concluída!")
+            st.rerun() # Substitui o experimental_rerun
