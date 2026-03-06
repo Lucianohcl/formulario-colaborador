@@ -656,27 +656,38 @@ def salvar_formulario_json(formulario):
 
 
 # ============================================================
-# PÁGINA VISUALIZAÇÃO – ESPELHO FIEL
+# PÁGINA VISUALIZAÇÃO – ESPELHO FIEL (TRECHO FINAL COMPLETO)
 # ============================================================
 
 if st.session_state.get("pagina") == "visualizar":
+    st.title("👁️ Visualização de Registros")
+
+    # 1. Carregamento seguro do arquivo JSON
+    if os.path.exists(JSON_MASTER):
+        try:
+            with open(JSON_MASTER, "r", encoding="utf-8") as f:
+                dados_carregados = json.load(f)
+                # Filtra apenas o que é dicionário (remove lixo do arquivo)
+                st.session_state["formularios"] = [item for item in dados_carregados if isinstance(item, dict)]
+        except:
+            st.session_state["formularios"] = []
     
-    # 1. Carrega dados garantindo segurança
     formularios = st.session_state.get("formularios", [])
-    
-    if not isinstance(formularios, list) or len(formularios) == 0:
-        st.warning("⚠️ Nenhum formulário preenchido ainda.")
+
+    if not formularios:
+        st.warning("⚠️ Nenhum formulário válido encontrado.")
     else:
         for idx, form in enumerate(formularios, 1):
             
-            # --- PROTEÇÃO CRÍTICA CONTRA O ERRO ---
+            # --- BLINDAGEM CONTRA O ERRO ---
+            # Se não for um dicionário, pula o item imediatamente
             if not isinstance(form, dict):
-                continue # Pula este item se não for um dicionário
+                continue
             
-            # Agora sim, podemos usar o .get() com segurança
-            nome_exibicao = form.get("Nome", f"Colaborador {idx}")
+            # Agora o .get() e o .upper() estão protegidos
+            nome_exibicao = str(form.get("Nome", f"Colaborador {idx}")).upper()
             
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao.upper()}"):
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao}"):
                 # IDENTIFICAÇÃO
                 st.subheader("🔹 Identificação")
                 c1, c2 = st.columns(2)
@@ -692,33 +703,34 @@ if st.session_state.get("pagina") == "visualizar":
                 
                 st.info(f"**Objetivo:** {form.get('Objetivo', 'Não informado')}")
 
-                # ATIVIDADES (Usa DataFrame com proteção)
+                # ATIVIDADES
                 st.markdown("---")
                 st.subheader("🔹 Atividades Executadas")
                 df_ativ = pd.DataFrame(form.get("Atividades", []))
                 st.table(df_ativ) if not df_ativ.empty else st.write("Nenhuma atividade.")
 
                 # DIFICULDADES E SUGESTÕES
-                st.subheader("🔹 Dificuldades na Execução")
+                st.subheader("🚩 Dificuldades e Sugestões")
                 df_dif = pd.DataFrame(form.get("Dificuldades", []))
                 st.table(df_dif) if not df_dif.empty else st.write("Nenhuma dificuldade.")
-
-                st.subheader("💡 Sugestões de Melhoria")
+                
                 df_sug = pd.DataFrame(form.get("Sugestoes", []))
                 st.table(df_sug) if not df_sug.empty else st.write("Nenhuma sugestão.")
 
                 # DISC
                 st.subheader("🧠 Questionário DISC")
-                # Filtra apenas as chaves que começam com Q
                 respostas_disc = {k: v for k, v in form.items() if str(k).startswith("Q")}
                 lista_disc = []
-                for i, pergunta in enumerate(perguntas_disc, 1):
+                for i in range(1, 25): # Loop fixo de 24 questões
                     letra = respostas_disc.get(f"Q{i}", "-")
                     lista_disc.append({"Nº": i, "Resposta": letra})
                 st.table(pd.DataFrame(lista_disc))
 
-        # BOTÃO LIMPAR (Usa a sintaxe atual do Streamlit)
-        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_formularios"):
+        # BOTÃO DE LIMPEZA GERAL
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
             st.session_state["formularios"] = []
-            st.success("✅ Limpeza concluída!")
-            st.rerun() # Substitui o experimental_rerun
+            if os.path.exists(JSON_MASTER):
+                with open(JSON_MASTER, "w", encoding="utf-8") as f:
+                    json.dump([], f)
+            st.success("✅ Banco de dados limpo com sucesso!")
+            st.rerun()
