@@ -275,34 +275,7 @@ if modo_formulario:
     st.subheader("🧠 Questionário DISC")
     respostas_disc = [st.radio(p, ["A","B","C","D"], key=f"disc_{i}") for i, p in enumerate(perguntas_disc, 1)]
 
-    # --- BOTÃO ENVIAR ---
-    if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
-        if not nome or not empresa:
-            st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
-        else:
-            # Salva JSON individual
-            form_dict = {
-                "Nome": nome,
-                "Setor": setor,
-                "Cargo": cargo,
-                "Chefe": chefe,
-                "Departamento": departamento,
-                "Empresa": empresa,
-                "Escolaridade": escolaridade,
-                "Devolver": devolucao,
-                "Cursos": cursos,
-                "Objetivo": objetivo,
-                "Atividades": edit_ativ.to_dict(orient="records"),
-                "Dificuldades": edit_dif.to_dict(orient="records"),
-                "Sugestoes": edit_sug.to_dict(orient="records"),
-                **{f"Q{i+1}": r for i,r in enumerate(respostas_disc)}
-            }
-            arquivo_json = os.path.join(BASE_DIR, f"{nome.replace(' ','_')}.json")
-            with open(arquivo_json, "w", encoding="utf-8") as f:
-                json.dump(form_dict, f, ensure_ascii=False, indent=4)
-            st.success("✅ Formulário enviado com sucesso!")
-    st.stop()
-
+    
 
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO
