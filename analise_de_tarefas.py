@@ -26,6 +26,30 @@ st.set_page_config(
 )
 
 # ============================================================
+# SESSION STATE (Inicialização Obrigatória Antes do Uso)
+# ============================================================
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "home"
+
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []
+
+# ============================================================
+# LEITURA DE URL (Query Params)
+# ============================================================
+
+# Lemos a URL apenas se estivermos na home, permitindo o acesso direto
+params = st.query_params
+if "page" in params and st.session_state.pagina == "home":
+    # O valor passado em ?page=valor no link deve corresponder a um dos seus estados de página
+    st.session_state.pagina = params["page"]
+
+
+# ============================================================
 # DIRETÓRIO BASE
 # ============================================================
 
