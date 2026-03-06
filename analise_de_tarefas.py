@@ -531,7 +531,7 @@ def salvar_formulario_json(formulario):
 # BOTÃO ENVIAR FORMULÁRIO
 # ============================================================
 
-if if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
+if st.button("📨 FINALIZAR E ENVIAR QUESTIONÁRIO", key="finalizar_questionario"):
     # Valida campos mínimos
     if not nome or not empresa:
         st.error("❌ Por favor, preencha ao menos Nome e Empresa.")
