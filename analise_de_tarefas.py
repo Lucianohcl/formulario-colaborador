@@ -601,36 +601,40 @@ def gerar_pdf(parecer, nome):
 
 # ============================================================
 # PASTA BASE PARA FORMULÁRIOS (JSON)
-os.makedirs(BASE_DIR, exist_ok=True)
-JSON_MASTER = os.path.join(BASE_DIR, "formularios.json")
+# ============================================================
+# Usamos 'dados_dir' para manter o padrão que já criamos
+json_master = os.path.join(dados_dir, "formularios.json")
 
 # Inicializa arquivo JSON se não existir
-if not os.path.exists(JSON_MASTER):
-    with open(JSON_MASTER, "w", encoding="utf-8") as f:
+if not os.path.exists(json_master):
+    with open(json_master, "w", encoding="utf-8") as f:
         json.dump([], f, ensure_ascii=False, indent=4)
 
 # ============================================================
 # FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
 # ============================================================
-
 def salvar_formulario_json(formulario):
     """
-    Recebe um dicionário do formulário preenchido
-    Salva em arquivo JSON e atualiza a sessão para espelho
+    Recebe um dicionário do formulário preenchido, salva no arquivo 
+    JSON único dentro da pasta 'dados' e atualiza a sessão para 
+    espelhamento imediato na interface.
     """
-    # Carrega dados existentes
-    with open(JSON_MASTER, "r", encoding="utf-8") as f:
-        dados_existentes = json.load(f)
+    # 1. Tenta carregar os dados existentes ou cria uma lista vazia
+    try:
+        with open(json_master, "r", encoding="utf-8") as f:
+            dados_existentes = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Se o arquivo não existir ou estiver vazio/inválido, inicia como lista vazia
+        dados_existentes = []
 
-    # Adiciona novo formulário
+    # 2. Adiciona o novo formulário à lista
     dados_existentes.append(formulario)
 
-    # Salva novamente
-    with open(JSON_MASTER, "w", encoding="utf-8") as f:
+    # 3. Salva a lista completa de volta no arquivo
+    with open(json_master, "w", encoding="utf-8") as f:
         json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
 
-    # Atualiza sessão do Streamlit para espelho imediato
+    # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
     st.session_state["formularios"] = dados_existentes
-
 
 
