@@ -312,64 +312,74 @@ if st.query_params.get("page") == "formulario":
 
             )
 
-        # --- É EXATAMENTE AQUI QUE VOCÊ COLOCA O BOTÃO E A VALIDAÇÃO ---
+        # --- BOTÃO E VALIDAÇÃO INTEGRADOS ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            # A trava que bloqueia o envio se faltar algo
+            # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
             if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
                 st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
+            
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Você não respondeu todas as perguntas do DISC!")
+            
             else:
-                # SÓ EXECUTA O SALVAMENTO SE TUDO ESTIVER OK
+                # 2. SÓ EXECUTA TUDO ISTO SE ESTIVER TUDO OK
                 st.success("✅ Tudo validado! Processando...")
-
-
-        
-
-        if enviar:
-            # 1. TRAVA DE SEGURANÇA (evita duplicidade)
-            if "processando" not in st.session_state:
-                st.session_state["processando"] = True
                 
-                # Caminho absoluto (agora dentro da trava)
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
-                
-               
-            
-            # Montagem do dicionário de dados
-            dados = {
-                "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
-                "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
-                "Devolver": devolucao, "Cursos": cursos, "Objetivo": objetivo,
-                "Atividades": edit_ativ.to_dict(orient="records"),
-                "Dificuldades": edit_dif.to_dict(orient="records"),
-                "Sugestoes": edit_sug.to_dict(orient="records"),
-                "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
-            }
-            # Coleta as respostas do DISC
-            for i in range(1, 25): 
-                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
-            
-            # Nome do arquivo
-            nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-            caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
-            
-            # Escrita do arquivo JSON
-            with open(caminho, "w", encoding="utf-8") as f: 
-                json.dump(dados, f, ensure_ascii=False, indent=4)
-            
-            st.success("✅ Formulário enviado com sucesso!")
-            
-            # Atualiza o estado para que a Visualização pegue os novos dados
-            if "carregar_todos_formularios" in globals():
-                st.session_state["formularios"] = carregar_todos_formularios()
-            
-            time.sleep(2)
-            st.rerun()
+                # 3. TRAVA DE SEGURANÇA E PREPARAÇÃO DE DIRETÓRIO
+                if "processando" not in st.session_state:
+                    st.session_state["processando"] = True
+                    
+                    import os
+                    import json
+                    import pandas as pd
+                    import time
+                    
+                    base_dir = os.path.dirname(os.path.abspath(__file__))
+                    dados_dir = os.path.join(base_dir, "dados")
+                    os.makedirs(dados_dir, exist_ok=True)
+                    
+                    # 4. MONTAGEM DO DICIONÁRIO DE DADOS
+                    dados = {
+                        "Nome": nome, 
+                        "Setor": setor, 
+                        "Cargo": cargo, 
+                        "Chefe": chefe,
+                        "Departamento": departamento, 
+                        "Empresa": empresa, 
+                        "Escolaridade": escolaridade,
+                        "Devolver": devolucao, 
+                        "Cursos": cursos, 
+                        "Objetivo": objetivo,
+                        "Atividades": edit_ativ.to_dict(orient="records"),
+                        "Dificuldades": edit_dif.to_dict(orient="records"),
+                        "Sugestoes": edit_sug.to_dict(orient="records"),
+                        "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
+                    }
+                    
+                    # Coleta as respostas do DISC
+                    for i in range(1, 25): 
+                        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+                    
+                    # Nome do arquivo
+                    nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+                    caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
+                    
+                    # Escrita do arquivo JSON
+                    with open(caminho, "w", encoding="utf-8") as f: 
+                        json.dump(dados, f, ensure_ascii=False, indent=4)
+                    
+                    st.success("✅ Formulário enviado com sucesso!")
+                    
+                    # Atualiza o estado para que a Visualização pegue os novos dados
+                    if "carregar_todos_formularios" in globals():
+                        st.session_state["formularios"] = carregar_todos_formularios()
+                    
+                    time.sleep(2)
+                    # Remove a trava para permitir novo envio se necessário
+                    del st.session_state["processando"]
+                    st.rerun()
             
       
 
