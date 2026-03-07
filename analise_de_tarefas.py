@@ -143,25 +143,19 @@ if pagina_anterior != st.session_state.pagina:
 # ============================================================
 # FORMULÁRIO COMPLETO PARA COLABORADOR (JSON VERSION)
 # ============================================================
-import streamlit as st
-import pandas as pd
-import os
-import json 
-
-# Configuração da página
+# --- CONFIGURAÇÃO DE DIRETÓRIOS ---
+base_dir = os.path.dirname(os.path.abspath(__file__))
+dados_dir = os.path.join(base_dir, "dados")
+os.makedirs(dados_dir, exist_ok=True)
 
 # --- BLOCO ÚNICO DE CSS PARA OCULTAÇÃO ---
 if st.query_params.get("page") == "formulario":
     st.markdown("""
     <style>
-        /* Esconde a Sidebar inteira */
         [data-testid="stSidebar"] {display: none !important;}
-        
-        /* Esconde o menu do topo, rodapé e header */
         #MainMenu, footer, header {visibility: hidden !important;}
     </style>
     """, unsafe_allow_html=True)
-# ----------------------------------------
 
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
@@ -191,28 +185,10 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-
-# ============================================================
-# FORMULÁRIO COLABORADOR AJUSTADO
-# ============================================================
-
-# --- TESTE RÁPIDO DE SALVAMENTO ---
-os.makedirs("dados", exist_ok=True)
-teste = {"teste": 123}
-with open(os.path.join("dados", "teste2.json"), "w", encoding="utf-8") as f:
-    json.dump(teste, f, indent=4)
-
-st.write("Arquivo teste2.json criado na pasta 'dados' com sucesso!")
-
-modo_formulario = st.query_params.get("page") == "formulario"
-
-if modo_formulario:
+# --- FORMULÁRIO ---
+if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-
-    # --- FORMULÁRIO PRINCIPAL ---
     with st.form("form_colaborador"):
-
-        # --- IDENTIFICAÇÃO ---
         nome = st.text_input("Nome do colaborador")
         setor = st.text_input("Setor")
         cargo = st.text_input("Cargo")
@@ -223,165 +199,57 @@ if modo_formulario:
         devolucao = st.text_input("Devolver preenchido em")
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
+        
+        edit_ativ = st.data_editor(pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), num_rows="fixed", use_container_width=True)
+        edit_dif = st.data_editor(pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), num_rows="fixed", use_container_width=True)
+        edit_sug = st.data_editor(pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}), num_rows="fixed", use_container_width=True)
 
-        # --- ATIVIDADES ---
-        edit_ativ = st.data_editor(
-            pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}),
-            num_rows="fixed",
-            use_container_width=True,
-            key="editor_ativ"
-        )
-
-        # --- DIFICULDADES ---
-        edit_dif = st.data_editor(
-            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}),
-            num_rows="fixed",
-            use_container_width=True,
-            key="editor_dif"
-        )
-
-        # --- SUGESTÕES ---
-        edit_sug = st.data_editor(
-            pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}),
-            num_rows="fixed",
-            use_container_width=True,
-            key="editor_sug"
-        )
-
-        # --- DISC ---
-        perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]  # Substitua pelas reais
         for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(
-                label=f"{i}. {pergunta}",
-                options=["A", "B", "C", "D"],
-                key=f"disc_{i}",
-                horizontal=True
-            )
+            st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True)
 
-        # --- BOTÃO DE ENVIO (OBRIGATÓRIO DENTRO DO FORM) ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            # --- Monta dicionário ---
             dados = {
-                "Nome": nome,
-                "Setor": setor,
-                "Cargo": cargo,
-                "Chefe": chefe,
-                "Departamento": departamento,
-                "Empresa": empresa,
-                "Escolaridade": escolaridade,
-                "Devolver": devolucao,
-                "Cursos": cursos,
-                "Objetivo": objetivo,
+                "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
+                "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
+                "Devolver": devolucao, "Cursos": cursos, "Objetivo": objetivo,
                 "Atividades": edit_ativ.to_dict(orient="records"),
                 "Dificuldades": edit_dif.to_dict(orient="records"),
-                "Sugestoes": edit_sug.to_dict(orient="records")
+                "Sugestoes": edit_sug.to_dict(orient="records"),
+                "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
             }
-            for i in range(1, 25):
-                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+            for i in range(1, 25): dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+            
+            nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+            caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
+            with open(caminho, "w", encoding="utf-8") as f: json.dump(dados, f, ensure_ascii=False, indent=4)
+            st.success("✅ Formulário enviado com sucesso!")
 
-            # --- Salvamento ---
-            try:
-                # Caminho absoluto da pasta 'dados' (mesmo diretório do .py)
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
-
-                agora = pd.Timestamp.now()
-                dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
-                nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-                caminho_completo = os.path.join(dados_dir, f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
-
-                with open(caminho_completo, "w", encoding="utf-8") as f:
-                    json.dump(dados, f, ensure_ascii=False, indent=4)
-
-                st.success("✅ Formulário enviado com sucesso! Arquivo salvo em 'dados/'.")
-
-            except Exception as e:
-                st.error(f"Erro no salvamento: {e}") 
-
-        
-# ============================================================
-# PÁGINA VISUALIZAÇÃO – ESPELHO FIEL (TRECHO FINAL COMPLETO)
-# ============================================================
-
+# --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
-
-    # 1. Carregamento seguro do arquivo JSON
-    if os.path.exists(JSON_MASTER):
-        try:
-            with open(JSON_MASTER, "r", encoding="utf-8") as f:
-                dados_carregados = json.load(f)
-                # Filtra apenas o que é dicionário (remove lixo do arquivo)
-                st.session_state["formularios"] = [item for item in dados_carregados if isinstance(item, dict)]
-        except:
-            st.session_state["formularios"] = []
-    
-    formularios = st.session_state.get("formularios", [])
+    formularios = []
+    if os.path.exists(dados_dir):
+        for arquivo in os.listdir(dados_dir):
+            if arquivo.endswith(".json"):
+                with open(os.path.join(dados_dir, arquivo), "r", encoding="utf-8") as f:
+                    try: formularios.append(json.load(f))
+                    except: continue
 
     if not formularios:
-        st.warning("⚠️ Nenhum formulário válido encontrado.")
+        st.warning("⚠️ Nenhum formulário encontrado.")
     else:
         for idx, form in enumerate(formularios, 1):
-            
-            # --- BLINDAGEM CONTRA O ERRO ---
-            # Se não for um dicionário, pula o item imediatamente
-            if not isinstance(form, dict):
-                continue
-            
-            # Agora o .get() e o .upper() estão protegidos
-            nome_exibicao = str(form.get("Nome", f"Colaborador {idx}")).upper()
-            
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibicao}"):
-                # IDENTIFICAÇÃO
-                st.subheader("🔹 Identificação")
-                c1, c2 = st.columns(2)
-                with c1:
-                    st.write(f"**Nome:** {form.get('Nome', 'Não informado')}")
-                    st.write(f"**Cargo:** {form.get('Cargo', 'Não informado')}")
-                    st.write(f"**Setor:** {form.get('Setor', 'Não informado')}")
-                    st.write(f"**Chefe:** {form.get('Chefe', 'Não informado')}")
-                with c2:
-                    st.write(f"**Departamento:** {form.get('Departamento', 'Não informado')}")
-                    st.write(f"**Empresa / Unidade:** {form.get('Empresa', 'Não informado')}")
-                    st.write(f"**Escolaridade:** {form.get('Escolaridade', 'Não informado')}")
-                
-                st.info(f"**Objetivo:** {form.get('Objetivo', 'Não informado')}")
+            with st.expander(f"👤 FORMULÁRIO DE: {str(form.get('Nome', f'Colaborador {idx}')).upper()}"):
+                st.write(f"**Cargo:** {form.get('Cargo')}")
+                st.table(pd.DataFrame(form.get("Atividades", [])))
+                # (Adicione aqui os outros campos conforme sua necessidade)
 
-                # ATIVIDADES
-                st.markdown("---")
-                st.subheader("🔹 Atividades Executadas")
-                df_ativ = pd.DataFrame(form.get("Atividades", []))
-                st.table(df_ativ) if not df_ativ.empty else st.write("Nenhuma atividade.")
-
-                # DIFICULDADES E SUGESTÕES
-                st.subheader("🚩 Dificuldades e Sugestões")
-                df_dif = pd.DataFrame(form.get("Dificuldades", []))
-                st.table(df_dif) if not df_dif.empty else st.write("Nenhuma dificuldade.")
-                
-                df_sug = pd.DataFrame(form.get("Sugestoes", []))
-                st.table(df_sug) if not df_sug.empty else st.write("Nenhuma sugestão.")
-
-                # DISC
-                st.subheader("🧠 Questionário DISC")
-                respostas_disc = {k: v for k, v in form.items() if str(k).startswith("Q")}
-                lista_disc = []
-                for i in range(1, 25): # Loop fixo de 24 questões
-                    letra = respostas_disc.get(f"Q{i}", "-")
-                    lista_disc.append({"Nº": i, "Resposta": letra})
-                st.table(pd.DataFrame(lista_disc))
-
-        # BOTÃO DE LIMPEZA GERAL
-        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
-            st.session_state["formularios"] = []
-            if os.path.exists(JSON_MASTER):
-                with open(JSON_MASTER, "w", encoding="utf-8") as f:
-                    json.dump([], f)
-            st.success("✅ Banco de dados limpo com sucesso!")
-            st.rerun()
-
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
+            for arquivo in os.listdir(dados_dir):
+                if arquivo.endswith(".json"): os.remove(os.path.join(dados_dir, arquivo))
+            st.success("✅ Banco de dados limpo!"); st.rerun()
 
 
 # ============================================================
