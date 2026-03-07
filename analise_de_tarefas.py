@@ -218,10 +218,10 @@ if modo_formulario:
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
 
-        # --- AQUI É O LUGAR EXATO DA LEGENDA ---
+        # --- LEGENDA ---
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal 
+        * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
 
@@ -265,56 +265,56 @@ if modo_formulario:
                 horizontal=True
             )
 
-# --- BOTÃO DO FORMULÁRIO ---
-enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        # --- BOTÃO DO FORMULÁRIO (DENTRO DO FORM) ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
+# --- LÓGICA DE ENVIO (FORA DO FORM) ---
 if enviar:
-        # Aqui abaixo agora existem 8 espaços de recuo
-        st.write("Entrou no envio")
-        st.success("Teste envio OK")
 
-        # 1. Monta o dicionário
-        dados = {
-            "Nome": nome, 
-            "Setor": setor, 
-            "Cargo": cargo, 
-            "Chefe": chefe,
-            "Departamento": departamento, 
-            "Empresa": empresa, 
-            "Escolaridade": escolaridade,
-            "Devolver": devolucao, 
-            "Cursos": cursos, 
-            "Objetivo": objetivo,
-            "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
-            "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
-            "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
-        }
+    st.write("Entrou no envio")
+    st.success("Teste envio OK")
 
-        for i in range(1, 25):
-            dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+    # 1. Monta o dicionário
+    dados = {
+        "Nome": nome,
+        "Setor": setor,
+        "Cargo": cargo,
+        "Chefe": chefe,
+        "Departamento": departamento,
+        "Empresa": empresa,
+        "Escolaridade": escolaridade,
+        "Devolver": devolucao,
+        "Cursos": cursos,
+        "Objetivo": objetivo,
+        "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
+        "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
+        "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
+    }
 
-        # 2. Salvamento
-        try:
-            os.makedirs("dados", exist_ok=True)
+    for i in range(1, 25):
+        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-            agora = pd.Timestamp.now()
-            dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
+    # 2. Salvamento
+    try:
+        os.makedirs("dados", exist_ok=True)
 
-            nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+        agora = pd.Timestamp.now()
+        dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
 
-            nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
+        nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
 
-            caminho_completo = os.path.join("dados", nome_arquivo)
+        nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
 
-            with open(caminho_completo, "w", encoding="utf-8") as f:
-                json.dump(dados, f, ensure_ascii=False, indent=4)
+        caminho_completo = os.path.join("dados", nome_arquivo)
 
-            st.success("✅ Enviado com sucesso!")
-            st.rerun()
+        with open(caminho_completo, "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
 
-        except Exception as e:
-            st.error(f"Erro no salvamento: {e}")
-    
+        st.success("✅ Enviado com sucesso!")
+        st.rerun()
+
+    except Exception as e:
+        st.error(f"Erro no salvamento: {e}")    
         
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
