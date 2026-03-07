@@ -191,12 +191,10 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+
 # ============================================================
 # FORMULÁRIO COLABORADOR AJUSTADO
 # ============================================================
-
-# Detecta modo formulário (sempre antes de usar)
-modo_formulario = st.query_params.get("page") == "formulario"
 
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
@@ -275,19 +273,23 @@ if modo_formulario:
 
             # --- Salvamento ---
             try:
-                os.makedirs("dados", exist_ok=True)
+                # Caminho absoluto da pasta 'dados' (mesmo diretório do .py)
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+
                 agora = pd.Timestamp.now()
                 dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
                 nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-                caminho_completo = os.path.join("dados", f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
+                caminho_completo = os.path.join(dados_dir, f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
 
                 with open(caminho_completo, "w", encoding="utf-8") as f:
                     json.dump(dados, f, ensure_ascii=False, indent=4)
 
-                st.success("✅ Formulário enviado com sucesso!")
+                st.success("✅ Formulário enviado com sucesso! Arquivo salvo em 'dados/'.")
 
             except Exception as e:
-                st.error(f"Erro no salvamento: {e}")      
+                st.error(f"Erro no salvamento: {e}") 
 
         
 # ============================================================
