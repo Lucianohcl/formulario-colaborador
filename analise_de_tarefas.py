@@ -248,17 +248,17 @@ if st.query_params.get("page") == "formulario":
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador")
-        setor = col2.text_input("Setor")
-        cargo = col1.text_input("Cargo")
-        chefe = col2.text_input("Chefe imediato")
-        departamento = col1.text_input("Departamento")
-        empresa = col2.text_input("Empresa / Unidade")
-        escolaridade = col1.text_input("Escolaridade")
-        devolucao = col2.text_input("Devolver preenchido em")
+        nome = col1.text_input("Nome do colaborador", required=True)
+        setor = col2.text_input("Setor", required=True)
+        cargo = col1.text_input("Cargo", required=True)
+        chefe = col2.text_input("Chefe imediato", required=True)
+        departamento = col1.text_input("Departamento", required=True)
+        empresa = col2.text_input("Empresa / Unidade", required=True)
+        escolaridade = col1.text_input("Escolaridade", required=True)
+        devolucao = col2.text_input("Devolver preenchido em", required=True)
         
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", required=True)
+        objetivo = st.text_area("Trabalho e principal objetivo", required=True)
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
@@ -301,8 +301,14 @@ if st.query_params.get("page") == "formulario":
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True)
-
+            st.radio(
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None, 
+                required=True
+            )
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
