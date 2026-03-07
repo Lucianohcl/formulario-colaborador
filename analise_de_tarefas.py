@@ -192,16 +192,8 @@ perguntas_disc = [
 ]
 
 # ============================================================
-# FORMULÁRIO COLABORADOR
+# FORMULÁRIO COLABORADOR AJUSTADO
 # ============================================================
-
-import os
-import json
-import pandas as pd
-import streamlit as st
-
-# --- Detectar modo formulário ---
-modo_formulario = st.query_params.get("page") == "formulario"
 
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
@@ -221,15 +213,7 @@ if modo_formulario:
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
 
-        # --- LEGENDA ---
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal
-        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-        """)
-
-        # --- TABELAS ---
-        st.subheader("🔹 Atividades Principais")
+        # --- ATIVIDADES ---
         edit_ativ = st.data_editor(
             pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}),
             num_rows="fixed",
@@ -237,9 +221,7 @@ if modo_formulario:
             key="editor_ativ"
         )
 
-        st.markdown("---")
-
-        st.subheader("🔹 Dificuldades na Execução")
+        # --- DIFICULDADES ---
         edit_dif = st.data_editor(
             pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}),
             num_rows="fixed",
@@ -247,9 +229,7 @@ if modo_formulario:
             key="editor_dif"
         )
 
-        st.markdown("---")
-
-        st.subheader("💡 Sugestões de Melhoria")
+        # --- SUGESTÕES ---
         edit_sug = st.data_editor(
             pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}),
             num_rows="fixed",
@@ -258,55 +238,53 @@ if modo_formulario:
         )
 
         # --- DISC ---
-        perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]  # substitua pelas perguntas reais
-        st.subheader("🧠 Questionário DISC")
+        perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]  # Substitua pelas reais
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}",
                 options=["A", "B", "C", "D"],
                 key=f"disc_{i}",
-                index=None,
                 horizontal=True
             )
 
-# --- BOTÃO DE ENVIO ---
-enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        # --- BOTÃO DE ENVIO (OBRIGATÓRIO DENTRO DO FORM) ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-if enviar:
-    # Monta dicionário
-    dados = {
-        "Nome": nome,
-        "Setor": setor,
-        "Cargo": cargo,
-        "Chefe": chefe,
-        "Departamento": departamento,
-        "Empresa": empresa,
-        "Escolaridade": escolaridade,
-        "Devolver": devolucao,
-        "Cursos": cursos,
-        "Objetivo": objetivo,
-        "Atividades": edit_ativ.to_dict(orient="records"),
-        "Dificuldades": edit_dif.to_dict(orient="records"),
-        "Sugestoes": edit_sug.to_dict(orient="records")
-    }
-    for i in range(1, 25):
-        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+        if enviar:
+            # --- Monta dicionário ---
+            dados = {
+                "Nome": nome,
+                "Setor": setor,
+                "Cargo": cargo,
+                "Chefe": chefe,
+                "Departamento": departamento,
+                "Empresa": empresa,
+                "Escolaridade": escolaridade,
+                "Devolver": devolucao,
+                "Cursos": cursos,
+                "Objetivo": objetivo,
+                "Atividades": edit_ativ.to_dict(orient="records"),
+                "Dificuldades": edit_dif.to_dict(orient="records"),
+                "Sugestoes": edit_sug.to_dict(orient="records")
+            }
+            for i in range(1, 25):
+                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-    # Salvamento
-    try:
-        os.makedirs("dados", exist_ok=True)
-        agora = pd.Timestamp.now()
-        dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
-        nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-        caminho_completo = os.path.join("dados", f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
+            # --- Salvamento ---
+            try:
+                os.makedirs("dados", exist_ok=True)
+                agora = pd.Timestamp.now()
+                dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
+                nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+                caminho_completo = os.path.join("dados", f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
 
-        with open(caminho_completo, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=4)
+                with open(caminho_completo, "w", encoding="utf-8") as f:
+                    json.dump(dados, f, ensure_ascii=False, indent=4)
 
-        st.success("✅ Formulário enviado com sucesso!")
+                st.success("✅ Formulário enviado com sucesso!")
 
-    except Exception as e:
-        st.error(f"Erro no salvamento: {e}")        
+            except Exception as e:
+                st.error(f"Erro no salvamento: {e}")      
 
         
 # ============================================================
