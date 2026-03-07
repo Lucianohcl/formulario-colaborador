@@ -14,6 +14,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import inch
 from datetime import datetime
+import pytz
 
 # ============================================================
 
@@ -305,13 +306,16 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            import time
-            import os
-            
-            # Caminho absoluto
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            dados_dir = os.path.join(base_dir, "dados")
-            os.makedirs(dados_dir, exist_ok=True)
+            # 1. TRAVA DE SEGURANÇA (evita duplicidade)
+            if "processando" not in st.session_state:
+                st.session_state["processando"] = True
+                
+                # Caminho absoluto (agora dentro da trava)
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+                
+               
             
             # Montagem do dicionário de dados
             dados = {
@@ -321,7 +325,7 @@ if st.query_params.get("page") == "formulario":
                 "Atividades": edit_ativ.to_dict(orient="records"),
                 "Dificuldades": edit_dif.to_dict(orient="records"),
                 "Sugestoes": edit_sug.to_dict(orient="records"),
-                "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+                "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
             }
             # Coleta as respostas do DISC
             for i in range(1, 25): 
@@ -361,7 +365,7 @@ if st.session_state.get("pagina") == "visualizar":
             nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
             
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
-                # 1. Cabeçalho Completo (Cópia Fiel dos dados de identificação)
+                # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
                 col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
@@ -378,8 +382,7 @@ if st.session_state.get("pagina") == "visualizar":
                 st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
                 st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
                 
-                # 2. Tabelas Dinâmicas (Atividades, Dificuldades, Sugestões)
-                # O loop usa as chaves exatas do seu dicionário de salvamento
+                # 2. Tabelas Dinâmicas
                 secoes = {
                     "Atividades": "📋 Atividades Executadas",
                     "Dificuldades": "⚠️ Dificuldades e Bloqueios",
@@ -391,22 +394,23 @@ if st.session_state.get("pagina") == "visualizar":
                     st.subheader(titulo)
                     if chave in form and form[chave]:
                         df = pd.DataFrame(form[chave])
-                        # Remove linhas totalmente vazias para a visualização ficar limpa
                         df = df.replace("", None).dropna(how='all')
                         if not df.empty:
-                            st.table(df) # st.table é mais "fiel" para leitura estática
+                            st.table(df)
                         else:
                             st.write("Nenhum dado preenchido nesta seção.")
                     else:
                         st.write("Seção não encontrada ou vazia.")
                 
-                # 3. Questionário DISC (Q1-Q24)
+                # 3. Questionário DISC (Exibição Completa e Legível)
                 st.markdown("---")
-                st.subheader("📊 Avaliação DISC (Q1-Q24)")
-                col_q = st.columns(6) # 6 colunas para ficar bem compacto
-                for i in range(1, 25):
-                    valor = form.get(f"Q{i}", "-")
-                    col_q[(i-1)%6].write(f"**Q{i}:** {valor}")
+                st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
+                
+                for i, pergunta in enumerate(perguntas_disc, 1):
+                    valor_resposta = form.get(f"Q{i}", "Não respondido")
+                    st.write(f"**{i}. {pergunta}**")
+                    st.info(f"Resposta selecionada: **{valor_resposta}**")
+                    st.markdown("---")
 
         # Botão de Limpeza
         st.markdown("---")
