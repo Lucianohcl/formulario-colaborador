@@ -203,6 +203,14 @@ modo_formulario = st.query_params.get("page") == "formulario"
 
 enviar = False
 
+import os
+import json
+import pandas as pd
+import streamlit as st
+
+# --- Detectar modo formulário ---
+modo_formulario = st.query_params.get("page") == "formulario"
+
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
 
@@ -257,6 +265,11 @@ if modo_formulario:
         )
 
         # --- DISC ---
+        perguntas_disc = [
+            "Prefere trabalhar sozinho?", "Gosta de assumir riscos?", "É organizado?",
+            "Prefere rotinas previsíveis?", "Toma decisões rápidas?", "Comunica-se facilmente?",
+            # ... adicione até 24 perguntas conforme sua necessidade
+        ]
         st.subheader("🧠 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
@@ -267,56 +280,65 @@ if modo_formulario:
                 horizontal=True
             )
 
-        # --- BOTÃO DO FORMULÁRIO (DENTRO DO FORM) ---
+        # --- BOTÃO DO FORMULÁRIO ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-# --- LÓGICA DE ENVIO (FORA DO FORM) ---
-if modo_formulario and enviar:
+        # --- LÓGICA DE ENVIO (DENTRO DO FORM) ---
+        if enviar:
+            st.write("Entrou no envio")
+            st.success("Teste envio OK")
 
-    st.write("Entrou no envio")
-    st.success("Teste envio OK")
+            # 1. Monta o dicionário
+            dados = {
+                "Nome": nome,
+                "Setor": setor,
+                "Cargo": cargo,
+                "Chefe": chefe,
+                "Departamento": departamento,
+                "Empresa": empresa,
+                "Escolaridade": escolaridade,
+                "Devolver": devolucao,
+                "Cursos": cursos,
+                "Objetivo": objetivo,
+                "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
+                "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
+                "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
+            }
 
-    # 1. Monta o dicionário
-    dados = {
-        "Nome": nome,
-        "Setor": setor,
-        "Cargo": cargo,
-        "Chefe": chefe,
-        "Departamento": departamento,
-        "Empresa": empresa,
-        "Escolaridade": escolaridade,
-        "Devolver": devolucao,
-        "Cursos": cursos,
-        "Objetivo": objetivo,
-        "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
-        "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
-        "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
-    }
+            for i in range(1, 25):
+                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-    for i in range(1, 25):
-        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+            # 2. Salvamento
+            try:
+                os.makedirs("dados", exist_ok=True)
 
-    # 2. Salvamento
-    try:
-        os.makedirs("dados", exist_ok=True)
+                agora = pd.Timestamp.now()
+                dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
 
-        agora = pd.Timestamp.now()
-        dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
+                nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+                nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
+                caminho_completo = os.path.join("dados", nome_arquivo)
 
-        nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+                with open(caminho_completo, "w", encoding="utf-8") as f:
+                    json.dump(dados, f, ensure_ascii=False, indent=4)
 
-        nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
+                st.success("✅ Enviado com sucesso!")
+                st.rerun()
 
-        caminho_completo = os.path.join("dados", nome_arquivo)
+            except Exception as e:
+                st.error(f"Erro no salvamento: {e}")
 
-        with open(caminho_completo, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=4)
-
-        st.success("✅ Enviado com sucesso!")
-        st.rerun()
-
-    except Exception as e:
-        st.error(f"Erro no salvamento: {e}")    
+        # --- BOTÃO DE LIMPEZA ---
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
+            BASE_DIR = "dados"
+            if os.path.exists(BASE_DIR):
+                arquivos = os.listdir(BASE_DIR)
+                for arq in arquivos:
+                    caminho = os.path.join(BASE_DIR, arq)
+                    if os.path.exists(caminho):
+                        os.remove(caminho)
+                st.toast("🗑️ Todos os formulários foram apagados!")
+                st.rerun()
         
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
