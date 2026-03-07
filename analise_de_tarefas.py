@@ -321,16 +321,6 @@ if modo_formulario:
             except Exception as e:
                 st.error(f"Erro no salvamento: {e}")
 
-# --- BOTÃO DE LIMPEZA (FORA DO FORM) ---
-if modo_formulario:
-    arquivos = os.listdir("dados") if os.path.exists("dados") else []
-    if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
-        for arq in arquivos:
-            caminho = os.path.join("dados", arq)
-            if os.path.exists(caminho):
-                os.remove(caminho)
-        st.toast("🗑️ Todos os formulários foram apagados!")
-        st.rerun()
         
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
@@ -413,7 +403,7 @@ if st.query_params.get("page") == "visualizar":
                     if os.path.exists(caminho):
                         os.remove(caminho)
 
-                st.toast("🗑️ Todos os formulários foram apagados!")
+                st.success("🗑️ Todos os formulários foram apagados!")
                 st.rerun()
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
