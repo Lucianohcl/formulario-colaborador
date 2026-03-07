@@ -348,23 +348,34 @@ if st.query_params.get("page") == "formulario":
             time.sleep(2)
             st.rerun()
             
-            
+      
+
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
-    # Atualizamos a lista de formulários antes de exibir
-    st.session_state["formularios"] = carregar_todos_formularios()
-    formularios = st.session_state["formularios"]
-
-    if not formularios:
+    # 1. Carrega os dados frescos do disco
+    lista_de_arquivos = carregar_todos_formularios()
+    
+    # 2. Se a sua função carregar_todos_formularios() já retorna a lista, 
+    # apenas certifique-se de que não estamos adicionando isso ao session_state de forma acumulativa.
+    if not lista_de_arquivos:
         st.warning("⚠️ Nenhum formulário encontrado.")
     else:
-        for idx, form in enumerate(formularios, 1):
+        # Mostra o total para conferência
+        st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
+        
+        # 3. Exibição limpa
+        for idx, form in enumerate(lista_de_arquivos, 1):
             nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
             
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
+                # [Aqui você mantém o seu código de exibição de dados]
+                
+            
+            
+            
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
