@@ -198,10 +198,9 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Detectar modo formulário
-modo_formulario = st.query_params.get("page") == "formulario"
-
-enviar = False
+# ============================================================
+# FORMULÁRIO COLABORADOR
+# ============================================================
 
 import os
 import json
@@ -214,6 +213,7 @@ modo_formulario = st.query_params.get("page") == "formulario"
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
 
+    # --- FORMULÁRIO PRINCIPAL ---
     with st.form("form_colaborador"):
 
         # --- IDENTIFICAÇÃO ---
@@ -265,11 +265,7 @@ if modo_formulario:
         )
 
         # --- DISC ---
-        perguntas_disc = [
-            "Prefere trabalhar sozinho?", "Gosta de assumir riscos?", "É organizado?",
-            "Prefere rotinas previsíveis?", "Toma decisões rápidas?", "Comunica-se facilmente?",
-            # ... adicione até 24 perguntas conforme sua necessidade
-        ]
+        perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]  # substitua pelas perguntas reais
         st.subheader("🧠 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
@@ -280,15 +276,14 @@ if modo_formulario:
                 horizontal=True
             )
 
-        # --- BOTÃO DO FORMULÁRIO ---
+        # --- BOTÃO DE ENVIO (DENTRO DO FORM) ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-        # --- LÓGICA DE ENVIO (DENTRO DO FORM) ---
         if enviar:
             st.write("Entrou no envio")
-            st.success("Teste envio OK")
+            st.success("✅ Formulário enviado!")
 
-            # 1. Monta o dicionário
+            # --- Monta dicionário ---
             dados = {
                 "Nome": nome,
                 "Setor": setor,
@@ -308,13 +303,11 @@ if modo_formulario:
             for i in range(1, 25):
                 dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-            # 2. Salvamento
+            # --- Salvamento ---
             try:
                 os.makedirs("dados", exist_ok=True)
-
                 agora = pd.Timestamp.now()
                 dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
-
                 nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
                 nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
                 caminho_completo = os.path.join("dados", nome_arquivo)
@@ -328,17 +321,16 @@ if modo_formulario:
             except Exception as e:
                 st.error(f"Erro no salvamento: {e}")
 
-        # --- BOTÃO DE LIMPEZA ---
-        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
-            BASE_DIR = "dados"
-            if os.path.exists(BASE_DIR):
-                arquivos = os.listdir(BASE_DIR)
-                for arq in arquivos:
-                    caminho = os.path.join(BASE_DIR, arq)
-                    if os.path.exists(caminho):
-                        os.remove(caminho)
-                st.toast("🗑️ Todos os formulários foram apagados!")
-                st.rerun()
+# --- BOTÃO DE LIMPEZA (FORA DO FORM) ---
+if modo_formulario:
+    arquivos = os.listdir("dados") if os.path.exists("dados") else []
+    if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
+        for arq in arquivos:
+            caminho = os.path.join("dados", arq)
+            if os.path.exists(caminho):
+                os.remove(caminho)
+        st.toast("🗑️ Todos os formulários foram apagados!")
+        st.rerun()
         
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
