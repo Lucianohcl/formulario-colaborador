@@ -239,25 +239,57 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
+    
     with st.form("form_colaborador"):
-        nome = st.text_input("Nome do colaborador")
-        setor = st.text_input("Setor")
-        cargo = st.text_input("Cargo")
-        chefe = st.text_input("Chefe imediato")
-        departamento = st.text_input("Departamento")
-        empresa = st.text_input("Empresa / Unidade")
-        escolaridade = st.text_input("Escolaridade")
-        devolucao = st.text_input("Devolver preenchido em")
+        # Dados de Identificação
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador")
+        setor = col2.text_input("Setor")
+        cargo = col1.text_input("Cargo")
+        chefe = col2.text_input("Chefe imediato")
+        departamento = col1.text_input("Departamento")
+        empresa = col2.text_input("Empresa / Unidade")
+        escolaridade = col1.text_input("Escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em")
+        
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
-        edit_ativ = st.data_editor(pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), num_rows="fixed", use_container_width=True)
-        edit_dif = st.data_editor(pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), num_rows="fixed", use_container_width=True)
-        edit_sug = st.data_editor(pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}), num_rows="fixed", use_container_width=True)
+        # --- SEÇÃO DE ATIVIDADES ---
+        st.markdown("---")
+        st.subheader("🔹 Atividades Executadas")
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+        """)
+        edit_ativ = st.data_editor(
+            pd.DataFrame({"Atividade Descrita": [""]*20, "Frequência": [""]*20, "Tempo Gasto": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="ativ_editor"
+        )
 
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        edit_dif = st.data_editor(
+            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="dif_editor"
+        )
+
+        # --- SEÇÃO DE SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+        edit_sug = st.data_editor(
+            pd.DataFrame({"Sugestão de Melhoria": [""]*20, "Impacto Esperado": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="sug_editor"
+        )
+
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True)
 
@@ -267,11 +299,12 @@ if st.query_params.get("page") == "formulario":
             import time
             import os
             
-            # Garante que a pasta dados exista no caminho absoluto do script
+            # Caminho absoluto
             base_dir = os.path.dirname(os.path.abspath(__file__))
             dados_dir = os.path.join(base_dir, "dados")
             os.makedirs(dados_dir, exist_ok=True)
             
+            # Montagem do dicionário de dados
             dados = {
                 "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
                 "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
@@ -281,30 +314,28 @@ if st.query_params.get("page") == "formulario":
                 "Sugestoes": edit_sug.to_dict(orient="records"),
                 "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
             }
-            for i in range(1, 25): dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+            # Coleta as respostas do DISC
+            for i in range(1, 25): 
+                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
             
+            # Nome do arquivo
             nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
             caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
             
-            # Operação de escrita
+            # Escrita do arquivo JSON
             with open(caminho, "w", encoding="utf-8") as f: 
                 json.dump(dados, f, ensure_ascii=False, indent=4)
             
-            # --- DEBUG E FEEDBACK ---
-            # Se você não achar o arquivo, o caminho impresso abaixo mostra onde ele está
-            st.write(f"DEBUG: O arquivo foi criado em: {caminho}")
-            
-            # Atualiza a memória interna do app
-            st.session_state["formularios"] = carregar_todos_formularios()
-            
-            # Exibe a mensagem de sucesso
             st.success("✅ Formulário enviado com sucesso!")
             
-            # Aguarda 2 segundos para o usuário ler a mensagem antes de limpar a página
-            time.sleep(2)
+            # Atualiza o estado para que a Visualização pegue os novos dados
+            if "carregar_todos_formularios" in globals():
+                st.session_state["formularios"] = carregar_todos_formularios()
             
-            # Força o Streamlit a rodar do zero
+            time.sleep(2)
             st.rerun()
+            
+            
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
@@ -321,37 +352,61 @@ if st.session_state.get("pagina") == "visualizar":
             nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
             
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
-                # 1. Dados Básicos
+                # 1. Cabeçalho Completo (Cópia Fiel dos dados de identificação)
+                st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
                 col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
-                col1.write(f"**Setor:** {form.get('Setor')}")
-                col2.write(f"**Cargo:** {form.get('Cargo')}")
-                col2.write(f"**Chefe:** {form.get('Chefe')}")
+                col2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
                 
-                # 2. Tabelas fiéis (Atividades, Dificuldades, Sugestões)
-                for secao in ["Atividades", "Dificuldades", "Sugestões"]:
-                    if secao in form:
-                        st.subheader(f"📋 {secao}")
-                        df = pd.DataFrame(form[secao])
+                col_a, col_b = st.columns(2)
+                col_a.write(f"**Setor:** {form.get('Setor', 'N/A')}")
+                col_b.write(f"**Departamento:** {form.get('Departamento', 'N/A')}")
+                col_a.write(f"**Cargo:** {form.get('Cargo', 'N/A')}")
+                col_b.write(f"**Chefe Imediato:** {form.get('Chefe', 'N/A')}")
+                col_a.write(f"**Empresa/Unidade:** {form.get('Empresa', 'N/A')}")
+                col_b.write(f"**Escolaridade:** {form.get('Escolaridade', 'N/A')}")
+                
+                st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
+                st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
+                
+                # 2. Tabelas Dinâmicas (Atividades, Dificuldades, Sugestões)
+                # O loop usa as chaves exatas do seu dicionário de salvamento
+                secoes = {
+                    "Atividades": "📋 Atividades Executadas",
+                    "Dificuldades": "⚠️ Dificuldades e Bloqueios",
+                    "Sugestoes": "💡 Sugestões de Melhoria"
+                }
+                
+                for chave, titulo in secoes.items():
+                    st.markdown("---")
+                    st.subheader(titulo)
+                    if chave in form and form[chave]:
+                        df = pd.DataFrame(form[chave])
+                        # Remove linhas totalmente vazias para a visualização ficar limpa
+                        df = df.replace("", None).dropna(how='all')
                         if not df.empty:
-                            st.dataframe(df, use_container_width=True)
+                            st.table(df) # st.table é mais "fiel" para leitura estática
                         else:
-                            st.write(f"Nenhum registro em {secao}.")
+                            st.write("Nenhum dado preenchido nesta seção.")
+                    else:
+                        st.write("Seção não encontrada ou vazia.")
                 
-                # 3. Perguntas (Q1-Q24)
-                st.subheader("📊 Avaliação (Q1-Q24)")
-                col_q = st.columns(4) # Exibe em 4 colunas para não ficar muito longo
+                # 3. Questionário DISC (Q1-Q24)
+                st.markdown("---")
+                st.subheader("📊 Avaliação DISC (Q1-Q24)")
+                col_q = st.columns(6) # 6 colunas para ficar bem compacto
                 for i in range(1, 25):
-                    valor = form.get(f"Q{i}", "N/A")
-                    col_q[(i-1)%4].write(f"**Q{i}:** {valor}")
+                    valor = form.get(f"Q{i}", "-")
+                    col_q[(i-1)%6].write(f"**Q{i}:** {valor}")
 
+        # Botão de Limpeza
+        st.markdown("---")
         if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
             for arquivo in os.listdir(dados_dir):
                 if arquivo.endswith(".json"): 
                     os.remove(os.path.join(dados_dir, arquivo))
             st.session_state["formularios"] = []
             st.success("✅ Banco de dados limpo!"); st.rerun()
-
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
