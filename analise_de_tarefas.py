@@ -269,55 +269,44 @@ if modo_formulario:
                 horizontal=True
             )
 
-        # --- BOTÃO DE ENVIO (DENTRO DO FORM) ---
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+# --- BOTÃO DE ENVIO ---
+enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-        if enviar:
-            st.write("Entrou no envio")
-            st.success("✅ Formulário enviado!")
+if enviar:
+    # Monta dicionário
+    dados = {
+        "Nome": nome,
+        "Setor": setor,
+        "Cargo": cargo,
+        "Chefe": chefe,
+        "Departamento": departamento,
+        "Empresa": empresa,
+        "Escolaridade": escolaridade,
+        "Devolver": devolucao,
+        "Cursos": cursos,
+        "Objetivo": objetivo,
+        "Atividades": edit_ativ.to_dict(orient="records"),
+        "Dificuldades": edit_dif.to_dict(orient="records"),
+        "Sugestoes": edit_sug.to_dict(orient="records")
+    }
+    for i in range(1, 25):
+        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-            # --- Monta dicionário ---
-            dados = {
-                "Nome": nome,
-                "Setor": setor,
-                "Cargo": cargo,
-                "Chefe": chefe,
-                "Departamento": departamento,
-                "Empresa": empresa,
-                "Escolaridade": escolaridade,
-                "Devolver": devolucao,
-                "Cursos": cursos,
-                "Objetivo": objetivo,
-                "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
-                "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
-                "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
-            }
+    # Salvamento
+    try:
+        os.makedirs("dados", exist_ok=True)
+        agora = pd.Timestamp.now()
+        dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
+        nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+        caminho_completo = os.path.join("dados", f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json")
 
-            for i in range(1, 25):
-                dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+        with open(caminho_completo, "w", encoding="utf-8") as f:
+            json.dump(dados, f, ensure_ascii=False, indent=4)
 
-            # --- Salvamento ---
-            
-            try:
-                os.makedirs("dados", exist_ok=True)
-                agora = pd.Timestamp.now()
-                dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
-                nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-                nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
-                caminho_completo = os.path.join("dados", nome_arquivo)
+        st.success("✅ Formulário enviado com sucesso!")
 
-                with open(caminho_completo, "w", encoding="utf-8") as f:
-                    json.dump(dados, f, ensure_ascii=False, indent=4)
-                
-                st.session_state['form_enviado'] = True
-
-            except Exception as e:
-                st.error(f"Erro no salvamento: {e}")
-
-            # Esta verificação fica fora do try/except, mas dentro do 'if enviar:'
-            if st.session_state.get('form_enviado', False):
-                st.success("✅ Formulário enviado com sucesso!")
-                st.session_state['form_enviado'] = False
+    except Exception as e:
+        st.error(f"Erro no salvamento: {e}")        
 
         
 # ============================================================
