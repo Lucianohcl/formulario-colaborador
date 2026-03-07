@@ -196,6 +196,8 @@ perguntas_disc = [
 # FORMULÁRIO COLABORADOR AJUSTADO
 # ============================================================
 
+modo_formulario = st.query_params.get("page") == "formulario"
+
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
 
