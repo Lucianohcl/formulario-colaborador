@@ -272,38 +272,45 @@ if modo_formulario:
             "Devolver": devolucao, 
             "Cursos": cursos, 
             "Objetivo": objetivo,
-            "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, 'to_dict') else [],
-            "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, 'to_dict') else [],
-            "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, 'to_dict') else []
+            "Atividades": edit_ativ.to_dict(orient="records") if hasattr(edit_ativ, "to_dict") else [],
+            "Dificuldades": edit_dif.to_dict(orient="records") if hasattr(edit_dif, "to_dict") else [],
+            "Sugestoes": edit_sug.to_dict(orient="records") if hasattr(edit_sug, "to_dict") else []
         }
-        
+
         for i in range(1, 25):
             dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
-        
-        dados["DataEnvio"] = pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
 
         # 2. Salvamento Direto
         try:
-            # Garante que a pasta existe antes de salvar
+            # Garante que a pasta existe
             os.makedirs("dados", exist_ok=True)
-            
-            nome_arquivo = f"{nome.strip().replace(' ', '_')}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+            agora = pd.Timestamp.now()
+            dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
+
+            # Limpa nome para evitar erro
+            nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+
+            # Nome do arquivo JSON
+            nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
+
             caminho_completo = os.path.join("dados", nome_arquivo)
-            
+
+            # Salvar arquivo
             with open(caminho_completo, "w", encoding="utf-8") as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
-            
+
             st.success("✅ Enviado com sucesso!")
-            st.balloons()
             st.rerun()
-            
+
         except Exception as e:
             st.error(f"Erro no salvamento: {e}")
-            
+    
+        
 # ===========================
 # PÁGINA DE VISUALIZAÇÃO (ESPELHO FIEL)
 # ===========================
-if st.session_state.pagina == "visualizar":    
+if st.query_params.get("page") == "visualizar":    
     st.title("👁️ Espelho Fiel de Respostas")
     
     # Pasta onde os JSONs individuais são salvos
