@@ -196,6 +196,14 @@ perguntas_disc = [
 # FORMULÁRIO COLABORADOR AJUSTADO
 # ============================================================
 
+# --- TESTE RÁPIDO DE SALVAMENTO ---
+os.makedirs("dados", exist_ok=True)
+teste = {"teste": 123}
+with open(os.path.join("dados", "teste2.json"), "w", encoding="utf-8") as f:
+    json.dump(teste, f, indent=4)
+
+st.write("Arquivo teste2.json criado na pasta 'dados' com sucesso!")
+
 modo_formulario = st.query_params.get("page") == "formulario"
 
 if modo_formulario:
