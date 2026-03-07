@@ -260,7 +260,13 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            import time # Garante que temos a função de pausa
+            import time
+            import os
+            
+            # Garante que a pasta dados exista no caminho absoluto do script
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            dados_dir = os.path.join(base_dir, "dados")
+            os.makedirs(dados_dir, exist_ok=True)
             
             dados = {
                 "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
@@ -276,10 +282,14 @@ if st.query_params.get("page") == "formulario":
             nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
             caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
             
+            # Operação de escrita
             with open(caminho, "w", encoding="utf-8") as f: 
                 json.dump(dados, f, ensure_ascii=False, indent=4)
             
-            # --- ATUALIZAÇÃO E FEEDBACK ---
+            # --- DEBUG E FEEDBACK ---
+            # Se você não achar o arquivo, o caminho impresso abaixo mostra onde ele está
+            st.write(f"DEBUG: O arquivo foi criado em: {caminho}")
+            
             # Atualiza a memória interna do app
             st.session_state["formularios"] = carregar_todos_formularios()
             
