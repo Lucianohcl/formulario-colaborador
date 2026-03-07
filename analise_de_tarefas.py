@@ -203,63 +203,72 @@ modo_formulario = st.query_params.get("page") == "formulario"
 
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
-    
-    # --- IDENTIFICAÇÃO ---
-    nome = st.text_input("Nome do colaborador")
-    setor = st.text_input("Setor")
-    cargo = st.text_input("Cargo")
-    chefe = st.text_input("Chefe imediato")
-    departamento = st.text_input("Departamento")
-    empresa = st.text_input("Empresa / Unidade")
-    escolaridade = st.text_input("Escolaridade")
-    devolucao = st.text_input("Devolver preenchido em")
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-    objetivo = st.text_area("Trabalho e principal objetivo")
 
-    # --- AQUI É O LUGAR EXATO DA LEGENDA ---
-    st.info("""
-    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-    * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal 
-    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-    """)
+    with st.form("form_colaborador"):
 
-    # --- TABELAS ---
-    st.subheader("🔹 Atividades Principais")
-    edit_ativ = st.data_editor(
-        pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}), 
-        num_rows="fixed", 
-        use_container_width=True, 
-        key="editor_ativ"
-    )
+        # --- IDENTIFICAÇÃO ---
+        nome = st.text_input("Nome do colaborador")
+        setor = st.text_input("Setor")
+        cargo = st.text_input("Cargo")
+        chefe = st.text_input("Chefe imediato")
+        departamento = st.text_input("Departamento")
+        empresa = st.text_input("Empresa / Unidade")
+        escolaridade = st.text_input("Escolaridade")
+        devolucao = st.text_input("Devolver preenchido em")
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
 
-    st.markdown("---")
-    
-    st.subheader("🔹 Dificuldades na Execução")
-    edit_dif = st.data_editor(
-        pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}), 
-        num_rows="fixed", 
-        use_container_width=True, 
-        key="editor_dif"
-    )
+        # --- AQUI É O LUGAR EXATO DA LEGENDA ---
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+        * **DVD**: Diário (Várias Vezes ao dia) | **D**: Diário | **S**: Semanal 
+        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+        """)
 
-    st.markdown("---")
-    
-    st.subheader("💡 Sugestões de Melhoria")
-    edit_sug = st.data_editor(
-        pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}), 
-        num_rows="fixed", 
-        use_container_width=True, 
-        key="editor_sug"
-    )
+        # --- TABELAS ---
+        st.subheader("🔹 Atividades Principais")
+        edit_ativ = st.data_editor(
+            pd.DataFrame({"Descrição": [""]*20, "Frequência": [""]*20, "Tempo": [""]*20}),
+            num_rows="fixed",
+            use_container_width=True,
+            key="editor_ativ"
+        )
 
-    # --- DISC ---
-    st.subheader("🧠 Questionário DISC")
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        st.radio(label=f"{i}. {pergunta}", options=["A", "B", "C", "D"], key=f"disc_{i}", index=None, horizontal=True)
+        st.markdown("---")
 
-    
-# --- BOTÃO DE ENVIO MINIMALISTA (4 ESPAÇOS DE INDENTAÇÃO) ---
-    if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
+        st.subheader("🔹 Dificuldades na Execução")
+        edit_dif = st.data_editor(
+            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro": [""]*20, "Tempo": [""]*20}),
+            num_rows="fixed",
+            use_container_width=True,
+            key="editor_dif"
+        )
+
+        st.markdown("---")
+
+        st.subheader("💡 Sugestões de Melhoria")
+        edit_sug = st.data_editor(
+            pd.DataFrame({"Sugestão": [""]*20, "Impacto": [""]*20}),
+            num_rows="fixed",
+            use_container_width=True,
+            key="editor_sug"
+        )
+
+        # --- DISC ---
+        st.subheader("🧠 Questionário DISC")
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}",
+                options=["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                index=None,
+                horizontal=True
+            )
+
+        # --- BOTÃO DO FORMULÁRIO ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+    if enviar:
         # 1. Monta o dicionário
         dados = {
             "Nome": nome, 
@@ -381,10 +390,15 @@ if st.query_params.get("page") == "visualizar":
 
             # --- BOTÃO DE LIMPEZA ---
             if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS", key="limpar_tudo"):
-                for arq in arquivos:
-                    os.remove(os.path.join(BASE_DIR, arq))
-                st.rerun()
 
+                for arq in arquivos:
+                    caminho = os.path.join(BASE_DIR, arq)
+
+                    if os.path.exists(caminho):
+                        os.remove(caminho)
+
+                st.toast("🗑️ Todos os formulários foram apagados!")
+                st.rerun()
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
 # ============================================================
