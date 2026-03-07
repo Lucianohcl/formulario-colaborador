@@ -261,15 +261,24 @@ if st.query_params.get("page") == "formulario":
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
-        st.subheader("🔹 Atividades Executadas")
+        
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
         * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
+        
+        st.subheader("🔹 Atividades Executadas")
+        
         edit_ativ = st.data_editor(
-            pd.DataFrame({"Atividade Descrita": [""]*20, "Frequência": [""]*20, "Tempo Gasto": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="ativ_editor"
+            pd.DataFrame({
+                "Atividade Descrita": [""]*20, 
+                "Frequência": [""]*20, 
+                "Tempo Gasto": [""]*20
+            }), 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="ativ_editor"
         )
 
         # --- SEÇÃO DE DIFICULDADES ---
