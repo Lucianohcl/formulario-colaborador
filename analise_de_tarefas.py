@@ -201,6 +201,8 @@ perguntas_disc = [
 # Detectar modo formulário
 modo_formulario = st.query_params.get("page") == "formulario"
 
+enviar = False
+
 if modo_formulario:
     st.title("📋 Formulário Completo do Colaborador")
 
@@ -269,7 +271,7 @@ if modo_formulario:
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
 # --- LÓGICA DE ENVIO (FORA DO FORM) ---
-if enviar:
+if modo_formulario and enviar:
 
     st.write("Entrou no envio")
     st.success("Teste envio OK")
