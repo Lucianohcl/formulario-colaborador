@@ -64,6 +64,11 @@ import os
 import json
 import sys
 
+import os
+import sys
+import json
+import streamlit as st
+
 # --- DEFINIÇÃO DE CAMINHO À PROVA DE ERROS ---
 if getattr(sys, 'frozen', False):
     base_dir = os.path.dirname(sys.executable)
@@ -74,8 +79,7 @@ else:
 dados_dir = os.path.join(base_dir, "dados")
 
 # Criamos a pasta 'dados' se ela não existir
-if not os.path.exists(dados_dir):
-    os.makedirs(dados_dir)
+os.makedirs(dados_dir, exist_ok=True)
 
 # --- FUNÇÃO DE CARREGAMENTO DINÂMICO ---
 def carregar_todos_formularios():
@@ -83,6 +87,7 @@ def carregar_todos_formularios():
     Lê todos os arquivos .json da pasta 'dados' individualmente.
     """
     lista_formularios = []
+    # Usamos a variável global dados_dir definida acima
     if os.path.exists(dados_dir):
         for nome_arquivo in os.listdir(dados_dir):
             if nome_arquivo.endswith(".json"):
@@ -100,7 +105,6 @@ def carregar_todos_formularios():
 # Agora chamamos a função que criamos para ler os arquivos individuais
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
-
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
 # ============================================================
@@ -305,26 +309,47 @@ if st.query_params.get("page") == "formulario":
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
-    formularios = []
-    if os.path.exists(dados_dir):
-        for arquivo in os.listdir(dados_dir):
-            if arquivo.endswith(".json"):
-                with open(os.path.join(dados_dir, arquivo), "r", encoding="utf-8") as f:
-                    try: formularios.append(json.load(f))
-                    except: continue
+    
+    # Atualizamos a lista de formulários antes de exibir
+    st.session_state["formularios"] = carregar_todos_formularios()
+    formularios = st.session_state["formularios"]
 
     if not formularios:
         st.warning("⚠️ Nenhum formulário encontrado.")
     else:
         for idx, form in enumerate(formularios, 1):
-            with st.expander(f"👤 FORMULÁRIO DE: {str(form.get('Nome', f'Colaborador {idx}')).upper()}"):
-                st.write(f"**Cargo:** {form.get('Cargo')}")
-                st.table(pd.DataFrame(form.get("Atividades", [])))
-                # (Adicione aqui os outros campos conforme sua necessidade)
+            nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
+            
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
+                # 1. Dados Básicos
+                col1, col2 = st.columns(2)
+                col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
+                col1.write(f"**Setor:** {form.get('Setor')}")
+                col2.write(f"**Cargo:** {form.get('Cargo')}")
+                col2.write(f"**Chefe:** {form.get('Chefe')}")
+                
+                # 2. Tabelas fiéis (Atividades, Dificuldades, Sugestões)
+                for secao in ["Atividades", "Dificuldades", "Sugestões"]:
+                    if secao in form:
+                        st.subheader(f"📋 {secao}")
+                        df = pd.DataFrame(form[secao])
+                        if not df.empty:
+                            st.dataframe(df, use_container_width=True)
+                        else:
+                            st.write(f"Nenhum registro em {secao}.")
+                
+                # 3. Perguntas (Q1-Q24)
+                st.subheader("📊 Avaliação (Q1-Q24)")
+                col_q = st.columns(4) # Exibe em 4 colunas para não ficar muito longo
+                for i in range(1, 25):
+                    valor = form.get(f"Q{i}", "N/A")
+                    col_q[(i-1)%4].write(f"**Q{i}:** {valor}")
 
         if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
             for arquivo in os.listdir(dados_dir):
-                if arquivo.endswith(".json"): os.remove(os.path.join(dados_dir, arquivo))
+                if arquivo.endswith(".json"): 
+                    os.remove(os.path.join(dados_dir, arquivo))
+            st.session_state["formularios"] = []
             st.success("✅ Banco de dados limpo!"); st.rerun()
 
 
