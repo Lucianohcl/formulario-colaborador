@@ -265,10 +265,14 @@ if modo_formulario:
                 horizontal=True
             )
 
-        # --- BOTÃO DO FORMULÁRIO ---
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+# --- BOTÃO DO FORMULÁRIO ---
+enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    if enviar:
+if enviar:
+        # Aqui abaixo agora existem 8 espaços de recuo
+        st.write("Entrou no envio")
+        st.success("Teste envio OK")
+
         # 1. Monta o dicionário
         dados = {
             "Nome": nome, 
@@ -289,23 +293,19 @@ if modo_formulario:
         for i in range(1, 25):
             dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
 
-        # 2. Salvamento Direto
+        # 2. Salvamento
         try:
-            # Garante que a pasta existe
             os.makedirs("dados", exist_ok=True)
 
             agora = pd.Timestamp.now()
             dados["DataEnvio"] = agora.strftime("%d/%m/%Y %H:%M")
 
-            # Limpa nome para evitar erro
             nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
 
-            # Nome do arquivo JSON
             nome_arquivo = f"{nome_limpo}_{agora.strftime('%Y%m%d_%H%M%S')}.json"
 
             caminho_completo = os.path.join("dados", nome_arquivo)
 
-            # Salvar arquivo
             with open(caminho_completo, "w", encoding="utf-8") as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
 
