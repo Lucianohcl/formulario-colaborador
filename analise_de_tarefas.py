@@ -55,27 +55,51 @@ if "page" in query_params:
 
 
 
-# --- DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS ---
-JSON_MASTER = "formularios.json"
-BASE_DIR = "dados"
-if not os.path.exists(BASE_DIR): os.makedirs(BASE_DIR)
+# ============================================================
+# DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
+# ============================================================
+import streamlit as st
+import pandas as pd
+import os
+import json
+import sys
 
-# Função para garantir que os dados carregados sejam sempre uma lista de dicionários
-def carregar_dados_seguro():
-    caminho = os.path.join(BASE_DIR, JSON_MASTER) if not os.path.exists(JSON_MASTER) else JSON_MASTER
-    if os.path.exists(caminho):
-        try:
-            with open(caminho, "r", encoding="utf-8") as f:
-                dados = json.load(f)
-                # O segredo: Filtra tudo que não for dicionário
-                return [d for d in dados if isinstance(d, dict)] if isinstance(dados, list) else []
-        except:
-            return []
-    return []
+# --- DEFINIÇÃO DE CAMINHO À PROVA DE ERROS ---
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Inicializa o session_state com os dados já limpos
+# Definimos o diretório de dados como absoluto
+dados_dir = os.path.join(base_dir, "dados")
+
+# Criamos a pasta 'dados' se ela não existir
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
+# --- FUNÇÃO DE CARREGAMENTO DINÂMICO ---
+def carregar_todos_formularios():
+    """
+    Lê todos os arquivos .json da pasta 'dados' individualmente.
+    """
+    lista_formularios = []
+    if os.path.exists(dados_dir):
+        for nome_arquivo in os.listdir(dados_dir):
+            if nome_arquivo.endswith(".json"):
+                caminho_completo = os.path.join(dados_dir, nome_arquivo)
+                try:
+                    with open(caminho_completo, "r", encoding="utf-8") as f:
+                        dados = json.load(f)
+                        if isinstance(dados, dict):
+                            lista_formularios.append(dados)
+                except Exception:
+                    continue
+    return lista_formularios
+
+# --- CARREGAMENTO INICIAL ---
+# Agora chamamos a função que criamos para ler os arquivos individuais
 if "formularios" not in st.session_state:
-    st.session_state["formularios"] = carregar_dados_seguro()
+    st.session_state["formularios"] = carregar_todos_formularios()
 
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
@@ -140,15 +164,42 @@ elif btn_logout:
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
+import streamlit as st
+import pandas as pd
+import os
+import json
+import sys
+
 # ============================================================
-# FORMULÁRIO COMPLETO PARA COLABORADOR (JSON VERSION)
+# CONFIGURAÇÃO DE DIRETÓRIO E CARREGAMENTO
 # ============================================================
-# --- CONFIGURAÇÃO DE DIRETÓRIOS ---
+
+# Define o diretório base e a pasta de dados
 base_dir = os.path.dirname(os.path.abspath(__file__))
 dados_dir = os.path.join(base_dir, "dados")
 os.makedirs(dados_dir, exist_ok=True)
 
-# --- BLOCO ÚNICO DE CSS PARA OCULTAÇÃO ---
+# Função para carregar todos os JSONs da pasta 'dados'
+def carregar_todos_formularios():
+    lista_formularios = []
+    if os.path.exists(dados_dir):
+        for nome_arquivo in os.listdir(dados_dir):
+            if nome_arquivo.endswith(".json"):
+                caminho_completo = os.path.join(dados_dir, nome_arquivo)
+                try:
+                    with open(caminho_completo, "r", encoding="utf-8") as f:
+                        dados = json.load(f)
+                        if isinstance(dados, dict):
+                            lista_formularios.append(dados)
+                except Exception:
+                    continue
+    return lista_formularios
+
+# Inicializa o estado da sessão com os dados carregados
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = carregar_todos_formularios()
+
+# --- BLOCO DE CSS PARA OCULTAÇÃO ---
 if st.query_params.get("page") == "formulario":
     st.markdown("""
     <style>
@@ -156,7 +207,6 @@ if st.query_params.get("page") == "formulario":
         #MainMenu, footer, header {visibility: hidden !important;}
     </style>
     """, unsafe_allow_html=True)
-
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -210,6 +260,8 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
+            import time # Garante que temos a função de pausa
+            
             dados = {
                 "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
                 "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
@@ -223,8 +275,22 @@ if st.query_params.get("page") == "formulario":
             
             nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
             caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
-            with open(caminho, "w", encoding="utf-8") as f: json.dump(dados, f, ensure_ascii=False, indent=4)
+            
+            with open(caminho, "w", encoding="utf-8") as f: 
+                json.dump(dados, f, ensure_ascii=False, indent=4)
+            
+            # --- ATUALIZAÇÃO E FEEDBACK ---
+            # Atualiza a memória interna do app
+            st.session_state["formularios"] = carregar_todos_formularios()
+            
+            # Exibe a mensagem de sucesso
             st.success("✅ Formulário enviado com sucesso!")
+            
+            # Aguarda 2 segundos para o usuário ler a mensagem antes de limpar a página
+            time.sleep(2)
+            
+            # Força o Streamlit a rodar do zero
+            st.rerun()
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
