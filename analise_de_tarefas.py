@@ -248,17 +248,17 @@ if st.query_params.get("page") == "formulario":
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador", required=True)
-        setor = col2.text_input("Setor", required=True)
-        cargo = col1.text_input("Cargo", required=True)
-        chefe = col2.text_input("Chefe imediato", required=True)
-        departamento = col1.text_input("Departamento", required=True)
-        empresa = col2.text_input("Empresa / Unidade", required=True)
-        escolaridade = col1.text_input("Escolaridade", required=True)
-        devolucao = col2.text_input("Devolver preenchido em", required=True)
+        nome = col1.text_input("Nome do colaborador")
+        setor = col2.text_input("Setor")
+        cargo = col1.text_input("Cargo")
+        chefe = col2.text_input("Chefe imediato")
+        departamento = col1.text_input("Departamento")
+        empresa = col2.text_input("Empresa / Unidade")
+        escolaridade = col1.text_input("Escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em")
         
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", required=True)
-        objetivo = st.text_area("Trabalho e principal objetivo", required=True)
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
@@ -307,9 +307,26 @@ if st.query_params.get("page") == "formulario":
                 key=f"disc_{i}", 
                 horizontal=True, 
                 index=None, 
-                required=True
+              
+
+
             )
+
+        # --- É EXATAMENTE AQUI QUE VOCÊ COLOCA O BOTÃO E A VALIDAÇÃO ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+        if enviar:
+            # A trava que bloqueia o envio se faltar algo
+            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
+                st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
+            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Você não respondeu todas as perguntas do DISC!")
+            else:
+                # SÓ EXECUTA O SALVAMENTO SE TUDO ESTIVER OK
+                st.success("✅ Tudo validado! Processando...")
+
+
+        
 
         if enviar:
             # 1. TRAVA DE SEGURANÇA (evita duplicidade)
