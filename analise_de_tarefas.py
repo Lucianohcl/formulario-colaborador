@@ -455,8 +455,8 @@ if st.query_params.get("page") == "formulario":
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
-                "Minutos": [""] * 20,
-                "D": [""] * 20  # A nova coluna que você pediu
+                "Minutos": [""] * 20
+                
             }),
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -470,15 +470,14 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.subheader("⚠️ Dificuldades Encontradas")
+        
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
                 "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20,
-                "D": [""] * 20
+                "Minutos Perdidos": [""] * 20
+                
             }),
             column_config={
                 "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
@@ -498,8 +497,8 @@ if st.query_params.get("page") == "formulario":
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
                 "Horas": [""] * 20,
-                "Minutos": [""] * 20,
-                "D": [""] * 20
+                "Minutos": [""] * 20
+               
             }),
             column_config={
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
