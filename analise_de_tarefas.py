@@ -447,12 +447,12 @@ if st.query_params.get("page") == "formulario":
         
         # [AQUI VAI O SEU ST.DATA_EDITOR DE ATIVIDADES]
         
-        st.subheader("🔹 Atividades Executadas")
+        
         
         edit_ativ = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
+                "Frequência": ["D"] * 20,  # Valor padrão para evitar None
                 "Horas": ["0"] * 20,
                 "Minutos": ["0"] * 20
             }),
@@ -463,16 +463,19 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn(
                     "Frequência",
                     options=lista_frequencia,
+                    default="D", # Define a opção padrão
                     required=True
                 ),
                 "Horas": st.column_config.SelectboxColumn(
                     "Horas",
                     options=lista_horas,
+                    default="0", # Define a opção padrão
                     required=True
                 ),
                 "Minutos": st.column_config.SelectboxColumn(
                     "Minutos",
                     options=lista_minutos,
+                    default="0", # Define a opção padrão
                     required=True
                 )
             }
