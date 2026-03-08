@@ -421,7 +421,6 @@ if st.query_params.get("page") == "formulario":
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
-        
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
         * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
@@ -440,8 +439,16 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True, 
             key="ativ_editor",
             column_config={
-                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-                "Tempo Gasto": st.column_config.SelectboxColumn(options=lista_tempo)
+                "Frequência": st.column_config.SelectboxColumn(
+                    "Frequência",
+                    options=lista_frequencia,
+                    required=True
+                ),
+                "Tempo Gasto": st.column_config.SelectboxColumn(
+                    "Tempo Gasto",
+                    options=lista_tempo,
+                    required=True
+                )
             }
         )
 
@@ -459,10 +466,13 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True, 
             key="dif_editor",
             column_config={
-                "Tempo Perdido": st.column_config.SelectboxColumn(options=lista_tempo)
+                "Tempo Perdido": st.column_config.SelectboxColumn(
+                    "Tempo Perdido",
+                    options=lista_tempo,
+                    required=True
+                )
             }
         )
-
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
