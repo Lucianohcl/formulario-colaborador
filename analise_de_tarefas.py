@@ -55,6 +55,43 @@ if "page" in query_params:
     st.session_state.pagina = query_params["page"]
 
 
+# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
+from docx import Document
+from fpdf import FPDF
+import io
+
+def gerar_word(form):
+    doc = Document()
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    
+    # Adiciona os campos principais
+    for chave, valor in form.items():
+        if isinstance(valor, (str, int, float)):
+            doc.add_paragraph(f"{chave}: {valor}")
+        elif isinstance(valor, list):
+            doc.add_heading(chave, level=1)
+            for item in valor:
+                doc.add_paragraph(str(item), style='List Bullet')
+    
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+def gerar_pdf(form):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt=f"Relatório de: {form.get('Nome', 'Colaborador')}", ln=True, align='C')
+    pdf.ln(10)
+    
+    for chave, valor in form.items():
+        texto = f"{chave}: {str(valor)}"
+        # O FPDF tem limite de largura, então quebramos em várias linhas se necessário
+        pdf.multi_cell(0, 10, txt=texto)
+    
+    return pdf.output(dest='S').encode('latin-1')
+
 
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
