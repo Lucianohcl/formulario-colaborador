@@ -400,11 +400,6 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
-    # --- O que você deve ter no topo ---
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    lista_horas = [str(i) for i in range(0, 25)]
-    lista_minutos = [str(i) for i in range(0, 60, 5)]
-    
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
@@ -423,88 +418,33 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
         
-        col1, col2 = st.columns(2)
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+        """)
         
-        with col1:
-            st.info("""
-            **📋 LEGENDA DE FREQUÊNCIA:**
-            * **DVD**: Diário Várias Vezes
-            * **D**: Diário | **S**: Semanal
-            * **Q**: Quinzenal | **M**: Mensal
-            * **T**: Trimestral | **A**: Anual
-            """)
-            
-        with col2:
-            
-            st.warning("""
-            **⏱️ COMO REGISTRAR O TEMPO:**
-            * **Horas e Minutos**: Selecione o valor em cada coluna.
-            * **Menos de 1 hora?**: Selecione **0** em Horas e o tempo real em Minutos.
-            * **Não se aplica?**: Selecione **0** em ambos.
-            * **Dica**: Clique na seta lateral para selecionar o valor (evite digitar para não filtrar incorretamente).
-            """)
-
         st.subheader("🔹 Atividades Executadas")
-        st.caption("📝 Instrução: Utilize as colunas de Horas e Minutos para registrar o tempo gasto em cada atividade.")
         
-        # [AQUI VAI O SEU ST.DATA_EDITOR DE ATIVIDADES]
-        
-        
-        
-        # --- ATIVIDADES (Corrigido para vazio) ---
         edit_ativ = st.data_editor(
             pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20, # Vazio
-                "Horas": [""] * 20,      # Vazio
-                "Minutos": [""] * 20     # Vazio
-            }),
-            num_rows="fixed",
-            use_container_width=True,
-            key="ativ_editor",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn(
-                    "Frequência",
-                    options=lista_frequencia,
-                    required=True
-                ),
-                "Horas": st.column_config.SelectboxColumn(
-                    "Horas",
-                    options=lista_horas,
-                    required=True
-                ),
-                "Minutos": st.column_config.SelectboxColumn(
-                    "Minutos",
-                    options=lista_minutos,
-                    required=True
-                )
-            }
+                "Atividade Descrita": [""]*20, 
+                "Frequência": [""]*20, 
+                "Tempo Gasto": [""]*20
+            }), 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="ativ_editor"
         )
 
-        # --- DIFICULDADES (Corrigido para vazio) ---
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
         edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": [""] * 20,   # Vazio
-                "Minutos Perdidos": [""] * 20  # Vazio
-            }),
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor",
-            column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn(
-                    "Horas Perdidas",
-                    options=lista_horas,
-                    required=True
-                ),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(
-                    "Minutos Perdidos",
-                    options=lista_minutos,
-                    required=True
-                )
-            }
+            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="dif_editor"
         )
+
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
@@ -521,7 +461,10 @@ if st.query_params.get("page") == "formulario":
                 options=["A", "B", "C", "D"], 
                 key=f"disc_{i}", 
                 horizontal=True, 
-                index=None
+                index=None, 
+              
+
+
             )
 
         # --- BOTÃO E VALIDAÇÃO COM PROTEÇÃO DE ENVIO ---
