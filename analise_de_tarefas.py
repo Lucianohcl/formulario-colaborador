@@ -435,11 +435,13 @@ if st.query_params.get("page") == "formulario":
             """)
             
         with col2:
+            
             st.warning("""
             **⏱️ COMO REGISTRAR O TEMPO:**
             * **Horas e Minutos**: Selecione o valor em cada coluna.
             * **Menos de 1 hora?**: Selecione **0** em Horas e o tempo real em Minutos.
             * **Não se aplica?**: Selecione **0** em ambos.
+            * **Dica**: Clique na seta lateral para selecionar o valor (evite digitar para não filtrar incorretamente).
             """)
 
         st.subheader("🔹 Atividades Executadas")
@@ -449,12 +451,13 @@ if st.query_params.get("page") == "formulario":
         
         
         
+        # --- ATIVIDADES (Corrigido para vazio) ---
         edit_ativ = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
-                "Frequência": ["D"] * 20,  # Valor padrão para evitar None
-                "Horas": ["0"] * 20,
-                "Minutos": ["0"] * 20
+                "Frequência": [""] * 20, # Vazio
+                "Horas": [""] * 20,      # Vazio
+                "Minutos": [""] * 20     # Vazio
             }),
             num_rows="fixed",
             use_container_width=True,
@@ -463,34 +466,28 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn(
                     "Frequência",
                     options=lista_frequencia,
-                    default="D", # Define a opção padrão
                     required=True
                 ),
                 "Horas": st.column_config.SelectboxColumn(
                     "Horas",
                     options=lista_horas,
-                    default="0", # Define a opção padrão
                     required=True
                 ),
                 "Minutos": st.column_config.SelectboxColumn(
                     "Minutos",
                     options=lista_minutos,
-                    default="0", # Define a opção padrão
                     required=True
                 )
             }
         )
 
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        
+        # --- DIFICULDADES (Corrigido para vazio) ---
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": ["0"] * 20,
-                "Minutos Perdidos": ["0"] * 20
+                "Horas Perdidas": [""] * 20,   # Vazio
+                "Minutos Perdidos": [""] * 20  # Vazio
             }),
             num_rows="fixed",
             use_container_width=True,
