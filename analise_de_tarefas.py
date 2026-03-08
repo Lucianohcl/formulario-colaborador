@@ -447,24 +447,24 @@ if st.query_params.get("page") == "formulario":
             * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
             """)
         
+        
         st.subheader("🔹 Atividades Executadas")
         
-        # Exemplo para Atividades (repita a lógica para Dificuldades/Sugestões)
         edit_ativ = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-                
-            }),
+            }).reset_index(drop=True), # Limpeza do índice
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
             },
             hide_index=True,
-            num_rows="fixed"
+            num_rows="fixed",
+            use_container_width=True
         )
 
         # --- SEÇÃO DE DIFICULDADES ---
@@ -477,38 +477,51 @@ if st.query_params.get("page") == "formulario":
                 "Setor/Parceiro Envolvido": [""] * 20,
                 "Horas Perdidas": [""] * 20,
                 "Minutos Perdidos": [""] * 20
-                
-            }),
+            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
             column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+                "Horas Perdidas": st.column_config.SelectboxColumn(
+                    "Horas Perdidas", 
+                    options=lista_horas
+                ),
+                "Minutos Perdidos": st.column_config.SelectboxColumn(
+                    "Minutos Perdidos", 
+                    options=lista_minutos
+                ),
             },
+            hide_index=True,
             num_rows="fixed",
             use_container_width=True,
-            hide_index=True,
             key="dif_editor"
         )
 
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
+        
         edit_sug = st.data_editor(
             pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-               
-            }),
+            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
             column_config={
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Horas": st.column_config.SelectboxColumn(
+                    "Horas", 
+                    options=lista_horas
+                ),
+                "Minutos": st.column_config.SelectboxColumn(
+                    "Minutos", 
+                    options=lista_minutos
+                ),
             },
+            hide_index=True,
             num_rows="fixed",
             use_container_width=True,
-            hide_index=True,
             key="sug_editor"
         )
+
+        
 
         
 
