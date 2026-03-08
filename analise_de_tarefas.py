@@ -511,25 +511,30 @@ if st.query_params.get("page") == "formulario":
             key="dif_editor"
         )
 
-        # --- SEÇÃO DE SUGESTÕES ---
+        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
         st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria")
+        st.subheader("💡 Sugestões de Melhoria e Impacto")
         
         edit_sug = st.data_editor(
             pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
+                "Redução Horas": [""] * 20,
+                "Redução Minutos": [""] * 20,
+                "Frequência do Impacto": [""] * 20
+            }).reset_index(drop=True),
             column_config={
-                "Horas": st.column_config.SelectboxColumn(
-                    "Horas", 
+                "Redução Horas": st.column_config.SelectboxColumn(
+                    "Redução Horas", 
                     options=lista_horas
                 ),
-                "Minutos": st.column_config.SelectboxColumn(
-                    "Minutos", 
+                "Redução Minutos": st.column_config.SelectboxColumn(
+                    "Redução Minutos", 
                     options=lista_minutos
+                ),
+                "Frequência do Impacto": st.column_config.SelectboxColumn(
+                    "Frequência do Impacto", 
+                    options=lista_frequencia
                 ),
             },
             hide_index=True,
@@ -555,13 +560,12 @@ if st.query_params.get("page") == "formulario":
 
 # --- LÓGICA DE ENVIO: ALINHADA À ESQUERDA (FORA DO FORM) ---
 
+# O botão fica dentro do form
+enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    # O botão fica dentro do form
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-
-    # --- LÓGICA DE ENVIO (AGORA DENTRO DO FORMULÁRIO) ---
-        if enviar:
-            st.success("Formulário enviado com sucesso! Processando...")
+# --- LÓGICA DE ENVIO (AGORA DENTRO DO FORMULÁRIO) ---
+if enviar:
+    
 
     # 1. VALIDAÇÃO
     if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
