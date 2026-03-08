@@ -400,6 +400,30 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
+    # Listas padronizadas (devem vir antes do form)
+    lista_horas = [f"{i} h" for i in range(25)]
+    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    
+    # ÚNICO BLOCO DO FORMULÁRIO
+    with st.form("form_colaborador"):
+        # Dados de Identificação
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador")
+        setor = col2.text_input("Setor")
+        cargo = col1.text_input("Cargo")
+        chefe = col2.text_input("Chefe imediato")
+        departamento = col1.text_input("Departamento")
+        empresa = col2.text_input("Empresa / Unidade")
+        escolaridade = col1.text_input("Escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em")
+        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
+        
+        # ... aqui continua o restante do seu código (atividades, etc.)
+
+    
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
@@ -418,39 +442,89 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
         
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
-        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-        """)
+        # 1. Defina as colunas primeiro
+        col1, col2 = st.columns(2)
+        
+        # 2. Agora coloque o conteúdo dentro de cada coluna
+        with col1:
+            st.info("""
+            **📋 LEGENDA DE FREQUÊNCIA:**
+            * **DVD**: Diário Várias Vezes
+            * **D**: Diário | **S**: Semanal
+            * **Q**: Quinzenal | **M**: Mensal
+            * **T**: Trimestral | **A**: Anual
+            """)
+
+        with col2:
+            st.warning("""
+            **⏱️ COMO REGISTRAR O TEMPO:**
+            * **Horas e Minutos**: Selecione o valor em cada coluna.
+            * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
+            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
+            """)
         
         st.subheader("🔹 Atividades Executadas")
         
+        # Exemplo para Atividades (repita a lógica para Dificuldades/Sugestões)
         edit_ativ = st.data_editor(
             pd.DataFrame({
-                "Atividade Descrita": [""]*20, 
-                "Frequência": [""]*20, 
-                "Tempo Gasto": [""]*20
-            }), 
-            num_rows="fixed", 
-            use_container_width=True, 
-            key="ativ_editor"
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20,
+                "D": [""] * 20  # A nova coluna que você pediu
+            }),
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed"
         )
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.subheader("⚠️ Dificuldades Encontradas")
         edit_dif = st.data_editor(
-            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="dif_editor"
+            pd.DataFrame({
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Horas Perdidas": [""] * 20,
+                "Minutos Perdidos": [""] * 20,
+                "D": [""] * 20
+            }),
+            column_config={
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+            },
+            num_rows="fixed",
+            use_container_width=True,
+            hide_index=True,
+            key="dif_editor"
         )
 
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
         edit_sug = st.data_editor(
-            pd.DataFrame({"Sugestão de Melhoria": [""]*20, "Impacto Esperado": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="sug_editor"
+            pd.DataFrame({
+                "Sugestão de Melhoria": [""] * 20,
+                "Impacto Esperado": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20,
+                "D": [""] * 20
+            }),
+            column_config={
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            num_rows="fixed",
+            use_container_width=True,
+            hide_index=True,
+            key="sug_editor"
         )
 
         st.markdown("---")
