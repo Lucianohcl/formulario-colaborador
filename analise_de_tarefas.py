@@ -400,6 +400,10 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
+    # Listas de opções padronizadas
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    lista_tempo = [f"{i} h" for i in range(1, 25)] + [f"{i} min" for i in range(5, 65, 5)]
+    
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
@@ -434,15 +438,29 @@ if st.query_params.get("page") == "formulario":
             }), 
             num_rows="fixed", 
             use_container_width=True, 
-            key="ativ_editor"
+            key="ativ_editor",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Tempo Gasto": st.column_config.SelectboxColumn(options=lista_tempo)
+            }
         )
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
+        
         edit_dif = st.data_editor(
-            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="dif_editor"
+            pd.DataFrame({
+                "Dificuldade": [""]*20, 
+                "Setor/Parceiro Envolvido": [""]*20, 
+                "Tempo Perdido": [""]*20
+            }), 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="dif_editor",
+            column_config={
+                "Tempo Perdido": st.column_config.SelectboxColumn(options=lista_tempo)
+            }
         )
 
         # --- SEÇÃO DE SUGESTÕES ---
