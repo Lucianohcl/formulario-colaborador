@@ -400,10 +400,10 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
-    # Listas de opções padronizadas
+    # --- O que você deve ter no topo ---
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    lista_horas = [str(i) for i in range(0, 25)]        # De 0 a 24
-    lista_minutos = [str(i) for i in range(0, 60, 5)]   # 0, 5, 10, 15... até 55
+    lista_horas = [str(i) for i in range(0, 25)]
+    lista_minutos = [str(i) for i in range(0, 60, 5)]
     
     with st.form("form_colaborador"):
         # Dados de Identificação
@@ -451,12 +451,13 @@ if st.query_params.get("page") == "formulario":
         
         edit_ativ = st.data_editor(
             pd.DataFrame({
-                "Atividade Descrita": [""]*20, 
-                "Frequência": [""]*20, 
-                "Tempo Gasto": [""]*20
-            }), 
-            num_rows="fixed", 
-            use_container_width=True, 
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": ["0"] * 20,
+                "Minutos": ["0"] * 20
+            }),
+            num_rows="fixed",
+            use_container_width=True,
             key="ativ_editor",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn(
@@ -464,9 +465,14 @@ if st.query_params.get("page") == "formulario":
                     options=lista_frequencia,
                     required=True
                 ),
-                "Tempo Gasto": st.column_config.SelectboxColumn(
-                    "Tempo Gasto",
-                    options=lista_tempo,
+                "Horas": st.column_config.SelectboxColumn(
+                    "Horas",
+                    options=lista_horas,
+                    required=True
+                ),
+                "Minutos": st.column_config.SelectboxColumn(
+                    "Minutos",
+                    options=lista_minutos,
                     required=True
                 )
             }
@@ -478,17 +484,23 @@ if st.query_params.get("page") == "formulario":
         
         edit_dif = st.data_editor(
             pd.DataFrame({
-                "Dificuldade": [""]*20, 
-                "Setor/Parceiro Envolvido": [""]*20, 
-                "Tempo Perdido": [""]*20
-            }), 
-            num_rows="fixed", 
-            use_container_width=True, 
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Horas Perdidas": ["0"] * 20,
+                "Minutos Perdidos": ["0"] * 20
+            }),
+            num_rows="fixed",
+            use_container_width=True,
             key="dif_editor",
             column_config={
-                "Tempo Perdido": st.column_config.SelectboxColumn(
-                    "Tempo Perdido",
-                    options=lista_tempo,
+                "Horas Perdidas": st.column_config.SelectboxColumn(
+                    "Horas Perdidas",
+                    options=lista_horas,
+                    required=True
+                ),
+                "Minutos Perdidos": st.column_config.SelectboxColumn(
+                    "Minutos Perdidos",
+                    options=lista_minutos,
                     required=True
                 )
             }
@@ -509,10 +521,7 @@ if st.query_params.get("page") == "formulario":
                 options=["A", "B", "C", "D"], 
                 key=f"disc_{i}", 
                 horizontal=True, 
-                index=None, 
-              
-
-
+                index=None
             )
 
         # --- BOTÃO E VALIDAÇÃO COM PROTEÇÃO DE ENVIO ---
