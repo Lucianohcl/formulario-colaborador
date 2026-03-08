@@ -90,42 +90,118 @@ import io
 
 def gerar_word(form):
     doc = Document()
-    doc.add_heading(f"Relatório de: {form.get('Nome', 'Colaborador')}", 0)
-    doc.add_paragraph(f"Data: {form.get('DataEnvio', 'N/A')}")
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
     
-    # ... (seu código anterior para dados gerais permanece igual) ...
+    # 1. Informações Gerais
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+    
+    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for chave, colunas in secoes.items():
+        if chave in form and isinstance(form[chave], list):
+            doc.add_heading(f"📋 {chave}", level=1)
+            # Filtra apenas itens que tenham conteúdo real
+            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                table = doc.add_table(rows=1, cols=len(colunas))
+                table.style = 'Table Grid'
+                # Cabeçalho
+                for i, col in enumerate(colunas):
+                    table.rows[0].cells[i].text = col
+                # Linhas
+                for item in dados:
+                    row = table.add_row().cells
+                    for i, col in enumerate(colunas):
+                        row[i].text = str(item.get(col, ''))
+            else:
+                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
 
-    # Ajuste focado apenas no DISC:
-    doc.add_heading("📊 Avaliação DISC", level=1)
-    
-    # Assumindo que a lista 'perguntas_disc' está acessível globalmente
+    # 3. Avaliação DISC
+    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
     for i, pergunta in enumerate(perguntas_disc, 1):
         valor_resposta = form.get(f"Q{i}", "Não respondido")
-        
-        # Insere a pergunta
         doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
-        # Insere a resposta que você já tinha
         doc.add_paragraph(f"Resposta: {valor_resposta}")
-        doc.add_paragraph("-" * 20) # Linha separadora
+        doc.add_paragraph("-" * 20)
     
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
 
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
 def gerar_pdf(form):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.cell(200, 10, txt=f"Relatório de: {form.get('Nome', 'Colaborador')}", ln=True, align='C')
-    pdf.ln(10)
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Título
+    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Informações Gerais
+    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
     
-    for chave, valor in form.items():
-        texto = f"{chave}: {str(valor)}"
-        # O FPDF tem limite de largura, então quebramos em várias linhas se necessário
-        pdf.multi_cell(0, 10, txt=texto)
+    elementos.append(Spacer(1, 12))
+
+    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
     
-    return pdf.output(dest='S').encode('latin-1')
+    for titulo, colunas in secoes.items():
+        if titulo in form and isinstance(form[titulo], list):
+            elementos.append(Paragraph(titulo, styles['Heading2']))
+            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                data = [colunas] # Cabeçalho
+                for item in dados:
+                    data.append([str(item.get(c, '')) for c in colunas])
+                
+                tabela = Table(data, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                    ('FONTSIZE', (0,0), (-1,-1), 8)
+                ]))
+                elementos.append(tabela)
+            else:
+                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+            elementos.append(Spacer(1, 12))
+
+    # DISC
+    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
+        elementos.append(Spacer(1, 6))
+
+    doc.build(elementos)
+    buffer.seek(0)
+    return buffer
 
 
 # ============================================================
