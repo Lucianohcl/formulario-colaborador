@@ -312,74 +312,76 @@ if st.query_params.get("page") == "formulario":
 
             )
 
-        # --- BOTÃO E VALIDAÇÃO INTEGRADOS ---
+        # --- BOTÃO E VALIDAÇÃO COM PROTEÇÃO DE ENVIO ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
+            # 1. VALIDAÇÃO: Bloqueia se faltar algo
             if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-                st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
+                st.error("⚠️ Erro: Preencha todos os campos de identificação!")
             
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Você não respondeu todas as perguntas do DISC!")
+                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
             
             else:
-                # 2. SÓ EXECUTA TUDO ISTO SE ESTIVER TUDO OK
-                st.success("✅ Tudo validado! Processando...")
+                import os
+                import json
+                import pandas as pd
                 
-                # 3. TRAVA DE SEGURANÇA E PREPARAÇÃO DE DIRETÓRIO
-                if "processando" not in st.session_state:
-                    st.session_state["processando"] = True
+                # PREPARAÇÃO DE DIRETÓRIO
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+                
+                # 2. VERIFICAÇÃO DE DUPLICIDADE (Já existe arquivo com este nome?)
+                nome_limpo = nome.strip().replace(" ", "_")
+                # Busca qualquer arquivo que comece com o nome do usuário
+                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+                
+                if arquivos_existentes:
+                    st.error(f"⚠️ Erro: Já existe um formulário enviado para '{nome}'.")
+                
+                else:
+                    # 3. CONFIRMAÇÃO (Primeiro clique)
+                    if not st.session_state.get("confirmado", False):
+                        st.warning("⚠️ Atenção! Revise todo o formulário, pois ele só será enviado uma vez. Clique novamente no botão para confirmar o envio.")
+                        st.session_state["confirmado"] = True
                     
-                    import os
-                    import json
-                    import pandas as pd
-                    import time
-                    
-                    base_dir = os.path.dirname(os.path.abspath(__file__))
-                    dados_dir = os.path.join(base_dir, "dados")
-                    os.makedirs(dados_dir, exist_ok=True)
-                    
-                    # 4. MONTAGEM DO DICIONÁRIO DE DADOS
-                    dados = {
-                        "Nome": nome, 
-                        "Setor": setor, 
-                        "Cargo": cargo, 
-                        "Chefe": chefe,
-                        "Departamento": departamento, 
-                        "Empresa": empresa, 
-                        "Escolaridade": escolaridade,
-                        "Devolver": devolucao, 
-                        "Cursos": cursos, 
-                        "Objetivo": objetivo,
-                        "Atividades": edit_ativ.to_dict(orient="records"),
-                        "Dificuldades": edit_dif.to_dict(orient="records"),
-                        "Sugestoes": edit_sug.to_dict(orient="records"),
-                        "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
-                    }
-                    
-                    # Coleta as respostas do DISC
-                    for i in range(1, 25): 
-                        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
-                    
-                    # Nome do arquivo
-                    nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-                    caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
-                    
-                    # Escrita do arquivo JSON
-                    with open(caminho, "w", encoding="utf-8") as f: 
-                        json.dump(dados, f, ensure_ascii=False, indent=4)
-                    
-                    st.success("✅ Formulário enviado com sucesso!")
-                    
-                    # Atualiza o estado para que a Visualização pegue os novos dados
-                    if "carregar_todos_formularios" in globals():
-                        st.session_state["formularios"] = carregar_todos_formularios()
-                    
-                    time.sleep(2)
-                    # Remove a trava para permitir novo envio se necessário
-                    del st.session_state["processando"]
-                    st.rerun()
+                    # 4. ENVIO DEFINITIVO (Segundo clique - protegido pela trava 'processando')
+                    elif "processando" not in st.session_state:
+                        st.session_state["processando"] = True
+                        st.success("✅ Processando envio...")
+                        
+                        # Montagem do dicionário
+                        dados = {
+                            "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
+                            "Departamento": departamento, "Empresa": empresa, "Escolaridade": escolaridade,
+                            "Devolver": devolucao, "Cursos": cursos, "Objetivo": objetivo,
+                            "Atividades": edit_ativ.to_dict(orient="records"),
+                            "Dificuldades": edit_dif.to_dict(orient="records"),
+                            "Sugestoes": edit_sug.to_dict(orient="records"),
+                            "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
+                        }
+                        
+                        # Coleta DISC
+                        for i in range(1, 25): 
+                            dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+                        
+                        # Escrita
+                        caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
+                        with open(caminho, "w", encoding="utf-8") as f: 
+                            json.dump(dados, f, ensure_ascii=False, indent=4)
+                        
+                        st.success("✅ Formulário enviado com sucesso!")
+                        
+                        if "carregar_todos_formularios" in globals():
+                            st.session_state["formularios"] = carregar_todos_formularios()
+                        
+                        import time
+                        time.sleep(2)
+                        st.session_state["confirmado"] = False # Reseta a confirmação
+                        del st.session_state["processando"]
+                        st.rerun()
             
       
 
