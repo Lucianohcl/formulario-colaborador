@@ -553,11 +553,16 @@ if st.query_params.get("page") == "formulario":
                 index=None
             )
 
-        # O botão fica dentro do form
+# --- LÓGICA DE ENVIO: ALINHADA À ESQUERDA (FORA DO FORM) ---
+
+
+    # O botão fica dentro do form
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-# --- LÓGICA DE ENVIO: ALINHADA À ESQUERDA (FORA DO FORM) ---
-if enviar:
+    # --- LÓGICA DE ENVIO (AGORA DENTRO DO FORMULÁRIO) ---
+        if enviar:
+            st.success("Formulário enviado com sucesso! Processando...")
+
     # 1. VALIDAÇÃO
     if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
         st.error("⚠️ Erro: Preencha todos os campos de identificação!")
