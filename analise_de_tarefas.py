@@ -435,10 +435,10 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
         
-        # 1. Defina as colunas primeiro
-        col1, col2 = st.columns(2)
+        # Mude para 3 colunas
+        col1, col2, col3 = st.columns(3)
         
-        # 2. Agora coloque o conteúdo dentro de cada coluna
+        # Supondo que você tenha definido col1, col2 e col3 anteriormente
         with col1:
             st.info("""
             **📋 LEGENDA DE FREQUÊNCIA:**
@@ -454,6 +454,14 @@ if st.query_params.get("page") == "formulario":
             * **Horas e Minutos**: Selecione o valor em cada coluna.
             * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
             * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
+            """)
+            
+        with col3:
+            st.error("""
+            **⚠️ NOTA IMPORTANTE:**
+            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
+            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
+            * Botão de download: use sempre '📥 BAIXAR EXCEL FINAL'.
             """)
         
         
