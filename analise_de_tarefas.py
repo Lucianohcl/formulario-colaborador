@@ -55,6 +55,34 @@ if "page" in query_params:
     st.session_state.pagina = query_params["page"]
 
 
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
 # --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
 from fpdf import FPDF
@@ -62,16 +90,23 @@ import io
 
 def gerar_word(form):
     doc = Document()
-    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_heading(f"Relatório de: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data: {form.get('DataEnvio', 'N/A')}")
     
-    # Adiciona os campos principais
-    for chave, valor in form.items():
-        if isinstance(valor, (str, int, float)):
-            doc.add_paragraph(f"{chave}: {valor}")
-        elif isinstance(valor, list):
-            doc.add_heading(chave, level=1)
-            for item in valor:
-                doc.add_paragraph(str(item), style='List Bullet')
+    # ... (seu código anterior para dados gerais permanece igual) ...
+
+    # Ajuste focado apenas no DISC:
+    doc.add_heading("📊 Avaliação DISC", level=1)
+    
+    # Assumindo que a lista 'perguntas_disc' está acessível globalmente
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        
+        # Insere a pergunta
+        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
+        # Insere a resposta que você já tinha
+        doc.add_paragraph(f"Resposta: {valor_resposta}")
+        doc.add_paragraph("-" * 20) # Linha separadora
     
     buffer = io.BytesIO()
     doc.save(buffer)
