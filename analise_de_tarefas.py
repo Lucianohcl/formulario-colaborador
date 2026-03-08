@@ -557,9 +557,81 @@ if st.query_params.get("page") == "formulario":
                 horizontal=True, 
                 index=None
             )
-
+        # BOTÃO DO FORMULÁRIO
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
-      
+        # -------------------------------------------------
+        # VALIDAÇÕES E PROCESSAMENTO
+        # -------------------------------------------------
+
+        if enviar:
+
+            # 1. VALIDAÇÃO DE CAMPOS
+            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
+                st.error("⚠️ Erro: Preencha todos os campos de identificação!")
+
+            # 2. VALIDAÇÃO DO DISC
+            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+
+            else:
+
+                import os
+                import json
+
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+
+                # 3. EVITAR DUPLICIDADE
+                nome_limpo = nome.strip().replace(" ", "_")
+                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+
+                if arquivos_existentes:
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+
+                else:
+
+                    # 4. CONFIRMAÇÃO
+                    if not st.session_state.get("confirmado", False):
+
+                        st.warning(
+                            "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
+                        )
+
+                        st.session_state["confirmado"] = True
+
+                    # 5. ENVIO FINAL
+                    else:
+
+                        st.success("✅ Formulário enviado com sucesso!")
+
+                        dados = {
+                            "nome": nome,
+                            "setor": setor,
+                            "cargo": cargo,
+                            "chefe": chefe,
+                            "departamento": departamento,
+                            "empresa": empresa,
+                            "escolaridade": escolaridade,
+                            "devolucao": devolucao,
+                            "cursos": cursos,
+                            "objetivo": objetivo,
+                            "atividades": edit_ativ.to_dict(),
+                            "dificuldades": edit_dif.to_dict(),
+                            "sugestoes": edit_sug.to_dict(),
+                            "disc": {
+                                f"disc_{i}": st.session_state.get(f"disc_{i}")
+                                for i in range(1, 25)
+                            }
+                        }
+
+                        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+
+                        with open(caminho, "w", encoding="utf-8") as f:
+                            json.dump(dados, f, ensure_ascii=False, indent=4)
+
+                        st.session_state["confirmado"] = False
 
 
 # --- VISUALIZAÇÃO ---
