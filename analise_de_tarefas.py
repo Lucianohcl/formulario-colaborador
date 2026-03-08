@@ -120,11 +120,18 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
             st.session_state.logged_in = True
             st.session_state.user_nome = usuario
             st.session_state.is_admin = True
+            
+            # ATUALIZAÇÃO: Definimos a variável que o painel de exportação espera
+            if usuario == "Luciano":
+                st.session_state["usuario_logado"] = "Luciano 123"
+            else:
+                st.session_state["usuario_logado"] = usuario
+                
             st.rerun()
         else:
             st.error("Usuário ou senha incorretos")
     
-    st.stop() # Bloqueia apenas acessos não autorizados
+    st.stop()
 
 # ============================================================
 # SIDEBAR
@@ -457,6 +464,38 @@ if st.session_state.get("pagina") == "visualizar":
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
+
+                # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
+                if st.session_state.get("usuario_logado") == "Luciano 123":
+                    st.markdown("---")
+                    st.subheader("⚙️ Painel de Exportação")
+                    
+                    # Usamos 2 colunas para ficar mais harmônico
+                    col1, col2 = st.columns(2)
+                    
+                    # Padronização do nome do arquivo para ambos
+                    data_clean = form.get('DataEnvio', '').replace('/', '').replace(' ', '_').replace(':', '')
+                    nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
+                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
+                    
+                    with col1:
+                        st.download_button(
+                            label="📄 Baixar em Word",
+                            data=gerar_word(form),
+                            file_name=f"{nome_arquivo}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        )
+                    
+                    with col2:
+                        st.download_button(
+                            label="📑 Baixar em PDF",
+                            data=gerar_pdf(form),
+                            file_name=f"{nome_arquivo}.pdf",
+                            mime="application/pdf"
+                        )
+                # --- FIM DO BLOCO ---
+
+
 
         # Botão de Limpeza
         st.markdown("---")
