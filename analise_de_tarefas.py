@@ -54,6 +54,15 @@ if "page" in query_params:
 
     st.session_state.pagina = query_params["page"]
 
+st.markdown("""
+    <style>
+    /* Oculta a coluna de índice do data_editor */
+    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
