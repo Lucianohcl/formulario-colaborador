@@ -458,11 +458,11 @@ if st.query_params.get("page") == "formulario":
             
         with col3:
             st.error("""
-            **⚠️ NOTA IMPORTANTE:**
+            **⚠️ DETALHE:**
             * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
             * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            * Botão de download: use sempre '📥 BAIXAR EXCEL FINAL'.
-            """)
+            """)        
+        
         
         
         st.subheader("🔹 Atividades Executadas")
