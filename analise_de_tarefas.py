@@ -402,7 +402,8 @@ if st.query_params.get("page") == "formulario":
     
     # Listas de opções padronizadas
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    lista_tempo = [f"{i} h" for i in range(1, 25)] + [f"{i} min" for i in range(5, 65, 5)]
+    lista_horas = [str(i) for i in range(0, 25)]        # De 0 a 24
+    lista_minutos = [str(i) for i in range(0, 60, 5)]   # 0, 5, 10, 15... até 55
     
     with st.form("form_colaborador"):
         # Dados de Identificação
@@ -421,11 +422,30 @@ if st.query_params.get("page") == "formulario":
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
-        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-        """)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.info("""
+            **📋 LEGENDA DE FREQUÊNCIA:**
+            * **DVD**: Diário Várias Vezes
+            * **D**: Diário | **S**: Semanal
+            * **Q**: Quinzenal | **M**: Mensal
+            * **T**: Trimestral | **A**: Anual
+            """)
+            
+        with col2:
+            st.warning("""
+            **⏱️ COMO REGISTRAR O TEMPO:**
+            * **Horas e Minutos**: Selecione o valor em cada coluna.
+            * **Menos de 1 hora?**: Selecione **0** em Horas e o tempo real em Minutos.
+            * **Não se aplica?**: Selecione **0** em ambos.
+            """)
+
+        st.subheader("🔹 Atividades Executadas")
+        st.caption("📝 Instrução: Utilize as colunas de Horas e Minutos para registrar o tempo gasto em cada atividade.")
+        
+        # [AQUI VAI O SEU ST.DATA_EDITOR DE ATIVIDADES]
         
         st.subheader("🔹 Atividades Executadas")
         
