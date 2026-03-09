@@ -686,25 +686,28 @@ if st.session_state.get("pagina") == "visualizar":
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
-                col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
-                col2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
+                
+                # Ajustado para as chaves novas do seu dicionário 'dados'
+                col1.write(f"**Data de Envio:** {form.get('data_envio', 'N/A')}")
+                col2.write(f"**Devolver em:** {form.get('devolucao', 'N/A')}")
                 
                 col_a, col_b = st.columns(2)
-                col_a.write(f"**Setor:** {form.get('Setor', 'N/A')}")
-                col_b.write(f"**Departamento:** {form.get('Departamento', 'N/A')}")
-                col_a.write(f"**Cargo:** {form.get('Cargo', 'N/A')}")
-                col_b.write(f"**Chefe Imediato:** {form.get('Chefe', 'N/A')}")
-                col_a.write(f"**Empresa/Unidade:** {form.get('Empresa', 'N/A')}")
-                col_b.write(f"**Escolaridade:** {form.get('Escolaridade', 'N/A')}")
+                col_a.write(f"**Setor:** {form.get('setor', 'N/A')}")
+                col_b.write(f"**Departamento:** {form.get('departamento', 'N/A')}")
+                col_a.write(f"**Cargo:** {form.get('cargo', 'N/A')}")
+                col_b.write(f"**Chefe Imediato:** {form.get('chefe', 'N/A')}")
+                col_a.write(f"**Empresa/Unidade:** {form.get('empresa', 'N/A')}")
+                col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
-                st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
-                st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
+                # Ajustado para os nomes longos que definimos no salvamento
+                st.write(f"**Cursos:** {form.get('cursos_obrigatorios_ou_diferenciais', 'N/A')}")
+                st.info(f"**Objetivo Principal:**\n\n{form.get('trabalho_e_principal_objetivo', 'N/A')}")
                 
-                # 2. Tabelas Dinâmicas
+                # 2. Tabelas Dinâmicas (Chaves em minúsculo para bater com o dicionário)
                 secoes = {
-                    "Atividades": "📋 Atividades Executadas",
-                    "Dificuldades": "⚠️ Dificuldades e Bloqueios",
-                    "Sugestoes": "💡 Sugestões de Melhoria"
+                    "atividades": "📋 Atividades Executadas",
+                    "dificuldades": "⚠️ Dificuldades e Bloqueios",
+                    "sugestoes": "💡 Sugestões de Melhoria"
                 }
                 
                 for chave, titulo in secoes.items():
@@ -712,6 +715,7 @@ if st.session_state.get("pagina") == "visualizar":
                     st.subheader(titulo)
                     if chave in form and form[chave]:
                         df = pd.DataFrame(form[chave])
+                        # Limpeza de linhas vazias para visualização
                         df = df.replace("", None).dropna(how='all')
                         if not df.empty:
                             st.table(df)
@@ -720,12 +724,16 @@ if st.session_state.get("pagina") == "visualizar":
                     else:
                         st.write("Seção não encontrada ou vazia.")
                 
-                # 3. Questionário DISC (Exibição Completa e Legível)
+                # 3. Questionário DISC (Acessando o sub-dicionário 'disc')
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
+                # Pegamos o dicionário interno 'disc' que criamos no salvamento
+                dados_disc = form.get("disc", {})
+                
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    valor_resposta = form.get(f"Q{i}", "Não respondido")
+                    # Buscamos pela chave 'disc_1', 'disc_2', etc.
+                    valor_resposta = dados_disc.get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
