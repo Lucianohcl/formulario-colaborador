@@ -415,30 +415,15 @@ perguntas_disc = [
 
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
-    # 1. Abre o formulário aqui (Isso segura os dados na tela)
-    with st.form("meu_formulario_principal", clear_on_submit=False):
-        st.title("📋 Formulário Completo do Colaborador")
-        
-        nome = st.text_input("Nome do Colaborador")
-        # ... todos os seus outros campos de input aqui dentro ...
-
-        # 2. O botão de enviar DEVE ser o form_submit_button
-        botao_enviar = st.form_submit_button("Enviar Questionário")
-
-        if botao_enviar:
-            if not nome:
-                st.error("⚠️ O nome é obrigatório!")
-            else:
-                # Sua lógica de salvar e o st.success aqui
-                st.success("✅ Enviado!")
-    
-    # Listas padronizadas (devem vir antes do form)
+    # 1. Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    
-    # ÚNICO BLOCO DO FORMULÁRIO
-    with st.form("form_colaborador"):
+
+    # 2. ÚNICO BLOCO DO FORMULÁRIO
+    with st.form("form_colaborador_principal", clear_on_submit=False):
+        st.title("📋 Formulário Completo do Colaborador")
+        
         # Dados de Identificação
         col1, col2 = st.columns(2)
         nome = col1.text_input("Nome do colaborador")
@@ -452,6 +437,9 @@ if st.query_params.get("page") == "formulario":
         
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
+
+        # --- AGORA CONTINUE O RESTANTE DO SEU CÓDIGO AQUI ---
+        # ATENÇÃO: Mantenha o recuo (espaço à esquerda) em todas as linhas seguintes!
         
         
         
