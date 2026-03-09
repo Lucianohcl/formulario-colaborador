@@ -583,17 +583,23 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
 
         if enviar:
+            # Criamos uma lista com todos os campos que NÃO podem estar vazios
+            # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
+            campos_obrigatorios = [
+                nome, setor, cargo, chefe, departamento, empresa,
+                cursos, trabalho, objetivo
+            ]
 
-            # 1. VALIDAÇÃO DE CAMPOS
-            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-                st.error("⚠️ Erro: Preencha todos os campos de identificação!")
+            # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
+            # O strip() remove espaços vazios para garantir que haja texto real
+            if any(not str(campo).strip() for campo in campos_obrigatorios):
+                st.error("⚠️ Erro: Preencha todos os campos obrigatórios (Identificação, Cursos, Trabalho e Objetivo)!")
 
             # 2. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
 
             else:
-
                 import os
                 import json
 
@@ -633,8 +639,8 @@ if st.query_params.get("page") == "formulario":
                             "empresa": empresa,
                             "escolaridade": escolaridade,
                             "devolucao": devolucao,
-                            "cursos": cursos,
-                            "objetivo": objetivo,
+                            "cursos_obrigatorios_ou_diferenciais": cursos, # Nome claro no JSON
+                            "trabalho_e_principal_objetivo": objetivo,      # Nome claro no JSON
                             "atividades": edit_ativ.to_dict(),
                             "dificuldades": edit_dif.to_dict(),
                             "sugestoes": edit_sug.to_dict(),
