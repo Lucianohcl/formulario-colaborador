@@ -106,7 +106,11 @@ def gerar_word(form):
     
     # 1. Informações Gerais
     doc.add_heading("Informações de Identificação", level=1)
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    # Use exatamente as chaves que salvamos no dicionário 'dados'
+    campos_gerais = [
+        'setor', 'departamento', 'cargo', 'chefe', 'empresa', 
+        'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo'
+    ]
     for campo in campos_gerais:
         doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
     
@@ -169,11 +173,22 @@ def gerar_pdf(form):
 
     # Informações Gerais
     elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    # 1. Defina as chaves exatas
+    campos_gerais = [
+        'setor', 'departamento', 'cargo', 'chefe', 'empresa', 
+        'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo'
+    ]
+
+    # 2. Loop único e limpo
     for campo in campos_gerais:
-        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
+        # Transforma 'setor' em 'Setor' e remove os '_'
+        label = campo.replace('_', ' ').capitalize()
     
-    elementos.append(Spacer(1, 12))
+        # Adiciona ao PDF
+        texto = f"<b>{label}:</b> {form.get(campo, 'N/A')}"
+        elementos.append(Paragraph(texto, styles['Normal']))
+    
+        elementos.append(Spacer(1, 12))
 
     # Tabelas (Atividades, Dificuldades, Sugestoes)
     secoes = {
