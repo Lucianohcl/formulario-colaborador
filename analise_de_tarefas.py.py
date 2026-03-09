@@ -111,11 +111,8 @@ def gerar_word(form):
     # 2. Tabelas (Atividades, Dificuldades, Sugestões)
     secoes = {
         "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-<<<<<<< HEAD
         "Dificuldades": ["Dificuldade", "Frequência", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-=======
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
->>>>>>> d9522900601ea517885d27374bc8ad1330b9b7d6
+      
         "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
     }
     
