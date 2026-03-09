@@ -593,7 +593,7 @@ if st.query_params.get("page") == "formulario":
             # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
             # O strip() remove espaços vazios para garantir que haja texto real
             if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios (Identificação, Cursos, Trabalho e Objetivo)!")
+                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
 
             # 2. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
