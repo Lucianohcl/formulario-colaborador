@@ -489,17 +489,27 @@ if st.query_params.get("page") == "formulario":
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
-        # Exibe a legenda para o usuário se orientar
+        # 1. INICIALIZAÇÃO SEGURA DO ESTADO (O Cofre)
+        if 'df_dificuldades' not in st.session_state:
+            st.session_state.df_dificuldades = pd.DataFrame({
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Horas Perdidas": [""] * 20,
+                "Minutos Perdidos": [""] * 20,
+                "Frequência": [""] * 20
+            })
+
+        # 2. LEGENDA OFICIAL
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA:**
         * **DVD:** Diário Várias Vezes | **D:** Diário | **S:** Semanal
         * **Q:** Quinzenal | **M:** Mensal | **T:** Trimestral | **A:** Anual
         """)
 
-        # Lista de opções conforme a sua legenda
         lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
-        # Usamos o data_editor apontando para o session_state para não apagar os dados
+        # 3. EDITOR DE DADOS (Conectado ao Session State)
+        # Se estiver dentro de um st.form, os dados só "descem" para o código após o Submit
         edit_dif = st.data_editor(
             st.session_state.df_dificuldades,
             column_config={
@@ -508,7 +518,7 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn(
                     "Frequência", 
                     options=lista_frequencia,
-                    help="Consulte a legenda acima"
+                    help="Selecione a sigla conforme a legenda acima"
                 ),
             },
             hide_index=True,
@@ -516,6 +526,11 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True,
             key="dif_editor"
         )
+
+        # 4. SALVAMENTO AUTOMÁTICO DO ESTADO
+        st.session_state.df_dificuldades = edit_dif
+
+
         # Salva o estado para persistir os dados
         st.session_state.df_dificuldades = edit_dif
 
