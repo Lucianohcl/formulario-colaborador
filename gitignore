@@ -1,0 +1,4 @@
+dados/
+*.pyc
+__pycache__/
+.env
