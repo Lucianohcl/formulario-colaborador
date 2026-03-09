@@ -101,55 +101,43 @@ import io
 
 def gerar_word(form):
     doc = Document()
-    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
-    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
     
-    # 1. Informações Gerais
+    # Nome e Data (Chaves minúsculas)
+    doc.add_heading(f"Relatório: {form.get('nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('data_envio', 'N/A')}")
+    
+    # Identificação
     doc.add_heading("Informações de Identificação", level=1)
-    # Use exatamente as chaves que salvamos no dicionário 'dados'
-    campos_gerais = [
-        'setor', 'departamento', 'cargo', 'chefe', 'empresa', 
-        'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo'
-    ]
-    for campo in campos_gerais:
-        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
-    
-    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
-    secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Frequência", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-      
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
-    }
-    
-    for chave, colunas in secoes.items():
-        if chave in form and isinstance(form[chave], list):
-            doc.add_heading(f"📋 {chave}", level=1)
-            # Filtra apenas itens que tenham conteúdo real
-            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
-            
-            if dados:
-                table = doc.add_table(rows=1, cols=len(colunas))
-                table.style = 'Table Grid'
-                # Cabeçalho
-                for i, col in enumerate(colunas):
-                    table.rows[0].cells[i].text = col
-                # Linhas
-                for item in dados:
-                    row = table.add_row().cells
-                    for i, col in enumerate(colunas):
-                        row[i].text = str(item.get(col, ''))
-            else:
-                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+    campos = ['setor', 'departamento', 'cargo', 'chefe', 'empresa', 'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo']
+    for c in campos:
+        label = c.replace('_', ' ').capitalize()
+        doc.add_paragraph(f"{label}: {form.get(c, 'N/A')}")
 
-    # 3. Avaliação DISC
-    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
-        doc.add_paragraph(f"Resposta: {valor_resposta}")
-        doc.add_paragraph("-" * 20)
+    # DISC (Loop minimalista)
+    doc.add_heading("Respostas DISC", level=1)
+    disc = form.get('disc', {})
+    for k, v in disc.items():
+        doc.add_paragraph(f"{k}: {v}")
+
+    # Tabelas
+    secoes = {"atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+              "dificuldades": ["Dificuldade", "Frequência", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+              "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]}
     
+    for chave, cols in secoes.items():
+        doc.add_heading(f"📋 {chave.capitalize()}", level=1)
+        dados = form.get(chave, [])
+        if dados:
+            table = doc.add_table(rows=1, cols=len(cols))
+            table.style = 'Table Grid'
+            for i, col in enumerate(cols): table.rows[0].cells[i].text = col
+            for item in dados:
+                row = table.add_row().cells
+                for i, col in enumerate(cols): row[i].text = str(item.get(col, ''))
+        else:
+            doc.add_paragraph("Sem dados.")
+
+    # Retorno para Streamlit
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
@@ -166,70 +154,70 @@ def gerar_pdf(form):
     styles = getSampleStyleSheet()
     elementos = []
 
-    # Título
-    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
-    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    # 1. Título e Data (Chaves corrigidas para minúsculo)
+    nome_pdf = form.get('nome', 'Colaborador')
+    data_pdf = form.get('data_envio', 'N/A')
+    elementos.append(Paragraph(f"Relatório: {nome_pdf}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {data_pdf}", styles['Normal']))
     elementos.append(Spacer(1, 12))
 
-    # Informações Gerais
+    # 2. Informações Gerais
     elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
-    # 1. Defina as chaves exatas
     campos_gerais = [
         'setor', 'departamento', 'cargo', 'chefe', 'empresa', 
         'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo'
     ]
 
-    # 2. Loop único e limpo
     for campo in campos_gerais:
-        # Transforma 'setor' em 'Setor' e remove os '_'
         label = campo.replace('_', ' ').capitalize()
-    
-        # Adiciona ao PDF
         texto = f"<b>{label}:</b> {form.get(campo, 'N/A')}"
         elementos.append(Paragraph(texto, styles['Normal']))
-    
-        elementos.append(Spacer(1, 12))
+        elementos.append(Spacer(1, 6))
 
-    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    # 3. Tabelas (Chaves corrigidas para minúsculo)
     secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+        "atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
     }
     
-    for titulo, colunas in secoes.items():
-        if titulo in form and isinstance(form[titulo], list):
-            elementos.append(Paragraph(titulo, styles['Heading2']))
-            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+    for chave, colunas in secoes.items():
+        elementos.append(Paragraph(chave.capitalize(), styles['Heading2']))
+        dados = form.get(chave, [])
+        
+        if isinstance(dados, list) and len(dados) > 0:
+            data = [colunas]
+            for item in dados:
+                data.append([str(item.get(c, '')) for c in colunas])
             
-            if dados:
-                data = [colunas] # Cabeçalho
-                for item in dados:
-                    data.append([str(item.get(c, '')) for c in colunas])
-                
-                tabela = Table(data, repeatRows=1)
-                tabela.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
-                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-                    ('FONTSIZE', (0,0), (-1,-1), 8)
-                ]))
-                elementos.append(tabela)
-            else:
-                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
-            elementos.append(Spacer(1, 12))
+            tabela = Table(data, repeatRows=1)
+            tabela.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                ('FONTSIZE', (0,0), (-1,-1), 8)
+            ]))
+            elementos.append(tabela)
+        else:
+            elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+        elementos.append(Spacer(1, 12))
 
-    # DISC
+    # 4. DISC (Lógica para buscar dentro do dicionário 'disc')
     elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
-        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
-        elementos.append(Spacer(1, 6))
+    dados_disc = form.get('disc', {})
+    
+    if dados_disc:
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            # Busca a resposta salva como disc_1, disc_2...
+            valor_resposta = dados_disc.get(f"disc_{i}", "Não respondido")
+            elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+            elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Normal']))
+            elementos.append(Spacer(1, 4))
+    else:
+        elementos.append(Paragraph("Dados DISC não encontrados.", styles['Normal']))
 
     doc.build(elementos)
     buffer.seek(0)
     return buffer
-
 
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
