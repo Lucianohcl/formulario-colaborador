@@ -489,29 +489,26 @@ if st.query_params.get("page") == "formulario":
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
-        # Lista de opções para a frequência (caso queira usar como Selectbox)
-        lista_frequencia = ["Única vez", "Diária", "Semanal", "Mensal", "Recorrente"]
+        # Exibe a legenda para o usuário se orientar
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA:**
+        * **DVD:** Diário Várias Vezes | **D:** Diário | **S:** Semanal
+        * **Q:** Quinzenal | **M:** Mensal | **T:** Trimestral | **A:** Anual
+        """)
 
+        # Lista de opções conforme a sua legenda
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+        # Usamos o data_editor apontando para o session_state para não apagar os dados
         edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20,
-                "Frequência": [""] * 20
-            }),
+            st.session_state.df_dificuldades,
             column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn(
-                    "Horas Perdidas", 
-                    options=lista_horas
-                ),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(
-                    "Minutos Perdidos", 
-                    options=lista_minutos
-                ),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
                 "Frequência": st.column_config.SelectboxColumn(
                     "Frequência", 
-                    options=lista_frequencia
+                    options=lista_frequencia,
+                    help="Consulte a legenda acima"
                 ),
             },
             hide_index=True,
@@ -519,6 +516,8 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True,
             key="dif_editor"
         )
+        # Salva o estado para persistir os dados
+        st.session_state.df_dificuldades = edit_dif
 
         # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
         st.markdown("---")
