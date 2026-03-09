@@ -1,13 +1,8 @@
 streamlit
 pandas
 openai>=0.27.0
-<<<<<<< HEAD
-fpdf
-matplotlib
-=======
 matplotlib
 openpyxl
 python-docx
 fpdf
->>>>>>> d9522900601ea517885d27374bc8ad1330b9b7d6
 reportlab
