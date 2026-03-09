@@ -708,8 +708,8 @@ if st.session_state.get("pagina") == "visualizar":
                 col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
                 # Buscando os nomes longos e específicos que definimos
-                st.write(f"**Cursos:** {form.get('cursos_obrigatorios_ou_diferenciais', 'N/A')}")
-                st.info(f"**Objetivo Principal:**\n\n{form.get('trabalho_e_principal_objetivo', 'N/A')}")
+                st.text_area("Cursos obrigatórios ou diferenciais", value=form.get('cursos_obrigatorios_ou_diferenciais', 'N/A'), disabled=True, key=f"cursos_{idx}")
+                st.text_area("Trabalho e principal objetivo", value=form.get('trabalho_e_principal_objetivo', 'N/A'), height=150, disabled=True, key=f"obj_{idx}")
                 
                 # 2. Tabelas Dinâmicas
                 secoes = {
