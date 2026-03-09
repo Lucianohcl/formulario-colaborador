@@ -133,7 +133,8 @@ def gerar_word(form):
             for i, col in enumerate(cols): table.rows[0].cells[i].text = col
             for item in dados:
                 row = table.add_row().cells
-                for i, col in enumerate(cols): row[i].text = str(item.get(col, ''))
+                for i, col in enumerate(cols):
+                    row[i].text = str(item.get(col, '')) if isinstance(item, dict) else ""
         else:
             doc.add_paragraph("Sem dados.")
 
@@ -188,7 +189,8 @@ def gerar_pdf(form):
         if isinstance(dados, list) and len(dados) > 0:
             data = [colunas]
             for item in dados:
-                data.append([str(item.get(c, '')) for c in colunas])
+                if isinstance(item, dict):
+                    data.append([str(item.get(c, '')) for c in colunas])
             
             tabela = Table(data, repeatRows=1)
             tabela.setStyle(TableStyle([
