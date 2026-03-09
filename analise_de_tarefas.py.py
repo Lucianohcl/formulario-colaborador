@@ -16,6 +16,8 @@ from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
 import time
+
+
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -581,8 +583,12 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
-
+        
         if enviar:
+
+            # 1. GERA A DATA E HORA DE BRASÍLIA
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
             # Criamos uma lista com todos os campos que NÃO podem estar vazios
             # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
             campos_obrigatorios = [
@@ -625,13 +631,12 @@ if st.query_params.get("page") == "formulario":
 
                         st.session_state["confirmado"] = True
 
-                    # 5. ENVIO FINAL
                     else:
-
                         st.success("✅ Formulário enviado com sucesso!")
 
                         dados = {
                             "nome": nome,
+                            "data_envio": data_hoje,
                             "setor": setor,
                             "cargo": cargo,
                             "chefe": chefe,
@@ -639,16 +644,19 @@ if st.query_params.get("page") == "formulario":
                             "empresa": empresa,
                             "escolaridade": escolaridade,
                             "devolucao": devolucao,
-                            "cursos_obrigatorios_ou_diferenciais": cursos, # Nome claro no JSON
-                            "trabalho_e_principal_objetivo": objetivo,      # Nome claro no JSON
-                            "atividades": edit_ativ.to_dict(),
-                            "dificuldades": edit_dif.to_dict(),
-                            "sugestoes": edit_sug.to_dict(),
+                            "cursos_obrigatorios_ou_diferenciais": cursos,
+                            "trabalho_e_principal_objetivo": objetivo,
+                            "atividades": edit_ativ.to_dict() if hasattr(edit_ativ, 'to_dict') else edit_ativ,
+                            "dificuldades": edit_dif.to_dict() if hasattr(edit_dif, 'to_dict') else edit_dif,
+                            "sugestoes": edit_sug.to_dict() if hasattr(edit_sug, 'to_dict') else edit_sug,
                             "disc": {
                                 f"disc_{i}": st.session_state.get(f"disc_{i}")
                                 for i in range(1, 25)
                             }
                         }
+                        
+                        # Reseta a confirmação para um próximo envio
+                        st.session_state["confirmado"] = False
 
                         caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
 
@@ -687,7 +695,7 @@ if st.session_state.get("pagina") == "visualizar":
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
                 
-                # Ajustado para as chaves novas do seu dicionário 'dados'
+                # Buscando as chaves minúsculas do seu dicionário 'dados'
                 col1.write(f"**Data de Envio:** {form.get('data_envio', 'N/A')}")
                 col2.write(f"**Devolver em:** {form.get('devolucao', 'N/A')}")
                 
@@ -699,11 +707,11 @@ if st.session_state.get("pagina") == "visualizar":
                 col_a.write(f"**Empresa/Unidade:** {form.get('empresa', 'N/A')}")
                 col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
-                # Ajustado para os nomes longos que definimos no salvamento
+                # Buscando os nomes longos e específicos que definimos
                 st.write(f"**Cursos:** {form.get('cursos_obrigatorios_ou_diferenciais', 'N/A')}")
                 st.info(f"**Objetivo Principal:**\n\n{form.get('trabalho_e_principal_objetivo', 'N/A')}")
                 
-                # 2. Tabelas Dinâmicas (Chaves em minúsculo para bater com o dicionário)
+                # 2. Tabelas Dinâmicas
                 secoes = {
                     "atividades": "📋 Atividades Executadas",
                     "dificuldades": "⚠️ Dificuldades e Bloqueios",
@@ -715,7 +723,6 @@ if st.session_state.get("pagina") == "visualizar":
                     st.subheader(titulo)
                     if chave in form and form[chave]:
                         df = pd.DataFrame(form[chave])
-                        # Limpeza de linhas vazias para visualização
                         df = df.replace("", None).dropna(how='all')
                         if not df.empty:
                             st.table(df)
@@ -724,15 +731,13 @@ if st.session_state.get("pagina") == "visualizar":
                     else:
                         st.write("Seção não encontrada ou vazia.")
                 
-                # 3. Questionário DISC (Acessando o sub-dicionário 'disc')
+                # 3. Questionário DISC
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
-                # Pegamos o dicionário interno 'disc' que criamos no salvamento
-                dados_disc = form.get("disc", {})
+                dados_disc = form.get("disc", {}) # Entra na "pasta" disc do JSON
                 
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    # Buscamos pela chave 'disc_1', 'disc_2', etc.
                     valor_resposta = dados_disc.get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
