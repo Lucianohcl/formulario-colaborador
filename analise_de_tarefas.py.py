@@ -415,7 +415,22 @@ perguntas_disc = [
 
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
-    st.title("📋 Formulário Completo do Colaborador")
+    # 1. Abre o formulário aqui (Isso segura os dados na tela)
+    with st.form("meu_formulario_principal", clear_on_submit=False):
+        st.title("📋 Formulário Completo do Colaborador")
+        
+        nome = st.text_input("Nome do Colaborador")
+        # ... todos os seus outros campos de input aqui dentro ...
+
+        # 2. O botão de enviar DEVE ser o form_submit_button
+        botao_enviar = st.form_submit_button("Enviar Questionário")
+
+        if botao_enviar:
+            if not nome:
+                st.error("⚠️ O nome é obrigatório!")
+            else:
+                # Sua lógica de salvar e o st.success aqui
+                st.success("✅ Enviado!")
     
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
@@ -690,7 +705,11 @@ if st.session_state.get("pagina") == "visualizar":
         for idx, form in enumerate(lista_de_arquivos, 1):
             nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
             
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
+            # Primeiro, garantimos que a variável nome_exibir pegue a chave 'nome'
+            nome_exibir = form.get('nome', 'Não identificado').upper()
+            data_exibir = form.get('data_envio', 'Sem Data')
+
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_exibir})"):
                 # [Aqui você mantém o seu código de exibição de dados]
                 
             
