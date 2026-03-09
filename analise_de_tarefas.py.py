@@ -587,7 +587,7 @@ if st.query_params.get("page") == "formulario":
             # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
             campos_obrigatorios = [
                 nome, setor, cargo, chefe, departamento, empresa,
-                cursos, trabalho, objetivo
+                cursos, objetivo
             ]
 
             # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
