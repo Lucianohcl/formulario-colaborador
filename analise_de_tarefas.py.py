@@ -499,12 +499,7 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": [""] * 20
             })
 
-        # 2. LEGENDA OFICIAL
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA:**
-        * **DVD:** Diário Várias Vezes | **D:** Diário | **S:** Semanal
-        * **Q:** Quinzenal | **M:** Mensal | **T:** Trimestral | **A:** Anual
-        """)
+        
 
         lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
