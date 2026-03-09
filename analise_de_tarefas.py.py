@@ -489,13 +489,17 @@ if st.query_params.get("page") == "formulario":
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
+        # Lista de opções para a frequência (caso queira usar como Selectbox)
+        lista_frequencia = ["Única vez", "Diária", "Semanal", "Mensal", "Recorrente"]
+
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
                 "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
+                "Minutos Perdidos": [""] * 20,
+                "Frequência": [""] * 20
+            }),
             column_config={
                 "Horas Perdidas": st.column_config.SelectboxColumn(
                     "Horas Perdidas", 
@@ -504,6 +508,10 @@ if st.query_params.get("page") == "formulario":
                 "Minutos Perdidos": st.column_config.SelectboxColumn(
                     "Minutos Perdidos", 
                     options=lista_minutos
+                ),
+                "Frequência": st.column_config.SelectboxColumn(
+                    "Frequência", 
+                    options=lista_frequencia
                 ),
             },
             hide_index=True,
