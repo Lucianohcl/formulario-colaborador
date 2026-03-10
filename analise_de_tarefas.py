@@ -491,6 +491,7 @@ if st.query_params.get("page") == "formulario":
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
+                "Frequência": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
                 "Horas Perdidas": [""] * 20,
                 "Minutos Perdidos": [""] * 20
