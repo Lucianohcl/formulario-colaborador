@@ -431,57 +431,46 @@ if st.query_params.get("page") == "formulario":
         
         
         
-        # --- SEÇÃO DE ATIVIDADES ---
-        st.markdown("---")
-        
-        # Mude para 3 colunas
-        col1, col2, col3 = st.columns(3)
-        
-        # Supondo que você tenha definido col1, col2 e col3 anteriormente
-        with col1:
-            st.info("""
-            **📋 LEGENDA DE FREQUÊNCIA:**
-            * **DVD**: Diário Várias Vezes
-            * **D**: Diário | **S**: Semanal
-            * **Q**: Quinzenal | **M**: Mensal
-            * **T**: Trimestral | **A**: Anual
-            """)
-
-        with col2:
-            st.warning("""
-            **⏱️ COMO REGISTRAR O TEMPO:**
-            * **Horas e Minutos**: Selecione o valor em cada coluna.
-            * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
-            """)
-            
-        with col3:
-            st.error("""
-            **⚠️ DETALHE:**
-            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
-            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            """)        
-        
-        
-        
         st.subheader("🔹 Atividades Executadas")
-        
-        edit_ativ = st.data_editor(
-            pd.DataFrame({
+
+        # 1. Inicialização
+        if 'df_atividades' not in st.session_state:
+            st.session_state.df_atividades = pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
+            })
+
+        # 2. Editor
+        edit_ativ = st.data_editor(
+            st.session_state.df_atividades, 
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Frequência": st.column_config.SelectboxColumn(
+                    "Frequência", 
+                    options=lista_frequencia
+                ),
+                "Horas": st.column_config.SelectboxColumn(
+                    "Horas", 
+                    options=lista_horas
+                ),
+                "Minutos": st.column_config.SelectboxColumn(
+                     "Minutos", 
+                     options=lista_minutos
+                ),
             },
             hide_index=True,
             num_rows="fixed",
-            use_container_width=True
+            use_container_width=True,
+            key="ativ_editor"
         )
+
+        # 3. Persistência
+        st.session_state.df_atividades = edit_ativ   
+        
+        
+        
+        
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
@@ -497,12 +486,10 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": [""] * 20
             })
 
-        
-
+        # 2. LISTAS (Devem vir antes do Editor)
         lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
         # 3. EDITOR DE DADOS (Conectado ao Session State)
-        # Se estiver dentro de um st.form, os dados só "descem" para o código após o Submit
         edit_dif = st.data_editor(
             st.session_state.df_dificuldades,
             column_config={
@@ -520,8 +507,10 @@ if st.query_params.get("page") == "formulario":
             key="dif_editor"
         )
 
-        # 4. SALVAMENTO AUTOMÁTICO DO ESTADO
+        # 4. SALVAMENTO AUTOMÁTICO DO ESTADO (Persistência)
         st.session_state.df_dificuldades = edit_dif
+
+        
 
 
         # Salva o estado para persistir os dados
@@ -530,28 +519,24 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
-        edit_sug = st.data_editor(
-            pd.DataFrame({
+
+        # 1. INICIALIZAÇÃO SEGURA NO SESSION STATE
+        if 'df_sugestoes' not in st.session_state:
+            st.session_state.df_sugestoes = pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
                 "Redução Horas": [""] * 20,
                 "Redução Minutos": [""] * 20,
                 "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
+            })
+
+        # 2. EDITOR CONECTADO AO SESSION STATE
+        edit_sug = st.data_editor(
+            st.session_state.df_sugestoes,
             column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
+                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
             },
             hide_index=True,
             num_rows="fixed",
@@ -559,9 +544,8 @@ if st.query_params.get("page") == "formulario":
             key="sug_editor"
         )
 
-        
-
-        
+        # 3. SALVAMENTO IMEDIATO PARA PERSISTÊNCIA
+        st.session_state.df_sugestoes = edit_sug
 
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
@@ -573,6 +557,7 @@ if st.query_params.get("page") == "formulario":
                 horizontal=True, 
                 index=None
             )
+
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
@@ -581,16 +566,15 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
         
         if enviar:
-            # 1. GERA A DATA E HORA DE BRASÍLIA
             fuso_brasilia = pytz.timezone('America/Sao_Paulo')
             data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
             
             campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # --- NOVA VALIDAÇÃO DE TABELAS (A TRAVA PARA A FREQUÊNCIA) ---
+            # --- VALIDAÇÃO DAS 3 TABELAS (TRAVA A FREQUÊNCIA) ---
             tabelas_incompletas = False
-            # Verificamos se as tabelas de atividades e dificuldades possuem campos nulos ou vazios
-            for df in [edit_ativ, edit_dif]:
+            # Adicionamos o edit_sug na lista abaixo para ser validado também
+            for df in [edit_ativ, edit_dif, edit_sug]:
                 if df.isnull().values.any() or (df == "").values.any():
                     tabelas_incompletas = True
                     break
@@ -598,14 +582,17 @@ if st.query_params.get("page") == "formulario":
             # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
             if any(not str(campo).strip() for campo in campos_obrigatorios):
                 st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação e objetivos!")
+                st.session_state["confirmado"] = False # Reseta se deu erro
 
-            # 2. VALIDAÇÃO DAS TABELAS (IMPEDE O ENVIO SEM FREQUÊNCIA)
+            # 2. VALIDAÇÃO DAS TABELAS
             elif tabelas_incompletas:
                 st.error("⚠️ Erro: Existem campos vazios nas tabelas. Certifique-se de preencher todas as Frequências!")
+                st.session_state["confirmado"] = False # Reseta se deu erro
 
             # 3. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+                st.session_state["confirmado"] = False # Reseta se deu erro
 
             else:
                 import os
@@ -623,7 +610,7 @@ if st.query_params.get("page") == "formulario":
                     st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
                 
                 else:
-                    # 4. CONFIRMAÇÃO
+                    # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
                     if not st.session_state.get("confirmado", False):
                         st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
                         st.session_state["confirmado"] = True
@@ -655,6 +642,7 @@ if st.query_params.get("page") == "formulario":
                             json.dump(dados, f, ensure_ascii=False, indent=4)
                         
                         st.success("✅ Formulário enviado com sucesso!")
+                        # Limpa tudo para o próximo ou para resetar a tela
                         st.session_state["confirmado"] = False
                         
 
