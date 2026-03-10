@@ -178,23 +178,37 @@ def gerar_pdf(form):
         if dados:
             data = [colunas]
             for item in dados:
-                data.append([str(item.get(c, '')) for c in colunas])
+                # CORREÇÃO AQUI: Verifica se é dicionário antes de usar .get()
+                if isinstance(item, dict):
+                    data.append([str(item.get(c, '')) for c in colunas])
+                else:
+                    # Se for apenas uma string, coloca na primeira coluna e limpa o resto
+                    data.append([str(item)] + [""] * (len(colunas) - 1))
+            
             t = Table(data, repeatRows=1)
-            t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.lightgrey),('GRID',(0,0),(-1,-1),0.5,colors.black)]))
+            t.setStyle(TableStyle([
+                ('BACKGROUND',(0,0),(-1,0),colors.lightgrey),
+                ('GRID',(0,0),(-1,-1),0.5,colors.black),
+                ('FONTSIZE', (0,0), (-1,-1), 10)
+            ]))
             elementos.append(t)
+        else:
+            elementos.append(Paragraph("Sem dados registrados.", styles['Normal']))
         elementos.append(Spacer(1, 12))
 
     # DISC no PDF
     elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
     disc_data = form.get('disc', {})
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        res = disc_data.get(f"disc_{i}", "N/A")
-        elementos.append(Paragraph(f"<b>{i}.</b> {res}", styles['Normal']))
+    if isinstance(disc_data, dict):
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            res = disc_data.get(f"disc_{i}", "N/A")
+            elementos.append(Paragraph(f"<b>{i}.</b> {res}", styles['Normal']))
+    else:
+        elementos.append(Paragraph("Dados DISC não encontrados.", styles['Normal']))
 
     doc.build(elementos)
     buffer.seek(0)
     return buffer
-
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
 # ============================================================
