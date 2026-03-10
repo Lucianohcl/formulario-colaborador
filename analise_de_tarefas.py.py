@@ -571,28 +571,39 @@ if st.query_params.get("page") == "formulario":
             
             campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # --- VALIDAÇÃO DAS 3 TABELAS (TRAVA A FREQUÊNCIA) ---
+            # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
             tabelas_incompletas = False
-            # Adicionamos o edit_sug na lista abaixo para ser validado também
+            
             for df in [edit_ativ, edit_dif, edit_sug]:
-                if df.isnull().values.any() or (df == "").values.any():
+                # Pega apenas as linhas onde a primeira coluna (Descrição/Atividade) foi preenchida
+                col_principal = df.columns[0]
+                linhas_com_conteudo = df[df[col_principal].astype(str).str.strip() != ""]
+                
+                # Se houver linhas com texto, verifica se alguma célula nessas linhas está vazia
+                if len(linhas_com_conteudo) > 0:
+                    if linhas_com_conteudo.isnull().values.any() or (linhas_com_conteudo == "").values.any():
+                        tabelas_incompletas = True
+                        break
+                
+                # Se for a tabela de atividades, obriga pelo menos uma linha
+                if df is edit_ativ and len(linhas_com_conteudo) == 0:
                     tabelas_incompletas = True
                     break
 
             # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
             if any(not str(campo).strip() for campo in campos_obrigatorios):
                 st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação e objetivos!")
-                st.session_state["confirmado"] = False # Reseta se deu erro
+                st.session_state["confirmado"] = False 
 
-            # 2. VALIDAÇÃO DAS TABELAS
+            # 2. VALIDAÇÃO DAS TABELAS (Agora ignora as linhas em branco do final)
             elif tabelas_incompletas:
-                st.error("⚠️ Erro: Existem campos vazios nas tabelas. Certifique-se de preencher todas as Frequências!")
-                st.session_state["confirmado"] = False # Reseta se deu erro
+                st.error("⚠️ Erro: Verifique as tabelas. Você esqueceu de preencher a Frequência/Horas em alguma linha ou a tabela está vazia.")
+                st.session_state["confirmado"] = False 
 
             # 3. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-                st.session_state["confirmado"] = False # Reseta se deu erro
+                st.session_state["confirmado"] = False
 
             else:
                 import os
@@ -643,6 +654,7 @@ if st.query_params.get("page") == "formulario":
                         
                         st.success("✅ Formulário enviado com sucesso!")
                         # Limpa tudo para o próximo ou para resetar a tela
+
                         st.session_state["confirmado"] = False
                         
 
