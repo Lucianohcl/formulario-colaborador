@@ -608,6 +608,7 @@ if st.query_params.get("page") == "formulario":
 
                         dados = {
                             "nome": nome,
+                            "DataEnvio": datetime.now(pytz.timezone("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
                             "setor": setor,
                             "cargo": cargo,
                             "chefe": chefe,
@@ -648,14 +649,20 @@ if st.session_state.get("pagina") == "visualizar":
     else:
         # Mostra o total para conferência
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
-        
-        # 3. Exibição limpa
+
         for idx, form in enumerate(lista_de_arquivos, 1):
-            nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
-            
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
-                # [Aqui você mantém o seu código de exibição de dados]
+            nome_exibir = form.get("Nome", "SEM NOME").strip().upper()
+            data_envio = form.get("DataEnvio", "Sem Data")
+
+            # Expandir apenas uma vez por formulário
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_envio})"):
+                st.write(f"**Data de Envio:** {data_envio}")
                 
+                # Exemplo: coloque aqui os campos do seu formulário
+                st.write(f"**Setor:** {form.get('Setor', 'Não informado')}")
+                st.write(f"**Cargo:** {form.get('Cargo', 'Não informado')}")
+                
+                # Insira aqui o seu código de exibição dos dados (edit_ativ, edit_dif, etc)
             
             
             
@@ -701,7 +708,7 @@ if st.session_state.get("pagina") == "visualizar":
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    valor_resposta = form.get(f"Q{i}", "Não respondido")
+                    valor_resposta = form.get("disc", {}).get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
@@ -719,24 +726,39 @@ if st.session_state.get("pagina") == "visualizar":
                     nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
                     
-                    with col1:
-                        st.download_button(
-                            label="📄 Baixar em Word",
-                            data=gerar_word(form),
-                            file_name=f"{nome_arquivo}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        )
-                    
-                    with col2:
-                        st.download_button(
-                            label="📑 Baixar em PDF",
-                            data=gerar_pdf(form),
-                            file_name=f"{nome_arquivo}.pdf",
-                            mime="application/pdf"
-                        )
-                # --- FIM DO BLOCO ---
+                    from datetime import datetime
 
+                    # Pega nome do colaborador
+                    nome_colaborador = form.get("Nome", "colaborador")
 
+                    # Pega data de envio (ou cria se não existir)
+                        data_envio = form.get("data_envio")
+
+                    if not data_envio:
+                        data_envio = datetime.now().strftime("%d-%m-%Y_%H-%M")
+
+                    # Nome do arquivo final
+                    nome_arquivo = f"{nome_colaborador}_{data_envio}"
+
+                    col1, col2 = st.columns(2)
+
+                    # Botão Word
+                    st.download_button(
+                        label="📄 Baixar em Word",
+                        data=gerar_word(form),
+                        file_name=f"{nome_arquivo}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key=f"word_{idx}"
+                    )
+
+                    # Botão PDF (posicionado logo abaixo)
+                    st.download_button(
+                        label="📑 Baixar em PDF",
+                        data=gerar_pdf(form),
+                        file_name=f"{nome_exibir}_{idx}.pdf",
+                        mime="application/pdf",
+                        key=f"pdf_{idx}"
+                    )
 
         # Botão de Limpeza
         st.markdown("---")
