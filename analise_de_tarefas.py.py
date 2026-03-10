@@ -588,6 +588,7 @@ if st.query_params.get("page") == "formulario":
                 # Se for a tabela de atividades, obriga pelo menos uma linha
                 if df is edit_ativ and len(linhas_com_conteudo) == 0:
                     tabelas_incompletas = True
+                    st.error("⚠️ A tabela de 'Atividades Principais' não pode estar vazia.")
                     break
 
             # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
