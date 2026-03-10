@@ -94,35 +94,32 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
-from fpdf import FPDF
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 import io
 
 def gerar_word(form):
     doc = Document()
-    
-    # Nome e Data (Chaves minúsculas)
     doc.add_heading(f"Relatório: {form.get('nome', 'Colaborador')}", 0)
     doc.add_paragraph(f"Data de Envio: {form.get('data_envio', 'N/A')}")
     
     # Identificação
     doc.add_heading("Informações de Identificação", level=1)
-    campos = ['setor', 'departamento', 'cargo', 'chefe', 'empresa', 'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo']
+    campos = ['setor', 'departamento', 'cargo', 'chefe', 'empresa', 'escolaridade', 
+              'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo']
     for c in campos:
         label = c.replace('_', ' ').capitalize()
         doc.add_paragraph(f"{label}: {form.get(c, 'N/A')}")
 
-    # DISC (Loop minimalista)
-    doc.add_heading("Respostas DISC", level=1)
-    disc = form.get('disc', {})
-    for k, v in disc.items():
-        doc.add_paragraph(f"{k}: {v}")
-
     # Tabelas
-    secoes = {"atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-              "dificuldades": ["Dificuldade", "Frequência", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-              "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]}
+    secoes = {
+        "atividades": ["Atividade Descrita", "Frequência", "Horas", "Minutos"],
+        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Horas Perdidas", "Minutos Perdidos", "Frequência"],
+        "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
     
     for chave, cols in secoes.items():
         doc.add_heading(f"📋 {chave.capitalize()}", level=1)
@@ -134,20 +131,22 @@ def gerar_word(form):
             for item in dados:
                 row = table.add_row().cells
                 for i, col in enumerate(cols):
-                    row[i].text = str(item.get(col, '')) if isinstance(item, dict) else ""
+                    row[i].text = str(item.get(col, ''))
         else:
             doc.add_paragraph("Sem dados.")
 
-    # Retorno para Streamlit
+    # DISC
+    doc.add_heading("Avaliação DISC", level=1)
+    disc_data = form.get('disc', {})
+    if disc_data:
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            res = disc_data.get(f"disc_{i}", "N/A")
+            doc.add_paragraph(f"{i}. {pergunta}: {res}")
+
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
 
 def gerar_pdf(form):
     buffer = io.BytesIO()
@@ -155,67 +154,34 @@ def gerar_pdf(form):
     styles = getSampleStyleSheet()
     elementos = []
 
-    # 1. Título e Data (Chaves corrigidas para minúsculo)
-    nome_pdf = form.get('nome', 'Colaborador')
-    data_pdf = form.get('data_envio', 'N/A')
-    elementos.append(Paragraph(f"Relatório: {nome_pdf}", styles['Title']))
-    elementos.append(Paragraph(f"Data: {data_pdf}", styles['Normal']))
+    elementos.append(Paragraph(f"Relatório: {form.get('nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('data_envio', 'N/A')}", styles['Normal']))
     elementos.append(Spacer(1, 12))
 
-    # 2. Informações Gerais
-    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
-    campos_gerais = [
-        'setor', 'departamento', 'cargo', 'chefe', 'empresa', 
-        'escolaridade', 'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo'
-    ]
-
-    for campo in campos_gerais:
-        label = campo.replace('_', ' ').capitalize()
-        texto = f"<b>{label}:</b> {form.get(campo, 'N/A')}"
-        elementos.append(Paragraph(texto, styles['Normal']))
-        elementos.append(Spacer(1, 6))
-
-    # 3. Tabelas (Chaves corrigidas para minúsculo)
+    # Tabelas Dinâmicas
     secoes = {
-        "atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+        "atividades": ["Atividade Descrita", "Frequência", "Horas", "Minutos"],
+        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Frequência"]
     }
     
     for chave, colunas in secoes.items():
         elementos.append(Paragraph(chave.capitalize(), styles['Heading2']))
         dados = form.get(chave, [])
-        
-        if isinstance(dados, list) and len(dados) > 0:
+        if dados:
             data = [colunas]
             for item in dados:
-                if isinstance(item, dict):
-                    data.append([str(item.get(c, '')) for c in colunas])
-            
-            tabela = Table(data, repeatRows=1)
-            tabela.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,0), colors.grey),
-                ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-                ('FONTSIZE', (0,0), (-1,-1), 8)
-            ]))
-            elementos.append(tabela)
-        else:
-            elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+                data.append([str(item.get(c, '')) for c in colunas])
+            t = Table(data, repeatRows=1)
+            t.setStyle(TableStyle([('BACKGROUND',(0,0),(-1,0),colors.lightgrey),('GRID',(0,0),(-1,-1),0.5,colors.black)]))
+            elementos.append(t)
         elementos.append(Spacer(1, 12))
 
-    # 4. DISC (Lógica para buscar dentro do dicionário 'disc')
+    # DISC no PDF
     elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
-    dados_disc = form.get('disc', {})
-    
-    if dados_disc:
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            # Busca a resposta salva como disc_1, disc_2...
-            valor_resposta = dados_disc.get(f"disc_{i}", "Não respondido")
-            elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
-            elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Normal']))
-            elementos.append(Spacer(1, 4))
-    else:
-        elementos.append(Paragraph("Dados DISC não encontrados.", styles['Normal']))
+    disc_data = form.get('disc', {})
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        res = disc_data.get(f"disc_{i}", "N/A")
+        elementos.append(Paragraph(f"<b>{i}.</b> {res}", styles['Normal']))
 
     doc.build(elementos)
     buffer.seek(0)
@@ -763,9 +729,11 @@ if st.session_state.get("pagina") == "visualizar":
                     # Usamos 2 colunas para ficar mais harmônico
                     col1, col2 = st.columns(2)
                     
-                    # Padronização do nome do arquivo para ambos
-                    data_clean = form.get('DataEnvio', '').replace('/', '').replace(' ', '_').replace(':', '')
-                    nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
+                    # Padronização do nome do arquivo (ajustado para chaves minúsculas)
+                    data_raw = form.get('data_envio', '')
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    nome_raw = form.get('nome', 'Colaborador')
+                    nome_clean = str(nome_raw).replace(' ', '_')
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
                     
                     with col1:
@@ -773,7 +741,8 @@ if st.session_state.get("pagina") == "visualizar":
                             label="📄 Baixar em Word",
                             data=gerar_word(form),
                             file_name=f"{nome_arquivo}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"word_btn_{idx}"  # Garante ID único no loop
                         )
                     
                     with col2:
@@ -781,7 +750,8 @@ if st.session_state.get("pagina") == "visualizar":
                             label="📑 Baixar em PDF",
                             data=gerar_pdf(form),
                             file_name=f"{nome_arquivo}.pdf",
-                            mime="application/pdf"
+                            mime="application/pdf",
+                            key=f"pdf_btn_{idx}"   # Garante ID único no loop
                         )
                 # --- FIM DO BLOCO ---
 
