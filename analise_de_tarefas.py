@@ -16,7 +16,6 @@ from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
 import time
-from datetime import datetime
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -493,7 +492,6 @@ if st.query_params.get("page") == "formulario":
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
-                "Frequência": [""] * 20,
                 "Horas Perdidas": [""] * 20,
                 "Minutos Perdidos": [""] * 20
             }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
@@ -619,19 +617,16 @@ if st.query_params.get("page") == "formulario":
                             "devolucao": devolucao,
                             "cursos": cursos,
                             "objetivo": objetivo,
-                            "data_envio": datetime.now().strftime("%d/%m/%Y"),
-                            "hora_envio": datetime.now().strftime("%H:%M:%S"),
                             "atividades": edit_ativ.to_dict(),
                             "dificuldades": edit_dif.to_dict(),
                             "sugestoes": edit_sug.to_dict(),
                             "disc": {
-                                f"disc_{i}": st.session_state.get(f"disc_{i}") 
+                                f"disc_{i}": st.session_state.get(f"disc_{i}")
                                 for i in range(1, 25)
                             }
                         }
 
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        caminho = os.path.join(dados_dir, f"{nome_limpo}_{timestamp}.json")
+                        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
 
                         with open(caminho, "w", encoding="utf-8") as f:
                             json.dump(dados, f, ensure_ascii=False, indent=4)
