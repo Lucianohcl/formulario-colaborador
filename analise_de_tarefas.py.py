@@ -124,21 +124,29 @@ def gerar_word(form):
     for chave, cols in secoes.items():
         doc.add_heading(f"📋 {chave.capitalize()}", level=1)
         dados = form.get(chave, [])
-        if dados:
+        if isinstance(dados, list) and dados:
             table = doc.add_table(rows=1, cols=len(cols))
             table.style = 'Table Grid'
-            for i, col in enumerate(cols): table.rows[0].cells[i].text = col
+            for i, col in enumerate(cols): 
+                table.rows[0].cells[i].text = col
+            
             for item in dados:
-                row = table.add_row().cells
+                row_cells = table.add_row().cells
                 for i, col in enumerate(cols):
-                    row[i].text = str(item.get(col, ''))
+                    # --- AQUI ESTÁ A CORREÇÃO ---
+                    if isinstance(item, dict):
+                        valor = str(item.get(col, ''))
+                    else:
+                        # Se o item for uma string pura, coloca na primeira coluna e limpa as outras
+                        valor = str(item) if i == 0 else ""
+                    row_cells[i].text = valor
         else:
             doc.add_paragraph("Sem dados.")
 
     # DISC
     doc.add_heading("Avaliação DISC", level=1)
     disc_data = form.get('disc', {})
-    if disc_data:
+    if isinstance(disc_data, dict) and disc_data:
         for i, pergunta in enumerate(perguntas_disc, 1):
             res = disc_data.get(f"disc_{i}", "N/A")
             doc.add_paragraph(f"{i}. {pergunta}: {res}")
