@@ -594,17 +594,23 @@ if st.query_params.get("page") == "formulario":
             # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
             if any(not str(campo).strip() for campo in campos_obrigatorios):
                 st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação e objetivos!")
-                st.session_state["confirmado"] = False 
+                st.session_state["confirmado"] = False
+                st.stop()  # Trava o código aqui para o usuário corrigir na mesma página
 
-            # 2. VALIDAÇÃO DAS TABELAS (Agora ignora as linhas em branco do final)
+            # 2. VALIDAÇÃO DAS TABELAS
             elif tabelas_incompletas:
-                st.error("⚠️ Erro: Verifique as tabelas. Você esqueceu de preencher a Frequência/Horas em alguma linha ou a tabela está vazia.")
-                st.session_state["confirmado"] = False 
+                st.error("⚠️ Erro: Verifique as tabelas. Preencha a Frequência/Horas ou adicione uma atividade.")
+                st.session_state["confirmado"] = False
+                st.stop()  # Trava o código aqui para o usuário corrigir na mesma página
 
             # 3. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
                 st.session_state["confirmado"] = False
+                st.stop()  # Trava o código aqui para o usuário corrigir na mesma página
+
+            # SE CHEGAR AQUI, ESTÁ TUDO OK - SEGUE O SALVAMENTO
+            st.success("✅ Tudo pronto! Processando seu envio...")
 
             else:
                 import os
