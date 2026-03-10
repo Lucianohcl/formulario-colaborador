@@ -581,23 +581,29 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
         
         if enviar:
-
             # 1. GERA A DATA E HORA DE BRASÍLIA
             fuso_brasilia = pytz.timezone('America/Sao_Paulo')
             data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-            # Criamos uma lista com todos os campos que NÃO podem estar vazios
-            # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
-            campos_obrigatorios = [
-                nome, setor, cargo, chefe, departamento, empresa,
-                cursos, objetivo
-            ]
+            
+            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
-            # O strip() remove espaços vazios para garantir que haja texto real
+            # --- NOVA VALIDAÇÃO DE TABELAS (A TRAVA PARA A FREQUÊNCIA) ---
+            tabelas_incompletas = False
+            # Verificamos se as tabelas de atividades e dificuldades possuem campos nulos ou vazios
+            for df in [edit_ativ, edit_dif]:
+                if df.isnull().values.any() or (df == "").values.any():
+                    tabelas_incompletas = True
+                    break
+
+            # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
             if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
+                st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação e objetivos!")
 
-            # 2. VALIDAÇÃO DO DISC
+            # 2. VALIDAÇÃO DAS TABELAS (IMPEDE O ENVIO SEM FREQUÊNCIA)
+            elif tabelas_incompletas:
+                st.error("⚠️ Erro: Existem campos vazios nas tabelas. Certifique-se de preencher todas as Frequências!")
+
+            # 3. VALIDAÇÃO DO DISC
             elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
 
@@ -613,23 +619,16 @@ if st.query_params.get("page") == "formulario":
                 nome_limpo = nome.strip().replace(" ", "_")
                 arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
 
-                if arquivos_existentes:
+                if arquivos_existentes and not st.session_state.get("confirmado", False):
                     st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-
+                
                 else:
-
                     # 4. CONFIRMAÇÃO
                     if not st.session_state.get("confirmado", False):
-
-                        st.warning(
-                            "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
-                        )
-
+                        st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
                         st.session_state["confirmado"] = True
-
                     else:
-                        st.success("✅ Formulário enviado com sucesso!")
-
+                        # PROCESSO DE SALVAMENTO
                         dados = {
                             "nome": nome,
                             "data_envio": data_hoje,
@@ -642,24 +641,22 @@ if st.query_params.get("page") == "formulario":
                             "devolucao": devolucao,
                             "cursos_obrigatorios_ou_diferenciais": cursos,
                             "trabalho_e_principal_objetivo": objetivo,
-                            "atividades": edit_ativ.to_dict() if hasattr(edit_ativ, 'to_dict') else edit_ativ,
-                            "dificuldades": edit_dif.to_dict() if hasattr(edit_dif, 'to_dict') else edit_dif,
-                            "sugestoes": edit_sug.to_dict() if hasattr(edit_sug, 'to_dict') else edit_sug,
+                            "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
+                            "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
+                            "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
                             "disc": {
                                 f"disc_{i}": st.session_state.get(f"disc_{i}")
                                 for i in range(1, 25)
                             }
                         }
                         
-                        # Reseta a confirmação para um próximo envio
-                        st.session_state["confirmado"] = False
-
                         caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-
                         with open(caminho, "w", encoding="utf-8") as f:
                             json.dump(dados, f, ensure_ascii=False, indent=4)
-
+                        
+                        st.success("✅ Formulário enviado com sucesso!")
                         st.session_state["confirmado"] = False
+                        
 
 
 # --- VISUALIZAÇÃO ---
