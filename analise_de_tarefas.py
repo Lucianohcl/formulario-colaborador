@@ -396,7 +396,26 @@ if enviar:
             with open(caminho, "w", encoding="utf-8") as f: 
                 json.dump(dados, f, ensure_ascii=False, indent=4)
             
-            st.success("✅ Formulário enviado com sucesso!")
+            # O botão deve ser st.button (e não form_submit_button)
+            enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
+            if enviar:
+                # 1. Aqui você coleta os dados (exemplo rápido)
+                dados = {
+                    "atividades": [st.session_state.get(f"ativ_desc_{i}") for i in range(20)],
+                    # ... outras coletas de dados ..
+                }
+                # 2. Define o caminho do arquivo
+                caminho = "formulario_enviado.json"
+                # 3. Escrita do arquivo JSON (O trecho que você mandou)
+                with open(caminho, "w", encoding="utf-8") as f:
+                    json.dump(dados, f, ensure_ascii=False, indent=4)
+                # 4. Mensagem de sucesso
+                st.success("✅ Formulário enviado com sucesso!")
+
+       
+    
+   
+    
             
             # Atualiza o estado para que a Visualização pegue os novos dados
             if "carregar_todos_formularios" in globals():
