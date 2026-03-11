@@ -302,17 +302,35 @@ with st.expander("🔹 Atividades Executadas", expanded=True):
     * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
     * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
     """)
-    for i in range(20):
-        col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-        with col_desc:
-            st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-        with col_freq:
-            st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-        with col_h:
-            st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-        with col_m:
-            st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
 
+    # Inicializa DataFrame se ainda não existir
+    if "df_atividades" not in st.session_state:
+        st.session_state["df_atividades"] = pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20,
+            "Experiência / Observações": [""] * 20
+        })
+
+    # Data editor
+    edit_ativ = st.data_editor(
+        st.session_state["df_atividades"],
+        column_config={
+            "Atividade Descrita": st.column_config.TextColumn("Atividade Descrita"),
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            "Experiência / Observações": st.column_config.TextColumn("Experiência / Observações")
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True,
+        key="ativ_editor"
+    )
+
+    # Atualiza session_state
+    st.session_state["df_atividades"] = edit_ativ
 # --- SEÇÃO DE DIFICULDADES ---
 with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
     for i in range(20):
