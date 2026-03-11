@@ -1,9 +1,3 @@
-
-Conversas
-2% de 15 GB usados
-Termos · Privacidade · Regulamentos do programa
-Última atividade da conta: há 4 horas
-Detalhes
 # ============================================================
 # IMPORTS
 # ============================================================
