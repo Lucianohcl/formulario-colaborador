@@ -100,7 +100,9 @@ import io
 def gerar_word(form):
     doc = Document()
     doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
-    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
+    campos_gerais = ['DataEnvio', 'Devolucao', 'Setor', 'Cargo', 'Empresa', 'Departamento', 'Chefe', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
     
     # 1. Informações Gerais
     doc.add_heading("Informações de Identificação", level=1)
