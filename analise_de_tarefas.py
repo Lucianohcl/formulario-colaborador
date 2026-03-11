@@ -254,36 +254,28 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+# --- SEÇÃO DE ATIVIDADES COM CONTAINER ---
+with st.container():
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA:**
+    DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
+    """)
 
-    # --- SEÇÃO DE ATIVIDADES COM FORMULARIO E EXPANDER ---
-    with st.form("form_atividades"):
-        
-        # 1. LEGENDA: Alinhada com o expander, mas FORA dele
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA:**
-        DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
-        """)
-
-        # 2. EXPANDER:
-        with st.expander("🔹 Atividades Executadas", expanded=True):
-            # Tudo aqui dentro tem +4 espaços de indentação em relação ao expander
-            for i in range(20):
-                col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-                
-                with col_desc:
-                    st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-                
-                with col_freq:
-                    st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-                
-                with col_h:
-                    st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-                
-                with col_m:
-                    st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
-
-        # 3. BOTÃO DE ENVIO (Obrigatório dentro de st.form)
-        st.form_submit_button("Enviar Relatório")    
+    with st.expander("🔹 Atividades Executadas", expanded=True):
+        for i in range(20):
+            col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
+            
+            with col_desc:
+                st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+            
+            with col_freq:
+                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            
+            with col_h:
+                st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}")
+            
+            with col_m:
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}")
 
     
 
