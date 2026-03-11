@@ -364,14 +364,7 @@ def carregar_todos_formularios():
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
 
-# --- BLOCO DE CSS PARA OCULTAÇÃO ---
-if st.query_params.get("page") == "formulario":
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        #MainMenu, footer, header {visibility: hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
+
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -399,83 +392,241 @@ perguntas_disc = [
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
-
-# --- FORMULÁRIO ---
+# --- FORMULÁRIO COMPLETO ---
 if st.query_params.get("page") == "formulario":
+
+    import os
+    import json
+    import pytz
+    import pandas as pd
+    from datetime import datetime
+
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
-    with st.form("form_colaborador_principal", clear_on_submit=False):
-        st.title("📋 Formulário Completo do Colaborador")
-        
-        # Dados de Identificação com KEYS para persistência
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador", key="f_nome")
-        setor = col2.text_input("Setor", key="f_setor")
-        cargo = col1.text_input("Cargo", key="f_cargo")
-        chefe = col2.text_input("Chefe imediato", key="f_chefe")
-        departamento = col1.text_input("Departamento", key="f_dep")
-        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
-        escolaridade = col1.text_input("Escolaridade", key="f_esc")
-        devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
-        objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
+    # Prefixo único do formulário
+    prefixo = "form"
 
+    with st.form("form_colaborador_principal", clear_on_submit=False):
+
+        st.title("📋 Formulário Completo do Colaborador")
+
+        # ----------------------------
+        # Dados de Identificação
+        # ----------------------------
+        col1, col2 = st.columns(2)
+
+        nome = col1.text_input("Nome do colaborador", key=f"{prefixo}_nome")
+        setor = col2.text_input("Setor", key=f"{prefixo}_setor")
+
+        cargo = col1.text_input("Cargo", key=f"{prefixo}_cargo")
+        chefe = col2.text_input("Chefe imediato", key=f"{prefixo}_chefe")
+
+        departamento = col1.text_input("Departamento", key=f"{prefixo}_departamento")
+        empresa = col2.text_input("Empresa / Unidade", key=f"{prefixo}_empresa")
+
+        escolaridade = col1.text_input("Escolaridade", key=f"{prefixo}_escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em", key=f"{prefixo}_devolucao")
+
+        cursos = st.text_area(
+            "Cursos obrigatórios ou diferenciais",
+            key=f"{prefixo}_cursos"
+        )
+
+        objetivo = st.text_area(
+            "Trabalho e principal objetivo",
+            key=f"{prefixo}_objetivo"
+        )
+
+        # ----------------------------
+        # Atividades Executadas
+        # ----------------------------
         st.subheader("🔹 Atividades Executadas")
-        if 'df_atividades' not in st.session_state:
-            st.session_state.df_atividades = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+
+        if f"{prefixo}_df_atividades" not in st.session_state:
+            st.session_state[f"{prefixo}_df_atividades"] = pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
             })
 
         edit_ativ = st.data_editor(
-            st.session_state.df_atividades, 
+            st.session_state[f"{prefixo}_df_atividades"],
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Atividade Descrita": st.column_config.TextColumn(
+                    "Atividade Descrita"
+                ),
+                "Frequência": st.column_config.SelectboxColumn(
+                    "Frequência",
+                    options=lista_frequencia
+                ),
+                "Horas": st.column_config.SelectboxColumn(
+                    "Horas",
+                    options=lista_horas
+                ),
+                "Minutos": st.column_config.SelectboxColumn(
+                    "Minutos",
+                    options=lista_minutos
+                )
             },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_ativ_editor"
         )
-        st.session_state.df_atividades = edit_ativ   
 
-        # (Repetir lógica similar para Dificuldades e Sugestões se necessário...)
+        st.session_state[f"{prefixo}_df_atividades"] = edit_ativ
 
+        # ----------------------------
+        # Dificuldades
+        # ----------------------------
+        st.subheader("⚠️ Dificuldades / Bloqueios")
+
+        if f"{prefixo}_df_dificuldades" not in st.session_state:
+            st.session_state[f"{prefixo}_df_dificuldades"] = pd.DataFrame({
+                "Dificuldade Descrita": [""] * 10,
+                "Impacto": [""] * 10
+            })
+
+        edit_dif = st.data_editor(
+            st.session_state[f"{prefixo}_df_dificuldades"],
+            column_config={
+                "Dificuldade Descrita": st.column_config.TextColumn(
+                    "Dificuldade Descrita"
+                ),
+                "Impacto": st.column_config.SelectboxColumn(
+                    "Impacto",
+                    options=["Baixo", "Médio", "Alto"]
+                )
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_dif_editor"
+        )
+
+        st.session_state[f"{prefixo}_df_dificuldades"] = edit_dif
+
+        # ----------------------------
+        # Sugestões
+        # ----------------------------
+        st.subheader("💡 Sugestões de Melhoria")
+
+        if f"{prefixo}_df_sugestoes" not in st.session_state:
+            st.session_state[f"{prefixo}_df_sugestoes"] = pd.DataFrame({
+                "Sugestão": [""] * 10,
+                "Prioridade": [""] * 10
+            })
+
+        edit_sug = st.data_editor(
+            st.session_state[f"{prefixo}_df_sugestoes"],
+            column_config={
+                "Sugestão": st.column_config.TextColumn("Sugestão"),
+                "Prioridade": st.column_config.SelectboxColumn(
+                    "Prioridade",
+                    options=["Baixa", "Média", "Alta"]
+                )
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_sug_editor"
+        )
+
+        st.session_state[f"{prefixo}_df_sugestoes"] = edit_sug
+
+        # ----------------------------
+        # Questionário DISC
+        # ----------------------------
         st.subheader("📊 Questionário DISC")
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True, index=None)
 
+        for i, pergunta in enumerate(perguntas_disc, 1):
+
+            st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                key=f"{prefixo}_disc_{i}",
+                horizontal=True
+            )
+
+        # ----------------------------
+        # Botão Enviar
+        # ----------------------------
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            import os, json, pytz
-            from datetime import datetime
-            
-            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # 1. VALIDAÇÃO DE CAMPOS
+            fuso_brasilia = pytz.timezone("America/Sao_Paulo")
+            data_hoje = datetime.now(fuso_brasilia).strftime("%d/%m/%Y %H:%M:%S")
+
+            campos_obrigatorios = [
+                nome,
+                setor,
+                cargo,
+                chefe,
+                departamento,
+                empresa,
+                cursos,
+                objetivo
+            ]
+
             if any(not str(campo).strip() for campo in campos_obrigatorios):
                 st.error("⚠️ Preencha todos os campos obrigatórios!")
-                st.stop() # PARA TUDO E MANTÉM A TELA PARA EDIÇÃO
+                st.stop()
 
-            # 2. VALIDAÇÃO DO DISC
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+            if any(
+                st.session_state.get(f"{prefixo}_disc_{i}") is None
+                for i in range(1, 25)
+            ):
                 st.error("⚠️ Responda todas as perguntas do DISC!")
                 st.stop()
 
-            # 3. SALVAMENTO (Sem 'else', fluxo direto)
+            dados_dir = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "dados"
+            )
+
+            os.makedirs(dados_dir, exist_ok=True)
+
             nome_limpo = nome.strip().replace(" ", "_")
+
+            caminho = os.path.join(
+                dados_dir,
+                f"{nome_limpo}.json"
+            )
+
             dados = {
-                "nome": nome, "data_envio": data_hoje, "setor": setor,
-                "atividades": edit_ativ.to_dict('records'),
-                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+                "nome": nome,
+                "data_envio": data_hoje,
+                "setor": setor,
+                "cargo": cargo,
+                "chefe": chefe,
+                "departamento": departamento,
+                "empresa": empresa,
+                "escolaridade": escolaridade,
+                "devolucao": devolucao,
+                "cursos_obrigatorios_ou_diferenciais": cursos,
+                "trabalho_e_principal_objetivo": objetivo,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                "disc": {
+                    f"disc_{i}": st.session_state.get(f"{prefixo}_disc_{i}")
+                    for i in range(1, 25)
+                }
             }
-            
-            # (Aqui você insere o código de salvar o arquivo JSON que já temos)
-            st.success("✅ Enviado com sucesso!")
+
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(
+                    dados,
+                    f,
+                    ensure_ascii=False,
+                    indent=4
+                )
+
+            st.success("✅ Formulário enviado com sucesso!")
 
 
         # -------------------------------------------------
@@ -488,7 +639,7 @@ if st.query_params.get("page") == "formulario":
             
             campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
+        # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
             tabelas_incompletas = False
             
             for df in [edit_ativ, edit_dif, edit_sug]:
@@ -508,76 +659,81 @@ if st.query_params.get("page") == "formulario":
                     st.error("⚠️ A tabela de 'Atividades Principais' não pode estar vazia.")
                     break
 
-           # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
-            if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-                st.session_state["confirmado"] = False
-                st.stop()  # Trava aqui e mantém os dados para correção
+                # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
+                if any(not str(campo).strip() for campo in campos_obrigatorios):
+                    st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # 2. VALIDAÇÃO DAS TABELAS
-            if tabelas_incompletas:
-                st.error("⚠️ Erro: Verifique as tabelas! A tabela de atividades não pode estar vazia.")
-                st.session_state["confirmado"] = False
-                st.stop()
+                # 2. VALIDAÇÃO DAS TABELAS
+                if tabelas_incompletas:
+                    st.error("⚠️ Erro: Verifique as tabelas! A tabela de atividades não pode estar vazia.")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # 3. VALIDAÇÃO DO DISC
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-                st.session_state["confirmado"] = False
-                st.stop()
+                # 3. VALIDAÇÃO DO DISC
+                if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                    st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # -------------------------------------------------
-            # SE CHEGOU AQUI, PASSOU NAS VALIDAÇÕES
-            # -------------------------------------------------
-            import os
-            import json
+                # -------------------------------------------------
+                # SE CHEGOU AQUI, PASSOU NAS VALIDAÇÕES
+                # -------------------------------------------------
+                import os
+                import json
 
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            dados_dir = os.path.join(base_dir, "dados")
-            os.makedirs(dados_dir, exist_ok=True)
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
 
-            # 3. EVITAR DUPLICIDADE
-            nome_limpo = nome.strip().replace(" ", "_")
-            arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+                # 3. EVITAR DUPLICIDADE
+                nome_limpo = nome.strip().replace(" ", "_")
+                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
 
-            if arquivos_existentes and not st.session_state.get("confirmado", False):
-                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-                st.stop() # Para e obriga a confirmação se quiser sobrescrever
+                if arquivos_existentes and not st.session_state.get("confirmado", False):
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                    st.stop() # Para e obriga a confirmação se quiser sobrescrever
             
-            # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
-            if not st.session_state.get("confirmado", False):
-                st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
-                st.session_state["confirmado"] = True
-                st.stop() # Para aqui e espera o segundo clique
+                # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
+                if not st.session_state.get("confirmado", False):
+                    st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
+                    st.session_state["confirmado"] = True
+                    st.stop() # Para aqui e espera o segundo clique
             
-            # PROCESSO DE SALVAMENTO (Só acontece após o segundo clique)
-            dados = {
-                "nome": nome,
-                "data_envio": data_hoje,
-                "setor": setor,
-                "cargo": cargo,
-                "chefe": chefe,
-                "departamento": departamento,
-                "empresa": empresa,
-                "escolaridade": escolaridade,
-                "devolucao": devolucao,
-                "cursos_obrigatorios_ou_diferenciais": cursos,
-                "trabalho_e_principal_objetivo": objetivo,
-                "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
-                "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
-                "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
-                "disc": {
-                    f"disc_{i}": st.session_state.get(f"disc_{i}")
-                    for i in range(1, 25)
+                # PROCESSO DE SALVAMENTO (Só acontece após o segundo clique)
+                dados = {
+                    "nome": nome,
+                    "data_envio": data_hoje,
+                    "setor": setor,
+                    "cargo": cargo,
+                    "chefe": chefe,
+                    "departamento": departamento,
+                    "empresa": empresa,
+                    "escolaridade": escolaridade,
+                    "devolucao": devolucao,
+                    "cursos_obrigatorios_ou_diferenciais": cursos,
+                    "trabalho_e_principal_objetivo": objetivo,
+                    "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
+                    "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
+                    "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
+                    "disc": {
+                        f"disc_{i}": st.session_state.get(f"disc_{i}")
+                        for i in range(1, 25)
+                    }
                 }
-            }
             
-            caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-            with open(caminho, "w", encoding="utf-8") as f:
-                json.dump(dados, f, ensure_ascii=False, indent=4)
+                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                with open(caminho, "w", encoding="utf-8") as f:
+                    json.dump(dados, f, ensure_ascii=False, indent=4)
             
+<<<<<<< HEAD:analise_de_tarefas.py.py
             st.success("✅ Formulário enviado com sucesso!")
             st.session_state["confirmado"] = False  # Reseta para o próximo usuário
+=======
+                st.success("✅ Formulário enviado com sucesso!")
+                st.session_state["confirmado"] = False # Reseta para o próximo
+>>>>>>> 9a2c17a69fc70b4068384b174906c7a967919bbe:analise_de_tarefas.py
                         
 
 
@@ -607,9 +763,6 @@ if st.session_state.get("pagina") == "visualizar":
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_exibir})"):
                 # [Aqui você mantém o seu código de exibição de dados]
                 
-            
-            
-            
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
@@ -695,6 +848,296 @@ if st.session_state.get("pagina") == "visualizar":
                             key=f"pdf_btn_{idx}"   # Garante ID único no loop
                         )
                 # --- FIM DO BLOCO ---
+
+        # Botão de Limpeza
+        st.markdown("---")
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
+            for arquivo in os.listdir(dados_dir):
+                if arquivo.endswith(".json"): 
+                    os.remove(os.path.join(dados_dir, arquivo))
+            st.session_state["formularios"] = []
+            st.success("✅ Banco de dados limpo!"); st.rerun()
+
+# ============================================================
+# CALCULAR DISC PERCENTUAL E DOMINANTE
+# ============================================================
+
+def calcular_disc(respostas_disc):
+    contagem = {"D":0, "I":0, "S":0, "C":0}
+    for r in respostas_disc.values():
+        if r in contagem:
+            contagem[r] += 1
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = contagem
+        dominante = None
+    return percentuais, dominante
+
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
+
+def score_disc(disc):
+    pesos = {"D":1.0,"I":0.9,"S":0.85,"C":0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
+    return round((calculo/total)*100,2)
+
+# ============================================================
+# CALCULAR CARGA HORÁRIA
+# ============================================================
+
+def calcular_carga(atividades):
+    total_min = 0
+    for at in atividades:
+        try:
+            tempo = float(at.get("tempo","0"))
+        except:
+            tempo = 0
+        freq = at.get("frequencia","semanal").lower()
+        if freq == "diaria":
+            total_min += tempo * 5
+        elif freq == "mensal":
+            total_min += tempo / 4
+        else:
+            total_min += tempo
+    horas = total_min / 60
+    status = "Adequado"
+    if horas > 44: status = "Sobrecarga"
+    elif horas < 30: status = "Subutilização"
+    return round(horas,2), status
+
+# ============================================================
+# GERAR ATIVIDADES IDEAIS (GPT)
+# ============================================================
+
+def gerar_atividades_ideais(cargo, setor, client=None):
+    if client is None:
+        return [{
+            "nome_atividade": "Atividade de exemplo",
+            "descricao": "Descrição de exemplo",
+            "frequencia_ideal": "semanal",
+            "tempo_medio_minutos": 60,
+            "justificativa_tecnica": "Exemplo"
+        }]
+    
+    prompt = f"""
+    Gere 12 atividades ideais para:
+    Cargo: {cargo}
+    Setor: {setor}
+    Para cada atividade informe:
+      - nome_atividade
+      - descricao
+      - frequencia_ideal
+      - tempo_medio_minutos
+      - justificativa_tecnica
+    Responda SOMENTE JSON válido.
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.3
+        )
+        return json.loads(response.choices[0].message.content)
+    except:
+        return [{
+            "nome_atividade": "Atividade de exemplo",
+            "descricao": "Descrição de exemplo",
+            "frequencia_ideal": "semanal",
+            "tempo_medio_minutos": 60,
+            "justificativa_tecnica": "Exemplo"
+        }]
+
+# ============================================================
+# COMPARAÇÃO SEMÂNTICA
+# ============================================================
+
+def comparar_semanticamente(reais, ideais, client=None):
+    if client is None:
+        return {"score_aderencia":0,"tempo_gap_medio_percentual":0,"atividades_desvio":[]}
+
+    prompt = f"""
+    Compare semanticamente:
+    Atividades reais: {reais}
+    Atividades ideais: {ideais}
+    Retorne JSON com:
+      - score_aderencia (0-100)
+      - tempo_gap_medio_percentual
+      - atividades_desvio
+    """
+    try:
+        r = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.2
+        )
+        return json.loads(r.choices[0].message.content)
+    except:
+        return {"score_aderencia":0,"tempo_gap_medio_percentual":0,"atividades_desvio":[]}
+
+# ============================================================
+# CLASSIFICAR DIFICULDADES
+# ============================================================
+
+def classificar_dificuldades_gpt(dificuldades, client=None):
+    if client is None:
+        return {}
+    
+    prompt = f"""
+    Classifique semanticamente as dificuldades abaixo em:
+    - Processo
+    - Tempo
+    - Comunicação
+    - Estrutura
+    - Liderança
+    - Sistema
+    Retorne JSON com contagem por categoria.
+    Dificuldades: {dificuldades}
+    """
+    try:
+        r = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.2
+        )
+        return json.loads(r.choices[0].message.content)
+    except:
+        return {}
+
+# ============================================================
+# ÍNDICE GERAL DO CARGO
+# ============================================================
+
+def indice_geral(score_aderencia, score_disc, status_carga):
+    fator_carga = 100
+    if status_carga == "Sobrecarga": fator_carga = 70
+    elif status_carga == "Subutilização": fator_carga = 75
+    return round(mean([score_aderencia, score_disc, fator_carga]),2)
+
+# ============================================================
+# MOTOR PRINCIPAL COMPLETO – ANÁLISE CORPORATIVA
+# ============================================================
+
+def gerar_analise_corporativa(dados, client=None):
+    """
+    Gera análise completa de um colaborador com base em:
+    - Atividades reais
+    - Perfil DISC
+    - Dificuldades
+    Retorna:
+    - parecer (texto)
+    - indicadores (dict)
+    """
+    ideais = gerar_atividades_ideais(dados["cargo"], dados["setor"], client)
+    comparacao = comparar_semanticamente(dados["atividades"], ideais, client)
+    horas, status_carga = calcular_carga(dados["atividades"])
+    disc_score = score_disc(dados["disc"])
+    dificuldades_classificadas = classificar_dificuldades_gpt(dados["dificuldades"], client)
+    score_aderencia = comparacao.get("score_aderencia",0)
+    indice = indice_geral(score_aderencia, disc_score, status_carga)
+    risco = "Baixo" if indice < 60 else "Moderado" if indice < 75 else "Alto"
+
+    prompt_final = f"""
+    Gere parecer estratégico completo considerando:
+    - Score aderência: {score_aderencia}
+    - Horas semanais: {horas}
+    - Status carga: {status_carga}
+    - Score DISC: {disc_score}
+    - Dificuldades: {dificuldades_classificadas}
+    - Índice geral do cargo: {indice}
+    - Classificação de risco: {risco}
+    
+    Inclua:
+    - Diagnóstico estrutural
+    - Análise de desvios
+    - Avaliação comportamental
+    - Riscos organizacionais
+    - Recomendação detalhada de redistribuição
+    - Atividades corretas para o cargo com tempo e frequência ideais
+    - Conclusão executiva
+    """
+
+    parecer = ""
+    try:
+        if client:
+            resposta = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role":"user","content":prompt_final}],
+                temperature=0.3
+            )
+            parecer = resposta.choices[0].message.content
+        else:
+            parecer = "GPT não disponível. Retorno padrão: análise resumida."
+    except:
+        parecer = "Erro ao gerar parecer com GPT."
+
+    indicadores = {
+        "score_aderencia": score_aderencia,
+        "horas_semanais": horas,
+        "status_carga": status_carga,
+        "score_disc": disc_score,
+        "indice_geral": indice,
+        "risco": risco
+    }
+
+    return parecer, indicadores
+
+# ============================================================
+# GERAR PDF DO PARECER
+# ============================================================
+
+def gerar_pdf(parecer, nome):
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+
+    nome_arquivo = f"{nome}_parecer.pdf"
+    doc = SimpleDocTemplate(nome_arquivo)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    elements.append(Paragraph("PARECER ESTRATÉGICO ORGANIZACIONAL", styles["Title"]))
+    elements.append(Spacer(1, 0.5*inch))
+
+    for linha in parecer.split("\n"):
+        if linha.strip():
+            elements.append(Paragraph(linha, styles["Normal"]))
+            elements.append(Spacer(1, 0.2*inch))
+
+    doc.build(elements)
+    return nome_arquivo
+
+# ============================================================
+# PASTA BASE PARA FORMULÁRIOS (JSON)
+# ============================================================
+json_master = os.path.join(dados_dir, "formularios.json")
+
+if not os.path.exists(json_master):
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False, indent=4)
+
+# ============================================================
+# FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
+# ============================================================
+def salvar_formulario_json(formulario):
+    try:
+        with open(json_master, "r", encoding="utf-8") as f:
+            dados_existentes = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        dados_existentes = []
+
+    dados_existentes.append(formulario)
+
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
+
+    st.session_state["formularios"] = dados_existentes
 
 
 
@@ -1025,5 +1468,3 @@ def salvar_formulario_json(formulario):
 
     # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
     st.session_state["formularios"] = dados_existentes
-
-
