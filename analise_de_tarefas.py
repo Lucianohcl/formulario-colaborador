@@ -701,9 +701,6 @@ if st.session_state.get("pagina") == "visualizar":
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_exibir})"):
                 # [Aqui você mantém o seu código de exibição de dados]
                 
-            
-            
-            
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
@@ -789,6 +786,296 @@ if st.session_state.get("pagina") == "visualizar":
                             key=f"pdf_btn_{idx}"   # Garante ID único no loop
                         )
                 # --- FIM DO BLOCO ---
+
+        # Botão de Limpeza
+        st.markdown("---")
+        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
+            for arquivo in os.listdir(dados_dir):
+                if arquivo.endswith(".json"): 
+                    os.remove(os.path.join(dados_dir, arquivo))
+            st.session_state["formularios"] = []
+            st.success("✅ Banco de dados limpo!"); st.rerun()
+
+# ============================================================
+# CALCULAR DISC PERCENTUAL E DOMINANTE
+# ============================================================
+
+def calcular_disc(respostas_disc):
+    contagem = {"D":0, "I":0, "S":0, "C":0}
+    for r in respostas_disc.values():
+        if r in contagem:
+            contagem[r] += 1
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = contagem
+        dominante = None
+    return percentuais, dominante
+
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
+
+def score_disc(disc):
+    pesos = {"D":1.0,"I":0.9,"S":0.85,"C":0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
+    return round((calculo/total)*100,2)
+
+# ============================================================
+# CALCULAR CARGA HORÁRIA
+# ============================================================
+
+def calcular_carga(atividades):
+    total_min = 0
+    for at in atividades:
+        try:
+            tempo = float(at.get("tempo","0"))
+        except:
+            tempo = 0
+        freq = at.get("frequencia","semanal").lower()
+        if freq == "diaria":
+            total_min += tempo * 5
+        elif freq == "mensal":
+            total_min += tempo / 4
+        else:
+            total_min += tempo
+    horas = total_min / 60
+    status = "Adequado"
+    if horas > 44: status = "Sobrecarga"
+    elif horas < 30: status = "Subutilização"
+    return round(horas,2), status
+
+# ============================================================
+# GERAR ATIVIDADES IDEAIS (GPT)
+# ============================================================
+
+def gerar_atividades_ideais(cargo, setor, client=None):
+    if client is None:
+        return [{
+            "nome_atividade": "Atividade de exemplo",
+            "descricao": "Descrição de exemplo",
+            "frequencia_ideal": "semanal",
+            "tempo_medio_minutos": 60,
+            "justificativa_tecnica": "Exemplo"
+        }]
+    
+    prompt = f"""
+    Gere 12 atividades ideais para:
+    Cargo: {cargo}
+    Setor: {setor}
+    Para cada atividade informe:
+      - nome_atividade
+      - descricao
+      - frequencia_ideal
+      - tempo_medio_minutos
+      - justificativa_tecnica
+    Responda SOMENTE JSON válido.
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.3
+        )
+        return json.loads(response.choices[0].message.content)
+    except:
+        return [{
+            "nome_atividade": "Atividade de exemplo",
+            "descricao": "Descrição de exemplo",
+            "frequencia_ideal": "semanal",
+            "tempo_medio_minutos": 60,
+            "justificativa_tecnica": "Exemplo"
+        }]
+
+# ============================================================
+# COMPARAÇÃO SEMÂNTICA
+# ============================================================
+
+def comparar_semanticamente(reais, ideais, client=None):
+    if client is None:
+        return {"score_aderencia":0,"tempo_gap_medio_percentual":0,"atividades_desvio":[]}
+
+    prompt = f"""
+    Compare semanticamente:
+    Atividades reais: {reais}
+    Atividades ideais: {ideais}
+    Retorne JSON com:
+      - score_aderencia (0-100)
+      - tempo_gap_medio_percentual
+      - atividades_desvio
+    """
+    try:
+        r = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.2
+        )
+        return json.loads(r.choices[0].message.content)
+    except:
+        return {"score_aderencia":0,"tempo_gap_medio_percentual":0,"atividades_desvio":[]}
+
+# ============================================================
+# CLASSIFICAR DIFICULDADES
+# ============================================================
+
+def classificar_dificuldades_gpt(dificuldades, client=None):
+    if client is None:
+        return {}
+    
+    prompt = f"""
+    Classifique semanticamente as dificuldades abaixo em:
+    - Processo
+    - Tempo
+    - Comunicação
+    - Estrutura
+    - Liderança
+    - Sistema
+    Retorne JSON com contagem por categoria.
+    Dificuldades: {dificuldades}
+    """
+    try:
+        r = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role":"user","content":prompt}],
+            temperature=0.2
+        )
+        return json.loads(r.choices[0].message.content)
+    except:
+        return {}
+
+# ============================================================
+# ÍNDICE GERAL DO CARGO
+# ============================================================
+
+def indice_geral(score_aderencia, score_disc, status_carga):
+    fator_carga = 100
+    if status_carga == "Sobrecarga": fator_carga = 70
+    elif status_carga == "Subutilização": fator_carga = 75
+    return round(mean([score_aderencia, score_disc, fator_carga]),2)
+
+# ============================================================
+# MOTOR PRINCIPAL COMPLETO – ANÁLISE CORPORATIVA
+# ============================================================
+
+def gerar_analise_corporativa(dados, client=None):
+    """
+    Gera análise completa de um colaborador com base em:
+    - Atividades reais
+    - Perfil DISC
+    - Dificuldades
+    Retorna:
+    - parecer (texto)
+    - indicadores (dict)
+    """
+    ideais = gerar_atividades_ideais(dados["cargo"], dados["setor"], client)
+    comparacao = comparar_semanticamente(dados["atividades"], ideais, client)
+    horas, status_carga = calcular_carga(dados["atividades"])
+    disc_score = score_disc(dados["disc"])
+    dificuldades_classificadas = classificar_dificuldades_gpt(dados["dificuldades"], client)
+    score_aderencia = comparacao.get("score_aderencia",0)
+    indice = indice_geral(score_aderencia, disc_score, status_carga)
+    risco = "Baixo" if indice < 60 else "Moderado" if indice < 75 else "Alto"
+
+    prompt_final = f"""
+    Gere parecer estratégico completo considerando:
+    - Score aderência: {score_aderencia}
+    - Horas semanais: {horas}
+    - Status carga: {status_carga}
+    - Score DISC: {disc_score}
+    - Dificuldades: {dificuldades_classificadas}
+    - Índice geral do cargo: {indice}
+    - Classificação de risco: {risco}
+    
+    Inclua:
+    - Diagnóstico estrutural
+    - Análise de desvios
+    - Avaliação comportamental
+    - Riscos organizacionais
+    - Recomendação detalhada de redistribuição
+    - Atividades corretas para o cargo com tempo e frequência ideais
+    - Conclusão executiva
+    """
+
+    parecer = ""
+    try:
+        if client:
+            resposta = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role":"user","content":prompt_final}],
+                temperature=0.3
+            )
+            parecer = resposta.choices[0].message.content
+        else:
+            parecer = "GPT não disponível. Retorno padrão: análise resumida."
+    except:
+        parecer = "Erro ao gerar parecer com GPT."
+
+    indicadores = {
+        "score_aderencia": score_aderencia,
+        "horas_semanais": horas,
+        "status_carga": status_carga,
+        "score_disc": disc_score,
+        "indice_geral": indice,
+        "risco": risco
+    }
+
+    return parecer, indicadores
+
+# ============================================================
+# GERAR PDF DO PARECER
+# ============================================================
+
+def gerar_pdf(parecer, nome):
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+
+    nome_arquivo = f"{nome}_parecer.pdf"
+    doc = SimpleDocTemplate(nome_arquivo)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    elements.append(Paragraph("PARECER ESTRATÉGICO ORGANIZACIONAL", styles["Title"]))
+    elements.append(Spacer(1, 0.5*inch))
+
+    for linha in parecer.split("\n"):
+        if linha.strip():
+            elements.append(Paragraph(linha, styles["Normal"]))
+            elements.append(Spacer(1, 0.2*inch))
+
+    doc.build(elements)
+    return nome_arquivo
+
+# ============================================================
+# PASTA BASE PARA FORMULÁRIOS (JSON)
+# ============================================================
+json_master = os.path.join(dados_dir, "formularios.json")
+
+if not os.path.exists(json_master):
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False, indent=4)
+
+# ============================================================
+# FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
+# ============================================================
+def salvar_formulario_json(formulario):
+    try:
+        with open(json_master, "r", encoding="utf-8") as f:
+            dados_existentes = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        dados_existentes = []
+
+    dados_existentes.append(formulario)
+
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
+
+    st.session_state["formularios"] = dados_existentes-
 
 
 
