@@ -257,18 +257,30 @@ perguntas_disc = [
 
     # --- SEÇÃO DE ATIVIDADES COM FORMULARIO E EXPANDER ---
     with st.form("form_atividades"):
+        
+        # 1. LEGENDA: Alinhada com o expander, mas FORA dele
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA:**
+        DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
+        """)
+
+        # 2. EXPANDER:
         with st.expander("🔹 Atividades Executadas", expanded=True):
-            # A legenda aparece primeiro aqui
-            st.info("""
-            **📋 LEGENDA DE FREQUÊNCIA:**
-            DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
-            """)
+            # Tudo aqui dentro precisa de +4 espaços de indentação
             for i in range(20):
-                col_desc, col_freq, col_h, col_m = st.columns([3,1,1,1])
-                col_desc.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-                col_freq.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-                col_h.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-                col_m.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
+                col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
+            
+                with col_desc:
+                    st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+            
+                with col_freq:
+                    st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            
+                with col_h:
+                    st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
+            
+                with col_m:
+                    st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
 
     
     # --- LEGENDAS DE ATIVIDADES ---
