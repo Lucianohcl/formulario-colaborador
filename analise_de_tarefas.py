@@ -96,27 +96,29 @@ perguntas_disc = [
 from docx import Document
 from fpdf import FPDF
 import io
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
+def gerar_word(form):
+    doc = Document()
 
-    
-    def gerar_word(form):
-        doc = Document()
-    
-        # 1. Informações de identificação
-        doc.add_heading("Informações de Identificação", level=1)
-        campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-        for campo in campos_gerais:
-            valor = form.get(campo)
-            if valor and valor.strip():  # só adiciona se o campo estiver preenchido
-                doc.add_paragraph(f"{campo}: {valor}")
-    
+    # 1. Informações de identificação
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        valor = form.get(campo)
+        if valor and valor.strip():  # só adiciona se o campo estiver preenchido
+            doc.add_paragraph(f"{campo}: {valor}")
+
     # 2. Tabelas (Atividades, Dificuldades, Sugestões)
     secoes = {
         "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
         "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
         "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
     }
-    
+
     for chave, colunas in secoes.items():
         if chave in form and isinstance(form[chave], list):
             doc.add_heading(f"📋 {chave}", level=1)
@@ -144,16 +146,11 @@ import io
         doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
         doc.add_paragraph(f"Resposta: {valor_resposta}")
         doc.add_paragraph("-" * 20)
-    
+
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     return buffer
-
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
 
 def gerar_pdf(form):
     buffer = io.BytesIO()
@@ -180,7 +177,7 @@ def gerar_pdf(form):
         "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
         "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
     }
-    
+
     for titulo, colunas in secoes.items():
         if titulo in form and isinstance(form[titulo], list):
             elementos.append(Paragraph(titulo, styles['Heading2']))
