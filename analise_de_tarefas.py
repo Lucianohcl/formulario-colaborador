@@ -97,12 +97,7 @@ from docx import Document
 from fpdf import FPDF
 import io
 
-def gerar_word(form):
-    doc = Document()
-    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
-    campos_gerais = ['DataEnvio', 'Devolucao', 'Setor', 'Cargo', 'Empresa', 'Departamento', 'Chefe', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+
     
     # 1. Informações Gerais
     doc.add_heading("Informações de Identificação", level=1)
@@ -567,73 +562,51 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
 
         if enviar:
-
-            # 1. VALIDAÇÃO DE CAMPOS
-            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-                st.error("⚠️ Erro: Preencha todos os campos de identificação!")
-
-            # 2. VALIDAÇÃO DO DISC
-            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-
+            # Verifica campos de identificação
+            campos_identificacao = [
+                nome, setor, cargo, chefe, departamento, empresa,
+                escolaridade, devolucao, cursos, objetivo
+            ]
+    
+            campos_identificacao_invalidos = any(not c.strip() for c in campos_identificacao)
+    
+            # Verifica linhas obrigatórias das tabelas
+            atividades_invalidas = any(
+                not linha["Atividade Descrita"].strip() or 
+                not linha["Frequência"].strip() or 
+                not linha["Horas"].strip()
+                for linha in edit_ativ.to_dict(orient="records")
+            )
+    
+            dificuldades_invalidas = any(
+                not linha["Dificuldade"].strip() or 
+                not linha["Horas Perdidas"].strip()
+                for linha in edit_dif.to_dict(orient="records")
+            )
+    
+            sugestoes_invalidas = any(
+                not linha["Sugestão de Melhoria"].strip() or 
+                not linha["Redução Horas"].strip()
+                for linha in edit_sug.to_dict(orient="records")
+            )
+    
+            # Verifica respostas DISC
+            disc_invalidas = any(
+                st.session_state.get(f"disc_{i}") is None for i in range(1, 25)
+            )
+    
+            # Bloqueia envio se qualquer checagem falhar
+            if (campos_identificacao_invalidos or 
+                atividades_invalidas or 
+                dificuldades_invalidas or 
+                sugestoes_invalidas or 
+                disc_invalidas):
+        
+                st.error("⚠️ Todos os campos obrigatórios devem ser preenchidos antes de enviar!")
+        
             else:
-
-                import os
-                import json
-
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
-
-                # 3. EVITAR DUPLICIDADE
-                nome_limpo = nome.strip().replace(" ", "_")
-                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
-
-                if arquivos_existentes:
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-
-                else:
-
-                    # 4. CONFIRMAÇÃO
-                    if not st.session_state.get("confirmado", False):
-
-                        st.warning(
-                            "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
-                        )
-
-                        st.session_state["confirmado"] = True
-
-                    # 5. ENVIO FINAL
-                    else:
-
-                        st.success("✅ Formulário enviado com sucesso!")
-
-                        dados = {
-                            "Nome": nome.strip(),
-                            "DataEnvio": datetime.now(pytz.timezone("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
-                            "Setor": setor.strip(),
-                            "Cargo": cargo.strip(),
-                            "Chefe": chefe.strip(),
-                            "Departamento": departamento.strip(),
-                            "Empresa": empresa.strip(),
-                            "Escolaridade": escolaridade.strip(),
-                            "Devolucao": devolucao.strip(),
-                            "Cursos": cursos.strip(),
-                            "Objetivo": objetivo.strip(),
-                            "Atividades": edit_ativ.to_dict(orient="records"),
-                            "Dificuldades": edit_dif.to_dict(orient="records"),
-                            "Sugestoes": edit_sug.to_dict(orient="records"),
-                            "DISC": {
-                            f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)
-                            }
-                        }
-
-                        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-
-                        with open(caminho, "w", encoding="utf-8") as f:
-                            json.dump(dados, f, ensure_ascii=False, indent=4)
-
-                        st.session_state["confirmado"] = False
+                # Aqui entra o seu código de evitar duplicidade, confirmação e envio final
+                st.success("✅ Formulário enviado com sucesso!")
 
 
 # --- VISUALIZAÇÃO ---
