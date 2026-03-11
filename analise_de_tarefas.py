@@ -230,6 +230,115 @@ perguntas_disc = [
     "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso"
 ]
 
+# --- FORMULÁRIO COMPLETO DO COLABORADOR ---
+if st.session_state.get("pagina") != "visualizar":
+    st.title("📋 Formulário Completo do Colaborador")
+
+    with st.form("form_colaborador"):
+        # Dados de Identificação
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador")
+        setor = col2.text_input("Setor")
+        cargo = col1.text_input("Cargo")
+        chefe = col2.text_input("Chefe imediato")
+        departamento = col1.text_input("Departamento")
+        empresa = col2.text_input("Empresa / Unidade")
+        escolaridade = col1.text_input("Escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em")
+        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
+        
+        # Listas para Selectbox
+        lista_frequencia = ["DVD","D","S","Q","M","T","A"]
+        lista_horas = [f"{i} h" for i in range(1,25)]
+        lista_minutos = [f"{i} min" for i in range(0,60,5)]
+
+        # --- ATIVIDADES ---
+        st.markdown("---")
+        st.info("""
+        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+        """)
+        st.subheader("🔹 Atividades Executadas")
+        
+        edit_ativ = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }),
+            num_rows="fixed",
+            use_container_width=True,
+            key="ativ_editor",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
+            }
+        )
+
+        # --- DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        
+        edit_dif = st.data_editor(
+            pd.DataFrame({
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas Perdidas": [""] * 20,
+                "Minutos Perdidos": [""] * 20
+            }),
+            num_rows="fixed",
+            use_container_width=True,
+            key="dif_editor",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
+            }
+        )
+
+        # --- SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+        
+        edit_sug = st.data_editor(
+            pd.DataFrame({
+                "Sugestão de Melhoria": [""] * 20,
+                "Impacto Esperado": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas de Ganho": [""] * 20,
+                "Minutos de Ganho": [""] * 20
+            }),
+            num_rows="fixed",
+            use_container_width=True,
+            key="sug_editor",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas de Ganho": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos de Ganho": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
+            }
+        )
+
+        # --- QUESTIONÁRIO DISC ---
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}",
+                options=["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                horizontal=True
+            )
+
+        # --- BOTÃO DE ENVIO ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
 # --- VISUALIZAÇÃO (FORA DO FORMULÁRIO) ---
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
