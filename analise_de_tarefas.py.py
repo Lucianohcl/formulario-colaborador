@@ -577,7 +577,7 @@ if st.query_params.get("page") == "formulario":
                 json.dump(dados, f, ensure_ascii=False, indent=4)
             
             st.success("✅ Formulário enviado com sucesso!")
-            st.session_state["confirmado"] = False # Reseta para o próximo
+            st.session_state["confirmado"] = False  # Reseta para o próximo usuário
                         
 
 
