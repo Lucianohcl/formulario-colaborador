@@ -391,6 +391,7 @@ perguntas_disc = [
     "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
 
 # --- FORMULÁRIO COMPLETO ---
 if st.query_params.get("page") == "formulario":
