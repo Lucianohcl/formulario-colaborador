@@ -607,23 +607,22 @@ if st.query_params.get("page") == "formulario":
                         st.success("✅ Formulário enviado com sucesso!")
 
                         dados = {
-                            "nome": nome,
+                            "Nome": nome.strip(),
                             "DataEnvio": datetime.now(pytz.timezone("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
-                            "setor": setor,
-                            "cargo": cargo,
-                            "chefe": chefe,
-                            "departamento": departamento,
-                            "empresa": empresa,
-                            "escolaridade": escolaridade,
-                            "devolucao": devolucao,
-                            "cursos": cursos,
-                            "objetivo": objetivo,
-                            "atividades": edit_ativ.to_dict(),
-                            "dificuldades": edit_dif.to_dict(),
-                            "sugestoes": edit_sug.to_dict(),
-                            "disc": {
-                                f"disc_{i}": st.session_state.get(f"disc_{i}")
-                                for i in range(1, 25)
+                            "Setor": setor.strip(),
+                            "Cargo": cargo.strip(),
+                            "Chefe": chefe.strip(),
+                            "Departamento": departamento.strip(),
+                            "Empresa": empresa.strip(),
+                            "Escolaridade": escolaridade.strip(),
+                            "Devolucao": devolucao.strip(),
+                            "Cursos": cursos.strip(),
+                            "Objetivo": objetivo.strip(),
+                            "Atividades": edit_ativ.to_dict(orient="records"),
+                            "Dificuldades": edit_dif.to_dict(orient="records"),
+                            "Sugestoes": edit_sug.to_dict(orient="records"),
+                            "DISC": {
+                            f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)
                             }
                         }
 
