@@ -231,9 +231,12 @@ perguntas_disc = [
 ]
 
 # --- FORMULÁRIO COMPLETO DO COLABORADOR ---
-if st.session_state.get("pagina") != "visualizar":
-    st.title("📋 Formulário Completo do Colaborador")
+# Primeiro, sincronize a página com a query param
+pagina = st.query_params.get("page", ["formulario"])[0]  # pega da URL, default "formulario"
 
+# Agora, use a variável `pagina`:
+if pagina != "visualizar":
+    st.title("📋 Formulário Completo do Colaborador")
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
