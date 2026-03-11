@@ -560,53 +560,82 @@ if st.query_params.get("page") == "formulario":
 import streamlit as st
 import pandas as pd
 
-# 1. REMOVA O st.form E USE st.container
+import streamlit as st
+from datetime import datetime
+import pytz
+
+# --- FORMULÁRIO COMPLETO SEM st.form, usando st.container ---
 with st.container():
-    # TODOS os campos precisam de uma 'key' para não sumirem ao clicar
+    # Campos de identificação
     nome = st.text_input("Nome", key="input_nome")
     setor = st.text_input("Setor", key="input_setor")
     cargo = st.text_input("Cargo", key="input_cargo")
     chefe = st.text_input("Chefe", key="input_chefe")
     departamento = st.text_input("Departamento", key="input_depto")
     empresa = st.text_input("Empresa", key="input_empresa")
-    
-    # Exemplo de edição (as tabelas precisam de key também)
-    # edit_ativ = st.data_editor(df_atividades, key="tabela_ativ", num_rows="dynamic")
+    escolaridade = st.text_input("Escolaridade", key="input_escolaridade")
+    devolucao = st.text_input("Devolução", key="input_devolucao")
+    cursos = st.text_input("Cursos", key="input_cursos")
+    objetivo = st.text_input("Objetivo", key="input_objetivo")
 
-    # Botão fora do form
+    # Tabelas de edição (exemplo, as tabelas reais precisam de um DataFrame)
+    # edit_ativ = st.data_editor(df_atividades, key="tabela_ativ", num_rows="dynamic")
+    # edit_dif = st.data_editor(df_dificuldades, key="tabela_dif", num_rows="dynamic")
+    # edit_sug = st.data_editor(df_sugestoes, key="tabela_sug", num_rows="dynamic")
+
+    # DISC: 24 perguntas
+    for i in range(1, 25):
+        st.selectbox(f"Pergunta {i}", options=["D", "I", "S", "C"], key=f"disc_{i}")
+
+    # Botão de envio
     enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-# 2. VALIDAÇÕES E PROCESSAMENTO
+# VALIDAÇÃO E PROCESSAMENTO
 if enviar:
-    # Validação de campos vazios
-    campos_lista = [nome, setor, cargo, chefe, departamento, empresa]
+    # 1. Verifica campos de identificação
+    campos_lista = [nome, setor, cargo, chefe, departamento, empresa,
+                    escolaridade, devolucao, cursos, objetivo]
     campos_invalidos = any(not str(c).strip() for c in campos_lista)
-    
-    # Validação do DISC
+
+    # 2. Valida tabelas (descomente quando usar edit_ativ, edit_dif, edit_sug)
+    # atividades_invalidas = any(
+    #     not linha["Atividade Descrita"].strip() or
+    #     not linha["Frequência"].strip() or
+    #     not linha["Horas"].strip()
+    #     for linha in edit_ativ.to_dict(orient="records")
+    # )
+    # dificuldades_invalidas = any(
+    #     not linha["Dificuldade"].strip() or
+    #     not linha["Horas Perdidas"].strip()
+    #     for linha in edit_dif.to_dict(orient="records")
+    # )
+    # sugestoes_invalidas = any(
+    #     not linha["Sugestão de Melhoria"].strip() or
+    #     not linha["Redução Horas"].strip()
+    #     for linha in edit_sug.to_dict(orient="records")
+    # )
+
+    # 3. Valida DISC
     disc_invalidas = any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25))
 
-    # 3. BLOQUEIO (o st.stop trava aqui se algo estiver errado)
-    if campos_invalidos or disc_invalidas:
-        st.error("⚠️ Preencha todos os campos e o DISC!")
+    # 4. BLOQUEIO: st.stop mantém o usuário na mesma página
+    if campos_invalidos or disc_invalidas:  # ou atividades_invalidas/dificuldades_invalidas/sugestoes_invalidas
+        st.error("⚠️ Todos os campos obrigatórios, tabelas e DISC devem ser preenchidos!")
         st.session_state["confirmado"] = False
-        st.stop() 
+        st.stop()  # bloqueia envio e mantém tudo na tela
 
-    # 4. LÓGICA DE CONFIRMAÇÃO (Pedágio)
-    else:
-        if not st.session_state.get("confirmado", False):
-            st.warning("⚠️ Revise os dados. Clique em Enviar novamente para confirmar.")
-            st.session_state["confirmado"] = True
-            st.stop() # Para aqui, mantém os dados na tela
-        
-        else:
-            # 5. ENVIO FINAL
-            st.success("✅ Formulário enviado com sucesso!")
-            
-            # Aqui vai o código que gera o seu PDF ou envia os dados
-            # ...
-            
-            st.session_state["confirmado"] = False
-        
+    # 5. LÓGICA DE CONFIRMAÇÃO (pedágio)
+    if not st.session_state.get("confirmado", False):
+        st.warning("⚠️ Revise todos os dados. Clique em Enviar novamente para confirmar.")
+        st.session_state["confirmado"] = True
+        st.stop()  # mantém os dados na tela
+
+    # 6. ENVIO FINAL
+    st.success("✅ Formulário enviado com sucesso!")
+    st.session_state["confirmado"] = False
+
+    # AQUI você pode gerar PDF/Word ou salvar JSON
+    # ...        
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
