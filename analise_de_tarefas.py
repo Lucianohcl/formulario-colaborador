@@ -143,7 +143,7 @@ menu = [
 ]
 
 # 1️⃣ Pega página da URL
-params = st.query_params
+
 pagina_inicial = "🏠 Home"
 if "page" in params:
     if params["page"][0] == "formulario":
@@ -167,14 +167,13 @@ page_map = {
 st.session_state.pagina = page_map[pagina]
 
 # 4️⃣ Sincroniza URL com o menu (opcional mas recomendado)
-st.experimental_set_query_params(page=page_map[pagina])
 
 # 5️⃣ Logout
 btn_logout = st.sidebar.button("🚪 Logout")
 if btn_logout:
     st.session_state.logged_in = False
     st.session_state.pagina = "home"
-    st.experimental_set_query_params(page="home")
+    
     st.rerun()
 
 # 6️⃣ Mostrar formulário se página for formulário
