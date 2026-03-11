@@ -464,70 +464,54 @@ if st.query_params.get("page") == "formulario":
         
         
         
+        # 1. DEFINIÇÃO DAS LISTAS (Sempre antes dos editores)
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+        lista_horas = [f"{i} h" for i in range(25)]
+        lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+
+        # --- SEÇÃO DE ATIVIDADES ---
         st.subheader("🔹 Atividades Executadas")
         
         edit_ativ = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
+                "Frequência": [lista_frequencia[0]] * 20,
+                "Horas": [lista_horas[0]] * 20,
+                "Minutos": [lista_minutos[0]] * 20
+            }).reset_index(drop=True),
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Atividade Descrita": st.column_config.TextColumn("Atividade Descrita", width="large"),
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, required=True),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, required=True),
             },
             hide_index=True,
             num_rows="fixed",
-            use_container_width=True
+            use_container_width=True,
+            key="ativ_editor"
         )
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
-        # 1. INICIALIZAÇÃO SEGURA DO ESTADO (O Cofre)
-        if 'df_dificuldades' not in st.session_state:
-            st.session_state.df_dificuldades = pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20,
-                "Frequência": [""] * 20
-            })
-
-        
-
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
-        # 3. EDITOR DE DADOS (Conectado ao Session State)
-        # Se estiver dentro de um st.form, os dados só "descem" para o código após o Submit
         edit_dif = st.data_editor(
             st.session_state.df_dificuldades,
             column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
-                "Frequência": st.column_config.SelectboxColumn(
-                    "Frequência", 
-                    options=lista_frequencia,
-                    help="Selecione a sigla conforme a legenda acima"
-                ),
+                "Dificuldade": st.column_config.TextColumn("Dificuldade", width="large"),
+                "Setor/Parceiro Envolvido": st.column_config.TextColumn("Setor/Parceiro Envolvido", width="medium"),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas, required=True),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos, required=True),
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
             },
             hide_index=True,
             num_rows="fixed",
             use_container_width=True,
             key="dif_editor"
         )
-
-        # 4. SALVAMENTO AUTOMÁTICO DO ESTADO
         st.session_state.df_dificuldades = edit_dif
 
-
-        # Salva o estado para persistir os dados
-        st.session_state.df_dificuldades = edit_dif
-
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
+        # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
         
@@ -535,23 +519,15 @@ if st.query_params.get("page") == "formulario":
             pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
-                "Redução Horas": [""] * 20,
-                "Redução Minutos": [""] * 20,
-                "Frequência do Impacto": [""] * 20
+                "Redução Horas": [lista_horas[0]] * 20,
+                "Redução Minutos": [lista_minutos[0]] * 20,
+                "Frequência do Impacto": [lista_frequencia[0]] * 20
             }).reset_index(drop=True),
             column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
+                "Sugestão de Melhoria": st.column_config.TextColumn("Sugestão de Melhoria", width="large"),
+                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
             },
             hide_index=True,
             num_rows="fixed",
@@ -562,7 +538,6 @@ if st.query_params.get("page") == "formulario":
         
 
         
-
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
