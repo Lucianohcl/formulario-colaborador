@@ -284,77 +284,61 @@ if st.query_params.get("page") == "formulario":
         
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
-        
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
         * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
-        
-        # --- Atividades Executadas ---
         st.subheader("🔹 Atividades Executadas")
 
-        # Frequência padronizada e legenda
         lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
-        # Horas e minutos
         lista_horas = [f"{h} h" for h in range(25)]
         lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
 
-        # Loop de 20 atividades
         for i in range(20):
-            st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-    
-            col1, col2, col3 = st.columns(3)
-    
-            with col1:
-                st.selectbox(f"Frequência {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-            with col2:
+            col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
+            with col_desc:
+                st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+            with col_freq:
+                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            with col_h:
                 st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-            with col3:
+            with col_m:
                 st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
-        
-        
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
 
-        # Frequência padronizada
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
-        # Horas e minutos
-        lista_horas = [f"{h} h" for h in range(25)]
-        lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
-
-        # Loop de 20 dificuldades
         for i in range(20):
-            st.text_input(f"Dificuldade {i+1}", key=f"dif_desc_{i}")
-            st.text_input(f"Setor/Parceiro Envolvido {i+1}", key=f"dif_setor_{i}")
-
-            col1, col2, col3 = st.columns(3)
-
-            with col1:
-                st.selectbox(f"Frequência {i+1}", lista_frequencia, key=f"dif_freq_{i}")
-            with col2:
+            col_desc, col_setor, col_freq, col_h, col_m = st.columns([3, 2, 1, 1, 1])
+            with col_desc:
+                st.text_input(f"Dificuldade {i+1}", key=f"dif_desc_{i}")
+            with col_setor:
+                st.text_input(f"Setor/Parceiro Envolvido {i+1}", key=f"dif_setor_{i}")
+            with col_freq:
+                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"dif_freq_{i}")
+            with col_h:
                 st.selectbox(f"Horas {i+1}", lista_horas, key=f"dif_hora_{i}", index=0)
-            with col3:
+            with col_m:
                 st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"dif_minuto_{i}", index=0)
 
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
 
-        # Frequência padronizada
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
-        # Horas e minutos
-        lista_horas = [f"{h} h" for h in range(25)]
-        lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
-
-        # Loop de 20 sugestões
         for i in range(20):
-            st.text_input(f"Sugestão {i+1}", key=f"sug_desc_{i}")
+            col_desc, col_freq, col_h, col_m, col_impacto = st.columns([3, 1, 1, 1, 3])
+            with col_desc:
+                st.text_input(f"Sugestão {i+1}", key=f"sug_desc_{i}")
+            with col_freq:
+                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"sug_freq_{i}")
+            with col_h:
+                st.selectbox(f"Horas {i+1}", lista_horas, key=f"sug_hora_{i}", index=0)
+            with col_m:
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"sug_minuto_{i}", index=0)
+            with col_impacto:
+                st.text_input(f"Impacto Esperado {i+1}", key=f"sug_impacto_{i}")
     
             col1, col2, col3 = st.columns(3)
     
