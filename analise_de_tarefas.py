@@ -40,19 +40,17 @@ st.set_page_config(
 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 
-if "pagina" not in st.session_state: st.session_state.pagina = "home"
+# 1. Inicializa o estado se não existir
+if "pagina" not in st.session_state:
+    # 2. Só lê a URL UMA VEZ na primeira carga do app
+    query_params = st.query_params
+    if "page" in query_params:
+        st.session_state.pagina = query_params["page"]
+    else:
+        st.session_state.pagina = "home"
 
-if "formularios" not in st.session_state: st.session_state["formularios"] = []
-
-
-
-# Leitura da URL (Prioridade total para permitir acesso ao formulário)
-
-query_params = st.query_params
-
-if "page" in query_params:
-
-    st.session_state.pagina = query_params["page"]
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []
 
 
 
@@ -130,23 +128,54 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
 # SIDEBAR
 # ============================================================
 
-st.sidebar.title("📌 Menu de Navegação")
+# Menu sincronizado com query_params
+menu = [
+    "🏠 Home",
+    "📊 Análise Inteligente",
+    "⚖️ Comparar Colaboradores",
+    "🧠 Perfil DISC",
+    "📄 Parecer Estratégico",
+    "👁️ Visualizar Dados",
+    "🚀 Produtividade",
+    "📋 Formulário"
+]
 
-btn_home = st.sidebar.button("🏠 Home")
-btn_analise = st.sidebar.button("📊 Análise Inteligente")
-btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
-btn_disc = st.sidebar.button("🧠 Perfil DISC")
-btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
-btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
-btn_produtividade = st.sidebar.button("🚀 Produtividade")
+# Pega página da URL
+params = st.experimental_get_query_params()
+pagina_inicial = "🏠 Home"
+if "page" in params:
+    if params["page"][0] == "formulario":
+        pagina_inicial = "📋 Formulário"
 
+# Menu único
+pagina = st.sidebar.selectbox("📌 Menu de Navegação", menu, index=menu.index(pagina_inicial))
 
-st.sidebar.markdown("---")
+# Atualiza session_state
+if pagina == "🏠 Home":
+    st.session_state.pagina = "home"
+elif pagina == "📊 Análise Inteligente":
+    st.session_state.pagina = "analise"
+elif pagina == "⚖️ Comparar Colaboradores":
+    st.session_state.pagina = "comparar"
+elif pagina == "🧠 Perfil DISC":
+    st.session_state.pagina = "disc"
+elif pagina == "📄 Parecer Estratégico":
+    st.session_state.pagina = "parecer"
+elif pagina == "👁️ Visualizar Dados":
+    st.session_state.pagina = "visualizar"
+elif pagina == "🚀 Produtividade":
+    st.session_state.pagina = "produtividade"
+elif pagina == "📋 Formulário":
+    st.session_state.pagina = "formulario"
 
+# Logout separado continua igual
 btn_logout = st.sidebar.button("🚪 Logout")
-
-pagina_anterior = st.session_state.pagina
-
+if btn_logout:
+    st.session_state.logged_in = False
+    st.session_state.pagina = "home"
+    st.experimental_set_query_params(page="home")
+    st.rerun()
+# Define a nova página baseada no botão clicado
 if btn_home:
     st.session_state.pagina = "home"
 elif btn_analise:
@@ -159,30 +188,23 @@ elif btn_parecer:
     st.session_state.pagina = "parecer"
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
-# O elif abaixo verifica a URL sem precisar de botão
-elif st.session_state.pagina == "formulario":
-    pass # Este comando é obrigatório para não dar erro de sintaxe
+elif btn_produtividade:
+    st.session_state.pagina = "produtividade"
 elif btn_logout:
     st.session_state.logged_in = False
     st.session_state.pagina = "home"
+# O elif do formulário não precisa de 'pass' se estiver no final da lógica de botões
+elif st.session_state.pagina == "formulario":
+    st.session_state.pagina = "formulario"
 
+# TRAVA DE ATUALIZAÇÃO ÚNICA: 
+# Se qualquer botão acima mudou o estado, ele recarrega a página uma única vez aqui.
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
-
-import streamlit as st
-import pandas as pd
-import os
-import json
-import sys
 
 # ============================================================
 # CONFIGURAÇÃO DE DIRETÓRIO E CARREGAMENTO
 # ============================================================
-
-import os
-import json
-import pandas as pd
-import streamlit as st
 
 # Define o diretório base e a pasta de dados
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -209,8 +231,14 @@ def carregar_todos_formularios():
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
 
-
-
+# --- BLOCO DE CSS PARA OCULTAÇÃO ---
+if st.query_params.get("page") == "formulario":
+    st.markdown("""
+    <style>
+        [data-testid="stSidebar"] {display: none !important;}
+        #MainMenu, footer, header {visibility: hidden !important;}
+    </style>
+    """, unsafe_allow_html=True)
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -227,16 +255,23 @@ perguntas_disc = [
     "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
     "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
     "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso"
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# --- FORMULÁRIO COMPLETO DO COLABORADOR ---
-# Primeiro, sincronize a página com a query param
-pagina = st.query_params.get("page", ["formulario"])[0]  # pega da URL, default "formulario"
 
-# Agora, use a variável `pagina`:
-if pagina != "visualizar":
+# --- FORMULÁRIO ---
+if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
+    
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
@@ -252,117 +287,160 @@ if pagina != "visualizar":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
-        # Listas para Selectbox
-        lista_frequencia = ["DVD","D","S","Q","M","T","A"]
-        lista_horas = [f"{i} h" for i in range(1,25)]
-        lista_minutos = [f"{i} min" for i in range(0,60,5)]
-
-        # --- ATIVIDADES ---
+        # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
+        
         st.info("""
         **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
         * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
+        
         st.subheader("🔹 Atividades Executadas")
         
         edit_ativ = st.data_editor(
             pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }),
-            num_rows="fixed",
-            use_container_width=True,
-            key="ativ_editor",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
-            }
+                "Atividade Descrita": [""]*20, 
+                "Frequência": [""]*20, 
+                "Tempo Gasto": [""]*20
+            }), 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="ativ_editor"
         )
 
-        # --- DIFICULDADES ---
+        # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        
         edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }),
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
-            }
+            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="dif_editor"
         )
 
-        # --- SUGESTÕES ---
+        # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
-        
         edit_sug = st.data_editor(
-            pd.DataFrame({
-                "Sugestão de Melhoria": [""] * 20,
-                "Impacto Esperado": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas de Ganho": [""] * 20,
-                "Minutos de Ganho": [""] * 20
-            }),
-            num_rows="fixed",
-            use_container_width=True,
-            key="sug_editor",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas de Ganho": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos de Ganho": st.column_config.SelectboxColumn("Minutos", options=lista_minutos)
-            }
+            pd.DataFrame({"Sugestão de Melhoria": [""]*20, "Impacto Esperado": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="sug_editor"
         )
 
-        # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
-        
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
-                label=f"{i}. {pergunta}",
-                options=["A", "B", "C", "D"],
-                key=f"disc_{i}",
-                horizontal=True
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None, 
+              
+
+
             )
 
-        # --- BOTÃO DE ENVIO ---
+        # --- BOTÃO E VALIDAÇÃO INTEGRADOS ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-# --- VISUALIZAÇÃO (FORA DO FORMULÁRIO) ---
+        if enviar:
+            # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
+            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
+                st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
+            
+            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Você não respondeu todas as perguntas do DISC!")
+            
+            else:
+                # 2. SÓ EXECUTA TUDO ISTO SE ESTIVER TUDO OK
+                st.success("✅ Tudo validado! Processando...")
+                
+                # 3. TRAVA DE SEGURANÇA E PREPARAÇÃO DE DIRETÓRIO
+                if "processando" not in st.session_state:
+                    st.session_state["processando"] = True
+                    
+                    import os
+                    import json
+                    import pandas as pd
+                    import time
+                    
+                    base_dir = os.path.dirname(os.path.abspath(__file__))
+                    dados_dir = os.path.join(base_dir, "dados")
+                    os.makedirs(dados_dir, exist_ok=True)
+                    
+                    # 4. MONTAGEM DO DICIONÁRIO DE DADOS
+                    dados = {
+                        "Nome": nome, 
+                        "Setor": setor, 
+                        "Cargo": cargo, 
+                        "Chefe": chefe,
+                        "Departamento": departamento, 
+                        "Empresa": empresa, 
+                        "Escolaridade": escolaridade,
+                        "Devolver": devolucao, 
+                        "Cursos": cursos, 
+                        "Objetivo": objetivo,
+                        "Atividades": edit_ativ.to_dict(orient="records"),
+                        "Dificuldades": edit_dif.to_dict(orient="records"),
+                        "Sugestoes": edit_sug.to_dict(orient="records"),
+                        "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
+                    }
+                    
+                    # Coleta as respostas do DISC
+                    for i in range(1, 25): 
+                        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
+                    
+                    # Nome do arquivo
+                    nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+                    caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
+                    
+                    # Escrita do arquivo JSON
+                    with open(caminho, "w", encoding="utf-8") as f: 
+                        json.dump(dados, f, ensure_ascii=False, indent=4)
+                    
+                    st.success("✅ Formulário enviado com sucesso!")
+                    
+                    # Atualiza o estado para que a Visualização pegue os novos dados
+                    if "carregar_todos_formularios" in globals():
+                        st.session_state["formularios"] = carregar_todos_formularios()
+                    
+                    time.sleep(2)
+                    # Remove a trava para permitir novo envio se necessário
+                    del st.session_state["processando"]
+                    st.rerun()
+            
+      
+
+
+# --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
+    # 1. Carrega os dados frescos do disco
     lista_de_arquivos = carregar_todos_formularios()
     
+    # 2. Se a sua função carregar_todos_formularios() já retorna a lista, 
+    # apenas certifique-se de que não estamos adicionando isso ao session_state de forma acumulativa.
     if not lista_de_arquivos:
         st.warning("⚠️ Nenhum formulário encontrado.")
     else:
+        # Mostra o total para conferência
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
         
+        # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
             nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
-            data_envio = form.get('DataEnvio', 'Sem Data')
             
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_envio})"):
-                st.subheader("📝 Informações de Identificação")
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
+                # [Aqui você mantém o seu código de exibição de dados]
                 
-                c1, c2 = st.columns(2)
-                c1.write(f"**Data de Envio:** {data_envio}")
-                c2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
+            
+            
+            
+                # 1. Cabeçalho Completo
+                st.subheader("📝 Informações de Identificação")
+                col1, col2 = st.columns(2)
+                col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
+                col2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
                 
                 col_a, col_b = st.columns(2)
                 col_a.write(f"**Setor:** {form.get('Setor', 'N/A')}")
@@ -375,7 +453,7 @@ if st.session_state.get("pagina") == "visualizar":
                 st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
                 st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
                 
-                # TABELAS DINÂMICAS NA VISUALIZAÇÃO
+                # 2. Tabelas Dinâmicas
                 secoes = {
                     "Atividades": "📋 Atividades Executadas",
                     "Dificuldades": "⚠️ Dificuldades e Bloqueios",
@@ -386,25 +464,25 @@ if st.session_state.get("pagina") == "visualizar":
                     st.markdown("---")
                     st.subheader(titulo)
                     if chave in form and form[chave]:
-                        df_view = pd.DataFrame(form[chave])
-                        # Limpa linhas totalmente vazias que o data_editor gera
-                        df_view = df_view.replace("", None).dropna(how='all')
-                        if not df_view.empty:
-                            st.table(df_view)
+                        df = pd.DataFrame(form[chave])
+                        df = df.replace("", None).dropna(how='all')
+                        if not df.empty:
+                            st.table(df)
                         else:
                             st.write("Nenhum dado preenchido nesta seção.")
                     else:
-                        st.write("Seção vazia.")
+                        st.write("Seção não encontrada ou vazia.")
                 
-                # QUESTIONÁRIO DISC NA VISUALIZAÇÃO
+                # 3. Questionário DISC (Exibição Completa e Legível)
                 st.markdown("---")
-                st.subheader("📊 Avaliação DISC")
+                st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    resp = form.get(f"Q{i}", "Não respondido")
+                    valor_resposta = form.get(f"Q{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
-                    st.caption(f"Resposta: {resp}")
-        
+                    st.info(f"Resposta selecionada: **{valor_resposta}**")
+                    st.markdown("---")
+
         # Botão de Limpeza
         st.markdown("---")
         if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
@@ -412,8 +490,7 @@ if st.session_state.get("pagina") == "visualizar":
                 if arquivo.endswith(".json"): 
                     os.remove(os.path.join(dados_dir, arquivo))
             st.session_state["formularios"] = []
-            st.success("✅ Banco de dados limpo!")
-            st.rerun()
+            st.success("✅ Banco de dados limpo!"); st.rerun()
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
