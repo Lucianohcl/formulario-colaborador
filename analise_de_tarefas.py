@@ -255,6 +255,13 @@ perguntas_disc = [
 ]
 
 # --- SEÇÃO DE ATIVIDADES COM CONTAINER ---
+
+
+# --- DEFINIÇÃO DAS LISTAS (COLOQUE ISSO NO TOPO DO ARQUIVO) ---
+lista_frequencia = ["-", "DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [str(i) for i in range(25)]  # Gera de 0 a 24
+lista_minutos = ["00", "15", "30", "45"]
+
 with st.container():
     st.info("""
     **📋 LEGENDA DE FREQUÊNCIA:**
