@@ -209,14 +209,7 @@ def carregar_todos_formularios():
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
 
-# --- BLOCO DE CSS PARA OCULTAÇÃO ---
-if st.query_params.get("page") == "formulario":
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        #MainMenu, footer, header {visibility: hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
+
 
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
