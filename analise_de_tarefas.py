@@ -726,14 +726,17 @@ if st.session_state.get("pagina") == "visualizar":
                     nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
                     
+                    
+
                     from datetime import datetime
 
                     # Pega nome do colaborador
                     nome_colaborador = form.get("Nome", "colaborador")
 
-                    # Pega data de envio (ou cria se não existir)
-                        data_envio = form.get("data_envio")
+                    # Pega data de envio
+                    data_envio = form.get("DataEnvio")
 
+                    # Se não existir data
                     if not data_envio:
                         data_envio = datetime.now().strftime("%d-%m-%Y_%H-%M")
 
