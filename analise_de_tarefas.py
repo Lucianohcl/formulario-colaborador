@@ -1119,7 +1119,7 @@ def salvar_formulario_json(formulario):
     with open(json_master, "w", encoding="utf-8") as f:
         json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
 
-    st.session_state["formularios"] = dados_existentes-
+    st.session_state["formularios"] = dados_existentes
 
 
 
