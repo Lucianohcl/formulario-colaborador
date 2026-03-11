@@ -291,34 +291,79 @@ if st.query_params.get("page") == "formulario":
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
         
+        # --- Atividades Executadas ---
         st.subheader("🔹 Atividades Executadas")
+
+        # Frequência padronizada e legenda
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+        # Horas e minutos
+        lista_horas = [f"{h} h" for h in range(25)]
+        lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
+
+        # Loop de 20 atividades
+        for i in range(20):
+            st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+    
+            col1, col2, col3 = st.columns(3)
+    
+            with col1:
+                st.selectbox(f"Frequência {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            with col2:
+                st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
+            with col3:
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
         
-        edit_ativ = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""]*20, 
-                "Frequência": [""]*20, 
-                "Tempo Gasto": [""]*20
-            }), 
-            num_rows="fixed", 
-            use_container_width=True, 
-            key="ativ_editor"
-        )
+        
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        edit_dif = st.data_editor(
-            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="dif_editor"
-        )
+
+        # Frequência padronizada
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+        # Horas e minutos
+        lista_horas = [f"{h} h" for h in range(25)]
+        lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
+
+        # Loop de 20 dificuldades
+        for i in range(20):
+            st.text_input(f"Dificuldade {i+1}", key=f"dif_desc_{i}")
+            st.text_input(f"Setor/Parceiro Envolvido {i+1}", key=f"dif_setor_{i}")
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                st.selectbox(f"Frequência {i+1}", lista_frequencia, key=f"dif_freq_{i}")
+            with col2:
+                st.selectbox(f"Horas {i+1}", lista_horas, key=f"dif_hora_{i}", index=0)
+            with col3:
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"dif_minuto_{i}", index=0)
 
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
-        edit_sug = st.data_editor(
-            pd.DataFrame({"Sugestão de Melhoria": [""]*20, "Impacto Esperado": [""]*20}), 
-            num_rows="fixed", use_container_width=True, key="sug_editor"
-        )
+
+        # Frequência padronizada
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+        # Horas e minutos
+        lista_horas = [f"{h} h" for h in range(25)]
+        lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
+
+        # Loop de 20 sugestões
+        for i in range(20):
+            st.text_input(f"Sugestão {i+1}", key=f"sug_desc_{i}")
+    
+            col1, col2, col3 = st.columns(3)
+    
+            with col1:
+                st.selectbox(f"Frequência {i+1}", lista_frequencia, key=f"sug_freq_{i}")
+            with col2:
+                st.selectbox(f"Horas {i+1}", lista_horas, key=f"sug_hora_{i}", index=0)
+            with col3:
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"sug_minuto_{i}", index=0)
 
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
