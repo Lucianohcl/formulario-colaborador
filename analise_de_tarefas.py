@@ -446,22 +446,19 @@ if st.query_params.get("page") == "formulario":
             st.session_state[f"{prefixo}_df_atividades"],
             column_config={
                 "Atividade Descrita": st.column_config.TextColumn(
-                    "Atividade Descrita", key=f"{prefixo}_ativ_desc"
+                    "Atividade Descrita"
                 ),
                 "Frequência": st.column_config.SelectboxColumn(
                     "Frequência",
-                    options=lista_frequencia,
-                    key=f"{prefixo}_ativ_frequencia"
+                    options=lista_frequencia
                 ),
                 "Horas": st.column_config.SelectboxColumn(
                     "Horas",
-                    options=lista_horas,
-                    key=f"{prefixo}_ativ_horas"
+                    options=lista_horas
                 ),
                 "Minutos": st.column_config.SelectboxColumn(
                     "Minutos",
-                    options=lista_minutos,
-                    key=f"{prefixo}_ativ_minutos"
+                    options=lista_minutos
                 )
             },
             hide_index=True,
@@ -471,7 +468,6 @@ if st.query_params.get("page") == "formulario":
         )
 
         st.session_state[f"{prefixo}_df_atividades"] = edit_ativ
-
         # ----------------------------
         # Dificuldades
         # ----------------------------
@@ -487,12 +483,11 @@ if st.query_params.get("page") == "formulario":
             st.session_state[f"{prefixo}_df_dificuldades"],
             column_config={
                 "Dificuldade Descrita": st.column_config.TextColumn(
-                    "Dificuldade Descrita", key=f"{prefixo}_dif_desc"
+                    "Dificuldade Descrita"
                 ),
                 "Impacto": st.column_config.SelectboxColumn(
                     "Impacto",
-                    options=["Baixo", "Médio", "Alto"],
-                    key=f"{prefixo}_dif_impacto"
+                    options=["Baixo", "Médio", "Alto"]
                 )
             },
             hide_index=True,
@@ -631,7 +626,7 @@ if st.query_params.get("page") == "formulario":
             
             campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
+        # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
             tabelas_incompletas = False
             
             for df in [edit_ativ, edit_dif, edit_sug]:
@@ -651,76 +646,76 @@ if st.query_params.get("page") == "formulario":
                     st.error("⚠️ A tabela de 'Atividades Principais' não pode estar vazia.")
                     break
 
-           # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
-            if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-                st.session_state["confirmado"] = False
-                st.stop()  # Trava aqui e mantém os dados para correção
+                # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
+                if any(not str(campo).strip() for campo in campos_obrigatorios):
+                    st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # 2. VALIDAÇÃO DAS TABELAS
-            if tabelas_incompletas:
-                st.error("⚠️ Erro: Verifique as tabelas! A tabela de atividades não pode estar vazia.")
-                st.session_state["confirmado"] = False
-                st.stop()
+                # 2. VALIDAÇÃO DAS TABELAS
+                if tabelas_incompletas:
+                    st.error("⚠️ Erro: Verifique as tabelas! A tabela de atividades não pode estar vazia.")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # 3. VALIDAÇÃO DO DISC
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-                st.session_state["confirmado"] = False
-                st.stop()
+                # 3. VALIDAÇÃO DO DISC
+                if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                    st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # -------------------------------------------------
-            # SE CHEGOU AQUI, PASSOU NAS VALIDAÇÕES
-            # -------------------------------------------------
-            import os
-            import json
+                # -------------------------------------------------
+                # SE CHEGOU AQUI, PASSOU NAS VALIDAÇÕES
+                # -------------------------------------------------
+                import os
+                import json
 
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            dados_dir = os.path.join(base_dir, "dados")
-            os.makedirs(dados_dir, exist_ok=True)
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
 
-            # 3. EVITAR DUPLICIDADE
-            nome_limpo = nome.strip().replace(" ", "_")
-            arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+                # 3. EVITAR DUPLICIDADE
+                nome_limpo = nome.strip().replace(" ", "_")
+                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
 
-            if arquivos_existentes and not st.session_state.get("confirmado", False):
-                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-                st.stop() # Para e obriga a confirmação se quiser sobrescrever
+                if arquivos_existentes and not st.session_state.get("confirmado", False):
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                    st.stop() # Para e obriga a confirmação se quiser sobrescrever
             
-            # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
-            if not st.session_state.get("confirmado", False):
-                st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
-                st.session_state["confirmado"] = True
-                st.stop() # Para aqui e espera o segundo clique
+                # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
+                if not st.session_state.get("confirmado", False):
+                    st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
+                    st.session_state["confirmado"] = True
+                    st.stop() # Para aqui e espera o segundo clique
             
-            # PROCESSO DE SALVAMENTO (Só acontece após o segundo clique)
-            dados = {
-                "nome": nome,
-                "data_envio": data_hoje,
-                "setor": setor,
-                "cargo": cargo,
-                "chefe": chefe,
-                "departamento": departamento,
-                "empresa": empresa,
-                "escolaridade": escolaridade,
-                "devolucao": devolucao,
-                "cursos_obrigatorios_ou_diferenciais": cursos,
-                "trabalho_e_principal_objetivo": objetivo,
-                "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
-                "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
-                "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
-                "disc": {
-                    f"disc_{i}": st.session_state.get(f"disc_{i}")
-                    for i in range(1, 25)
+                # PROCESSO DE SALVAMENTO (Só acontece após o segundo clique)
+                dados = {
+                    "nome": nome,
+                    "data_envio": data_hoje,
+                    "setor": setor,
+                    "cargo": cargo,
+                    "chefe": chefe,
+                    "departamento": departamento,
+                    "empresa": empresa,
+                    "escolaridade": escolaridade,
+                    "devolucao": devolucao,
+                    "cursos_obrigatorios_ou_diferenciais": cursos,
+                    "trabalho_e_principal_objetivo": objetivo,
+                    "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
+                    "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
+                    "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
+                    "disc": {
+                        f"disc_{i}": st.session_state.get(f"disc_{i}")
+                        for i in range(1, 25)
+                    }
                 }
-            }
             
-            caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-            with open(caminho, "w", encoding="utf-8") as f:
-                json.dump(dados, f, ensure_ascii=False, indent=4)
+                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                with open(caminho, "w", encoding="utf-8") as f:
+                    json.dump(dados, f, ensure_ascii=False, indent=4)
             
-            st.success("✅ Formulário enviado com sucesso!")
-            st.session_state["confirmado"] = False # Reseta para o próximo
+                st.success("✅ Formulário enviado com sucesso!")
+                st.session_state["confirmado"] = False # Reseta para o próximo
                         
 
 
