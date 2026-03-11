@@ -391,6 +391,7 @@ perguntas_disc = [
     "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+
 # --- FORMULÁRIO COMPLETO ---
 if st.query_params.get("page") == "formulario":
     import os, json, pytz
@@ -569,7 +570,7 @@ if st.query_params.get("page") == "formulario":
             with open(caminho, "w", encoding="utf-8") as f:
                 json.dump(dados, f, ensure_ascii=False, indent=4)
 
-            st.success("✅ Formulário enviado com sucesso!")]
+            st.success("✅ Formulário enviado com sucesso!")
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
