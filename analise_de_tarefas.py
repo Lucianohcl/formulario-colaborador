@@ -266,45 +266,24 @@ perguntas_disc = [
 
         # 2. EXPANDER:
         with st.expander("🔹 Atividades Executadas", expanded=True):
-            # Tudo aqui dentro precisa de +4 espaços de indentação
+            # Tudo aqui dentro tem +4 espaços de indentação em relação ao expander
             for i in range(20):
                 col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-            
+                
                 with col_desc:
                     st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-            
+                
                 with col_freq:
                     st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-            
+                
                 with col_h:
                     st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-            
+                
                 with col_m:
                     st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
 
-    
-    # --- LEGENDAS DE ATIVIDADES ---
-    st.info("""
-    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-    DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
-    """)
-
-    # --- SEÇÃO DE ATIVIDADES COM EXPANDER ---
-    with st.expander("🔹 Atividades Executadas", expanded=False):
-        for i in range(20):
-            col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-        
-            with col_desc:
-                st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-        
-            with col_freq:
-                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-        
-            with col_h:
-                st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-        
-            with col_m:
-                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)    
+        # 3. BOTÃO DE ENVIO (Obrigatório dentro de st.form)
+        st.form_submit_button("Enviar Relatório")    
 
     
 
