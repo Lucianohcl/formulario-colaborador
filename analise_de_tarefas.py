@@ -144,11 +144,13 @@ menu = [
 
 # 1️⃣ Pega página da URL
 
-pagina_inicial = "🏠 Home"
-if "page" in params:
-    if params["page"][0] == "formulario":
-        pagina_inicial = "📋 Formulário"
+# 1️⃣ Pega página da URL (usando a versão compatível)
+query_params = st.query_params
 
+pagina_inicial = "🏠 Home"
+if "page" in query_params:
+    if query_params["page"][0] == "formulario":
+        pagina_inicial = "📋 Formulário"
 # 2️⃣ Selectbox do menu
 pagina = st.sidebar.selectbox("📌 Menu de Navegação", menu, index=menu.index(pagina_inicial))
 
