@@ -556,38 +556,57 @@ if st.query_params.get("page") == "formulario":
                 horizontal=True, 
                 index=None
             )
-        # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-          
-        # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO
-        # -------------------------------------------------
 
-        if enviar:
-            # 1. Validações de Preenchimento
-            campos_identificacao = [nome, setor, cargo, chefe, departamento, empresa, escolaridade, devolucao, cursos, objetivo]
-            campos_identificacao_invalidos = any(not c.strip() for c in campos_identificacao)
-            atividades_invalidas = any(not linha["Atividade Descrita"].strip() or not linha["Frequência"].strip() or not linha["Horas"].strip() for linha in edit_ativ.to_dict(orient="records"))
-            dificuldades_invalidas = any(not linha["Dificuldade"].strip() or not linha["Horas Perdidas"].strip() for linha in edit_dif.to_dict(orient="records"))
-            sugestoes_invalidas = any(not linha["Sugestão de Melhoria"].strip() or not linha["Redução Horas"].strip() for linha in edit_sug.to_dict(orient="records"))
-            disc_invalidas = any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25))
+import streamlit as st
+import pandas as pd
 
-            # 2. Bloqueio por Erro
-            if (campos_identificacao_invalidos or atividades_invalidas or dificuldades_invalidas or sugestoes_invalidas or disc_invalidas):
-                st.error("⚠️ Todos os campos obrigatórios devem ser preenchidos antes de enviar!")
-                st.session_state["confirmado"] = False
-                st.stop()
+# 1. REMOVA O st.form E USE st.container
+with st.container():
+    # TODOS os campos precisam de uma 'key' para não sumirem ao clicar
+    nome = st.text_input("Nome", key="input_nome")
+    setor = st.text_input("Setor", key="input_setor")
+    cargo = st.text_input("Cargo", key="input_cargo")
+    chefe = st.text_input("Chefe", key="input_chefe")
+    departamento = st.text_input("Departamento", key="input_depto")
+    empresa = st.text_input("Empresa", key="input_empresa")
+    
+    # Exemplo de edição (as tabelas precisam de key também)
+    # edit_ativ = st.data_editor(df_atividades, key="tabela_ativ", num_rows="dynamic")
 
-            # 3. Lógica de Confirmação e Envio
-            else:
-                if not st.session_state.get("confirmado", False):
-                    st.warning("⚠️ Revise o formulário. Clique no botão de enviar novamente para confirmar.")
-                    st.session_state["confirmado"] = True
-                    st.stop()
-                else:
-                    # 4. ENVIO FINAL
-                    st.success("✅ Formulário enviado com sucesso!")
-                    st.session_state["confirmado"] = False
+    # Botão fora do form
+    enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+# 2. VALIDAÇÕES E PROCESSAMENTO
+if enviar:
+    # Validação de campos vazios
+    campos_lista = [nome, setor, cargo, chefe, departamento, empresa]
+    campos_invalidos = any(not str(c).strip() for c in campos_lista)
+    
+    # Validação do DISC
+    disc_invalidas = any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25))
+
+    # 3. BLOQUEIO (o st.stop trava aqui se algo estiver errado)
+    if campos_invalidos or disc_invalidas:
+        st.error("⚠️ Preencha todos os campos e o DISC!")
+        st.session_state["confirmado"] = False
+        st.stop() 
+
+    # 4. LÓGICA DE CONFIRMAÇÃO (Pedágio)
+    else:
+        if not st.session_state.get("confirmado", False):
+            st.warning("⚠️ Revise os dados. Clique em Enviar novamente para confirmar.")
+            st.session_state["confirmado"] = True
+            st.stop() # Para aqui, mantém os dados na tela
+        
+        else:
+            # 5. ENVIO FINAL
+            st.success("✅ Formulário enviado com sucesso!")
+            
+            # Aqui vai o código que gera o seu PDF ou envia os dados
+            # ...
+            
+            st.session_state["confirmado"] = False
+        
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
