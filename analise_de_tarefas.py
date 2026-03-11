@@ -404,85 +404,185 @@ perguntas_disc = [
     "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
-]
-
-# --- FORMULÁRIO ---
+# --- FORMULÁRIO COMPLETO ---
 if st.query_params.get("page") == "formulario":
+    import os, json, pytz
+    import pandas as pd
+    from datetime import datetime
+
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
+    # Prefixo único do formulário
+    prefixo = "form"
+
     with st.form("form_colaborador_principal", clear_on_submit=False):
         st.title("📋 Formulário Completo do Colaborador")
-        
-        # Dados de Identificação com KEYS para persistência
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador", key="f_nome")
-        setor = col2.text_input("Setor", key="f_setor")
-        cargo = col1.text_input("Cargo", key="f_cargo")
-        chefe = col2.text_input("Chefe imediato", key="f_chefe")
-        departamento = col1.text_input("Departamento", key="f_dep")
-        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
-        escolaridade = col1.text_input("Escolaridade", key="f_esc")
-        devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
-        objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
 
+        # ----------------------------
+        # Dados de Identificação
+        # ----------------------------
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador", key=f"{prefixo}_nome")
+        setor = col2.text_input("Setor", key=f"{prefixo}_setor")
+        cargo = col1.text_input("Cargo", key=f"{prefixo}_cargo")
+        chefe = col2.text_input("Chefe imediato", key=f"{prefixo}_chefe")
+        departamento = col1.text_input("Departamento", key=f"{prefixo}_departamento")
+        empresa = col2.text_input("Empresa / Unidade", key=f"{prefixo}_empresa")
+        escolaridade = col1.text_input("Escolaridade", key=f"{prefixo}_escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em", key=f"{prefixo}_devolucao")
+
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key=f"{prefixo}_cursos")
+        objetivo = st.text_area("Trabalho e principal objetivo", key=f"{prefixo}_objetivo")
+
+        # ----------------------------
+        # Atividades Executadas
+        # ----------------------------
         st.subheader("🔹 Atividades Executadas")
-        if 'df_atividades' not in st.session_state:
-            st.session_state.df_atividades = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+        if f"{prefixo}_df_atividades" not in st.session_state:
+            st.session_state[f"{prefixo}_df_atividades"] = pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
             })
 
         edit_ativ = st.data_editor(
-            st.session_state.df_atividades, 
+            st.session_state[f"{prefixo}_df_atividades"],
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Atividade Descrita": st.column_config.TextColumn(
+                    "Atividade Descrita", key=f"{prefixo}_ativ_desc"
+                ),
+                "Frequência": st.column_config.SelectboxColumn(
+                    "Frequência", options=lista_frequencia, key=f"{prefixo}_ativ_frequencia"
+                ),
+                "Horas": st.column_config.SelectboxColumn(
+                    "Horas", options=lista_horas, key=f"{prefixo}_ativ_horas"
+                ),
+                "Minutos": st.column_config.SelectboxColumn(
+                    "Minutos", options=lista_minutos, key=f"{prefixo}_ativ_minutos"
+                )
             },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_ativ_editor"
         )
-        st.session_state.df_atividades = edit_ativ   
+        st.session_state[f"{prefixo}_df_atividades"] = edit_ativ
 
-        # (Repetir lógica similar para Dificuldades e Sugestões se necessário...)
+        # ----------------------------
+        # Dificuldades
+        # ----------------------------
+        st.subheader("⚠️ Dificuldades / Bloqueios")
+        if f"{prefixo}_df_dificuldades" not in st.session_state:
+            st.session_state[f"{prefixo}_df_dificuldades"] = pd.DataFrame({
+                "Dificuldade Descrita": [""] * 10,
+                "Impacto": [""] * 10
+            })
 
+        edit_dif = st.data_editor(
+            st.session_state[f"{prefixo}_df_dificuldades"],
+            column_config={
+                "Dificuldade Descrita": st.column_config.TextColumn(
+                    "Dificuldade Descrita", key=f"{prefixo}_dif_desc"
+                ),
+                "Impacto": st.column_config.SelectboxColumn(
+                    "Impacto", options=["Baixo", "Médio", "Alto"], key=f"{prefixo}_dif_impacto"
+                )
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_dif_editor"
+        )
+        st.session_state[f"{prefixo}_df_dificuldades"] = edit_dif
+
+        # ----------------------------
+        # Sugestões
+        # ----------------------------
+        st.subheader("💡 Sugestões de Melhoria")
+        if f"{prefixo}_df_sugestoes" not in st.session_state:
+            st.session_state[f"{prefixo}_df_sugestoes"] = pd.DataFrame({
+                "Sugestão": [""] * 10,
+                "Prioridade": [""] * 10
+            })
+
+        edit_sug = st.data_editor(
+            st.session_state[f"{prefixo}_df_sugestoes"],
+            column_config={
+                "Sugestão": st.column_config.TextColumn(
+                    "Sugestão", key=f"{prefixo}_sug_text"
+                ),
+                "Prioridade": st.column_config.SelectboxColumn(
+                    "Prioridade", options=["Baixa", "Média", "Alta"], key=f"{prefixo}_sug_prioridade"
+                )
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key=f"{prefixo}_sug_editor"
+        )
+        st.session_state[f"{prefixo}_df_sugestoes"] = edit_sug
+
+        # ----------------------------
+        # Questionário DISC
+        # ----------------------------
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True, index=None)
+            st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                key=f"{prefixo}_disc_{i}",
+                horizontal=True
+            )
 
+        # ----------------------------
+        # Botão Enviar
+        # ----------------------------
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-            import os, json, pytz
-            from datetime import datetime
-            
             fuso_brasilia = pytz.timezone('America/Sao_Paulo')
             data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
             campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-            # 1. VALIDAÇÃO DE CAMPOS
             if any(not str(campo).strip() for campo in campos_obrigatorios):
                 st.error("⚠️ Preencha todos os campos obrigatórios!")
-                st.stop() # PARA TUDO E MANTÉM A TELA PARA EDIÇÃO
+                st.stop()
 
-            # 2. VALIDAÇÃO DO DISC
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+            if any(st.session_state.get(f"{prefixo}_disc_{i}") is None for i in range(1, 25)):
                 st.error("⚠️ Responda todas as perguntas do DISC!")
                 st.stop()
 
-            # 3. SALVAMENTO (Sem 'else', fluxo direto)
+            # Salvamento JSON
+            dados_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dados")
+            os.makedirs(dados_dir, exist_ok=True)
             nome_limpo = nome.strip().replace(" ", "_")
-            dados = {
-                "nome": nome, "data_envio": data_hoje, "setor": setor,
-                "atividades": edit_ativ.to_dict('records'),
-                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-            }
-            
-            # (Aqui você insere o código de salvar o arquivo JSON que já temos)
-            st.success("✅ Enviado com sucesso!")
+            caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
 
+            dados = {
+                "nome": nome,
+                "data_envio": data_hoje,
+                "setor": setor,
+                "cargo": cargo,
+                "chefe": chefe,
+                "departamento": departamento,
+                "empresa": empresa,
+                "escolaridade": escolaridade,
+                "devolucao": devolucao,
+                "cursos_obrigatorios_ou_diferenciais": cursos,
+                "trabalho_e_principal_objetivo": objetivo,
+                "atividades": edit_ativ.to_dict('records'),
+                "dificuldades": edit_dif.to_dict('records'),
+                "sugestoes": edit_sug.to_dict('records'),
+                "disc": {f"disc_{i}": st.session_state.get(f"{prefixo}_disc_{i}") for i in range(1, 25)}
+            }
+
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(dados, f, ensure_ascii=False, indent=4)
+
+            st.success("✅ Formulário enviado com sucesso!")]
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
