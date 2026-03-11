@@ -825,7 +825,42 @@ def salvar_formulario_json(formulario):
     with open(json_master, "w", encoding="utf-8") as f:
         json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
 
-    # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
+    # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança
     st.session_state["formularios"] = dados_existentes
 
 
+# --- ESTA PARTE FICA FORA DA FUNÇÃO (SEM ESPAÇOS NA ESQUERDA) ---
+
+enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+if enviar:
+    # Coleta os dados dos inputs (usando os keys que definimos antes)
+    novo_formulario = {
+        "colaborador": st.session_state.get("nome_colaborador", "N/A"),
+        "data": "2024-05-20", 
+        "atividades": []
+    }
+    
+    # Loop para pegar as 20 atividades dos inputs
+    for i in range(20):
+        desc = st.session_state.get(f"ativ_desc_{i}", "")
+        if desc:  # Só adiciona se a descrição não estiver vazia
+            novo_formulario["atividades"].append({
+                "descricao": desc,
+                "frequencia": st.session_state.get(f"ativ_freq_{i}", "-"),
+                "horas": st.session_state.get(f"ativ_hora_{i}", "0"),
+                "minutos": st.session_state.get(f"ativ_minuto_{i}", "00")
+            })
+    
+    # CHAMA A FUNÇÃO QUE VOCÊ ESCREVEU ACIMA
+    salvar_formulario_json(novo_formulario)
+    
+    st.success("✅ Formulário enviado com sucesso!")
+    
+    
+    # Aguarda 2 segundos para o usuário ver o sucesso e recarrega
+    import time
+    time.sleep(2)
+    st.rerun()
+
+    
