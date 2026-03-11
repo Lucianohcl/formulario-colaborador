@@ -564,52 +564,30 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
 
         if enviar:
-            # Verifica campos de identificação
-            campos_identificacao = [
-                nome, setor, cargo, chefe, departamento, empresa,
-                escolaridade, devolucao, cursos, objetivo
-            ]
-    
+            # 1. Validações de Preenchimento
+            campos_identificacao = [nome, setor, cargo, chefe, departamento, empresa, escolaridade, devolucao, cursos, objetivo]
             campos_identificacao_invalidos = any(not c.strip() for c in campos_identificacao)
-    
-            # Verifica linhas obrigatórias das tabelas
-            atividades_invalidas = any(
-                not linha["Atividade Descrita"].strip() or 
-                not linha["Frequência"].strip() or 
-                not linha["Horas"].strip()
-                for linha in edit_ativ.to_dict(orient="records")
-            )
-    
-            dificuldades_invalidas = any(
-                not linha["Dificuldade"].strip() or 
-                not linha["Horas Perdidas"].strip()
-                for linha in edit_dif.to_dict(orient="records")
-            )
-    
-            sugestoes_invalidas = any(
-                not linha["Sugestão de Melhoria"].strip() or 
-                not linha["Redução Horas"].strip()
-                for linha in edit_sug.to_dict(orient="records")
-            )
-    
-            # Verifica respostas DISC
-            disc_invalidas = any(
-                st.session_state.get(f"disc_{i}") is None for i in range(1, 25)
-            )
-    
-            # Bloqueia envio se qualquer checagem falhar
-            if (campos_identificacao_invalidos or 
-                atividades_invalidas or 
-                dificuldades_invalidas or 
-                sugestoes_invalidas or 
-                disc_invalidas):
-        
-                st.error("⚠️ Todos os campos obrigatórios devem ser preenchidos antes de enviar!")
-        
-            else:
-                # Aqui entra o seu código de evitar duplicidade, confirmação e envio final
-                st.success("✅ Formulário enviado com sucesso!")
+            atividades_invalidas = any(not linha["Atividade Descrita"].strip() or not linha["Frequência"].strip() or not linha["Horas"].strip() for linha in edit_ativ.to_dict(orient="records"))
+            dificuldades_invalidas = any(not linha["Dificuldade"].strip() or not linha["Horas Perdidas"].strip() for linha in edit_dif.to_dict(orient="records"))
+            sugestoes_invalidas = any(not linha["Sugestão de Melhoria"].strip() or not linha["Redução Horas"].strip() for linha in edit_sug.to_dict(orient="records"))
+            disc_invalidas = any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25))
 
+            # 2. Bloqueio por Erro
+            if (campos_identificacao_invalidos or atividades_invalidas or dificuldades_invalidas or sugestoes_invalidas or disc_invalidas):
+                st.error("⚠️ Todos os campos obrigatórios devem ser preenchidos antes de enviar!")
+                st.session_state["confirmado"] = False
+                st.stop()
+
+            # 3. Lógica de Confirmação e Envio
+            else:
+                if not st.session_state.get("confirmado", False):
+                    st.warning("⚠️ Revise o formulário. Clique no botão de enviar novamente para confirmar.")
+                    st.session_state["confirmado"] = True
+                    st.stop()
+                else:
+                    # 4. ENVIO FINAL
+                    st.success("✅ Formulário enviado com sucesso!")
+                    st.session_state["confirmado"] = False
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
