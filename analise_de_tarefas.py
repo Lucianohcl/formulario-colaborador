@@ -392,10 +392,12 @@ perguntas_disc = [
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
-
 # --- FORMULÁRIO COMPLETO ---
 if st.query_params.get("page") == "formulario":
-    import os, json, pytz
+
+    import os
+    import json
+    import pytz
     import pandas as pd
     from datetime import datetime
 
@@ -407,6 +409,7 @@ if st.query_params.get("page") == "formulario":
     prefixo = "form"
 
     with st.form("form_colaborador_principal", clear_on_submit=False):
+
         st.title("📋 Formulário Completo do Colaborador")
 
         # ----------------------------
@@ -426,8 +429,15 @@ if st.query_params.get("page") == "formulario":
         escolaridade = col1.text_input("Escolaridade", key=f"{prefixo}_escolaridade")
         devolucao = col2.text_input("Devolver preenchido em", key=f"{prefixo}_devolucao")
 
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key=f"{prefixo}_cursos")
-        objetivo = st.text_area("Trabalho e principal objetivo", key=f"{prefixo}_objetivo")
+        cursos = st.text_area(
+            "Cursos obrigatórios ou diferenciais",
+            key=f"{prefixo}_cursos"
+        )
+
+        objetivo = st.text_area(
+            "Trabalho e principal objetivo",
+            key=f"{prefixo}_objetivo"
+        )
 
         # ----------------------------
         # Atividades Executadas
@@ -468,6 +478,7 @@ if st.query_params.get("page") == "formulario":
         )
 
         st.session_state[f"{prefixo}_df_atividades"] = edit_ativ
+
         # ----------------------------
         # Dificuldades
         # ----------------------------
@@ -512,14 +523,10 @@ if st.query_params.get("page") == "formulario":
         edit_sug = st.data_editor(
             st.session_state[f"{prefixo}_df_sugestoes"],
             column_config={
-                "Sugestão": st.column_config.TextColumn(
-                    "Sugestão",
-                    key=f"{prefixo}_sug_text"
-                ),
+                "Sugestão": st.column_config.TextColumn("Sugestão"),
                 "Prioridade": st.column_config.SelectboxColumn(
                     "Prioridade",
-                    options=["Baixa", "Média", "Alta"],
-                    key=f"{prefixo}_sug_prioridade"
+                    options=["Baixa", "Média", "Alta"]
                 )
             },
             hide_index=True,
@@ -536,6 +543,7 @@ if st.query_params.get("page") == "formulario":
         st.subheader("📊 Questionário DISC")
 
         for i, pergunta in enumerate(perguntas_disc, 1):
+
             st.radio(
                 f"{i}. {pergunta}",
                 ["A", "B", "C", "D"],
@@ -554,9 +562,14 @@ if st.query_params.get("page") == "formulario":
             data_hoje = datetime.now(fuso_brasilia).strftime("%d/%m/%Y %H:%M:%S")
 
             campos_obrigatorios = [
-                nome, setor, cargo, chefe,
-                departamento, empresa,
-                cursos, objetivo
+                nome,
+                setor,
+                cargo,
+                chefe,
+                departamento,
+                empresa,
+                cursos,
+                objetivo
             ]
 
             if any(not str(campo).strip() for campo in campos_obrigatorios):
@@ -570,7 +583,6 @@ if st.query_params.get("page") == "formulario":
                 st.error("⚠️ Responda todas as perguntas do DISC!")
                 st.stop()
 
-            # Salvamento JSON
             dados_dir = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)),
                 "dados"
@@ -615,6 +627,7 @@ if st.query_params.get("page") == "formulario":
                 )
 
             st.success("✅ Formulário enviado com sucesso!")
+
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
