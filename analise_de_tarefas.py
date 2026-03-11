@@ -295,40 +295,29 @@ lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{h} h" for h in range(25)]
 lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
 
-# --- SEÇÃO DE ATIVIDADES COM FORM E EXPANDER ---
+
+# --- LEGENDAS DE ATIVIDADES ---
+st.info("""
+**📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
+""")
+
+# --- SEÇÃO DE ATIVIDADES COM FORMULARIO E EXPANDER ---
 with st.form("form_atividades"):
     with st.expander("🔹 Atividades Executadas", expanded=True):
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
-        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-        """)
-        # Lista de inputs
-        atividades = []
         for i in range(20):
-            col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-            with col_desc:
-                desc = st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-            with col_freq:
-                freq = st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-            with col_h:
-                h = st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-            with col_m:
-                m = st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
-            
-            atividades.append({
-                "Descricao": desc,
-                "Frequencia": freq,
-                "Horas": h,
-                "Minutos": m
-            })
+            col_desc, col_freq, col_h, col_m = st.columns([3,1,1,1])
+            col_desc.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+            col_freq.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            col_h.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
+            col_m.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
 
-    # --- BOTÃO DE ENVIO ---
-    enviar_ativ = st.form_submit_button("🚀 Salvar Atividades")
+    # Botão de envio do formulário
+    enviar_ativ = st.form_submit_button("🚀 Enviar Atividades")
 
-    if enviar_ativ:
-        st.success("✅ Atividades salvas com sucesso!")
-        st.session_state["atividades"] = atividades  # salva em session_state
+if enviar_ativ:
+    st.success("✅ Atividades enviadas com sucesso!")
+
 
 # --- SEÇÃO DE DIFICULDADES ---
 with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
