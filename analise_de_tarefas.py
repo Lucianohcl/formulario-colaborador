@@ -226,14 +226,6 @@ def carregar_todos_formularios():
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
 
-# --- BLOCO DE CSS PARA OCULTAÇÃO ---
-if st.query_params.get("page") == "formulario":
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        #MainMenu, footer, header {visibility: hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -279,72 +271,33 @@ perguntas_disc = [
                 col_m.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
 
     
-    # ----------------------------
-    # Atividades Executadas
-    # ----------------------------
-
-    # 1. A legenda que você queria que viesse ANTES
+    # --- LEGENDAS DE ATIVIDADES ---
     st.info("""
-    **📋 LEGENDA DE FREQUÊNCIA:**
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
     DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
     """)
 
-    # 2. O expander IGUAL ao de dificuldades
+    # --- SEÇÃO DE ATIVIDADES COM EXPANDER ---
     with st.expander("🔹 Atividades Executadas", expanded=False):
         for i in range(20):
-            # Criando as colunas exatamente no seu padrão
             col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
         
             with col_desc:
                 st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-            
+        
             with col_freq:
                 st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-            
+        
             with col_h:
                 st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-            
+        
             with col_m:
-                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
+                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)    
 
-    # ----------------------------
-    # Dificuldades e Bloqueios
-    # ----------------------------
-    with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
-        for i in range(10):
-            col_desc, col_setor, col_freq, col_h, col_m = st.columns([3, 2, 1, 1, 1])
-            with col_desc:
-                st.text_input(f"Dificuldade {i+1}", key=f"dif_desc_{i}")
-            with col_setor:
-                st.text_input(f"Setor/Parceiro {i+1}", key=f"dif_setor_{i}")
-            with col_freq:
-                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"dif_freq_{i}")
-            with col_h:
-                st.selectbox(f"Horas {i+1}", lista_horas, key=f"dif_hora_{i}", index=0)
-            with col_m:
-                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"dif_minuto_{i}", index=0)
+    
 
-    # ----------------------------
-    # Sugestões de Melhoria
-    # ----------------------------
-    with st.expander("💡 Sugestões de Melhoria", expanded=False):
-        for i in range(10):
-            col_sug, col_prioridade = st.columns([3, 1])
-            with col_sug:
-                st.text_input(f"Sugestão {i+1}", key=f"sug_desc_{i}")
-            with col_prioridade:
-                st.selectbox(f"Prioridade {i+1}", ["Baixa", "Média", "Alta"], key=f"sug_prioridade_{i}")
-
-    # ----------------------------
-    # Botão de envio único
-    # ----------------------------
-    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-
-# ----------------------------
-# Validação e mensagem de sucesso
-# ----------------------------
-if enviar:
-    st.success("✅ Formulário enviado com sucesso!")
+    
+    
 
 
 
