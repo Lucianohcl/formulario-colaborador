@@ -143,7 +143,7 @@ menu = [
 ]
 
 # 1️⃣ Pega página da URL
-params = st.experimental_get_query_params()
+params = st.query_params
 pagina_inicial = "🏠 Home"
 if "page" in params:
     if params["page"][0] == "formulario":
