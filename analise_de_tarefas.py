@@ -295,16 +295,29 @@ lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{h} h" for h in range(25)]
 lista_minutos = [f"{m} min" for m in range(0, 60, 5)]
 
+# Container para legendas
+with st.container():
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
+    """)
 
-# --- LEGENDAS DE ATIVIDADES ---
-st.info("""
-**📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
-""")
-
-# --- SEÇÃO DE ATIVIDADES COM FORMULARIO E EXPANDER ---
+# Formulário de atividades
 with st.form("form_atividades"):
     with st.expander("🔹 Atividades Executadas", expanded=True):
+        for i in range(20):
+            col_desc, col_freq, col_h, col_m = st.columns([3,1,1,1])
+            col_desc.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+            col_freq.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+            col_h.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
+            col_m.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
+    
+    enviar_ativ = st.form_submit_button("🚀 Enviar Atividades")
+
+if enviar_ativ:
+    st.success("✅ Atividades enviadas com sucesso!")
+
+
         for i in range(20):
             col_desc, col_freq, col_h, col_m = st.columns([3,1,1,1])
             col_desc.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
