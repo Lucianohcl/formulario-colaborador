@@ -470,28 +470,29 @@ if st.query_params.get("page") == "formulario":
         lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
         # --- SEÇÃO DE ATIVIDADES ---
-        st.subheader("🔹 Atividades Executadas")
-        
-        edit_ativ = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [lista_frequencia[0]] * 20,
-                "Horas": [lista_horas[0]] * 20,
-                "Minutos": [lista_minutos[0]] * 20
-            }).reset_index(drop=True),
-            column_config={
-                "Atividade Descrita": st.column_config.TextColumn("Atividade Descrita", width="large"),
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, required=True),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, required=True),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="ativ_editor"
-        )
+        with st.form("form_colaborador_principal", clear_on_submit=False):
+            # --- SEÇÃO DE DIFICULDADES ---
+            st.markdown("---")
+            st.subheader("⚠️ Dificuldades e Bloqueios")
+            
+            edit_dif = st.data_editor(
+                st.session_state.df_dificuldades,
+                column_config={
+                    "Dificuldade": st.column_config.TextColumn("Dificuldade", width="large"),
+                    "Setor/Parceiro Envolvido": st.column_config.TextColumn("Setor/Parceiro Envolvido", width="medium"),
+                    "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas, required=True),
+                    "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos, required=True),
+                    "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="dif_editor"
+            )
 
-        # --- SEÇÃO DE DIFICULDADES ---
+            
+
+           # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
@@ -550,7 +551,107 @@ if st.query_params.get("page") == "formulario":
             )
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-          
+
+
+        if enviar_form:
+            # Aqui você coloca a lógica para salvar os dados
+            st.session_state.df_dificuldades = edit_dif
+            st.success("Dados processados com sucesso!")
+
+        
+        # 1. DEFINIÇÃO DAS LISTAS (Sempre no topo)
+        lista_frequencia = ["D", "S", "Q", "M", "T", "A"]
+        lista_horas = [f"{i} h" for i in range(25)]
+        lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+
+        # --- INÍCIO DO FORMULÁRIO ÚNICO ---
+        with st.form("form_colaborador_principal", clear_on_submit=False):
+            
+            # 2. SEÇÃO DE ATIVIDADES EXECUTADAS
+            st.subheader("🔹 Atividades Executadas")
+            edit_ativ = st.data_editor(
+                pd.DataFrame({
+                    "Atividade Descrita": [""] * 20,
+                    "Frequência": ["D"] * 20,
+                    "Horas": ["0 h"] * 20,
+                    "Minutos": ["0 min"] * 20
+                }).reset_index(drop=True),
+                column_config={
+                    "Atividade Descrita": st.column_config.TextColumn("Atividade Descrita", width="large"),
+                    "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
+                    "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, required=True),
+                    "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, required=True),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="ativ_editor"
+            )
+
+            st.markdown("---")
+
+            # 3. SEÇÃO DE DIFICULDADES E BLOQUEIOS
+            st.subheader("⚠️ Dificuldades e Bloqueios")
+            edit_dif = st.data_editor(
+                st.session_state.df_dificuldades,
+                column_config={
+                    "Dificuldade": st.column_config.TextColumn("Dificuldade", width="large"),
+                    "Setor/Parceiro Envolvido": st.column_config.TextColumn("Setor/Parceiro Envolvido", width="medium"),
+                    "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas, required=True),
+                    "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos, required=True),
+                    "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="dif_editor"
+            )
+
+            st.markdown("---")
+
+            # 4. SEÇÃO DE SUGESTÕES DE MELHORIA
+            st.subheader("💡 Sugestões de Melhoria e Impacto")
+            edit_sug = st.data_editor(
+                pd.DataFrame({
+                    "Sugestão de Melhoria": [""] * 20,
+                    "Impacto Esperado": [""] * 20,
+                    "Redução Horas": ["0 h"] * 20,
+                    "Redução Minutos": ["0 min"] * 20,
+                    "Frequência do Impacto": ["D"] * 20
+                }).reset_index(drop=True),
+                column_config={
+                    "Sugestão de Melhoria": st.column_config.TextColumn("Sugestão de Melhoria", width="large"),
+                    "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                    "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                    "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="sug_editor"
+            )
+
+            st.markdown("---")
+
+            # 5. QUESTIONÁRIO DISC
+            st.subheader("📊 Questionário DISC")
+            for i, pergunta in enumerate(perguntas_disc, 1):
+                st.radio(
+                    label=f"{i}. {pergunta}", 
+                    options=["A", "B", "C", "D"], 
+                    key=f"disc_{i}", 
+                    horizontal=True, 
+                    index=None
+                )
+
+            # 6. BOTÃO DE ENVIO (Finaliza o bloco with)
+            enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+        # --- AÇÕES APÓS O CLIQUE (Fora do Form) ---
+        if enviar:
+            st.session_state.df_dificuldades = edit_dif
+            # O código para salvar_formulario_json vai aqui
+            st.success("✅ Tudo enviado com sucesso!")  
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
