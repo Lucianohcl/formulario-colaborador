@@ -241,7 +241,7 @@ perguntas_disc = [
 ]
 
 
-        # --- FORMULÁRIO ---
+# --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
@@ -269,89 +269,52 @@ if st.query_params.get("page") == "formulario":
         * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
         """)
         
-        import pandas as pd
+        st.subheader("🔹 Atividades Executadas")
+        
+        edit_ativ = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""]*20, 
+                "Frequência": [""]*20, 
+                "Tempo Gasto": [""]*20
+            }), 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="ativ_editor"
+        )
 
-        # --- Listas padronizadas ---
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-        lista_horas = [str(h) for h in range(25)]
-        lista_minutos = [str(m) for m in range(0, 60, 5)]
-        impacto_esperado = ["Baixo", "Médio", "Alto"]
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        edit_dif = st.data_editor(
+            pd.DataFrame({"Dificuldade": [""]*20, "Setor/Parceiro Envolvido": [""]*20, "Tempo Perdido": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="dif_editor"
+        )
 
-        st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
+        # --- SEÇÃO DE SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+        edit_sug = st.data_editor(
+            pd.DataFrame({"Sugestão de Melhoria": [""]*20, "Impacto Esperado": [""]*20}), 
+            num_rows="fixed", use_container_width=True, key="sug_editor"
+        )
 
- # --- FORMULÁRIO DE ATIVIDADES, DIFICULDADES E SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None, 
+              
 
-    st.markdown("---")
-    st.info("""
-    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
-    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-    """)
 
-    import pandas as pd
+            )
 
-    # --- Listas padronizadas ---
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    lista_horas = [str(h) for h in range(25)]
-    lista_minutos = [str(m) for m in range(0, 60, 5)]
-    impacto_esperado = ["Baixo", "Médio", "Alto"]
+        # --- BOTÃO E VALIDAÇÃO INTEGRADOS ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
-
-    # --- ATIVIDADES ---
-    st.markdown("---")
-    atividades = []
-    with st.expander("🔹 Atividades Executadas", expanded=True):
-        for i in range(20):
-            col1, col2, col3, col4 = st.columns([4, 2, 1, 1])
-            with col1:
-                atv = st.text_input(f"Atividade {i+1}", key=f"ativ_{i}")
-            with col2:
-                freq = st.selectbox("Frequência", lista_frequencia, key=f"freq_{i}")
-            with col3:
-                hrs = st.selectbox("Horas", lista_horas, key=f"hrs_{i}")
-            with col4:
-                mins = st.selectbox("Minutos", lista_minutos, key=f"mins_{i}")
-            atividades.append({"Atividade": atv, "Frequência": freq, "Horas": hrs, "Minutos": mins})
-
-    # --- DIFICULDADES ---
-    st.markdown("---")
-    dificuldades = []
-    with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
-        for i in range(20):
-            col1, col2, col3 = st.columns([4, 3, 1])
-            with col1:
-                dif = st.text_input(f"Dificuldade {i+1}", key=f"dif_{i}")
-            with col2:
-                setor = st.text_input(f"Setor/Parceiro {i+1}", key=f"setor_{i}")
-            with col3:
-                tempo = st.selectbox("Tempo Perdido (min)", lista_minutos, key=f"tempo_{i}")
-            dificuldades.append({"Dificuldade": dif, "Setor/Parceiro": setor, "Tempo Perdido": tempo})
-
-    # --- SUGESTÕES ---
-    st.markdown("---")
-    sugestoes = []
-    with st.expander("💡 Sugestões de Melhoria", expanded=False):
-        for i in range(20):
-            col1, col2 = st.columns([4, 2])
-            with col1:
-                sug = st.text_input(f"Sugestão {i+1}", key=f"sug_{i}")
-            with col2:
-                impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
-            sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
-
-    # --- BOTÃO DE ENVIO FINAL ---
-    submit_button = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-
-    if submit_button:
-        st.success("Formulário enviado com sucesso!")
-        # Mostrar resumo
-        st.subheader("Resumo das Atividades")
-        st.dataframe(pd.DataFrame(atividades))
-        st.subheader("Resumo das Dificuldades")
-        st.dataframe(pd.DataFrame(dificuldades))
-        st.subheader("Resumo das Sugestões")
-        st.dataframe(pd.DataFrame(sugestoes))
         if enviar:
             # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
             if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
