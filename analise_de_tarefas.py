@@ -1,3 +1,9 @@
+
+Conversas
+2% de 15 GB usados
+Termos · Privacidade · Regulamentos do programa
+Última atividade da conta: há 4 horas
+Detalhes
 # ============================================================
 # IMPORTS
 # ============================================================
@@ -16,6 +22,8 @@ from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
 import time
+
+
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -92,60 +100,62 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
-from fpdf import FPDF
-import io
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
+import io
 
 def gerar_word(form):
     doc = Document()
-
-    # 1. Informações de identificação
+    doc.add_heading(f"Relatório: {form.get('nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('data_envio', 'N/A')}")
+    
+    # Identificação
     doc.add_heading("Informações de Identificação", level=1)
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        valor = form.get(campo)
-        if valor and valor.strip():  # só adiciona se o campo estiver preenchido
-            doc.add_paragraph(f"{campo}: {valor}")
+    campos = ['setor', 'departamento', 'cargo', 'chefe', 'empresa', 'escolaridade', 
+              'cursos_obrigatorios_ou_diferenciais', 'trabalho_e_principal_objetivo']
+    for c in campos:
+        label = c.replace('_', ' ').capitalize()
+        doc.add_paragraph(f"{label}: {form.get(c, 'N/A')}")
 
-    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    # Tabelas
     secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+        "atividades": ["Atividade Descrita", "Frequência", "Horas", "Minutos"],
+        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Horas Perdidas", "Minutos Perdidos", "Frequência"],
+        "sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
     }
-
-    for chave, colunas in secoes.items():
-        if chave in form and isinstance(form[chave], list):
-            doc.add_heading(f"📋 {chave}", level=1)
-            # Filtra apenas itens que tenham conteúdo real
-            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+    
+    for chave, cols in secoes.items():
+        doc.add_heading(f"📋 {chave.capitalize()}", level=1)
+        dados = form.get(chave, [])
+        if isinstance(dados, list) and dados:
+            table = doc.add_table(rows=1, cols=len(cols))
+            table.style = 'Table Grid'
+            for i, col in enumerate(cols): 
+                table.rows[0].cells[i].text = col
             
-            if dados:
-                table = doc.add_table(rows=1, cols=len(colunas))
-                table.style = 'Table Grid'
-                # Cabeçalho
-                for i, col in enumerate(colunas):
-                    table.rows[0].cells[i].text = col
-                # Linhas
-                for item in dados:
-                    row = table.add_row().cells
-                    for i, col in enumerate(colunas):
-                        row[i].text = str(item.get(col, ''))
-            else:
-                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+            for item in dados:
+                row_cells = table.add_row().cells
+                for i, col in enumerate(cols):
+                    # --- AQUI ESTÁ A CORREÇÃO ---
+                    if isinstance(item, dict):
+                        valor = str(item.get(col, ''))
+                    else:
+                        # Se o item for uma string pura, coloca na primeira coluna e limpa as outras
+                        valor = str(item) if i == 0 else ""
+                    row_cells[i].text = valor
+        else:
+            doc.add_paragraph("Sem dados.")
 
-    # 3. Avaliação DISC
-    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
-        doc.add_paragraph(f"Resposta: {valor_resposta}")
-        doc.add_paragraph("-" * 20)
+    # DISC
+    doc.add_heading("Avaliação DISC", level=1)
+    disc_data = form.get('disc', {})
+    if isinstance(disc_data, dict) and disc_data:
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            res = disc_data.get(f"disc_{i}", "N/A")
+            doc.add_paragraph(f"{i}. {pergunta}: {res}")
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -158,60 +168,53 @@ def gerar_pdf(form):
     styles = getSampleStyleSheet()
     elementos = []
 
-    # Título
-    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
-    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Paragraph(f"Relatório: {form.get('nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('data_envio', 'N/A')}", styles['Normal']))
     elementos.append(Spacer(1, 12))
 
-    # Informações Gerais
-    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
-    
-    elementos.append(Spacer(1, 12))
-
-    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    # Tabelas Dinâmicas
     secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+        "atividades": ["Atividade Descrita", "Frequência", "Horas", "Minutos"],
+        "dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Frequência"]
     }
-
-    for titulo, colunas in secoes.items():
-        if titulo in form and isinstance(form[titulo], list):
-            elementos.append(Paragraph(titulo, styles['Heading2']))
-            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
-            
-            if dados:
-                data = [colunas] # Cabeçalho
-                for item in dados:
+    
+    for chave, colunas in secoes.items():
+        elementos.append(Paragraph(chave.capitalize(), styles['Heading2']))
+        dados = form.get(chave, [])
+        if dados:
+            data = [colunas]
+            for item in dados:
+                # CORREÇÃO AQUI: Verifica se é dicionário antes de usar .get()
+                if isinstance(item, dict):
                     data.append([str(item.get(c, '')) for c in colunas])
-                
-                tabela = Table(data, repeatRows=1)
-                tabela.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
-                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-                    ('FONTSIZE', (0,0), (-1,-1), 8)
-                ]))
-                elementos.append(tabela)
-            else:
-                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
-            elementos.append(Spacer(1, 12))
+                else:
+                    # Se for apenas uma string, coloca na primeira coluna e limpa o resto
+                    data.append([str(item)] + [""] * (len(colunas) - 1))
+            
+            t = Table(data, repeatRows=1)
+            t.setStyle(TableStyle([
+                ('BACKGROUND',(0,0),(-1,0),colors.lightgrey),
+                ('GRID',(0,0),(-1,-1),0.5,colors.black),
+                ('FONTSIZE', (0,0), (-1,-1), 10)
+            ]))
+            elementos.append(t)
+        else:
+            elementos.append(Paragraph("Sem dados registrados.", styles['Normal']))
+        elementos.append(Spacer(1, 12))
 
-    # DISC
+    # DISC no PDF
     elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
-        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
-        elementos.append(Spacer(1, 6))
+    disc_data = form.get('disc', {})
+    if isinstance(disc_data, dict):
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            res = disc_data.get(f"disc_{i}", "N/A")
+            elementos.append(Paragraph(f"<b>{i}.</b> {res}", styles['Normal']))
+    else:
+        elementos.append(Paragraph("Dados DISC não encontrados.", styles['Normal']))
 
     doc.build(elementos)
     buffer.seek(0)
     return buffer
-
-
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
 # ============================================================
@@ -403,239 +406,186 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
-    st.title("📋 Formulário Completo do Colaborador")
-    
-    # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    
-    # ÚNICO BLOCO DO FORMULÁRIO
-    with st.form("form_colaborador"):
-        # Dados de Identificação
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador")
-        setor = col2.text_input("Setor")
-        cargo = col1.text_input("Cargo")
-        chefe = col2.text_input("Chefe imediato")
-        departamento = col1.text_input("Departamento")
-        empresa = col2.text_input("Empresa / Unidade")
-        escolaridade = col1.text_input("Escolaridade")
-        devolucao = col2.text_input("Devolver preenchido em")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
-        
-        
-        
-        # --- SEÇÃO DE ATIVIDADES ---
-        st.markdown("---")
-        
-        # Mude para 3 colunas
-        col1, col2, col3 = st.columns(3)
-        
-        # Supondo que você tenha definido col1, col2 e col3 anteriormente
-        with col1:
-            st.info("""
-            **📋 LEGENDA DE FREQUÊNCIA:**
-            * **DVD**: Diário Várias Vezes
-            * **D**: Diário | **S**: Semanal
-            * **Q**: Quinzenal | **M**: Mensal
-            * **T**: Trimestral | **A**: Anual
-            """)
 
-        with col2:
-            st.warning("""
-            **⏱️ COMO REGISTRAR O TEMPO:**
-            * **Horas e Minutos**: Selecione o valor em cada coluna.
-            * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
-            """)
-            
-        with col3:
-            st.error("""
-            **⚠️ DETALHE:**
-            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
-            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            """)        
+    with st.form("form_colaborador_principal", clear_on_submit=False):
+        st.title("📋 Formulário Completo do Colaborador")
         
+        # Dados de Identificação com KEYS para persistência
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador", key="f_nome")
+        setor = col2.text_input("Setor", key="f_setor")
+        cargo = col1.text_input("Cargo", key="f_cargo")
+        chefe = col2.text_input("Chefe imediato", key="f_chefe")
+        departamento = col1.text_input("Departamento", key="f_dep")
+        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
+        escolaridade = col1.text_input("Escolaridade", key="f_esc")
+        devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
         
-        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
+        objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
+
         st.subheader("🔹 Atividades Executadas")
-        
+        if 'df_atividades' not in st.session_state:
+            st.session_state.df_atividades = pd.DataFrame({
+                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+            })
+
         edit_ativ = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
+            st.session_state.df_atividades, 
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
             },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
+            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
         )
+        st.session_state.df_atividades = edit_ativ   
 
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        
-        edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
-            column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn(
-                    "Horas Perdidas", 
-                    options=lista_horas
-                ),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(
-                    "Minutos Perdidos", 
-                    options=lista_minutos
-                ),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor"
-        )
+        # (Repetir lógica similar para Dificuldades e Sugestões se necessário...)
 
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
-        edit_sug = st.data_editor(
-            pd.DataFrame({
-                "Sugestão de Melhoria": [""] * 20,
-                "Impacto Esperado": [""] * 20,
-                "Redução Horas": [""] * 20,
-                "Redução Minutos": [""] * 20,
-                "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="sug_editor"
-        )
-
-        
-
-        
-
-        st.markdown("---")
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(
-                label=f"{i}. {pergunta}", 
-                options=["A", "B", "C", "D"], 
-                key=f"disc_{i}", 
-                horizontal=True, 
-                index=None
-            )
+            st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True, index=None)
 
-import streamlit as st
-import pandas as pd
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-import streamlit as st
-from datetime import datetime
-import pytz
+        if enviar:
+            import os, json, pytz
+            from datetime import datetime
+            
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-# --- FORMULÁRIO COMPLETO SEM st.form, usando st.container ---
-with st.container():
-    # Campos de identificação
-    nome = st.text_input("Nome", key="input_nome")
-    setor = st.text_input("Setor", key="input_setor")
-    cargo = st.text_input("Cargo", key="input_cargo")
-    chefe = st.text_input("Chefe", key="input_chefe")
-    departamento = st.text_input("Departamento", key="input_depto")
-    empresa = st.text_input("Empresa", key="input_empresa")
-    escolaridade = st.text_input("Escolaridade", key="input_escolaridade")
-    devolucao = st.text_input("Devolução", key="input_devolucao")
-    cursos = st.text_input("Cursos", key="input_cursos")
-    objetivo = st.text_input("Objetivo", key="input_objetivo")
+            # 1. VALIDAÇÃO DE CAMPOS
+            if any(not str(campo).strip() for campo in campos_obrigatorios):
+                st.error("⚠️ Preencha todos os campos obrigatórios!")
+                st.stop() # PARA TUDO E MANTÉM A TELA PARA EDIÇÃO
 
-    # Tabelas de edição (exemplo, as tabelas reais precisam de um DataFrame)
-    # edit_ativ = st.data_editor(df_atividades, key="tabela_ativ", num_rows="dynamic")
-    # edit_dif = st.data_editor(df_dificuldades, key="tabela_dif", num_rows="dynamic")
-    # edit_sug = st.data_editor(df_sugestoes, key="tabela_sug", num_rows="dynamic")
+            # 2. VALIDAÇÃO DO DISC
+            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Responda todas as perguntas do DISC!")
+                st.stop()
 
-    # DISC: 24 perguntas
-    for i in range(1, 25):
-        st.selectbox(f"Pergunta {i}", options=["D", "I", "S", "C"], key=f"disc_{i}")
+            # 3. SALVAMENTO (Sem 'else', fluxo direto)
+            nome_limpo = nome.strip().replace(" ", "_")
+            dados = {
+                "nome": nome, "data_envio": data_hoje, "setor": setor,
+                "atividades": edit_ativ.to_dict('records'),
+                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+            }
+            
+            # (Aqui você insere o código de salvar o arquivo JSON que já temos)
+            st.success("✅ Enviado com sucesso!")
 
-    # Botão de envio
-    enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-# VALIDAÇÃO E PROCESSAMENTO
-if enviar:
-    # 1. Verifica campos de identificação
-    campos_lista = [nome, setor, cargo, chefe, departamento, empresa,
-                    escolaridade, devolucao, cursos, objetivo]
-    campos_invalidos = any(not str(c).strip() for c in campos_lista)
+        # -------------------------------------------------
+        # VALIDAÇÕES E PROCESSAMENTO
+        # -------------------------------------------------
+        
+        if enviar:
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+            
+            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-    # 2. Valida tabelas (descomente quando usar edit_ativ, edit_dif, edit_sug)
-    # atividades_invalidas = any(
-    #     not linha["Atividade Descrita"].strip() or
-    #     not linha["Frequência"].strip() or
-    #     not linha["Horas"].strip()
-    #     for linha in edit_ativ.to_dict(orient="records")
-    # )
-    # dificuldades_invalidas = any(
-    #     not linha["Dificuldade"].strip() or
-    #     not linha["Horas Perdidas"].strip()
-    #     for linha in edit_dif.to_dict(orient="records")
-    # )
-    # sugestoes_invalidas = any(
-    #     not linha["Sugestão de Melhoria"].strip() or
-    #     not linha["Redução Horas"].strip()
-    #     for linha in edit_sug.to_dict(orient="records")
-    # )
+            # --- VALIDAÇÃO INTELIGENTE DAS TABELAS ---
+            tabelas_incompletas = False
+            
+            for df in [edit_ativ, edit_dif, edit_sug]:
+                # Pega apenas as linhas onde a primeira coluna (Descrição/Atividade) foi preenchida
+                col_principal = df.columns[0]
+                linhas_com_conteudo = df[df[col_principal].astype(str).str.strip() != ""]
+                
+                # Se houver linhas com texto, verifica se alguma célula nessas linhas está vazia
+                if len(linhas_com_conteudo) > 0:
+                    if linhas_com_conteudo.isnull().values.any() or (linhas_com_conteudo == "").values.any():
+                        tabelas_incompletas = True
+                        break
+                
+                # Se for a tabela de atividades, obriga pelo menos uma linha
+                if df is edit_ativ and len(linhas_com_conteudo) == 0:
+                    tabelas_incompletas = True
+                    st.error("⚠️ A tabela de 'Atividades Principais' não pode estar vazia.")
+                    break
 
-    # 3. Valida DISC
-    disc_invalidas = any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25))
+           # 1. VALIDAÇÃO DE CAMPOS DE TEXTO
+            if any(not str(campo).strip() for campo in campos_obrigatorios):
+                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
+                st.session_state["confirmado"] = False
+                st.stop()  # Trava aqui e mantém os dados para correção
 
-    # 4. BLOQUEIO: st.stop mantém o usuário na mesma página
-    if campos_invalidos or disc_invalidas:  # ou atividades_invalidas/dificuldades_invalidas/sugestoes_invalidas
-        st.error("⚠️ Todos os campos obrigatórios, tabelas e DISC devem ser preenchidos!")
-        st.session_state["confirmado"] = False
-        st.stop()  # bloqueia envio e mantém tudo na tela
+            # 2. VALIDAÇÃO DAS TABELAS
+            if tabelas_incompletas:
+                st.error("⚠️ Erro: Verifique as tabelas! A tabela de atividades não pode estar vazia.")
+                st.session_state["confirmado"] = False
+                st.stop()
 
-    # 5. LÓGICA DE CONFIRMAÇÃO (pedágio)
-    if not st.session_state.get("confirmado", False):
-        st.warning("⚠️ Revise todos os dados. Clique em Enviar novamente para confirmar.")
-        st.session_state["confirmado"] = True
-        st.stop()  # mantém os dados na tela
+            # 3. VALIDAÇÃO DO DISC
+            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+                st.session_state["confirmado"] = False
+                st.stop()
 
-    # 6. ENVIO FINAL
-    st.success("✅ Formulário enviado com sucesso!")
-    st.session_state["confirmado"] = False
+            # -------------------------------------------------
+            # SE CHEGOU AQUI, PASSOU NAS VALIDAÇÕES
+            # -------------------------------------------------
+            import os
+            import json
 
-    # AQUI você pode gerar PDF/Word ou salvar JSON
-    # ...        
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            dados_dir = os.path.join(base_dir, "dados")
+            os.makedirs(dados_dir, exist_ok=True)
+
+            # 3. EVITAR DUPLICIDADE
+            nome_limpo = nome.strip().replace(" ", "_")
+            arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+
+            if arquivos_existentes and not st.session_state.get("confirmado", False):
+                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                st.stop() # Para e obriga a confirmação se quiser sobrescrever
+            
+            # 4. CONFIRMAÇÃO (O Double-Click de Segurança)
+            if not st.session_state.get("confirmado", False):
+                st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
+                st.session_state["confirmado"] = True
+                st.stop() # Para aqui e espera o segundo clique
+            
+            # PROCESSO DE SALVAMENTO (Só acontece após o segundo clique)
+            dados = {
+                "nome": nome,
+                "data_envio": data_hoje,
+                "setor": setor,
+                "cargo": cargo,
+                "chefe": chefe,
+                "departamento": departamento,
+                "empresa": empresa,
+                "escolaridade": escolaridade,
+                "devolucao": devolucao,
+                "cursos_obrigatorios_ou_diferenciais": cursos,
+                "trabalho_e_principal_objetivo": objetivo,
+                "atividades": edit_ativ.to_dict('records') if hasattr(edit_ativ, 'to_dict') else edit_ativ,
+                "dificuldades": edit_dif.to_dict('records') if hasattr(edit_dif, 'to_dict') else edit_dif,
+                "sugestoes": edit_sug.to_dict('records') if hasattr(edit_sug, 'to_dict') else edit_sug,
+                "disc": {
+                    f"disc_{i}": st.session_state.get(f"disc_{i}")
+                    for i in range(1, 25)
+                }
+            }
+            
+            caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(dados, f, ensure_ascii=False, indent=4)
+            
+            st.success("✅ Formulário enviado com sucesso!")
+            st.session_state["confirmado"] = False # Reseta para o próximo
+                        
+
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
@@ -651,45 +601,46 @@ if st.session_state.get("pagina") == "visualizar":
     else:
         # Mostra o total para conferência
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
-
+        
+        # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
-            nome_exibir = form.get("Nome", "SEM NOME").strip().upper()
-            data_envio = form.get("DataEnvio", "Sem Data")
+            nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
+            
+            # Primeiro, garantimos que a variável nome_exibir pegue a chave 'nome'
+            nome_exibir = form.get('nome', 'Não identificado').upper()
+            data_exibir = form.get('data_envio', 'Sem Data')
 
-            # Expandir apenas uma vez por formulário
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_envio})"):
-                st.write(f"**Data de Envio:** {data_envio}")
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({data_exibir})"):
+                # [Aqui você mantém o seu código de exibição de dados]
                 
-                # Exemplo: coloque aqui os campos do seu formulário
-                st.write(f"**Setor:** {form.get('Setor', 'Não informado')}")
-                st.write(f"**Cargo:** {form.get('Cargo', 'Não informado')}")
-                
-                # Insira aqui o seu código de exibição dos dados (edit_ativ, edit_dif, etc)
             
             
             
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
-                col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
-                col2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
+                
+                # Buscando as chaves minúsculas do seu dicionário 'dados'
+                col1.write(f"**Data de Envio:** {form.get('data_envio', 'N/A')}")
+                col2.write(f"**Devolver em:** {form.get('devolucao', 'N/A')}")
                 
                 col_a, col_b = st.columns(2)
-                col_a.write(f"**Setor:** {form.get('Setor', 'N/A')}")
-                col_b.write(f"**Departamento:** {form.get('Departamento', 'N/A')}")
-                col_a.write(f"**Cargo:** {form.get('Cargo', 'N/A')}")
-                col_b.write(f"**Chefe Imediato:** {form.get('Chefe', 'N/A')}")
-                col_a.write(f"**Empresa/Unidade:** {form.get('Empresa', 'N/A')}")
-                col_b.write(f"**Escolaridade:** {form.get('Escolaridade', 'N/A')}")
+                col_a.write(f"**Setor:** {form.get('setor', 'N/A')}")
+                col_b.write(f"**Departamento:** {form.get('departamento', 'N/A')}")
+                col_a.write(f"**Cargo:** {form.get('cargo', 'N/A')}")
+                col_b.write(f"**Chefe Imediato:** {form.get('chefe', 'N/A')}")
+                col_a.write(f"**Empresa/Unidade:** {form.get('empresa', 'N/A')}")
+                col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
-                st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
-                st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
+                # Buscando os nomes longos e específicos que definimos
+                st.text_area("Cursos obrigatórios ou diferenciais", value=form.get('cursos_obrigatorios_ou_diferenciais', 'N/A'), disabled=True, key=f"cursos_{idx}")
+                st.text_area("Trabalho e principal objetivo", value=form.get('trabalho_e_principal_objetivo', 'N/A'), height=150, disabled=True, key=f"obj_{idx}")
                 
                 # 2. Tabelas Dinâmicas
                 secoes = {
-                    "Atividades": "📋 Atividades Executadas",
-                    "Dificuldades": "⚠️ Dificuldades e Bloqueios",
-                    "Sugestoes": "💡 Sugestões de Melhoria"
+                    "atividades": "📋 Atividades Executadas",
+                    "dificuldades": "⚠️ Dificuldades e Bloqueios",
+                    "sugestoes": "💡 Sugestões de Melhoria"
                 }
                 
                 for chave, titulo in secoes.items():
@@ -705,18 +656,17 @@ if st.session_state.get("pagina") == "visualizar":
                     else:
                         st.write("Seção não encontrada ou vazia.")
                 
-                # 3. Questionário DISC (Exibição Completa e Legível)
+                # 3. Questionário DISC
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
-                # --- BLOCO DE VISUALIZAÇÃO DAS RESPOSTAS DISC ---
+                dados_disc = form.get("disc", {}) # Entra na "pasta" disc do JSON
+                
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    valor_resposta = form.get("DISC", {}).get(f"disc_{i}", "Não respondido")
+                    valor_resposta = dados_disc.get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
-
-                    
 
                 # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
                 if st.session_state.get("usuario_logado") == "Luciano 123":
@@ -726,47 +676,33 @@ if st.session_state.get("pagina") == "visualizar":
                     # Usamos 2 colunas para ficar mais harmônico
                     col1, col2 = st.columns(2)
                     
-                    # Padronização do nome do arquivo para ambos
-                    data_clean = form.get('DataEnvio', '').replace('/', '').replace(' ', '_').replace(':', '')
-                    nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
+                    # Padronização do nome do arquivo (ajustado para chaves minúsculas)
+                    data_raw = form.get('data_envio', '')
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    nome_raw = form.get('nome', 'Colaborador')
+                    nome_clean = str(nome_raw).replace(' ', '_')
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
                     
+                    with col1:
+                        st.download_button(
+                            label="📄 Baixar em Word",
+                            data=gerar_word(form),
+                            file_name=f"{nome_arquivo}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"word_btn_{idx}"  # Garante ID único no loop
+                        )
                     
+                    with col2:
+                        st.download_button(
+                            label="📑 Baixar em PDF",
+                            data=gerar_pdf(form),
+                            file_name=f"{nome_arquivo}.pdf",
+                            mime="application/pdf",
+                            key=f"pdf_btn_{idx}"   # Garante ID único no loop
+                        )
+                # --- FIM DO BLOCO ---
 
-                    from datetime import datetime
 
-                    # Pega nome do colaborador
-                    nome_colaborador = form.get("Nome", "colaborador")
-
-                    # Pega data de envio
-                    data_envio = form.get("DataEnvio")
-
-                    # Se não existir data
-                    if not data_envio:
-                        data_envio = datetime.now().strftime("%d-%m-%Y_%H-%M")
-
-                    # Nome do arquivo final
-                    nome_arquivo = f"{nome_colaborador}_{data_envio}"
-
-                    col1, col2 = st.columns(2)
-
-                    # Botão Word
-                    st.download_button(
-                        label="📄 Baixar em Word",
-                        data=gerar_word(form),
-                        file_name=f"{nome_arquivo}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        key=f"word_{idx}"
-                    )
-
-                    # Botão PDF (posicionado logo abaixo)
-                    st.download_button(
-                        label="📑 Baixar em PDF",
-                        data=gerar_pdf(form),
-                        file_name=f"{nome_exibir}_{idx}.pdf",
-                        mime="application/pdf",
-                        key=f"pdf_{idx}"
-                    )
 
         # Botão de Limpeza
         st.markdown("---")
@@ -1095,5 +1031,3 @@ def salvar_formulario_json(formulario):
 
     # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
     st.session_state["formularios"] = dados_existentes
-
-
