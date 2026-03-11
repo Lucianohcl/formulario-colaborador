@@ -706,11 +706,14 @@ if st.session_state.get("pagina") == "visualizar":
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
+                # --- BLOCO DE VISUALIZAÇÃO DAS RESPOSTAS DISC ---
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    valor_resposta = form.get("disc", {}).get(f"disc_{i}", "Não respondido")
+                    valor_resposta = form.get("DISC", {}).get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
+
+                    
 
                 # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
                 if st.session_state.get("usuario_logado") == "Luciano 123":
