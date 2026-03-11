@@ -263,29 +263,30 @@ perguntas_disc = [
 ]
 
 
-# --- LEGENDAS DE ATIVIDADES ---
-st.info("""
-**📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
-""")
+    # --- LEGENDAS DE ATIVIDADES ---
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual
+    """)
 
-# --- FORMULÁRIO ÚNICO COM EXPANDERS ---
-with st.form("formulario_completo"):
+    # --- FORMULÁRIO ÚNICO COM EXPANDERS ---
+    with st.form("formulario_completo"):
     
-    # ----------------------------
-    # Atividades Executadas
-    # ----------------------------
-    with st.expander("🔹 Atividades Executadas", expanded=True):
-        for i in range(20):
-            col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
-            with col_desc:
-                st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
-            with col_freq:
-                st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
-            with col_h:
-                st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
-            with col_m:
-                st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
+        # ----------------------------
+        # Atividades Executadas
+        # ----------------------------
+        with st.expander("🔹 Atividades Executadas", expanded=True):
+            for i in range(20):
+                col_desc, col_freq, col_h, col_m = st.columns([3, 1, 1, 1])
+                with col_desc:
+                    st.text_input(f"Atividade {i+1}", key=f"ativ_desc_{i}")
+                with col_freq:
+                    st.selectbox(f"Freq {i+1}", lista_frequencia, key=f"ativ_freq_{i}")
+                with col_h:
+                    st.selectbox(f"Horas {i+1}", lista_horas, key=f"ativ_hora_{i}", index=0)
+                with col_m:
+                    st.selectbox(f"Minutos {i+1}", lista_minutos, key=f"ativ_minuto_{i}", index=0)
+
 
     # ----------------------------
     # Dificuldades e Bloqueios
