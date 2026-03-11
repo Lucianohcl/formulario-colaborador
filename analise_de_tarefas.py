@@ -125,8 +125,10 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     st.stop() # Bloqueia apenas acessos não autorizados
 
 # ============================================================
-# SIDEBAR
+# SIDEBAR + MENU + SINCRONIZAÇÃO COM URL
 # ============================================================
+
+import streamlit as st
 
 # Menu sincronizado com query_params
 menu = [
@@ -140,67 +142,59 @@ menu = [
     "📋 Formulário"
 ]
 
-# Pega página da URL
+# 1️⃣ Pega página da URL
 params = st.experimental_get_query_params()
 pagina_inicial = "🏠 Home"
 if "page" in params:
     if params["page"][0] == "formulario":
         pagina_inicial = "📋 Formulário"
 
-# Menu único
+# 2️⃣ Selectbox do menu
 pagina = st.sidebar.selectbox("📌 Menu de Navegação", menu, index=menu.index(pagina_inicial))
 
-# Atualiza session_state
-if pagina == "🏠 Home":
-    st.session_state.pagina = "home"
-elif pagina == "📊 Análise Inteligente":
-    st.session_state.pagina = "analise"
-elif pagina == "⚖️ Comparar Colaboradores":
-    st.session_state.pagina = "comparar"
-elif pagina == "🧠 Perfil DISC":
-    st.session_state.pagina = "disc"
-elif pagina == "📄 Parecer Estratégico":
-    st.session_state.pagina = "parecer"
-elif pagina == "👁️ Visualizar Dados":
-    st.session_state.pagina = "visualizar"
-elif pagina == "🚀 Produtividade":
-    st.session_state.pagina = "produtividade"
-elif pagina == "📋 Formulário":
-    st.session_state.pagina = "formulario"
+# 3️⃣ Atualiza session_state
+page_map = {
+    "🏠 Home": "home",
+    "📊 Análise Inteligente": "analise",
+    "⚖️ Comparar Colaboradores": "comparar",
+    "🧠 Perfil DISC": "disc",
+    "📄 Parecer Estratégico": "parecer",
+    "👁️ Visualizar Dados": "visualizar",
+    "🚀 Produtividade": "produtividade",
+    "📋 Formulário": "formulario"
+}
 
-# Logout separado continua igual
+st.session_state.pagina = page_map[pagina]
+
+# 4️⃣ Sincroniza URL com o menu (opcional mas recomendado)
+st.experimental_set_query_params(page=page_map[pagina])
+
+# 5️⃣ Logout
 btn_logout = st.sidebar.button("🚪 Logout")
 if btn_logout:
     st.session_state.logged_in = False
     st.session_state.pagina = "home"
     st.experimental_set_query_params(page="home")
     st.rerun()
-# Define a nova página baseada no botão clicado
-if btn_home:
-    st.session_state.pagina = "home"
-elif btn_analise:
-    st.session_state.pagina = "analise"
-elif btn_comparar:
-    st.session_state.pagina = "comparar"
-elif btn_disc:
-    st.session_state.pagina = "disc"
-elif btn_parecer:
-    st.session_state.pagina = "parecer"
-elif btn_visualizar:
-    st.session_state.pagina = "visualizar"
-elif btn_produtividade:
-    st.session_state.pagina = "produtividade"
-elif btn_logout:
-    st.session_state.logged_in = False
-    st.session_state.pagina = "home"
-# O elif do formulário não precisa de 'pass' se estiver no final da lógica de botões
-elif st.session_state.pagina == "formulario":
-    st.session_state.pagina = "formulario"
 
-# TRAVA DE ATUALIZAÇÃO ÚNICA: 
-# Se qualquer botão acima mudou o estado, ele recarrega a página uma única vez aqui.
-if pagina_anterior != st.session_state.pagina:
-    st.rerun()
+# 6️⃣ Mostrar formulário se página for formulário
+if st.session_state.pagina == "formulario":
+    st.title("📋 Formulário Completo do Colaborador")
+
+    with st.form("form_colaborador"):
+        nome = st.text_input("Nome do colaborador")
+        setor = st.text_input("Setor")
+        cargo = st.text_input("Cargo")
+        chefe = st.text_input("Chefe imediato")
+        departamento = st.text_input("Departamento")
+        empresa = st.text_input("Empresa / Unidade")
+
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
+
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO")
+        if enviar:
+            st.success("✅ Formulário enviado com sucesso!")
 
 # ============================================================
 # CONFIGURAÇÃO DE DIRETÓRIO E CARREGAMENTO
