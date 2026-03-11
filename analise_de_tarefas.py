@@ -99,13 +99,16 @@ import io
 
 
     
-    # dentro da função gerar_word(form):
-    doc.add_heading("Informações de Identificação", level=1)
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        valor = form.get(campo)
-        if valor and valor.strip():  # só adiciona se o campo estiver preenchido
-            doc.add_paragraph(f"{campo}: {valor}")
+    def gerar_word(form):
+        doc = Document()
+    
+        # 1. Informações de identificação
+        doc.add_heading("Informações de Identificação", level=1)
+        campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+        for campo in campos_gerais:
+            valor = form.get(campo)
+            if valor and valor.strip():  # só adiciona se o campo estiver preenchido
+                doc.add_paragraph(f"{campo}: {valor}")
     
     # 2. Tabelas (Atividades, Dificuldades, Sugestões)
     secoes = {
