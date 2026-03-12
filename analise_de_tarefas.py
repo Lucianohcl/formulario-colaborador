@@ -463,11 +463,7 @@ if st.query_params.get("page") == "formulario":
                 with open(os.path.join(dados_dir, nome_arq), "w", encoding="utf-8") as f:
                     json.dump(dados_finais, f, ensure_ascii=False, indent=4)
 
-                st.success(f"✅ Enviado com sucesso! Protocolo: {data_hoje}")
-                st.balloons()
-            except Exception as e:
-                st.error(f"❌ Erro: {e}")
-    st.stop()    
+                    
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
@@ -569,8 +565,14 @@ if st.query_params.get("page") == "formulario":
             
             st.success("✅ Formulário enviado com sucesso!")
             st.session_state["confirmado"] = False # Reseta para o próximo
-                        
 
+            if enviar:
+                try:
+                    st.success("Enviado!")
+                    st.stop() # <--- ADICIONE ISSO
+                except Exception as e:
+                    st.error(f"Erro: {e}")    
+            st.stop()
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
