@@ -395,6 +395,9 @@ perguntas_disc = [
 
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
+    # LINHA QUE LIMPA TUDO (MENU E BARRA LATERAL)
+    st.markdown("<style>#MainMenu {visibility: hidden;} [data-testid='stSidebar'] {display: none;} footer {visibility: hidden;} header {visibility: hidden;}</style>", 
+    unsafe_allow_html=True)
     import os, json, pytz
     from datetime import datetime
     import pandas as pd
@@ -464,6 +467,7 @@ if st.query_params.get("page") == "formulario":
                 st.balloons()
             except Exception as e:
                 st.error(f"❌ Erro: {e}")
+    st.stop()    
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
