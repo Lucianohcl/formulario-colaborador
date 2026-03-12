@@ -489,26 +489,31 @@ if st.query_params.get("page") == "formulario":
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
         edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }).reset_index(drop=True),  # Limpeza do índice para remover os "nones"
-            column_config={
-                "Horas Perdidas": st.column_config.SelectboxColumn(
-                    "Horas Perdidas", 
-                    options=lista_horas
-                ),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(
-                    "Minutos Perdidos", 
-                    options=lista_minutos
-                ),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor"
+                pd.DataFrame({
+                        "Dificuldade": [""] * 20,
+                        "Setor/Parceiro Envolvido": [""] * 20,
+                        "Frequência": [""] * 20,
+                        "Horas Perdidas": [""] * 20,
+                        "Minutos Perdidos": [""] * 20
+                }),
+                column_config={
+                        "Frequência": st.column_config.SelectboxColumn(
+                                "Frequência", 
+                                options=lista_frequencia
+                        ),
+                        "Horas Perdidas": st.column_config.SelectboxColumn(
+                                "Horas Perdidas", 
+                                options=lista_horas
+                        ),
+                        "Minutos Perdidos": st.column_config.SelectboxColumn(
+                                "Minutos Perdidos", 
+                                options=lista_minutos
+                        ),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="dif_editor"
         )
 
         # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
@@ -602,36 +607,39 @@ if st.query_params.get("page") == "formulario":
                         st.session_state["confirmado"] = True
 
                     # 5. ENVIO FINAL
-                    else:
+                        else:
+                            # Filtra as linhas vazias e garante que a Frequência seja salva como texto
+                            dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
+                            atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
+                            sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
 
-                        st.success("✅ Formulário enviado com sucesso!")
-
-                        dados = {
-                            "nome": nome,
-                            "setor": setor,
-                            "cargo": cargo,
-                            "chefe": chefe,
-                            "departamento": departamento,
-                            "empresa": empresa,
-                            "escolaridade": escolaridade,
-                            "devolucao": devolucao,
-                            "cursos": cursos,
-                            "objetivo": objetivo,
-                            "atividades": edit_ativ.to_dict(),
-                            "dificuldades": edit_dif.to_dict(),
-                            "sugestoes": edit_sug.to_dict(),
-                            "disc": {
-                                f"disc_{i}": st.session_state.get(f"disc_{i}")
-                                for i in range(1, 25)
+                            dados = {
+                                "nome": nome,
+                                "setor": setor,
+                                "cargo": cargo,
+                                "chefe": chefe,
+                                "departamento": departamento,
+                                "empresa": empresa,
+                                "escolaridade": escolaridade,
+                                "devolucao": devolucao,
+                                "cursos": cursos,
+                                "objetivo": objetivo,
+                                "atividades": atividades_limpas,
+                                "dificuldades": dificuldades_limpas, # Agora salva a Frequência OK
+                                "sugestoes": sugestoes_limpas,
+                                "disc": {
+                                    f"disc_{i}": st.session_state.get(f"disc_{i}")
+                                    for i in range(1, 25)
+                                }
                             }
-                        }
 
-                        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                            caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
 
-                        with open(caminho, "w", encoding="utf-8") as f:
-                            json.dump(dados, f, ensure_ascii=False, indent=4)
+                            with open(caminho, "w", encoding="utf-8") as f:
+                                json.dump(dados, f, ensure_ascii=False, indent=4)
 
-                        st.session_state["confirmado"] = False
+                            st.success("✅ Formulário enviado com sucesso!")
+                            st.session_state["confirmado"] = False
 
 
 # --- VISUALIZAÇÃO ---
