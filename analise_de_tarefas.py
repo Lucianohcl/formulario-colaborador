@@ -48,8 +48,7 @@ query_params = st.query_params
 
 if "page" in query_params:
 
-st.session_state.pagina = query_params["page"]
-
+st.session_state.pagina = st.query_params.get("page", "home")
 st.markdown("""
 &lt;style&gt;
 /* Oculta a coluna de índice do data_editor */
