@@ -641,6 +641,9 @@ def gerar_analise_corporativa(dados, client=None):
     - parecer (texto)
     - indicadores (dict)
     """
+    # Verificação de duplicados (deve estar alinhado aqui)
+    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+
     # 1️⃣ Atividades ideais
       ideais = gerar_atividades_ideais(dados["cargo"], dados["setor"], client)
 
