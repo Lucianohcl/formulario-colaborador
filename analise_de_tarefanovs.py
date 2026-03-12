@@ -642,22 +642,22 @@ def gerar_analise_corporativa(dados, client=None):
     - indicadores (dict)
     """
     # 1️⃣ Atividades ideais
-    ideais = gerar_atividades_ideais(dados["cargo"], dados["setor"], client)
+      ideais = gerar_atividades_ideais(dados["cargo"], dados["setor"], client)
 
-    # 2️⃣ Comparação semântica (reais x ideais)
+      # 2️⃣ Comparação semântica (reais x ideais)
     comparacao = comparar_semanticamente(dados["atividades"], ideais, client)
 
     # 3️⃣ Carga horária
     horas, status_carga = calcular_carga(dados["atividades"])
 
     # 4️⃣ Score DISC
-    disc_score = score_disc(dados["disc"])
+      disc_score = score_disc(dados["disc"])
 
-    # 5️⃣ Classificação de dificuldades
+      # 5️⃣ Classificação de dificuldades
     dificuldades_classificadas = classificar_dificuldades_gpt(dados["dificuldades"], client)
 
     # 6️⃣ Score de aderência
-    score_aderencia = comparacao.get("score_aderencia",0)
+    score_aderencia = comparacao.get("score_aderencia", 0)
 
     # 7️⃣ Índice geral
     indice = indice_geral(score_aderencia, disc_score, status_carga)
@@ -665,54 +665,20 @@ def gerar_analise_corporativa(dados, client=None):
     # 8️⃣ Classificação de risco
     risco = "Baixo" if indice < 60 else "Moderado" if indice < 75 else "Alto"
 
-    # 9️⃣ Prompt final para parecer estratégico
-    prompt_final = f"""
-    Gere parecer estratégico completo considerando:
-    - Score aderência: {score_aderencia}
-    - Horas semanais: {horas}
-    - Status carga: {status_carga}
-    - Score DISC: {disc_score}
-    - Dificuldades: {dificuldades_classificadas}
-    - Índice geral do cargo: {indice}
-    - Classificação de risco: {risco}
-    
-    Inclua:
-    - Diagnóstico estrutural
-    - Análise de desvios
-    - Avaliação comportamental
-    - Riscos organizacionais
-    - Recomendação detalhada de redistribuição
-    - Atividades corretas para o cargo com tempo e frequência ideais
-    - Conclusão executiva
-    """
-
-    # 10️⃣ Obter parecer do GPT
-    parecer = ""
-    try:
-        if client:
-            resposta = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role":"user","content":prompt_final}],
-                temperature=0.3
-            )
-            parecer = resposta.choices[0].message.content
-        else:
-            parecer = "GPT não disponível. Retorno padrão: análise resumida."
-    except:
-        parecer = "Erro ao gerar parecer com GPT."
-
-    # 11️⃣ Indicadores
+    # 9️⃣ Preparando o retorno
     indicadores = {
         "score_aderencia": score_aderencia,
-        "horas_semanais": horas,
-        "status_carga": status_carga,
-        "score_disc": disc_score,
+        "disc_score": disc_score,
         "indice_geral": indice,
-        "risco": risco
+        "risco": risco,
+        "status_carga": status_carga,
+        "horas": horas,
+        "dificuldades": dificuldades_classificadas
     }
+    
+    parecer = f"O colaborador apresenta risco {risco} com índice geral de {indice}%."
 
     return parecer, indicadores
-
 # ============================================================
 # GERAR PDF DO PARECER
 # ============================================================
