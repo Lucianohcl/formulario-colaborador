@@ -328,7 +328,7 @@ st.sidebar.title(&quot;   Menu de Navegação&quot;)
 
 btn_home = st.sidebar.button(&quot;   Home&quot;)
 btn_analise = st.sidebar.button(&quot;   Análise Inteligente&quot;)
-btn_comparar = st.sidebar.button(&quot;⚖️ Comparar Colaboradores&quot;)
+btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
 btn_disc = st.sidebar.button(&quot;   Perfil DISC&quot;)
 btn_parecer = st.sidebar.button(&quot;   Parecer Estratégico&quot;)
 btn_visualizar = st.sidebar.button(&quot;  ️ Visualizar Dados&quot;)
