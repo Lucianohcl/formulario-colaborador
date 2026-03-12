@@ -241,25 +241,28 @@ perguntas_disc = [
 ]
 
 
-        # --- FORMULÁRIO ---
+        
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-    
-    with st.form("form_colaborador"):
-        # Dados de Identificação
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador")
-        setor = col2.text_input("Setor")
-        cargo = col1.text_input("Cargo")
-        chefe = col2.text_input("Chefe imediato")
-        departamento = col1.text_input("Departamento")
-        empresa = col2.text_input("Empresa / Unidade")
-        escolaridade = col1.text_input("Escolaridade")
-        devolucao = col2.text_input("Devolver preenchido em")
-        
+
+# --- FORMULÁRIO ---
+with st.form("form_colaborador"):
+        nome = st.text_input("Nome do colaborador")
+        setor = st.text_input("Setor")
+        cargo = st.text_input("Cargo")
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
+        # ✅ Botão de envio obrigatório dentro do form
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+    
+        if enviar:
+            st.success("Formulário enviado com sucesso!")
+            st.write("Nome:", nome)
+            st.write("Setor:", setor)
+            st.write("Cargo:", cargo)
+
+
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
         
@@ -340,15 +343,45 @@ if st.query_params.get("page") == "formulario":
                 impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
-            if enviar:
-                 st.success("Formulário enviado com sucesso!")
-                 # Mostrar resumo
-                 st.subheader("Resumo das Atividades")
-                 st.dataframe(pd.DataFrame(atividades))
-                 st.subheader("Resumo das Dificuldades")
-                 st.dataframe(pd.DataFrame(dificuldades))
-                 st.subheader("Resumo das Sugestões")
-                 st.dataframe(pd.DataFrame(sugestoes))  
+import streamlit as st
+import pandas as pd
+
+# --- FORMULÁRIO ---
+with st.form("form_colaborador"):
+    # Campos do formulário
+    nome = st.text_input("Nome do colaborador")
+    setor = st.text_input("Setor")
+    cargo = st.text_input("Cargo")
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+    objetivo = st.text_area("Trabalho e principal objetivo")
+    
+    # --- Listas vazias para preencher dinamicamente ---
+    atividades = [{"Atividade": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]
+    dificuldades = [{"Dificuldade": "", "Setor/Parceiro": "", "Tempo Perdido": ""} for _ in range(20)]
+    sugestoes = [{"Sugestão": "", "Impacto Esperado": ""} for _ in range(20)]
+
+    # Botão de envio
+    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+    # ✅ Tudo que depende do envio deve ficar dentro do form
+    if enviar:
+        st.success("Formulário enviado com sucesso!")
+        
+        st.subheader("Resumo do Colaborador")
+        st.write("Nome:", nome)
+        st.write("Setor:", setor)
+        st.write("Cargo:", cargo)
+        st.write("Cursos:", cursos)
+        st.write("Objetivo:", objetivo)
+
+        st.subheader("Resumo das Atividades")
+        st.dataframe(pd.DataFrame(atividades))
+        
+        st.subheader("Resumo das Dificuldades")
+        st.dataframe(pd.DataFrame(dificuldades))
+        
+        st.subheader("Resumo das Sugestões")
+        st.dataframe(pd.DataFrame(sugestoes)) 
 
             # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
             if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
