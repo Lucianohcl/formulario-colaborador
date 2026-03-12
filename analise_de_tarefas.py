@@ -535,8 +535,8 @@ use_container_width=True
 )
 
 # --- SEÇÃO DE DIFICULDADES ---
-st.markdown(&quot;---&quot;)
-st.subheader(&quot;⚠️ Dificuldades e Bloqueios&quot;)
+st.markdown("---")
+st.subheader("⚠️ Dificuldades e Bloqueios")
 
 edit_dif = st.data_editor(
 pd.DataFrame({
