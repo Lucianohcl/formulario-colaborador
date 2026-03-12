@@ -423,6 +423,7 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
         objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
 
+        # --- SEÇÃO: ATIVIDADES ---
         st.subheader("🔹 Atividades Executadas")
         if 'df_atividades' not in st.session_state:
             st.session_state.df_atividades = pd.DataFrame({
@@ -440,7 +441,49 @@ if st.query_params.get("page") == "formulario":
         )
         st.session_state.df_atividades = edit_ativ   
 
-        # (Repetir lógica similar para Dificuldades e Sugestões se necessário...)
+        # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        if 'df_dificuldades' not in st.session_state:
+            st.session_state.df_dificuldades = pd.DataFrame({
+                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+            })
+
+        edit_dif = st.data_editor(
+            st.session_state.df_dificuldades, 
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor"
+        )
+        st.session_state.df_dificuldades = edit_dif
+
+        # --- SEÇÃO: SUGESTÕES E MELHORIAS ---
+        st.subheader("💡 Sugestões e Melhorias")
+        if 'df_sugestoes' not in st.session_state:
+            st.session_state.df_sugestoes = pd.DataFrame({
+                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+            })
+
+        edit_sug = st.data_editor(
+            st.session_state.df_sugestoes, 
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor"
+        )
+        st.session_state.df_sugestoes = edit_sug
+
+        # --- BOTÃO DE ENVIO ---
+        submit_button = st.form_submit_button("📤 Enviar Análise Completa")
+        
+        if submit_button:
+            st.success(f"Obrigado, {nome}! Seus dados foram registrados.") 
+
+
 
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
