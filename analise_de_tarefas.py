@@ -426,8 +426,7 @@ if st.query_params.get("page") == "formulario":
     # 4. LEGENDA
     st.info("**📌 Legenda de Frequência:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
 
-    
-    
+        
     # Movendo as tabelas para FORA do form para garantir que os dados fiquem salvos
     # --- SEÇÃO: ATIVIDADES ---
     st.subheader("🔹 Atividades Executadas")
@@ -439,7 +438,7 @@ if st.query_params.get("page") == "formulario":
         "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
         "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         
-    }, hide_index=True, num_rows="fixed", use_container_width=True, key="tabela_nova_v2")
+    }, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
 
     # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
     st.subheader("⚠️ Dificuldades e Bloqueios")
