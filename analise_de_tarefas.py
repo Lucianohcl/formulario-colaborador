@@ -324,15 +324,15 @@ st.stop()
 
 # ============================================================
 
-st.sidebar.title(&quot;   Menu de Navegação&quot;)
+st.sidebar.title("📌 Menu de Navegação")
 
-btn_home = st.sidebar.button(&quot;   Home&quot;)
-btn_analise = st.sidebar.button(&quot;   Análise Inteligente&quot;)
+btn_home = st.sidebar.button("🏠 Home")
+btn_analise = st.sidebar.button("📊 Análise Inteligente")
 btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
-btn_disc = st.sidebar.button(&quot;   Perfil DISC&quot;)
-btn_parecer = st.sidebar.button(&quot;   Parecer Estratégico&quot;)
-btn_visualizar = st.sidebar.button(&quot;  ️ Visualizar Dados&quot;)
-btn_produtividade = st.sidebar.button(&quot;   Produtividade&quot;)
+btn_disc = st.sidebar.button("🧠 Perfil DISC")
+btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
+btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
+btn_produtividade = st.sidebar.button("🚀 Produtividade")
 
 st.sidebar.markdown(&quot;---&quot;)
 
