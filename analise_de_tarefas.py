@@ -340,18 +340,16 @@ if st.query_params.get("page") == "formulario":
                 impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
-    
+            if enviar:
+                 st.success("Formulário enviado com sucesso!")
+                 # Mostrar resumo
+                 st.subheader("Resumo das Atividades")
+                 st.dataframe(pd.DataFrame(atividades))
+                 st.subheader("Resumo das Dificuldades")
+                 st.dataframe(pd.DataFrame(dificuldades))
+                 st.subheader("Resumo das Sugestões")
+                 st.dataframe(pd.DataFrame(sugestoes))  
 
-    if submit_button:
-        st.success("Formulário enviado com sucesso!")
-        # Mostrar resumo
-        st.subheader("Resumo das Atividades")
-        st.dataframe(pd.DataFrame(atividades))
-        st.subheader("Resumo das Dificuldades")
-        st.dataframe(pd.DataFrame(dificuldades))
-        st.subheader("Resumo das Sugestões")
-        st.dataframe(pd.DataFrame(sugestoes))
-        if enviar:
             # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
             if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
                 st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
