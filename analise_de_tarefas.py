@@ -463,7 +463,11 @@ if st.query_params.get("page") == "formulario":
         st.subheader("💡 Sugestões e Melhorias")
         if 'df_sugestoes' not in st.session_state:
             st.session_state.df_sugestoes = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
+                "Atividade Descrita": [""] * 20, 
+                "Frequência": [""] * 20, 
+                "Horas": [""] * 20, 
+                "Minutos": [""] * 20,
+                "Impacto Esperado": [""] * 20  # Nova coluna adicionada
             })
 
         edit_sug = st.data_editor(
@@ -472,16 +476,13 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado", help="Descreva o resultado esperado desta melhoria") # Configuração da nova coluna
             },
             hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor"
         )
         st.session_state.df_sugestoes = edit_sug
 
-        # --- BOTÃO DE ENVIO ---
-        submit_button = st.form_submit_button("📤 Enviar Análise Completa")
-        
-        if submit_button:
-            st.success(f"Obrigado, {nome}! Seus dados foram registrados.") 
+         
 
 
 
