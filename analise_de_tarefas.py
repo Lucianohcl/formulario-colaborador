@@ -242,30 +242,17 @@ perguntas_disc = [
 
 
         
+# --- ENVIO FINAL DO FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-import streamlit as st
-
-# --- FORMULÁRIO MINIMALISTA ---
-st.subheader("Formulário Colaborador")
-
-nome = st.text_input("Nome do colaborador", key="nome")
-setor = st.text_input("Setor", key="setor")
-cargo = st.text_input("Cargo", key="cargo")
-cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="cursos")
-objetivo = st.text_area("Trabalho e principal objetivo", key="objetivo")
-
-
-if st.button("🚀 ENVIAR FORMULÁRIO FINAL", key="btn_enviar_final"):
-
-    st.success("Formulário enviado com sucesso!")
-    st.write("Nome:", nome)
-    st.write("Setor:", setor)
-    st.write("Cargo:", cargo)
-    st.write("Cursos:", cursos)
-    st.write("Objetivo:", objetivo)
-
+    if st.button("🚀 ENVIAR FORMULÁRIO FINAL", key="btn_enviar_final_colab"):
+        st.success("Formulário enviado com sucesso!")
+        st.write("Nome:", nome)
+        st.write("Setor:", setor)
+        st.write("Cargo:", cargo)
+        st.write("Cursos:", cursos)
+        st.write("Objetivo:", objetivo)
 
 import streamlit as st
 import pandas as pd
