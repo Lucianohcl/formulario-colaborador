@@ -402,11 +402,38 @@ perguntas_disc = [
 
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
+    # 1. Definições de listas
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
     st.title("📋 Formulário Completo do Colaborador")
+
+    # 2. SEÇÃO DE IDENTIFICAÇÃO
+    st.subheader("👤 Informações Pessoais e Profissionais")
+    col1, col2 = st.columns(2)
+    with col1:
+        nome = st.text_input("Nome do colaborador", key="nome")
+        cargo = st.text_input("Cargo", key="cargo")
+        departamento = st.text_input("Departamento", key="departamento")
+    with col2:
+        chefe = st.text_input("Chefe imediato", key="chefe")
+        empresa = st.text_input("Empresa / Unidade", key="empresa")
+        escolaridade = st.text_input("Escolaridade", key="escolaridade")
+        devolucao = st.text_input("Data de preenchimento", key="devolucao")
+
+    st.divider()
+
+    # 3. CAMPOS DE TEXTO
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais para a função", key="cursos")
+    objetivo = st.text_area("Descreva o seu trabalho e o seu principal objetivo", key="objetivo")
+
+    st.divider()
+
+    # 4. LEGENDA
+    st.info("**📌 Legenda de Frequência:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+
+    
     
     # Movendo as tabelas para FORA do form para garantir que os dados fiquem salvos
     # --- SEÇÃO: ATIVIDADES ---
