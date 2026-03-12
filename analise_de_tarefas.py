@@ -364,14 +364,7 @@ def carregar_todos_formularios():
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
 
-# --- BLOCO DE CSS PARA OCULTAÇÃO ---
-if st.query_params.get("page") == "formulario":
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        #MainMenu, footer, header {visibility: hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
+
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -406,7 +399,7 @@ if st.query_params.get("page") == "formulario":
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
+/
     st.title("📋 Formulário Completo do Colaborador")
 
     # 2. SEÇÃO DE IDENTIFICAÇÃO
@@ -439,13 +432,13 @@ if st.query_params.get("page") == "formulario":
     # --- SEÇÃO: ATIVIDADES ---
     st.subheader("🔹 Atividades Executadas")
     if 'df_atividades' not in st.session_state:
-        st.session_state.df_atividades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20})
+        st.session_state.df_atividades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20})
     
     st.session_state.df_atividades = st.data_editor(st.session_state.df_atividades, column_config={
         "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
         "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
         "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)")
+        
     }, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
 
     # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
@@ -473,18 +466,7 @@ if st.query_params.get("page") == "formulario":
         "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado")
     }, hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor")
 
-    # Agora o formulário apenas para os campos de texto e o DISC
-    with st.form("form_envio_final"):
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador", key="f_nome")
-        setor = col2.text_input("Setor", key="f_setor")
-        cargo = col1.text_input("Cargo", key="f_cargo")
-        chefe = col2.text_input("Chefe imediato", key="f_chefe")
-        departamento = col1.text_input("Departamento", key="f_dep")
-        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
-        
-        cursos = st.text_area("Cursos obrigatórios", key="f_cursos")
-        objetivo = st.text_area("Principal objetivo", key="f_obj")
+    
 
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
