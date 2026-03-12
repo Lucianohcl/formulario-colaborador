@@ -445,11 +445,30 @@ if st.query_params.get("page") == "formulario":
         )
         st.session_state.df_atividades = edit_ativ   
 
+        # --- SEÇÃO: ATIVIDADES ---
+        st.subheader("🔹 Atividades Executadas")
+        if 'df_atividades' not in st.session_state:
+            st.session_state.df_atividades = pd.DataFrame({
+                "Atividade Descrita": [""] * 20, 
+                "Frequência": [""] * 20, 
+                "Horas": [""] * 20, 
+                "Minutos": [""] * 20,
+                "Origem": [""] * 20
+            })
+
+        st.session_state.df_atividades = st.data_editor(
+            st.session_state.df_atividades, 
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") # AGORA É TEXTO
+            },
+            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
+        )
+
         # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        
-        lista_origem = ["Setor interno", "Parceiro externo"]
-
         if 'df_dificuldades' not in st.session_state:
             st.session_state.df_dificuldades = pd.DataFrame({
                 "Atividade Descrita": [""] * 20, 
@@ -465,13 +484,12 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Origem": st.column_config.SelectboxColumn("Origem", options=lista_origem),
+                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") # AGORA É TEXTO
             },
-            hide_index=True, 
-            num_rows="fixed", 
-            use_container_width=True, 
-            key="dif_editor"
+            hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor"
         )
+
+       
 
         
 
