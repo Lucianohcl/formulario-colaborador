@@ -508,12 +508,11 @@ st.warning(&quot;&quot;&quot;
 &quot;&quot;&quot;)
 
 with col3:
-st.error(&quot;&quot;&quot;
-**⚠️ DETALHE:**
-* A numeração lateral (nones) é um comportamento nativo do sistema que polui a
-página.
-* Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-&quot;&quot;&quot;)
+st.error("""
+⚠️ Algo deu errado! 
+Verifique os campos preenchidos e tente novamente.
+""")
+
 
 st.subheader(&quot;   Atividades Executadas&quot;)
 
