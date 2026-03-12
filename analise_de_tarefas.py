@@ -256,11 +256,9 @@ cargo = st.text_input("Cargo", key="cargo")
 cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="cursos")
 objetivo = st.text_area("Trabalho e principal objetivo", key="objetivo")
 
-<<<<<<< HEAD
-if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
-=======
+
 if st.button("🚀 ENVIAR FORMULÁRIO FINAL", key="btn_enviar_final"):
->>>>>>> 701e479 (Atualização: formulário completo, motor de análise e PDF)
+
     st.success("Formulário enviado com sucesso!")
     st.write("Nome:", nome)
     st.write("Setor:", setor)
@@ -300,10 +298,12 @@ with st.container():  # substitui o form e evita erro de duplicação
     * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
     """)
 
-    # --- Atividades ---
+    # --- Parte 2: Atividades ---
     st.markdown("---")
+    st.subheader("🔹 Atividades Executadas")
     atividades = []
-    with st.expander("🔹 Atividades Executadas", expanded=True):
+
+    with st.expander("Clique para preencher as Atividades", expanded=True):
         for i in range(20):
             col1, col2, col3, col4 = st.columns([4, 2, 1, 1])
             with col1:
@@ -314,12 +314,20 @@ with st.container():  # substitui o form e evita erro de duplicação
                 hrs = st.selectbox("Horas", lista_horas, key=f"hrs_{i}")
             with col4:
                 mins = st.selectbox("Minutos", lista_minutos, key=f"mins_{i}")
-            atividades.append({"Atividade": atv, "Frequência": freq, "Horas": hrs, "Minutos": mins})
+        
+            atividades.append({
+                "Atividade": atv,
+                "Frequência": freq,
+                "Horas": hrs,
+                "Minutos": mins
+            })
 
-    # --- Dificuldades ---
+    # --- Parte 3: Dificuldades ---
     st.markdown("---")
+    st.subheader("⚠️ Dificuldades e Bloqueios")
     dificuldades = []
-    with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
+
+    with st.expander("Clique para preencher as Dificuldades", expanded=False):
         for i in range(20):
             col1, col2, col3 = st.columns([4, 3, 1])
             with col1:
@@ -328,7 +336,13 @@ with st.container():  # substitui o form e evita erro de duplicação
                 setor_parceiro = st.text_input(f"Setor/Parceiro {i+1}", key=f"setor_{i}")
             with col3:
                 tempo = st.selectbox("Tempo Perdido (min)", lista_minutos, key=f"tempo_{i}")
-            dificuldades.append({"Dificuldade": dif, "Setor/Parceiro": setor_parceiro, "Tempo Perdido": tempo})
+
+            dificuldades.append({
+                "Dificuldade": dif,
+                "Setor/Parceiro": setor_parceiro,
+                "Tempo Perdido": tempo
+            })
+    # Fim Parte 3 – termina após loop
 
     # --- Sugestões ---
     st.markdown("---")
