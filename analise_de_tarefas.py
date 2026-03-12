@@ -502,7 +502,6 @@ st.info(&quot;&quot;&quot;
 
 with col2:
 st.warning(&quot;&quot;&quot;
-**⏱️ COMO REGISTRAR O TEMPO:**
 * **Horas e Minutos**: Selecione o valor em cada coluna.
 * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
 * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
