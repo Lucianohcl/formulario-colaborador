@@ -423,6 +423,10 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
         objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
 
+        # --- LEGENDA DE FREQUÊNCIA ---
+        st.info("**📌 Legenda:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+
+
         # --- SEÇÃO: ATIVIDADES ---
         st.subheader("🔹 Atividades Executadas")
         if 'df_atividades' not in st.session_state:
@@ -443,14 +447,31 @@ if st.query_params.get("page") == "formulario":
 
         # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
         st.subheader("⚠️ Dificuldades e Bloqueios")
+        
+        # 1. Cria os dados se não existirem (Adicionada a coluna "Origem")
         if 'df_dificuldades' not in st.session_state:
             st.session_state.df_dificuldades = pd.DataFrame({
                 "Atividade Descrita": [""] * 20, 
                 "Frequência": [""] * 20, 
                 "Horas": [""] * 20, 
                 "Minutos": [""] * 20,
-                "Origem": [""] * 20
+                "Origem": [""] * 20  # Nova coluna aqui
             })
+
+        # 2. MOSTRA A TABELA (Configurada com a Selectbox de Origem)
+        st.session_state.df_dificuldades = st.data_editor(
+            st.session_state.df_dificuldades, 
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Origem": st.column_config.SelectboxColumn("Setor interno/Parceiro externo", options=lista_origem),
+            },
+            hide_index=True, 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="dif_editor"
+        )
 
         # --- SEÇÃO: SUGESTÕES E MELHORIAS ---
         st.subheader("💡 Sugestões e Melhorias")
