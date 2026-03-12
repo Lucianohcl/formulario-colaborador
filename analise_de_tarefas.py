@@ -1022,24 +1022,51 @@ if not os.path.exists(json_master):
 # ============================================================
 def salvar_formulario_json(formulario):
     """
-    Recebe um dicionário do formulário preenchido, salva no arquivo 
-    JSON único dentro da pasta 'dados' e atualiza a sessão para 
-    espelhamento imediato na interface.
+    Salva o formulário no arquivo JSON e atualiza o estado da sessão.
     """
-    # 1. Tenta carregar os dados existentes ou cria uma lista vazia
     try:
         with open(json_master, "r", encoding="utf-8") as f:
             dados_existentes = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Se o arquivo não existir ou estiver vazio/inválido, inicia como lista vazia
         dados_existentes = []
 
-    # 2. Adiciona o novo formulário à lista
     dados_existentes.append(formulario)
 
-    # 3. Salva a lista completa de volta no arquivo
     with open(json_master, "w", encoding="utf-8") as f:
         json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
 
-    # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
     st.session_state["formularios"] = dados_existentes
+
+# ============================================================
+# LÓGICA DE ENVIO (PROCESSAMENTO)
+# ============================================================
+
+# Aqui termina a função. O código abaixo deve estar alinhado à esquerda.
+if enviar:
+    if not nome or not departamento:
+        st.error("⚠️ Nome e Departamento são obrigatórios!")
+    else:
+        try:
+            # 1. Monta o dicionário de dados
+            dados_finais = {
+                "nome": nome,
+                "departamento": departamento,
+                "data": data_hoje,
+                "atividades": st.session_state.df_atividades.to_dict('records'),
+                "disc": {f"p_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+            }
+
+            # 2. Chama a função de salvar
+            salvar_formulario_json(dados_finais)
+
+            # 3. Sucesso e Interrupção
+            st.success("✅ Formulário enviado com sucesso!")
+            st.balloons()
+            st.stop() 
+
+        except Exception as e:
+            st.error(f"❌ Erro ao processar os dados: {e}")
+
+# --- TRAVA DE SEGURANÇA FINAL ---
+# Garante que nada abaixo deste bloco (menu, etc) seja executado
+st.stop()
