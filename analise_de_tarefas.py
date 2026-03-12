@@ -339,7 +339,7 @@ with st.container():  # substitui o form e evita erro de duplicação
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
     # --- Botão de Envio ---
-    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+    enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
 
     # --- Ações após envio ---
     if enviar:
@@ -442,8 +442,7 @@ with st.container():  # substitui o form e evita erro de duplicação
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
     # --- Botão de envio ---
-    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-
+    enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
     if enviar:
         if not nome or not setor or not cargo:
             st.error("⚠️ Preencha Nome, Setor e Cargo!")
