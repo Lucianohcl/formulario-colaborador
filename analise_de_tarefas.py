@@ -395,14 +395,13 @@ perguntas_disc = [
 
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
-    # 1. Definições de listas
-    lista_horas = [f"{i} h" for i in range(25)]
-    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    import os, json, pytz
+    from datetime import datetime
+    import pandas as pd
 
     st.title("📋 Formulário Completo do Colaborador")
 
-    # 2. SEÇÃO DE IDENTIFICAÇÃO
+    # 1. IDENTIFICAÇÃO
     st.subheader("👤 Informações Pessoais e Profissionais")
     col1, col2 = st.columns(2)
     with col1:
@@ -415,105 +414,56 @@ if st.query_params.get("page") == "formulario":
         escolaridade = st.text_input("Escolaridade", key="escolaridade")
         devolucao = st.text_input("Data de preenchimento", key="devolucao")
 
-    st.divider()
-
-    # 3. CAMPOS DE TEXTO
     cursos = st.text_area("Cursos obrigatórios ou diferenciais para a função", key="cursos")
     objetivo = st.text_area("Descreva o seu trabalho e o seu principal objetivo", key="objetivo")
 
-    st.divider()
+    # 2. TABELAS (Data Editor)
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    lista_horas = [f"{i} h" for i in range(25)]
+    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
-    # 4. LEGENDA
-    st.info("**📌 Legenda de Frequência:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-
-        
-    # Movendo as tabelas para FORA do form para garantir que os dados fiquem salvos
-    # --- SEÇÃO: ATIVIDADES ---
     st.subheader("🔹 Atividades Executadas")
     if 'df_atividades' not in st.session_state:
         st.session_state.df_atividades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20})
-    
-    st.session_state.df_atividades = st.data_editor(st.session_state.df_atividades, column_config={
-        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        
-    }, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
+    st.session_state.df_atividades = st.data_editor(st.session_state.df_atividades, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
 
-    # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
-    st.subheader("⚠️ Dificuldades e Bloqueios")
-    if 'df_dificuldades' not in st.session_state:
-        st.session_state.df_dificuldades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20})
-    
-    st.session_state.df_dificuldades = st.data_editor(st.session_state.df_dificuldades, column_config={
-        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)")
-    }, hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor")
+    # 3. DISC
+    st.subheader("📊 Questionário DISC")
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True, index=None)
 
-    # --- SEÇÃO: SUGESTÕES E MELHORIAS ---
-    st.subheader("💡 Sugestões e Melhorias")
-    if 'df_sugestoes' not in st.session_state:
-        st.session_state.df_sugestoes = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20, "Impacto Esperado": [""] * 20})
-    
-    st.session_state.df_sugestoes = st.data_editor(st.session_state.df_sugestoes, column_config={
-        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)"),
-        "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado")
-    }, hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor")
+    # 4. BOTÃO ÚNICO DE ENVIO
+    enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    
-
-            # --- SEÇÃO: QUESTIONÁRIO DISC ---
-            st.subheader("📊 Questionário DISC")
-
-            for i, pergunta in enumerate(perguntas_disc, 1):
-                st.radio(
-                f"{i}. {pergunta}",
-                ["A", "B", "C", "D"],
-                key=f"disc_{i}",
-                horizontal=True,
-                index=None
-            )
-
-            # --- FINALIZAÇÃO E ENVIO ---
-            enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
-
-            if enviar:
-                import pytz
-                from datetime import datetime
-        
-                fuso = pytz.timezone("America/Sao_Paulo")
-                data_hoje = datetime.now(fuso).strftime("%d/%m/%Y %H:%M:%S")
-
-                # 1. Coleta os dados das tabelas que estão no session_state
-                dados_atividades = st.session_state.df_atividades.to_dict('records')
-        
-                # 2. Exibe mensagem de sucesso na tela
-                st.success(f"✅ Formulário enviado com sucesso em {data_hoje}!")
-       
-        
-                # 3. Mostra um resumo rápido para o colaborador
-                st.write(f"**Protocolo:** {nome} - {data_hoje}")
-
-        # Validação simples
-        if not nome or not setor:
-            st.error("⚠️ Nome e Setor são obrigatórios!")
+    if enviar:
+        if not nome or not departamento:
+            st.error("⚠️ Nome e Departamento são obrigatórios!")
+        elif st.session_state.df_atividades[st.session_state.df_atividades.iloc[:, 0].astype(str).str.strip() != ""].empty:
+            st.error("⚠️ A tabela de Atividades não pode estar vazia!")
         else:
-            dados = {
-                "nome": nome,
-                "data": data_hoje,
-                "atividades": st.session_state.df_atividades.to_dict('records'),
-                "dificuldades": st.session_state.df_dificuldades.to_dict('records'),
-                "sugestoes": st.session_state.df_sugestoes.to_dict('records'),
-                "disc": {f"p_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-            }
-            # Aqui você salva o seu JSON
-            st.success(f"✅ Enviado com sucesso, {nome}!")
+            try:
+                fuso = pytz.timezone("America/Sao_Paulo")
+                agora = datetime.now(fuso)
+                data_hoje = agora.strftime("%d/%m/%Y %H:%M:%S")
 
+                dados_finais = {
+                    "nome": nome, "departamento": departamento, "data": data_hoje,
+                    "atividades": st.session_state.df_atividades.to_dict('records'),
+                    "disc": {f"p_{i}": st.session_state.get(f"disc_{i}") for i in range(1, len(perguntas_disc) + 1)}
+                }
+
+                # Salva JSON localmente
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+                nome_arq = f"{nome.strip().replace(' ', '_')}_{agora.strftime('%H%M%S')}.json"
+                with open(os.path.join(dados_dir, nome_arq), "w", encoding="utf-8") as f:
+                    json.dump(dados_finais, f, ensure_ascii=False, indent=4)
+
+                st.success(f"✅ Enviado com sucesso! Protocolo: {data_hoje}")
+                st.balloons()
+            except Exception as e:
+                st.error(f"❌ Erro: {e}")
 
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
