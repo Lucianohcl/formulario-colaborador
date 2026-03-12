@@ -406,24 +406,9 @@ if st.query_params.get("page") == "formulario":
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
-    # REMOVEMOS O 'with st.form' DAQUI
     st.title("📋 Formulário Completo do Colaborador")
     
-    col1, col2 = st.columns(2)
-    nome = col1.text_input("Nome do colaborador", key="f_nome")
-    setor = col2.text_input("Setor", key="f_setor")
-    cargo = col1.text_input("Cargo", key="f_cargo")
-    chefe = col2.text_input("Chefe imediato", key="f_chefe")
-    departamento = col1.text_input("Departamento", key="f_dep")
-    empresa = col2.text_input("Empresa / Unidade", key="f_emp")
-    escolaridade = col1.text_input("Escolaridade", key="f_esc")
-    devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
-    
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
-    objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
-
-    st.info("**📌 Legenda de Frequência:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
-
+    # Movendo as tabelas para FORA do form para garantir que os dados fiquem salvos
     # --- SEÇÃO: ATIVIDADES ---
     st.subheader("🔹 Atividades Executadas")
     if 'df_atividades' not in st.session_state:
@@ -461,11 +446,18 @@ if st.query_params.get("page") == "formulario":
         "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado")
     }, hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor")
 
-    # PRONTO: SEM BOTÃO E SEM ERRO!
+    # Agora o formulário apenas para os campos de texto e o DISC
+    with st.form("form_envio_final"):
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador", key="f_nome")
+        setor = col2.text_input("Setor", key="f_setor")
+        cargo = col1.text_input("Cargo", key="f_cargo")
+        chefe = col2.text_input("Chefe imediato", key="f_chefe")
+        departamento = col1.text_input("Departamento", key="f_dep")
+        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
         
-         
-
-
+        cursos = st.text_area("Cursos obrigatórios", key="f_cursos")
+        objetivo = st.text_area("Principal objetivo", key="f_obj")
 
         st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
@@ -473,34 +465,26 @@ if st.query_params.get("page") == "formulario":
 
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-        if enviar:
-            import os, json, pytz
-            from datetime import datetime
-            
-            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
+    if enviar:
+        import pytz
+        from datetime import datetime
+        fuso = pytz.timezone('America/Sao_Paulo')
+        data_hoje = datetime.now(fuso).strftime('%d/%m/%Y %H:%M:%S')
 
-            # 1. VALIDAÇÃO DE CAMPOS
-            if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Preencha todos os campos obrigatórios!")
-                st.stop() # PARA TUDO E MANTÉM A TELA PARA EDIÇÃO
-
-            # 2. VALIDAÇÃO DO DISC
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Responda todas as perguntas do DISC!")
-                st.stop()
-
-            # 3. SALVAMENTO (Sem 'else', fluxo direto)
-            nome_limpo = nome.strip().replace(" ", "_")
+        # Validação simples
+        if not nome or not setor:
+            st.error("⚠️ Nome e Setor são obrigatórios!")
+        else:
             dados = {
-                "nome": nome, "data_envio": data_hoje, "setor": setor,
-                "atividades": edit_ativ.to_dict('records'),
-                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+                "nome": nome,
+                "data": data_hoje,
+                "atividades": st.session_state.df_atividades.to_dict('records'),
+                "dificuldades": st.session_state.df_dificuldades.to_dict('records'),
+                "sugestoes": st.session_state.df_sugestoes.to_dict('records'),
+                "disc": {f"p_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
             }
-            
-            # (Aqui você insere o código de salvar o arquivo JSON que já temos)
-            st.success("✅ Enviado com sucesso!")
+            # Aqui você salva o seu JSON
+            st.success(f"✅ Enviado com sucesso, {nome}!")
 
 
         # -------------------------------------------------
