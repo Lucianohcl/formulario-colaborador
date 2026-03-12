@@ -615,15 +615,17 @@ enviar = st.form_submit_button(&quot;   ENVIAR FORMULÁRIO FINAL&quot;)
 
 if enviar:
 
-# 1. VALIDAÇÃO DE CAMPOS
-if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-st.error(&quot;⚠️ Erro: Preencha todos os campos de identificação!&quot;)
+    # 1. VALIDAÇÃO DE CAMPOS
+    if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
+        st.error("⚠️ Erro: Preencha todos os campos de identificação!")
 
-# 2. VALIDAÇÃO DO DISC
-elif any(st.session_state.get(f&quot;disc_{i}&quot;) is None for i in range(1, 25)):
-st.error(&quot;⚠️ Erro: Responda todas as perguntas do DISC!&quot;)
+    # 2. VALIDAÇÃO DO DISC
+    elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+        st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
 
-else:
+    else:
+        # Aqui entra o que você quer fazer se tudo estiver ok
+        st.success("✅ Formulário válido! Pode processar os dados.")
 
 import os
 import json
