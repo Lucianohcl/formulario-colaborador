@@ -1013,13 +1013,9 @@ def gerar_pdf(parecer, nome):
 # ============================================================
 # PASTA BASE PARA FORMULÁRIOS (JSON)
 # ============================================================
-# Usamos 'dados_dir' para manter o padrão que já criamos
-json_master = os.path.join(dados_dir, "formularios.json")
-
-# Inicializa arquivo JSON se não existir
 if not os.path.exists(json_master):
     with open(json_master, "w", encoding="utf-8") as f:
-        json.dump([], f, ensure_ascii=False, indent=4)
+        json.dump([], f) # Cria o arquivo com uma lista vazia    
 
 # ============================================================
 # FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
