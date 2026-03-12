@@ -767,13 +767,42 @@ def calcular_carga(atividades):
 
 def gerar_atividades_ideais(cargo, setor, client=None):
     if client is None:
-        return [{
-            "nome_atividade": "Atividade de exemplo",
-            "descricao": "Descrição de exemplo",
-            "frequencia_ideal": "semanal",
-            "tempo_medio_minutos": 60,
-            "justificativa_tecnica": "Exemplo"
-        }]
+        return {
+            "atividades": [
+                {
+                    "nome_atividade": "Atividade de exemplo",
+                    "descricao": "Descrição de exemplo",
+                    "frequencia_ideal": "Semanal",
+                    "tempo_medio_minutos": 60,
+                    "justificativa_tecnica": "Exemplo"
+                }
+            ],
+            "dificuldades_bloqueios": [
+                {
+                    "nome_atividade": "Falta de documentação",
+                    "descricao": "Ausência de manuais ou POPs atualizados",
+                    "frequencia_ideal": "Diário",
+                    "tempo_medio_minutos": 30,
+                    "justificativa_tecnica": "Gera retrabalho e inconsistência na execução."
+                },
+                {
+                    "nome_atividade": "Instabilidade de Sistema",
+                    "descricao": "Lentidão no software principal",
+                    "frequencia_ideal": "Diário",
+                    "tempo_medio_minutos": 45,
+                    "justificativa_tecnica": "Impede o cumprimento dos prazos estabelecidos."
+                }
+            ],
+            "sugestoes": [
+                {
+                    "nome_atividade": "Checklist Digital",
+                    "descricao": "Implementação de verificações automáticas",
+                    "frequencia_ideal": "Semanal",
+                    "tempo_medio_minutos": 20,
+                    "justificativa_tecnica": "Redução de erros manuais e ganho de tempo."
+                }
+            ]
+        }
     
     prompt = f"""
     Gere 12 atividades ideais para:
