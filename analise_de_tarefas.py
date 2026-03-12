@@ -467,17 +467,37 @@ if st.query_params.get("page") == "formulario":
 
     
 
-        st.subheader("📊 Questionário DISC")
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], key=f"disc_{i}", horizontal=True, index=None)
+            # --- SEÇÃO: QUESTIONÁRIO DISC ---
+            st.subheader("📊 Questionário DISC")
 
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+            for i, pergunta in enumerate(perguntas_disc, 1):
+                st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                horizontal=True,
+                index=None
+            )
 
-    if enviar:
-        import pytz
-        from datetime import datetime
-        fuso = pytz.timezone('America/Sao_Paulo')
-        data_hoje = datetime.now(fuso).strftime('%d/%m/%Y %H:%M:%S')
+            # --- FINALIZAÇÃO E ENVIO ---
+            enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+            if enviar:
+                import pytz
+                from datetime import datetime
+        
+                fuso = pytz.timezone("America/Sao_Paulo")
+                data_hoje = datetime.now(fuso).strftime("%d/%m/%Y %H:%M:%S")
+
+                # 1. Coleta os dados das tabelas que estão no session_state
+                dados_atividades = st.session_state.df_atividades.to_dict('records')
+        
+                # 2. Exibe mensagem de sucesso na tela
+                st.success(f"✅ Formulário enviado com sucesso em {data_hoje}!")
+       
+        
+                # 3. Mostra um resumo rápido para o colaborador
+                st.write(f"**Protocolo:** {nome} - {data_hoje}")
 
         # Validação simples
         if not nome or not setor:
