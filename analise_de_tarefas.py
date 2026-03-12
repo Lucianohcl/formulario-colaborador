@@ -211,15 +211,20 @@ data = [colunas] # Cabeçalho
 for item in dados:
 data.append([str(item.get(c, &#39;&#39;)) for c in colunas])
 
-tabela = Table(data, repeatRows=1)
-tabela.setStyle(TableStyle([
-(&#39;BACKGROUND&#39;, (0,0), (-1,0), colors.grey),
-(&#39;GRID&#39;, (0,0), (-1,-1), 0.5, colors.black),
-(&#39;FONTSIZE&#39;, (0,0), (-1,-1), 8)
-]))
-elementos.append(tabela)
+from reportlab.platypus import Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+
+if data:  # assumindo que 'data' seja a lista de listas
+    tabela = Table(data, repeatRows=1)
+    tabela.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.grey),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('FONTSIZE', (0,0), (-1,-1), 8)
+    ]))
+    elementos.append(tabela)
 else:
-elementos.append(Paragraph(&quot;Nenhum dado preenchido.&quot;, styles[&#39;Normal&#39;]))
+    elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+
 elementos.append(Spacer(1, 12))
 
 # DISC
