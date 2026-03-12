@@ -16,39 +16,34 @@ from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
 import time
-# ============================================================
 
+# ============================================================
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
-
 # ============================================================
+
+import streamlit as st  # Garanta que o import está no topo
 
 st.set_page_config(
-
-page_title="Sistema de Análise de Tarefas",
-
-page_icon="  ",
-
-layout="wide",
-
-initial_sidebar_state="expanded"
-
+    page_title="Sistema de Análise de Tarefas",
+    page_icon="📋",  # Coloquei um ícone padrão, o seu estava vazio
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Inicialização centralizada
+# Inicialização centralizada de variáveis de estado
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-if "logged_in" not in st.session_state: st.session_state.logged_in = False
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []
 
-if "pagina" not in st.session_state: st.session_state.pagina = "home"
-
-if "formularios" not in st.session_state: st.session_state["formularios"] = []
-
-# Leitura da URL (Prioridade total para permitir acesso ao formulário)
-
-query_params = st.query_params
-
-if "page" in query_params:
-
+# Leitura da URL (Sincroniza a página com o parâmetro ?page= na URL)
+# O .get("page", "home") já define "home" se não houver nada na URL
 st.session_state.pagina = st.query_params.get("page", "home")
+
+# ============================================================
+
+
 st.markdown("""
 &lt;style&gt;
 /* Oculta a coluna de índice do data_editor */
