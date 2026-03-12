@@ -406,122 +406,62 @@ if st.query_params.get("page") == "formulario":
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
-    with st.form("form_colaborador_principal", clear_on_submit=False):
-        st.title("📋 Formulário Completo do Colaborador")
-        
-        # Dados de Identificação
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador", key="f_nome")
-        setor = col2.text_input("Setor", key="f_setor")
-        cargo = col1.text_input("Cargo", key="f_cargo")
-        chefe = col2.text_input("Chefe imediato", key="f_chefe")
-        departamento = col1.text_input("Departamento", key="f_dep")
-        empresa = col2.text_input("Empresa / Unidade", key="f_emp")
-        escolaridade = col1.text_input("Escolaridade", key="f_esc")
-        devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
-        objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
+    # REMOVEMOS O 'with st.form' DAQUI
+    st.title("📋 Formulário Completo do Colaborador")
+    
+    col1, col2 = st.columns(2)
+    nome = col1.text_input("Nome do colaborador", key="f_nome")
+    setor = col2.text_input("Setor", key="f_setor")
+    cargo = col1.text_input("Cargo", key="f_cargo")
+    chefe = col2.text_input("Chefe imediato", key="f_chefe")
+    departamento = col1.text_input("Departamento", key="f_dep")
+    empresa = col2.text_input("Empresa / Unidade", key="f_emp")
+    escolaridade = col1.text_input("Escolaridade", key="f_esc")
+    devolucao = col2.text_input("Devolver preenchido em", key="f_dev")
+    
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="f_cursos")
+    objetivo = st.text_area("Trabalho e principal objetivo", key="f_obj")
 
-        # --- LEGENDA DE FREQUÊNCIA ---
-        st.info("**📌 Legenda:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
+    st.info("**📌 Legenda de Frequência:** DVD: Diário Várias Vezes | D: Diário | S: Semanal | Q: Quinzenal | M: Mensal | T: Trimestral | A: Anual")
 
+    # --- SEÇÃO: ATIVIDADES ---
+    st.subheader("🔹 Atividades Executadas")
+    if 'df_atividades' not in st.session_state:
+        st.session_state.df_atividades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20})
+    
+    st.session_state.df_atividades = st.data_editor(st.session_state.df_atividades, column_config={
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)")
+    }, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
 
-        # --- SEÇÃO: ATIVIDADES ---
-        st.subheader("🔹 Atividades Executadas")
-        if 'df_atividades' not in st.session_state:
-            st.session_state.df_atividades = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20
-            })
+    # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
+    st.subheader("⚠️ Dificuldades e Bloqueios")
+    if 'df_dificuldades' not in st.session_state:
+        st.session_state.df_dificuldades = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20})
+    
+    st.session_state.df_dificuldades = st.data_editor(st.session_state.df_dificuldades, column_config={
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)")
+    }, hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor")
 
-        edit_ativ = st.data_editor(
-            st.session_state.df_atividades, 
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
-        )
-        st.session_state.df_atividades = edit_ativ   
+    # --- SEÇÃO: SUGESTÕES E MELHORIAS ---
+    st.subheader("💡 Sugestões e Melhorias")
+    if 'df_sugestoes' not in st.session_state:
+        st.session_state.df_sugestoes = pd.DataFrame({"Atividade Descrita": [""] * 20, "Frequência": [""] * 20, "Horas": [""] * 20, "Minutos": [""] * 20, "Origem": [""] * 20, "Impacto Esperado": [""] * 20})
+    
+    st.session_state.df_sugestoes = st.data_editor(st.session_state.df_sugestoes, column_config={
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)"),
+        "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado")
+    }, hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor")
 
-        # --- SEÇÃO: ATIVIDADES ---
-        st.subheader("🔹 Atividades Executadas")
-        if 'df_atividades' not in st.session_state:
-            st.session_state.df_atividades = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, 
-                "Frequência": [""] * 20, 
-                "Horas": [""] * 20, 
-                "Minutos": [""] * 20,
-                "Origem": [""] * 20
-            })
-
-        st.session_state.df_atividades = st.data_editor(
-            st.session_state.df_atividades, 
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") # AGORA É TEXTO
-            },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor"
-        )
-
-        # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        
-        # 1. Cria os dados se não existirem (Adicionada a coluna "Origem")
-        if 'df_dificuldades' not in st.session_state:
-            st.session_state.df_dificuldades = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, 
-                "Frequência": [""] * 20, 
-                "Horas": [""] * 20, 
-                "Minutos": [""] * 20,
-                "Origem": [""] * 20  # Nova coluna aqui
-            })
-
-        # 2. MOSTRA A TABELA (Configurada com a Selectbox de Origem)
-        st.session_state.df_dificuldades = st.data_editor(
-            st.session_state.df_dificuldades, 
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Origem": st.column_config.SelectboxColumn("Setor interno/Parceiro externo", options=lista_origem),
-            },
-            hide_index=True, 
-            num_rows="fixed", 
-            use_container_width=True, 
-            key="dif_editor"
-        )
-
-       
-
-        
-
-        # --- SEÇÃO: SUGESTÕES E MELHORIAS ---
-        st.subheader("💡 Sugestões e Melhorias")
-        if 'df_sugestoes' not in st.session_state:
-            st.session_state.df_sugestoes = pd.DataFrame({
-                "Atividade Descrita": [""] * 20, 
-                "Frequência": [""] * 20, 
-                "Horas": [""] * 20, 
-                "Minutos": [""] * 20,
-                "Impacto Esperado": [""] * 20
-            })
-
-        edit_sug = st.data_editor(
-            st.session_state.df_sugestoes, 
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado", help="Descreva o resultado esperado")
-            },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor"
-        )
-        st.session_state.df_sugestoes = edit_sug
-
+    # PRONTO: SEM BOTÃO E SEM ERRO!
         
          
 
