@@ -263,45 +263,38 @@ with st.form("form_colaborador"):
             st.write("Cargo:", cargo)
 
 
-        # --- SEÇÃO DE ATIVIDADES ---
-        st.markdown("---")
-        
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-        * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
-        * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
-        """)
-        
-        import pandas as pd
+import streamlit as st
+import pandas as pd
 
-        # --- Listas padronizadas ---
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-        lista_horas = [str(h) for h in range(25)]
-        lista_minutos = [str(m) for m in range(0, 60, 5)]
-        impacto_esperado = ["Baixo", "Médio", "Alto"]
+import streamlit as st
+import pandas as pd
 
-        st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
+# --- LISTAS PADRONIZADAS ---
+lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [str(h) for h in range(25)]
+lista_minutos = [str(m) for m in range(0, 60, 5)]
+impacto_esperado = ["Baixo", "Médio", "Alto"]
 
- # --- FORMULÁRIO DE ATIVIDADES, DIFICULDADES E SUGESTÕES ---
+# --- FORMULÁRIO COMPLETO ---
+with st.form("form_colaborador"):
+    st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
 
+    # --- Dados Pessoais ---
+    nome = st.text_input("Nome do colaborador")
+    setor = st.text_input("Setor")
+    cargo = st.text_input("Cargo")
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+    objetivo = st.text_area("Trabalho e principal objetivo")
+
+    # --- Legenda de Frequência ---
     st.markdown("---")
     st.info("""
     **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
-    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal 
+    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal
     * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
     """)
 
-    import pandas as pd
-
-    # --- Listas padronizadas ---
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    lista_horas = [str(h) for h in range(25)]
-    lista_minutos = [str(m) for m in range(0, 60, 5)]
-    impacto_esperado = ["Baixo", "Médio", "Alto"]
-
-    st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
-
-    # --- ATIVIDADES ---
+    # --- Atividades ---
     st.markdown("---")
     atividades = []
     with st.expander("🔹 Atividades Executadas", expanded=True):
@@ -317,7 +310,7 @@ with st.form("form_colaborador"):
                 mins = st.selectbox("Minutos", lista_minutos, key=f"mins_{i}")
             atividades.append({"Atividade": atv, "Frequência": freq, "Horas": hrs, "Minutos": mins})
 
-    # --- DIFICULDADES ---
+    # --- Dificuldades ---
     st.markdown("---")
     dificuldades = []
     with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
@@ -326,12 +319,12 @@ with st.form("form_colaborador"):
             with col1:
                 dif = st.text_input(f"Dificuldade {i+1}", key=f"dif_{i}")
             with col2:
-                setor = st.text_input(f"Setor/Parceiro {i+1}", key=f"setor_{i}")
+                setor_parceiro = st.text_input(f"Setor/Parceiro {i+1}", key=f"setor_{i}")
             with col3:
                 tempo = st.selectbox("Tempo Perdido (min)", lista_minutos, key=f"tempo_{i}")
-            dificuldades.append({"Dificuldade": dif, "Setor/Parceiro": setor, "Tempo Perdido": tempo})
+            dificuldades.append({"Dificuldade": dif, "Setor/Parceiro": setor_parceiro, "Tempo Perdido": tempo})
 
-    # --- SUGESTÕES ---
+    # --- Sugestões ---
     st.markdown("---")
     sugestoes = []
     with st.expander("💡 Sugestões de Melhoria", expanded=False):
@@ -343,110 +336,140 @@ with st.form("form_colaborador"):
                 impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
+    # --- Botão de Envio ---
+    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+    # --- Ações após envio ---
+    if enviar:
+        # ✅ Validação mínima
+        if not nome or not setor or not cargo:
+            st.error("⚠️ Erro: Preencha os campos obrigatórios (Nome, Setor e Cargo).")
+        else:
+            st.success("Formulário enviado com sucesso!")
+
+            st.subheader("Resumo do Colaborador")
+            st.write("Nome:", nome)
+            st.write("Setor:", setor)
+            st.write("Cargo:", cargo)
+            st.write("Cursos:", cursos)
+            st.write("Objetivo:", objetivo)
+
+            st.subheader("Resumo das Atividades")
+            st.dataframe(pd.DataFrame(atividades))
+
+            st.subheader("Resumo das Dificuldades")
+            st.dataframe(pd.DataFrame(dificuldades))
+
+            st.subheader("Resumo das Sugestões")
+            st.dataframe(pd.DataFrame(sugestoes))
+
 import streamlit as st
 import pandas as pd
 
-# --- FORMULÁRIO ---
+import streamlit as st
+import pandas as pd
+import os
+import json
+import time
+
+# --- LISTAS PADRONIZADAS ---
+lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [str(h) for h in range(25)]
+lista_minutos = [str(m) for m in range(0, 60, 5)]
+impacto_esperado = ["Baixo", "Médio", "Alto"]
+
+# --- FORMULÁRIO COMPLETO ---
 with st.form("form_colaborador"):
-    # Campos do formulário
+    st.title("📋 Formulário Completo do Colaborador")
+
+    # --- Dados Pessoais ---
     nome = st.text_input("Nome do colaborador")
     setor = st.text_input("Setor")
     cargo = st.text_input("Cargo")
     cursos = st.text_area("Cursos obrigatórios ou diferenciais")
     objetivo = st.text_area("Trabalho e principal objetivo")
-    
-    # --- Listas vazias para preencher dinamicamente ---
-    atividades = [{"Atividade": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]
-    dificuldades = [{"Dificuldade": "", "Setor/Parceiro": "", "Tempo Perdido": ""} for _ in range(20)]
-    sugestoes = [{"Sugestão": "", "Impacto Esperado": ""} for _ in range(20)]
 
-    # Botão de envio
+    # --- Legenda de Frequência ---
+    st.markdown("---")
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA (O que significa cada letra):**
+    * **DVD**: Diário Várias Vezes | **D**: Diário | **S**: Semanal
+    * **Q**: Quinzenal | **M**: Mensal | **T**: Trimestral | **A**: Anual
+    """)
+
+    # --- Atividades ---
+    st.markdown("---")
+    atividades = []
+    with st.expander("🔹 Atividades Executadas", expanded=True):
+        for i in range(20):
+            col1, col2, col3, col4 = st.columns([4,2,1,1])
+            with col1:
+                atv = st.text_input(f"Atividade {i+1}", key=f"ativ_{i}")
+            with col2:
+                freq = st.selectbox("Frequência", lista_frequencia, key=f"freq_{i}")
+            with col3:
+                hrs = st.selectbox("Horas", lista_horas, key=f"hrs_{i}")
+            with col4:
+                mins = st.selectbox("Minutos", lista_minutos, key=f"mins_{i}")
+            atividades.append({"Atividade": atv, "Frequência": freq, "Horas": hrs, "Minutos": mins})
+
+    # --- Dificuldades ---
+    st.markdown("---")
+    dificuldades = []
+    with st.expander("⚠️ Dificuldades e Bloqueios", expanded=False):
+        for i in range(20):
+            col1, col2, col3 = st.columns([4,3,1])
+            with col1:
+                dif = st.text_input(f"Dificuldade {i+1}", key=f"dif_{i}")
+            with col2:
+                setor_parceiro = st.text_input(f"Setor/Parceiro {i+1}", key=f"setor_{i}")
+            with col3:
+                tempo = st.selectbox("Tempo Perdido (min)", lista_minutos, key=f"tempo_{i}")
+            dificuldades.append({"Dificuldade": dif, "Setor/Parceiro": setor_parceiro, "Tempo Perdido": tempo})
+
+    # --- Sugestões ---
+    st.markdown("---")
+    sugestoes = []
+    with st.expander("💡 Sugestões de Melhoria", expanded=False):
+        for i in range(20):
+            col1, col2 = st.columns([4,2])
+            with col1:
+                sug = st.text_input(f"Sugestão {i+1}", key=f"sug_{i}")
+            with col2:
+                impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
+            sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
+
+    # --- Botão de envio ---
     enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    # ✅ Tudo que depende do envio deve ficar dentro do form
     if enviar:
-        st.success("Formulário enviado com sucesso!")
-        
-        st.subheader("Resumo do Colaborador")
-        st.write("Nome:", nome)
-        st.write("Setor:", setor)
-        st.write("Cargo:", cargo)
-        st.write("Cursos:", cursos)
-        st.write("Objetivo:", objetivo)
+        if not nome or not setor or not cargo:
+            st.error("⚠️ Preencha Nome, Setor e Cargo!")
+        else:
+            # Salvar dados em JSON
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            dados_dir = os.path.join(base_dir, "dados")
+            os.makedirs(dados_dir, exist_ok=True)
 
-        st.subheader("Resumo das Atividades")
-        st.dataframe(pd.DataFrame(atividades))
-        
-        st.subheader("Resumo das Dificuldades")
-        st.dataframe(pd.DataFrame(dificuldades))
-        
-        st.subheader("Resumo das Sugestões")
-        st.dataframe(pd.DataFrame(sugestoes)) 
+            dados = {
+                "Nome": nome,
+                "Setor": setor,
+                "Cargo": cargo,
+                "Cursos": cursos,
+                "Objetivo": objetivo,
+                "Atividades": atividades,
+                "Dificuldades": dificuldades,
+                "Sugestoes": sugestoes,
+                "DataEnvio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M")
+            }
 
-            # 1. VALIDAÇÃO: Bloqueia o envio se faltar algo
-            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-                st.error("⚠️ Erro: Você esqueceu de preencher algum dado de identificação!")
-            
-            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Você não respondeu todas as perguntas do DISC!")
-            
-            else:
-                # 2. SÓ EXECUTA TUDO ISTO SE ESTIVER TUDO OK
-                st.success("✅ Tudo validado! Processando...")
-                
-                # 3. TRAVA DE SEGURANÇA E PREPARAÇÃO DE DIRETÓRIO
-                if "processando" not in st.session_state:
-                    st.session_state["processando"] = True
-                    
-                    import os
-                    import json
-                    import pandas as pd
-                    import time
-                    
-                    base_dir = os.path.dirname(os.path.abspath(__file__))
-                    dados_dir = os.path.join(base_dir, "dados")
-                    os.makedirs(dados_dir, exist_ok=True)
-                    
-                    # 4. MONTAGEM DO DICIONÁRIO DE DADOS
-                    dados = {
-                        "Nome": nome, 
-                        "Setor": setor, 
-                        "Cargo": cargo, 
-                        "Chefe": chefe,
-                        "Departamento": departamento, 
-                        "Empresa": empresa, 
-                        "Escolaridade": escolaridade,
-                        "Devolver": devolucao, 
-                        "Cursos": cursos, 
-                        "Objetivo": objetivo,
-                        "Atividades": edit_ativ.to_dict(orient="records"),
-                        "Dificuldades": edit_dif.to_dict(orient="records"),
-                        "Sugestoes": edit_sug.to_dict(orient="records"),
-                        "DataEnvio": pd.Timestamp.now(tz='America/Sao_Paulo').strftime("%d/%m/%Y %H:%M")
-                    }
-                    
-                    # Coleta as respostas do DISC
-                    for i in range(1, 25): 
-                        dados[f"Q{i}"] = st.session_state.get(f"disc_{i}", "Não respondido")
-                    
-                    # Nome do arquivo
-                    nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
-                    caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
-                    
-                    # Escrita do arquivo JSON
-                    with open(caminho, "w", encoding="utf-8") as f: 
-                        json.dump(dados, f, ensure_ascii=False, indent=4)
-                    
-                    st.success("✅ Formulário enviado com sucesso!")
-                    
-                    # Atualiza o estado para que a Visualização pegue os novos dados
-                    if "carregar_todos_formularios" in globals():
-                        st.session_state["formularios"] = carregar_todos_formularios()
-                    
-                    time.sleep(2)
-                    # Remove a trava para permitir novo envio se necessário
-                    del st.session_state["processando"]
-                    st.rerun()
+            nome_limpo = nome.strip().replace(" ", "_") if nome else "sem_nome"
+            caminho = os.path.join(dados_dir, f"{nome_limpo}_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json")
+
+            with open(caminho, "w", encoding="utf-8") as f:
+                json.dump(dados, f, ensure_ascii=False, indent=4)
+
+            st.success("✅ Formulário enviado e salvo com sucesso!")
             
       
 
