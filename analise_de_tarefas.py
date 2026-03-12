@@ -1087,23 +1087,146 @@ elements.append(Spacer(1, 0.2*inch))
 doc.build(elements)
 return nome_arquivo
 
-# ============================================================
-# PASTA BASE PARA FORMULÁRIOS (JSON)
-# ============================================================
-# Usamos &#39;dados_dir&#39; para manter o padrão que já criamos
-json_master = os.path.join(dados_dir, &quot;formularios.json&quot;)
+import os
+import json
+import pandas as pd
+from statistics import mean
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+import streamlit as st
 
-# Inicializa arquivo JSON se não existir
+# ============================================================
+# PASTA BASE
+# ============================================================
+base_dir = os.path.dirname(os.path.abspath(__file__))
+dados_dir = os.path.join(base_dir, "dados")
+os.makedirs(dados_dir, exist_ok=True)
+
+json_master = os.path.join(dados_dir, "formularios.json")
 if not os.path.exists(json_master):
-with open(json_master, &quot;w&quot;, encoding=&quot;utf-8&quot;) as f:
-json.dump([], f, ensure_ascii=False, indent=4)
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False, indent=4)
 
 # ============================================================
 # FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
 # ============================================================
 def salvar_formulario_json(formulario):
-&quot;&quot;&quot;
-Recebe um dicionário do formulário preenchido, salva no arquivo
-JSON único dentro da pasta &#39;dados&#39; e atualiza a sessão para
-espelhamento imediato na interface.
-&quot;&quot;&quot;
+    """Salva o formulário preenchido em JSON"""
+    with open(json_master, "r", encoding="utf-8") as f:
+        dados = json.load(f)
+    dados.append(formulario)
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump(dados, f, ensure_ascii=False, indent=4)
+    st.session_state["formularios"] = dados
+
+# ============================================================
+# ENVIO FORMULÁRIO
+# ============================================================
+if st.button("🚀 Enviar Formulário"):
+    # 1️⃣ Validar campos obrigatórios
+    campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa]
+    if any(not campo for campo in campos_obrigatorios):
+        st.error("⚠️ Erro: Preencha todos os campos de identificação!")
+
+    # 2️⃣ Evitar duplicidade
+    else:
+        nome_limpo = nome.strip().replace(" ", "_")
+        arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+        if arquivos_existentes:
+            st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+        else:
+            # 3️⃣ Confirmação
+            if not st.session_state.get("confirmado", False):
+                st.warning(
+                    "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
+                )
+                st.session_state["confirmado"] = True
+            else:
+                st.success("✅ Formulário enviado com sucesso!")
+                dados_formulario = {
+                    "nome": nome,
+                    "setor": setor,
+                    "cargo": cargo,
+                    "chefe": chefe,
+                    "departamento": departamento,
+                    "empresa": empresa,
+                    "escolaridade": escolaridade,
+                    "devolucao": devolucao,
+                    "cursos": cursos,
+                    "objetivo": objetivo,
+                    "atividades": edit_ativ.to_dict(),
+                    "dificuldades": edit_dif.to_dict(),
+                    "sugestoes": edit_sug.to_dict(),
+                    "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+                }
+                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                with open(caminho, "w", encoding="utf-8") as f:
+                    json.dump(dados_formulario, f, ensure_ascii=False, indent=4)
+                st.session_state["confirmado"] = False
+                salvar_formulario_json(dados_formulario)
+
+# ============================================================
+# FUNÇÃO GERAR PDF
+# ============================================================
+def gerar_pdf(parecer, nome):
+    nome_arquivo = f"{nome}_parecer.pdf"
+    doc = SimpleDocTemplate(nome_arquivo)
+    elementos = []
+    styles = getSampleStyleSheet()
+    
+    elementos.append(Paragraph("PARECER ESTRATÉGICO ORGANIZACIONAL", styles["Title"]))
+    elementos.append(Spacer(1, 0.5*inch))
+    
+    for linha in parecer.split("\n"):
+        if linha.strip():
+            elementos.append(Paragraph(linha, styles["Normal"]))
+            elementos.append(Spacer(1, 0.2*inch))
+    
+    doc.build(elementos)
+    return nome_arquivo
+
+# ============================================================
+# FUNÇÕES DE CÁLCULO (DISC, CARGA HORÁRIA, SCORE, ETC)
+# ============================================================
+def calcular_disc(respostas_disc):
+    contagem = {"D":0, "I":0, "S":0, "C":0}
+    for r in respostas_disc.values():
+        if r in contagem:
+            contagem[r] += 1
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = contagem
+        dominante = None
+    return percentuais, dominante
+
+def score_disc(disc):
+    pesos = {"D":1.0, "I":0.9, "S":0.85, "C":0.95}
+    total = sum(disc.values())
+    if total == 0: return 0
+    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
+    return round((calculo/total)*100,2)
+
+def calcular_carga(atividades):
+    total_min = 0
+    for at in atividades:
+        try:
+            tempo = float(at.get("tempo","0"))
+        except:
+            tempo = 0
+        freq = at.get("frequencia","semanal").lower()
+        if freq == "diaria":
+            total_min += tempo * 5
+        elif freq == "mensal":
+            total_min += tempo / 4
+        else:
+            total_min += tempo
+    horas = total_min / 60
+    status = "Adequado"
+    if horas > 44: status = "Sobrecarga"
+    elif horas < 30: status = "Subutilização"
+    return round(horas,2), status
