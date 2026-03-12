@@ -409,7 +409,7 @@ if st.query_params.get("page") == "formulario":
     with st.form("form_colaborador_principal", clear_on_submit=False):
         st.title("📋 Formulário Completo do Colaborador")
         
-        # Dados de Identificação com KEYS para persistência
+        # Dados de Identificação
         col1, col2 = st.columns(2)
         nome = col1.text_input("Nome do colaborador", key="f_nome")
         setor = col2.text_input("Setor", key="f_setor")
@@ -467,7 +467,7 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": [""] * 20, 
                 "Horas": [""] * 20, 
                 "Minutos": [""] * 20,
-                "Impacto Esperado": [""] * 20  # Nova coluna adicionada
+                "Impacto Esperado": [""] * 20
             })
 
         edit_sug = st.data_editor(
@@ -476,12 +476,13 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado", help="Descreva o resultado esperado desta melhoria") # Configuração da nova coluna
+                "Impacto Esperado": st.column_config.TextColumn("Impacto Esperado", help="Descreva o resultado esperado")
             },
             hide_index=True, num_rows="fixed", use_container_width=True, key="sug_editor"
         )
         st.session_state.df_sugestoes = edit_sug
 
+        
          
 
 
