@@ -399,7 +399,7 @@ if st.query_params.get("page") == "formulario":
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-/
+
     st.title("📋 Formulário Completo do Colaborador")
 
     # 2. SEÇÃO DE IDENTIFICAÇÃO
