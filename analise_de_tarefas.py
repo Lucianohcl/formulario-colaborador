@@ -484,7 +484,7 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") # AGORA É TEXTO
+                "Origem": st.column_config.SelectboxColumn("Origem", options=lista_origem),
             },
             hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor"
         )
