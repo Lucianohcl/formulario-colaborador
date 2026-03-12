@@ -439,7 +439,7 @@ if st.query_params.get("page") == "formulario":
         "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
         "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         
-    }, hide_index=True, num_rows="fixed", use_container_width=True, key="ativ_editor")
+    }, hide_index=True, num_rows="fixed", use_container_width=True, key="tabela_nova_v2")
 
     # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
     st.subheader("⚠️ Dificuldades e Bloqueios")
