@@ -245,22 +245,24 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-# --- FORMULÁRIO ---
-with st.form("form_colaborador"):
-        nome = st.text_input("Nome do colaborador")
-        setor = st.text_input("Setor")
-        cargo = st.text_input("Cargo")
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
-        
-        # ✅ Botão de envio obrigatório dentro do form
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-    
-        if enviar:
-            st.success("Formulário enviado com sucesso!")
-            st.write("Nome:", nome)
-            st.write("Setor:", setor)
-            st.write("Cargo:", cargo)
+import streamlit as st
+
+# --- FORMULÁRIO MINIMALISTA ---
+st.subheader("Formulário Colaborador")
+
+nome = st.text_input("Nome do colaborador", key="nome")
+setor = st.text_input("Setor", key="setor")
+cargo = st.text_input("Cargo", key="cargo")
+cursos = st.text_area("Cursos obrigatórios ou diferenciais", key="cursos")
+objetivo = st.text_area("Trabalho e principal objetivo", key="objetivo")
+
+if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
+    st.success("Formulário enviado com sucesso!")
+    st.write("Nome:", nome)
+    st.write("Setor:", setor)
+    st.write("Cargo:", cargo)
+    st.write("Cursos:", cursos)
+    st.write("Objetivo:", objetivo)
 
 
 import streamlit as st
@@ -276,7 +278,7 @@ lista_minutos = [str(m) for m in range(0, 60, 5)]
 impacto_esperado = ["Baixo", "Médio", "Alto"]
 
 # --- FORMULÁRIO COMPLETO ---
-with st.form("form_colaborador"):
+with st.container():  # substitui o form e evita erro de duplicação
     st.title("📋 Formulário de Atividades, Dificuldades e Sugestões")
 
     # --- Dados Pessoais ---
@@ -379,7 +381,7 @@ lista_minutos = [str(m) for m in range(0, 60, 5)]
 impacto_esperado = ["Baixo", "Médio", "Alto"]
 
 # --- FORMULÁRIO COMPLETO ---
-with st.form("form_colaborador"):
+with st.container():  # substitui o form e evita erro de duplicação
     st.title("📋 Formulário Completo do Colaborador")
 
     # --- Dados Pessoais ---
@@ -850,6 +852,7 @@ if not os.path.exists(json_master):
 # ============================================================
 # FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
 # ============================================================
+
 def salvar_formulario_json(formulario):
     """
     Recebe um dicionário do formulário preenchido, salva no arquivo 
