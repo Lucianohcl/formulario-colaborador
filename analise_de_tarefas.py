@@ -340,8 +340,7 @@ if st.query_params.get("page") == "formulario":
                 impacto = st.selectbox("Impacto Esperado", impacto_esperado, key=f"impacto_{i}")
             sugestoes.append({"Sugestão": sug, "Impacto Esperado": impacto})
 
-    # --- BOTÃO DE ENVIO FINAL ---
-    submit_button = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+    
 
     if submit_button:
         st.success("Formulário enviado com sucesso!")
