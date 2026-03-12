@@ -469,6 +469,7 @@ if st.query_params.get("page") == "formulario":
 
         # --- SEÇÃO: DIFICULDADES E BLOQUEIOS ---
         st.subheader("⚠️ Dificuldades e Bloqueios")
+        
         if 'df_dificuldades' not in st.session_state:
             st.session_state.df_dificuldades = pd.DataFrame({
                 "Atividade Descrita": [""] * 20, 
@@ -484,10 +485,16 @@ if st.query_params.get("page") == "formulario":
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
                 "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") # AGORA É TEXTO
+                "Origem": st.column_config.TextColumn("Origem (Setor/Parceiro)") 
             },
-            hide_index=True, num_rows="fixed", use_container_width=True, key="dif_editor"
+            hide_index=True, 
+            num_rows="fixed", 
+            use_container_width=True, 
+            key="dif_editor_new" # CHAVE ÚNICA PARA EVITAR ERRO
         )
+
+        # VOCÊ PRECISA ADICIONAR ESTA LINHA ABAIXO PARA O ERRO SUMIR:
+        st.form_submit_button("Finalizar Preenchimento")
 
        
 
