@@ -574,179 +574,208 @@ if st.query_params.get("page") == "formulario":
 
                 erros = []
 
-                # ----------------------------
-                # 1. IDENTIFICAÇÃO
-                # ----------------------------
+                # -------------------------------------------------
+                # 1. IDENTIFICAÇÃO (TODOS OBRIGATÓRIOS)
+                # -------------------------------------------------
 
-                if not all([nome, setor, cargo, chefe, departamento, empresa, escolaridade, devolucao]):
-                        erros.append("Preencha todos os campos de identificação.")
+                if not nome:
+                        erros.append("Nome não preenchido.")
 
-                # ----------------------------
-                # LIMPAR TABELAS
-                # ----------------------------
+                if not setor:
+                        erros.append("Setor não preenchido.")
 
-                atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
-                dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
-                sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
+                if not cargo:
+                        erros.append("Cargo não preenchido.")
 
-                # Criar coluna de erro
-                edit_ativ["ERRO"] = ""
-                edit_dif["ERRO"] = ""
-                edit_sug["ERRO"] = ""
+                if not chefe:
+                        erros.append("Chefe não preenchido.")
 
-                # ----------------------------
+                if not departamento:
+                        erros.append("Departamento não preenchido.")
+
+                if not empresa:
+                        erros.append("Empresa não preenchida.")
+
+                if not escolaridade:
+                        erros.append("Escolaridade não preenchida.")
+
+                if not devolucao:
+                        erros.append("Campo 'Devolução preenchida em' não informado.")
+
+
+                # -------------------------------------------------
                 # 2. ATIVIDADES
-                # ----------------------------
+                # -------------------------------------------------
 
-                if len(atividades_limpas) == 0:
-                        erros.append("Adicione pelo menos uma atividade.")
+                atividades_limpas = []
 
-                for i, ativ in enumerate(atividades_limpas):
+                for i, row in edit_ativ.iterrows():
 
-                        if not ativ.get("Frequência"):
+                        if not row["Atividade Descrita"]:
+                                erros.append(f"Atividade {i+1} sem descrição.")
+
+                        if not row["Frequência"]:
                                 erros.append(f"Atividade {i+1} sem frequência.")
-                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-                        if ativ.get("Horas") in [None, "", 0]:
+                        if row["Horas"] in ["", None]:
                                 erros.append(f"Atividade {i+1} sem horas.")
-                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-                        if ativ.get("Minutos") in [None, "", 0]:
+                        if row["Minutos"] in ["", None]:
                                 erros.append(f"Atividade {i+1} sem minutos.")
-                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-                # ----------------------------
+                        atividades_limpas.append(row.to_dict())
+
+
+                # -------------------------------------------------
                 # 3. DIFICULDADES
-                # ----------------------------
+                # -------------------------------------------------
 
-                if len(dificuldades_limpas) == 0:
-                        erros.append("Adicione pelo menos uma dificuldade.")
+                dificuldades_limpas = []
 
-                for i, dif in enumerate(dificuldades_limpas):
+                for i, row in edit_dif.iterrows():
 
-                        if not dif.get("Setor/Parceiro Envolvido"):
+                        if not row["Dificuldade"]:
+                                erros.append(f"Dificuldade {i+1} sem descrição.")
+
+                        if not row["Setor/Parceiro Envolvido"]:
                                 erros.append(f"Dificuldade {i+1} sem setor/parceiro.")
-                                edit_dif.loc[i, "ERRO"] = "❌"
 
-                        if not dif.get("Frequência"):
+                        if not row["Frequência"]:
                                 erros.append(f"Dificuldade {i+1} sem frequência.")
-                                edit_dif.loc[i, "ERRO"] = "❌"
 
-                        if dif.get("Horas Perdidas") in [None, "", 0]:
-                                erros.append(f"Dificuldade {i+1} sem horas perdidas.")
-                                edit_dif.loc[i, "ERRO"] = "❌"
+                        if row["Horas Perdidas"] in ["", None]:
+                                erros.append(f"Dificuldade {i+1} sem horas.")
 
-                        if dif.get("Minutos Perdidos") in [None, "", 0]:
-                                erros.append(f"Dificuldade {i+1} sem minutos perdidos.")
-                                edit_dif.loc[i, "ERRO"] = "❌"
+                        if row["Minutos Perdidos"] in ["", None]:
+                                erros.append(f"Dificuldade {i+1} sem minutos.")
 
-                # ----------------------------
+                        dificuldades_limpas.append(row.to_dict())
+
+
+                # -------------------------------------------------
                 # 4. SUGESTÕES
-                # ----------------------------
+                # -------------------------------------------------
 
-                if len(sugestoes_limpas) == 0:
-                        erros.append("Adicione pelo menos uma sugestão.")
+                sugestoes_limpas = []
 
-                for i, sug in enumerate(sugestoes_limpas):
+                for i, row in edit_sug.iterrows():
 
-                        if not sug.get("Impacto Esperado"):
+                        if not row["Sugestão de Melhoria"]:
+                                erros.append(f"Sugestão {i+1} sem descrição.")
+
+                        if not row["Impacto Esperado"]:
                                 erros.append(f"Sugestão {i+1} sem impacto esperado.")
-                                edit_sug.loc[i, "ERRO"] = "❌"
 
-                        if not sug.get("Frequência do Impacto"):
+                        if not row["Frequência do Impacto"]:
                                 erros.append(f"Sugestão {i+1} sem frequência.")
-                                edit_sug.loc[i, "ERRO"] = "❌"
 
-                        if sug.get("Redução Horas") in [None, "", 0]:
-                                erros.append(f"Sugestão {i+1} sem horas de redução.")
-                                edit_sug.loc[i, "ERRO"] = "❌"
+                        if row["Redução Horas"] in ["", None]:
+                                erros.append(f"Sugestão {i+1} sem horas.")
 
-                        if sug.get("Redução Minutos") in [None, "", 0]:
-                                erros.append(f"Sugestão {i+1} sem minutos de redução.")
-                                edit_sug.loc[i, "ERRO"] = "❌"
+                        if row["Redução Minutos"] in ["", None]:
+                                erros.append(f"Sugestão {i+1} sem minutos.")
 
-                # ----------------------------
+                        sugestoes_limpas.append(row.to_dict())
+
+
+                # -------------------------------------------------
                 # 5. DISC
-                # ----------------------------
+                # -------------------------------------------------
 
-                if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                        erros.append("Responda todas as perguntas do DISC.")
+                for i in range(1, 25):
 
-                # ----------------------------
-                # RESULTADO FINAL
-                # ----------------------------
+                        if not st.session_state.get(f"disc_{i}"):
+                                erros.append(f"DISC questão {i} não respondida.")
+
+
+                # -------------------------------------------------
+                # RESULTADO DAS VALIDAÇÕES
+                # -------------------------------------------------
 
                 if erros:
 
-                        st.error("⚠️ O formulário possui pendências:")
+                        st.error("⚠️ O formulário possui pendências. Revise os itens abaixo e verifique também se há outros campos obrigatórios não preenchidos.")
 
                         for erro in erros:
                                 st.write(f"- {erro}")
 
-                else:
+                        st.stop()
 
-                        st.success("✅ Formulário validado com sucesso!")
 
-                        # segue para verificação de duplicidade e salvamento
+                # -------------------------------------------------
+                # PREPARAR DIRETÓRIO
+                # -------------------------------------------------
 
-                    
                 base_dir = os.path.dirname(os.path.abspath(__file__))
                 dados_dir = os.path.join(base_dir, "dados")
                 os.makedirs(dados_dir, exist_ok=True)
 
-                # 3. EVITAR DUPLICIDADE
+
+                # -------------------------------------------------
+                # EVITAR DUPLICIDADE
+                # -------------------------------------------------
+
                 nome_limpo = nome.strip().replace(" ", "_")
-                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+                arquivos_existentes = [
+                        f for f in os.listdir(dados_dir)
+                        if f.startswith(nome_limpo)
+                ]
 
                 if arquivos_existentes:
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
 
-                else:
+                        st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                        st.stop()
 
-                    # 4. CONFIRMAÇÃO
-                    if not st.session_state.get("confirmado", False):
+
+                # -------------------------------------------------
+                # CONFIRMAÇÃO EM DOIS CLIQUES
+                # -------------------------------------------------
+
+                if not st.session_state.get("confirmado", False):
 
                         st.warning(
-                            "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
+                                "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
                         )
 
                         st.session_state["confirmado"] = True
+                        st.stop()
 
-                    # 5. ENVIO FINAL
-                    else:
-                        # Filtra as linhas vazias e garante que a Frequência seja salva como texto
-                        dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
-                        atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
-                        sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
 
-                        dados = {
-                            "nome": nome,
-                            "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
-                            "setor": setor,
-                            "cargo": cargo,
-                            "chefe": chefe,
-                            "departamento": departamento,
-                            "empresa": empresa,
-                            "escolaridade": escolaridade,
-                            "devolucao": devolucao,
-                            "cursos": cursos,
-                            "objetivo": objetivo,
-                            "atividades": atividades_limpas,
-                            "dificuldades": dificuldades_limpas, # Agora salva a Frequência OK
-                            "sugestoes": sugestoes_limpas,
-                            "disc": {
+                # -------------------------------------------------
+                # SALVAMENTO FINAL
+                # -------------------------------------------------
+
+                dados = {
+                        "nome": nome,
+                        "data_envio": datetime.now(
+                                ZoneInfo("America/Sao_Paulo")
+                        ).strftime("%d/%m/%Y %H:%M"),
+                        "setor": setor,
+                        "cargo": cargo,
+                        "chefe": chefe,
+                        "departamento": departamento,
+                        "empresa": empresa,
+                        "escolaridade": escolaridade,
+                        "devolucao": devolucao,
+                        "cursos": cursos,
+                        "objetivo": objetivo,
+                        "atividades": atividades_limpas,
+                        "dificuldades": dificuldades_limpas,
+                        "sugestoes": sugestoes_limpas,
+                        "disc": {
                                 f"disc_{i}": st.session_state.get(f"disc_{i}")
                                 for i in range(1, 25)
-                            }
                         }
+                }
 
-                        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
 
-                        with open(caminho, "w", encoding="utf-8") as f:
-                            json.dump(dados, f, ensure_ascii=False, indent=4)
+                with open(caminho, "w", encoding="utf-8") as f:
+                        json.dump(dados, f, ensure_ascii=False, indent=4)
 
-                        st.success("✅ Formulário enviado com sucesso!")
-                        st.session_state["confirmado"] = False
+                st.success("✅ Formulário enviado com sucesso!")
+
+                st.session_state["confirmado"] = False
 
 
 # --- VISUALIZAÇÃO ---
