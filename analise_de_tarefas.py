@@ -663,7 +663,7 @@ if st.session_state.get("pagina") == "visualizar":
         for idx, form in enumerate(lista_de_arquivos, 1):
             nome_exibir = str(form.get('nome', f'Colaborador {idx}')).upper()
             
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
+           with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
                 # [Aqui você mantém o seu código de exibição de dados]
                 
             
@@ -683,8 +683,17 @@ if st.session_state.get("pagina") == "visualizar":
                 col_a.write(f"**Empresa/Unidade:** {form.get('empresa', 'N/A')}")
                 col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
-                st.write(f"**Cursos:** {form.get('cursos', 'N/A')}")
-                st.info(f"**Objetivo Principal:**\n\n{form.get('objetivo', 'N/A')}")
+                st.subheader("🎓 Cursos Obrigatórios ou Diferenciais")
+
+                st.info(
+                    form.get("cursos", "Não informado")
+                )
+
+                st.subheader("🎯 Trabalho e Principal Objetivo")
+
+                st.info(
+                    form.get("objetivo", "Não informado")
+                )
                 
                 # 2. Tabelas Dinâmicas
                 secoes = {
@@ -830,13 +839,32 @@ if st.session_state.get("pagina") == "visualizar":
                     y = altura - 40
 
                     def linha(texto):
-                        nonlocal y
-                        c.drawString(40, y, texto)
-                        y -= 15
 
-                        if y < 40:
-                            c.showPage()
-                            y = altura - 40
+                        nonlocal y
+
+                        largura_max = 95
+                        palavras = texto.split(" ")
+
+                        linha_atual = ""
+
+                        for palavra in palavras:
+
+                            if len(linha_atual + palavra) <= largura_max:
+                                linha_atual += palavra + " "
+
+                            else:
+                                c.drawString(40, y, linha_atual)
+                                y -= 18
+                                linha_atual = palavra + " "
+
+                                if y < 40:
+                                    c.showPage()
+                                    c.setFont("Helvetica",11)
+                                    y = altura - 40
+
+                        if linha_atual:
+                            c.drawString(40, y, linha_atual)
+                            y -= 18
 
                     c.setFont("Helvetica-Bold",16)
                     linha("RELATÓRIO DO FORMULÁRIO DO COLABORADOR")
