@@ -16,6 +16,7 @@ from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
 import time
+from zoneinfo import ZoneInfo
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -615,6 +616,7 @@ if st.query_params.get("page") == "formulario":
 
                         dados = {
                             "nome": nome,
+                            "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
                             "setor": setor,
                             "cargo": cargo,
                             "chefe": chefe,
@@ -659,7 +661,7 @@ if st.session_state.get("pagina") == "visualizar":
         
         # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
-            nome_exibir = str(form.get('Nome', f'Colaborador {idx}')).upper()
+            nome_exibir = str(form.get('nome', f'Colaborador {idx}')).upper()
             
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir} ({form.get('DataEnvio', 'Sem Data')})"):
                 # [Aqui você mantém o seu código de exibição de dados]
@@ -670,25 +672,25 @@ if st.session_state.get("pagina") == "visualizar":
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
-                col1.write(f"**Data de Envio:** {form.get('DataEnvio', 'N/A')}")
-                col2.write(f"**Devolver em:** {form.get('Devolver', 'N/A')}")
+                col1.write(f"**Data de Envio:** {form.get('data_envio', 'N/A')}")
+                col2.write(f"**Devolver em:** {form.get('devolucao', 'N/A')}")
                 
                 col_a, col_b = st.columns(2)
-                col_a.write(f"**Setor:** {form.get('Setor', 'N/A')}")
-                col_b.write(f"**Departamento:** {form.get('Departamento', 'N/A')}")
-                col_a.write(f"**Cargo:** {form.get('Cargo', 'N/A')}")
-                col_b.write(f"**Chefe Imediato:** {form.get('Chefe', 'N/A')}")
-                col_a.write(f"**Empresa/Unidade:** {form.get('Empresa', 'N/A')}")
-                col_b.write(f"**Escolaridade:** {form.get('Escolaridade', 'N/A')}")
+                col_a.write(f"**Setor:** {form.get('setor', 'N/A')}")
+                col_b.write(f"**Departamento:** {form.get('departamento', 'N/A')}")
+                col_a.write(f"**Cargo:** {form.get('cargo', 'N/A')}")
+                col_b.write(f"**Chefe Imediato:** {form.get('chefe', 'N/A')}")
+                col_a.write(f"**Empresa/Unidade:** {form.get('empresa', 'N/A')}")
+                col_b.write(f"**Escolaridade:** {form.get('escolaridade', 'N/A')}")
                 
-                st.write(f"**Cursos:** {form.get('Cursos', 'N/A')}")
-                st.info(f"**Objetivo Principal:**\n\n{form.get('Objetivo', 'N/A')}")
+                st.write(f"**Cursos:** {form.get('cursos', 'N/A')}")
+                st.info(f"**Objetivo Principal:**\n\n{form.get('objetivo', 'N/A')}")
                 
                 # 2. Tabelas Dinâmicas
                 secoes = {
-                    "Atividades": "📋 Atividades Executadas",
-                    "Dificuldades": "⚠️ Dificuldades e Bloqueios",
-                    "Sugestoes": "💡 Sugestões de Melhoria"
+                    "atividades": "📋 Atividades Executadas",
+                    "dificuldades": "⚠️ Dificuldades e Bloqueios",
+                    "sugestoes": "💡 Sugestões de Melhoria"
                 }
                 
                 for chave, titulo in secoes.items():
@@ -709,40 +711,230 @@ if st.session_state.get("pagina") == "visualizar":
                 st.subheader("📊 Avaliação DISC (Perguntas e Respostas)")
                 
                 for i, pergunta in enumerate(perguntas_disc, 1):
-                    valor_resposta = form.get(f"Q{i}", "Não respondido")
+                    valor_resposta = form.get("disc", {}).get(f"disc_{i}", "Não respondido")
                     st.write(f"**{i}. {pergunta}**")
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
 
-                # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
+                                # -------------------------------------------------
+                # EXPORTAÇÃO WORD + PDF (ESPELHO DO FORMULÁRIO)
+                # -------------------------------------------------
+
+                import io
+                from docx import Document
+                from reportlab.lib.pagesizes import A4
+                from reportlab.pdfgen import canvas
+
+
+                def gerar_word(form):
+
+                    indent = " " * 16
+                    doc = Document()
+
+                    doc.add_heading("RELATÓRIO DO FORMULÁRIO DO COLABORADOR", level=1)
+
+                    doc.add_heading("1. Dados de Identificação", level=2)
+
+                    campos = [
+                        ("Nome", "nome"),
+                        ("Data de Envio", "data_envio"),
+                        ("Setor", "setor"),
+                        ("Cargo", "cargo"),
+                        ("Chefe", "chefe"),
+                        ("Departamento", "departamento"),
+                        ("Empresa", "empresa"),
+                        ("Escolaridade", "escolaridade"),
+                        ("Devolver preenchido em", "devolucao")
+                    ]
+
+                    for titulo, chave in campos:
+                        doc.add_paragraph(f"{indent}{titulo}: {form.get(chave,'')}")
+
+                    doc.add_paragraph("")
+                    doc.add_paragraph(f"{indent}Cursos:")
+                    doc.add_paragraph(f"{indent}{form.get('cursos','')}")
+
+                    doc.add_paragraph("")
+                    doc.add_paragraph(f"{indent}Objetivo do Trabalho:")
+                    doc.add_paragraph(f"{indent}{form.get('objetivo','')}")
+
+                    doc.add_heading("2. Atividades Executadas", level=2)
+
+                    table = doc.add_table(rows=1, cols=4)
+                    headers = ["Atividade", "Frequência", "Horas", "Minutos"]
+
+                    for i, h in enumerate(headers):
+                        table.rows[0].cells[i].text = h
+
+                    for ativ in form.get("atividades", []):
+                        row = table.add_row().cells
+                        row[0].text = str(ativ.get("Atividade Descrita",""))
+                        row[1].text = str(ativ.get("Frequência",""))
+                        row[2].text = str(ativ.get("Horas",""))
+                        row[3].text = str(ativ.get("Minutos",""))
+
+                    doc.add_heading("3. Dificuldades e Bloqueios", level=2)
+
+                    table = doc.add_table(rows=1, cols=5)
+                    headers = ["Dificuldade","Setor/Parceiro","Frequência","Horas Perdidas","Minutos Perdidos"]
+
+                    for i,h in enumerate(headers):
+                        table.rows[0].cells[i].text = h
+
+                    for dif in form.get("dificuldades", []):
+                        row = table.add_row().cells
+                        row[0].text = str(dif.get("Dificuldade",""))
+                        row[1].text = str(dif.get("Setor/Parceiro Envolvido",""))
+                        row[2].text = str(dif.get("Frequência",""))
+                        row[3].text = str(dif.get("Horas Perdidas",""))
+                        row[4].text = str(dif.get("Minutos Perdidos",""))
+
+                    doc.add_heading("4. Sugestões de Melhoria", level=2)
+
+                    table = doc.add_table(rows=1, cols=5)
+                    headers = ["Sugestão","Impacto Esperado","Redução Horas","Redução Minutos","Frequência Impacto"]
+
+                    for i,h in enumerate(headers):
+                        table.rows[0].cells[i].text = h
+
+                    for sug in form.get("sugestoes", []):
+                        row = table.add_row().cells
+                        row[0].text = str(sug.get("Sugestão de Melhoria",""))
+                        row[1].text = str(sug.get("Impacto Esperado",""))
+                        row[2].text = str(sug.get("Redução Horas",""))
+                        row[3].text = str(sug.get("Redução Minutos",""))
+                        row[4].text = str(sug.get("Frequência do Impacto",""))
+
+                    doc.add_heading("5. Questionário DISC", level=2)
+
+                    for i, pergunta in enumerate(perguntas_disc, 1):
+                        resp = form.get("disc", {}).get(f"disc_{i}", "")
+                        doc.add_paragraph(f"{indent}{i}. {pergunta}")
+                        doc.add_paragraph(f"{indent}Resposta: {resp}")
+
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+
+                    return buffer
+
+
+                def gerar_pdf(form):
+
+                    indent = " " * 16
+                    buffer = io.BytesIO()
+
+                    c = canvas.Canvas(buffer, pagesize=A4)
+
+                    largura, altura = A4
+                    y = altura - 40
+
+                    def linha(texto):
+                        nonlocal y
+                        c.drawString(40, y, texto)
+                        y -= 15
+
+                        if y < 40:
+                            c.showPage()
+                            y = altura - 40
+
+                    c.setFont("Helvetica-Bold",16)
+                    linha("RELATÓRIO DO FORMULÁRIO DO COLABORADOR")
+
+                    c.setFont("Helvetica",11)
+                    linha("")
+                    linha("1. Dados de Identificação")
+
+                    campos = [
+                        ("Nome","nome"),
+                        ("Data de Envio","data_envio"),
+                        ("Setor","setor"),
+                        ("Cargo","cargo"),
+                        ("Chefe","chefe"),
+                        ("Departamento","departamento"),
+                        ("Empresa","empresa"),
+                        ("Escolaridade","escolaridade")
+                    ]
+
+                    for titulo,chave in campos:
+                        linha(f"{indent}{titulo}: {form.get(chave,'')}")
+
+                    linha("")
+                    linha(f"{indent}Cursos: {form.get('cursos','')}")
+                    linha(f"{indent}Objetivo: {form.get('objetivo','')}")
+
+                    linha("")
+                    linha("2. Atividades Executadas")
+
+                    for ativ in form.get("atividades", []):
+                        linha(f"{indent}Atividade: {ativ.get('Atividade Descrita','')}")
+                        linha(f"{indent}Frequência: {ativ.get('Frequência','')}")
+                        linha(f"{indent}Tempo: {ativ.get('Horas','')} {ativ.get('Minutos','')}")
+                        linha("")
+
+                    linha("3. Dificuldades")
+
+                    for dif in form.get("dificuldades", []):
+                        linha(f"{indent}Dificuldade: {dif.get('Dificuldade','')}")
+                        linha(f"{indent}Setor: {dif.get('Setor/Parceiro Envolvido','')}")
+                        linha(f"{indent}Frequência: {dif.get('Frequência','')}")
+                        linha("")
+
+                    linha("4. Sugestões")
+
+                    for sug in form.get("sugestoes", []):
+                        linha(f"{indent}Sugestão: {sug.get('Sugestão de Melhoria','')}")
+                        linha(f"{indent}Impacto: {sug.get('Impacto Esperado','')}")
+                        linha("")
+
+                    linha("5. Questionário DISC")
+
+                    for i, pergunta in enumerate(perguntas_disc, 1):
+                        resp = form.get("disc", {}).get(f"disc_{i}", "")
+                        linha(f"{indent}{i}. {pergunta}")
+                        linha(f"{indent}Resposta: {resp}")
+                        linha("")
+
+                    c.save()
+                    buffer.seek(0)
+
+                    return buffer
+
+
+                # -------------------------------------------------
+                # BOTÕES DE EXPORTAÇÃO
+                # -------------------------------------------------
+
                 if st.session_state.get("usuario_logado") == "Luciano 123":
+
                     st.markdown("---")
                     st.subheader("⚙️ Painel de Exportação")
-                    
-                    # Usamos 2 colunas para ficar mais harmônico
+
                     col1, col2 = st.columns(2)
-                    
-                    # Padronização do nome do arquivo para ambos
-                    data_clean = form.get('DataEnvio', '').replace('/', '').replace(' ', '_').replace(':', '')
-                    nome_clean = form.get('Nome', 'Colaborador').replace(' ', '_')
+
+                    nome = form.get("nome", "Colaborador")
+                    data = form.get("data_envio", "")
+
+                    nome_clean = nome.replace(" ", "_")
+                    data_clean = data.replace("/", "").replace(":", "").replace(" ", "_")
+
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
-                    
+
                     with col1:
                         st.download_button(
-                            label="📄 Baixar em Word",
-                            data=gerar_word(form),
+                            "📄 Baixar Word",
+                            gerar_word(form),
                             file_name=f"{nome_arquivo}.docx",
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                         )
-                    
+
                     with col2:
                         st.download_button(
-                            label="📑 Baixar em PDF",
-                            data=gerar_pdf(form),
+                            "📑 Baixar PDF",
+                            gerar_pdf(form),
                             file_name=f"{nome_arquivo}.pdf",
                             mime="application/pdf"
                         )
-                # --- FIM DO BLOCO ---
 
 
 
