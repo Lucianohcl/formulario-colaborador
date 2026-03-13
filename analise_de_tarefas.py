@@ -574,7 +574,7 @@ if st.query_params.get("page") == "formulario":
                 pendencias = {}
 
                 # -------------------------------------------------
-                # 1. IDENTIFICAÇÃO (TODOS OBRIGATÓRIOS)
+                # 1. IDENTIFICAÇÃO
                 # -------------------------------------------------
                 campos_ident = {
                         "Nome": nome,
@@ -603,6 +603,7 @@ if st.query_params.get("page") == "formulario":
                 # 3. ATIVIDADES
                 # -------------------------------------------------
                 atividades_limpas = []
+                atividade_valida = False
                 for i, row in edit_ativ.iterrows():
                         faltantes = []
                         if not row["Atividade Descrita"]:
@@ -613,14 +614,21 @@ if st.query_params.get("page") == "formulario":
                                 faltantes.append("Horas")
                         if row["Minutos"] in ["", None]:
                                 faltantes.append("Minutos")
+                        
                         if faltantes:
                                 pendencias.setdefault("Atividades", []).append(f"Atividade {i+1}: {', '.join(faltantes)}")
+                        else:
+                                atividade_valida = True  # pelo menos uma linha completa
                         atividades_limpas.append(row.to_dict())
+                
+                if not atividade_valida:
+                        pendencias.setdefault("Atividades", []).append("Nenhuma linha de atividade completamente preenchida.")
 
                 # -------------------------------------------------
                 # 4. DIFICULDADES
                 # -------------------------------------------------
                 dificuldades_limpas = []
+                dificuldade_valida = False
                 for i, row in edit_dif.iterrows():
                         faltantes = []
                         if not row["Dificuldade"]:
@@ -633,14 +641,21 @@ if st.query_params.get("page") == "formulario":
                                 faltantes.append("Horas")
                         if row["Minutos Perdidos"] in ["", None]:
                                 faltantes.append("Minutos")
+                        
                         if faltantes:
                                 pendencias.setdefault("Dificuldades", []).append(f"Dificuldade {i+1}: {', '.join(faltantes)}")
+                        else:
+                                dificuldade_valida = True  # pelo menos uma linha completa
                         dificuldades_limpas.append(row.to_dict())
+                
+                if not dificuldade_valida:
+                        pendencias.setdefault("Dificuldades", []).append("Nenhuma linha de dificuldade completamente preenchida.")
 
                 # -------------------------------------------------
                 # 5. SUGESTÕES
                 # -------------------------------------------------
                 sugestoes_limpas = []
+                sugestao_valida = False
                 for i, row in edit_sug.iterrows():
                         faltantes = []
                         if not row["Sugestão de Melhoria"]:
@@ -653,9 +668,15 @@ if st.query_params.get("page") == "formulario":
                                 faltantes.append("Horas")
                         if row["Redução Minutos"] in ["", None]:
                                 faltantes.append("Minutos")
+                        
                         if faltantes:
                                 pendencias.setdefault("Sugestões", []).append(f"Sugestão {i+1}: {', '.join(faltantes)}")
+                        else:
+                                sugestao_valida = True  # pelo menos uma linha completa
                         sugestoes_limpas.append(row.to_dict())
+                
+                if not sugestao_valida:
+                        pendencias.setdefault("Sugestões", []).append("Nenhuma linha de sugestão completamente preenchida.")
 
                 # -------------------------------------------------
                 # 6. DISC
