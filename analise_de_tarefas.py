@@ -566,106 +566,128 @@ if st.query_params.get("page") == "formulario":
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
-        # -------------------------------------------------
+                # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
 
         if enviar:
 
-            erros = []
+                erros = []
 
-            # ----------------------------
-            # 1. IDENTIFICAÇÃO
-            # ----------------------------
+                # ----------------------------
+                # 1. IDENTIFICAÇÃO
+                # ----------------------------
 
-            if not all([nome, setor, cargo, chefe, departamento, empresa]):
-                erros.append("Preencha todos os campos de identificação.")
+                if not all([nome, setor, cargo, chefe, departamento, empresa, escolaridade, devolucao]):
+                        erros.append("Preencha todos os campos de identificação.")
 
-            # LIMPAR TABELAS ANTES DA VALIDAÇÃO
-            atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
-            dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
-            sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
+                # ----------------------------
+                # LIMPAR TABELAS
+                # ----------------------------
 
-            # ----------------------------
-            # 2. ATIVIDADES
-            # ----------------------------
+                atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
+                dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
+                sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
 
-            for i, ativ in enumerate(atividades_limpas, 1):
+                # Criar coluna de erro
+                edit_ativ["ERRO"] = ""
+                edit_dif["ERRO"] = ""
+                edit_sug["ERRO"] = ""
 
-                if not ativ.get("Atividade Descrita"):
-                    erros.append(f"Atividade {i} sem descrição.")
+                # ----------------------------
+                # 2. ATIVIDADES
+                # ----------------------------
 
-                if not ativ.get("Frequência"):
-                    erros.append(f"Atividade {i} sem frequência.")
+                if len(atividades_limpas) == 0:
+                        erros.append("Adicione pelo menos uma atividade.")
 
-                if not ativ.get("Horas"):
-                    erros.append(f"Atividade {i} sem horas.")
+                for i, ativ in enumerate(atividades_limpas):
 
-                if not ativ.get("Minutos"):
-                    erros.append(f"Atividade {i} sem minutos.")
+                        if not ativ.get("Frequência"):
+                                erros.append(f"Atividade {i+1} sem frequência.")
+                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-            # ----------------------------
-            # 3. DIFICULDADES
-            # ----------------------------
+                        if ativ.get("Horas") in [None, "", 0]:
+                                erros.append(f"Atividade {i+1} sem horas.")
+                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-            for i, dif in enumerate(dificuldades_limpas, 1):
+                        if ativ.get("Minutos") in [None, "", 0]:
+                                erros.append(f"Atividade {i+1} sem minutos.")
+                                edit_ativ.loc[i, "ERRO"] = "❌"
 
-                if not dif.get("Dificuldade"):
-                    erros.append(f"Dificuldade {i} sem descrição.")
+                # ----------------------------
+                # 3. DIFICULDADES
+                # ----------------------------
 
-                if not dif.get("Setor/Parceiro Envolvido"):
-                    erros.append(f"Dificuldade {i} sem setor/parceiro.")
+                if len(dificuldades_limpas) == 0:
+                        erros.append("Adicione pelo menos uma dificuldade.")
 
-                if not dif.get("Frequência"):
-                    erros.append(f"Dificuldade {i} sem frequência.")
+                for i, dif in enumerate(dificuldades_limpas):
 
-                if not dif.get("Horas Perdidas"):
-                    erros.append(f"Dificuldade {i} sem horas perdidas.")
+                        if not dif.get("Setor/Parceiro Envolvido"):
+                                erros.append(f"Dificuldade {i+1} sem setor/parceiro.")
+                                edit_dif.loc[i, "ERRO"] = "❌"
 
-                if not dif.get("Minutos Perdidos"):
-                    erros.append(f"Dificuldade {i} sem minutos perdidos.")
+                        if not dif.get("Frequência"):
+                                erros.append(f"Dificuldade {i+1} sem frequência.")
+                                edit_dif.loc[i, "ERRO"] = "❌"
 
-            # ----------------------------
-            # 4. SUGESTÕES
-            # ----------------------------
+                        if dif.get("Horas Perdidas") in [None, "", 0]:
+                                erros.append(f"Dificuldade {i+1} sem horas perdidas.")
+                                edit_dif.loc[i, "ERRO"] = "❌"
 
-            for i, sug in enumerate(sugestoes_limpas, 1):
+                        if dif.get("Minutos Perdidos") in [None, "", 0]:
+                                erros.append(f"Dificuldade {i+1} sem minutos perdidos.")
+                                edit_dif.loc[i, "ERRO"] = "❌"
 
-                if not sug.get("Sugestão de Melhoria"):
-                    erros.append(f"Sugestão {i} sem descrição.")
+                # ----------------------------
+                # 4. SUGESTÕES
+                # ----------------------------
 
-                if not sug.get("Impacto Esperado"):
-                    erros.append(f"Sugestão {i} sem impacto esperado.")
+                if len(sugestoes_limpas) == 0:
+                        erros.append("Adicione pelo menos uma sugestão.")
 
-                if not sug.get("Redução Horas"):
-                    erros.append(f"Sugestão {i} sem horas.")
+                for i, sug in enumerate(sugestoes_limpas):
 
-                if not sug.get("Redução Minutos"):
-                    erros.append(f"Sugestão {i} sem minutos.")
+                        if not sug.get("Impacto Esperado"):
+                                erros.append(f"Sugestão {i+1} sem impacto esperado.")
+                                edit_sug.loc[i, "ERRO"] = "❌"
 
-                if not sug.get("Frequência do Impacto"):
-                    erros.append(f"Sugestão {i} sem frequência.")
+                        if not sug.get("Frequência do Impacto"):
+                                erros.append(f"Sugestão {i+1} sem frequência.")
+                                edit_sug.loc[i, "ERRO"] = "❌"
 
-            # ----------------------------
-            # 5. DISC
-            # ----------------------------
+                        if sug.get("Redução Horas") in [None, "", 0]:
+                                erros.append(f"Sugestão {i+1} sem horas de redução.")
+                                edit_sug.loc[i, "ERRO"] = "❌"
 
-            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                erros.append("Responda todas as perguntas do DISC.")
+                        if sug.get("Redução Minutos") in [None, "", 0]:
+                                erros.append(f"Sugestão {i+1} sem minutos de redução.")
+                                edit_sug.loc[i, "ERRO"] = "❌"
 
-            # ----------------------------
-            # RESULTADO FINAL
-            # ----------------------------
+                # ----------------------------
+                # 5. DISC
+                # ----------------------------
 
-            if erros:
+                if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                        erros.append("Responda todas as perguntas do DISC.")
 
-                st.error("⚠️ O formulário possui pendências:")
+                # ----------------------------
+                # RESULTADO FINAL
+                # ----------------------------
 
-                for erro in erros:
-                    st.write(f"- {erro}")
+                if erros:
 
-            else:
-                st.success("✅ Formulário validado com sucesso!")
+                        st.error("⚠️ O formulário possui pendências:")
+
+                        for erro in erros:
+                                st.write(f"- {erro}")
+
+                else:
+
+                        st.success("✅ Formulário validado com sucesso!")
+
+                        # segue para verificação de duplicidade e salvamento
 
                     
                 base_dir = os.path.dirname(os.path.abspath(__file__))
