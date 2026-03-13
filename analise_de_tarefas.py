@@ -572,19 +572,97 @@ if st.query_params.get("page") == "formulario":
 
         if enviar:
 
-            # 1. VALIDAÇÃO DE CAMPOS
-            if not nome or not setor or not cargo or not chefe or not departamento or not empresa:
-                st.error("⚠️ Erro: Preencha todos os campos de identificação!")
+            erros = []
 
-            # 2. VALIDAÇÃO DO DISC
-            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+            # ----------------------------
+            # 1. IDENTIFICAÇÃO
+            # ----------------------------
+
+            if not all([nome, setor, cargo, chefe, departamento, empresa]):
+                erros.append("Preencha todos os campos de identificação.")
+
+            # ----------------------------
+            # 2. ATIVIDADES
+            # ----------------------------
+
+            for i, ativ in enumerate(atividades_limpas, 1):
+
+                if not ativ.get("Atividade Descrita"):
+                    erros.append(f"Atividade {i} sem descrição.")
+
+                if not ativ.get("Frequência"):
+                    erros.append(f"Atividade {i} sem frequência.")
+
+                if not ativ.get("Horas"):
+                    erros.append(f"Atividade {i} sem horas.")
+
+                if not ativ.get("Minutos"):
+                    erros.append(f"Atividade {i} sem minutos.")
+
+            # ----------------------------
+            # 3. DIFICULDADES
+            # ----------------------------
+
+            for i, dif in enumerate(dificuldades_limpas, 1):
+
+                if not dif.get("Dificuldade"):
+                    erros.append(f"Dificuldade {i} sem descrição.")
+
+                if not dif.get("Setor/Parceiro Envolvido"):
+                    erros.append(f"Dificuldade {i} sem setor/parceiro.")
+
+                if not dif.get("Frequência"):
+                    erros.append(f"Dificuldade {i} sem frequência.")
+
+                if not dif.get("Horas Perdidas"):
+                    erros.append(f"Dificuldade {i} sem horas perdidas.")
+
+                if not dif.get("Minutos Perdidos"):
+                    erros.append(f"Dificuldade {i} sem minutos perdidos.")
+
+            # ----------------------------
+            # 4. SUGESTÕES
+            # ----------------------------
+
+            for i, sug in enumerate(sugestoes_limpas, 1):
+
+                if not sug.get("Sugestão de Melhoria"):
+                    erros.append(f"Sugestão {i} sem descrição.")
+
+                if not sug.get("Impacto Esperado"):
+                    erros.append(f"Sugestão {i} sem impacto esperado.")
+
+                if not sug.get("Redução Horas"):
+                    erros.append(f"Sugestão {i} sem horas.")
+
+                if not sug.get("Redução Minutos"):
+                    erros.append(f"Sugestão {i} sem minutos.")
+
+                if not sug.get("Frequência do Impacto"):
+                    erros.append(f"Sugestão {i} sem frequência.")
+
+            # ----------------------------
+            # 5. DISC
+            # ----------------------------
+
+            if any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                erros.append("Responda todas as perguntas do DISC.")
+
+            # ----------------------------
+            # RESULTADO FINAL
+            # ----------------------------
+
+            if erros:
+
+                st.error("⚠️ O formulário possui pendências:")
+
+                for erro in erros:
+                    st.write(f"- {erro}")
 
             else:
+                st.success("✅ Formulário validado com sucesso!")
 
-                import os
-                import json
-
+                    
                 base_dir = os.path.dirname(os.path.abspath(__file__))
                 dados_dir = os.path.join(base_dir, "dados")
                 os.makedirs(dados_dir, exist_ok=True)
