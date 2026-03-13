@@ -566,152 +566,127 @@ if st.query_params.get("page") == "formulario":
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
-                # -------------------------------------------------
+        # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
-
         if enviar:
 
-                erros_identificacao = []
-                erros_atividades = []
-                erros_dificuldades = []
-                erros_sugestoes = []
-                erros_disc = []
-
+                pendencias = {}
 
                 # -------------------------------------------------
-                # 1. IDENTIFICAÇÃO
+                # 1. IDENTIFICAÇÃO (TODOS OBRIGATÓRIOS)
                 # -------------------------------------------------
+                campos_ident = {
+                        "Nome": nome,
+                        "Setor": setor,
+                        "Cargo": cargo,
+                        "Chefe": chefe,
+                        "Departamento": departamento,
+                        "Empresa": empresa,
+                        "Escolaridade": escolaridade,
+                        "Devolução preenchida em": devolucao
+                }
 
-                if not nome:
-                        erros_identificacao.append("Nome")
-
-                if not setor:
-                        erros_identificacao.append("Setor")
-
-                if not cargo:
-                        erros_identificacao.append("Cargo")
-
-                if not chefe:
-                        erros_identificacao.append("Chefe")
-
-                if not departamento:
-                        erros_identificacao.append("Departamento")
-
-                if not empresa:
-                        erros_identificacao.append("Empresa")
-
-                if not escolaridade:
-                        erros_identificacao.append("Escolaridade")
-
-                if not devolucao:
-                        erros_identificacao.append("Devolução")
-
+                for campo, valor in campos_ident.items():
+                        if not valor:
+                                pendencias.setdefault("Identificação", []).append(campo)
 
                 # -------------------------------------------------
-                # 2. ATIVIDADES
+                # 2. Cursos e Trabalho/Objetivo
                 # -------------------------------------------------
-
-                atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict("records")
-
-                if not atividades_limpas:
-                        erros_atividades.append("Nenhuma atividade foi preenchida")
-
-                for ativ in atividades_limpas:
-
-                        if not ativ.get("Frequência"):
-                                erros_atividades.append("Frequência")
-
-                        if ativ.get("Horas") in ["", None]:
-                                erros_atividades.append("Horas")
-
-                        if ativ.get("Minutos") in ["", None]:
-                                erros_atividades.append("Minutos")
-
+                if not cursos:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
+                if not objetivo:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
                 # -------------------------------------------------
-                # 3. DIFICULDADES
+                # 3. ATIVIDADES
                 # -------------------------------------------------
-
-                dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict("records")
-
-                for dif in dificuldades_limpas:
-
-                        if not dif.get("Setor/Parceiro Envolvido"):
-                                erros_dificuldades.append("Setor/Parceiro")
-
-                        if not dif.get("Frequência"):
-                                erros_dificuldades.append("Frequência")
-
-                        if dif.get("Horas Perdidas") in ["", None]:
-                                erros_dificuldades.append("Horas")
-
-                        if dif.get("Minutos Perdidos") in ["", None]:
-                                erros_dificuldades.append("Minutos")
-
+                atividades_limpas = []
+                for i, row in edit_ativ.iterrows():
+                        faltantes = []
+                        if not row["Atividade Descrita"]:
+                                faltantes.append("Descrição")
+                        if not row["Frequência"]:
+                                faltantes.append("Frequência")
+                        if row["Horas"] in ["", None]:
+                                faltantes.append("Horas")
+                        if row["Minutos"] in ["", None]:
+                                faltantes.append("Minutos")
+                        if faltantes:
+                                pendencias.setdefault("Atividades", []).append(f"Atividade {i+1}: {', '.join(faltantes)}")
+                        atividades_limpas.append(row.to_dict())
 
                 # -------------------------------------------------
-                # 4. SUGESTÕES
+                # 4. DIFICULDADES
                 # -------------------------------------------------
-
-                sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict("records")
-
-                for sug in sugestoes_limpas:
-
-                        if not sug.get("Impacto Esperado"):
-                                erros_sugestoes.append("Impacto Esperado")
-
-                        if not sug.get("Frequência do Impacto"):
-                                erros_sugestoes.append("Frequência")
-
-                        if sug.get("Redução Horas") in ["", None]:
-                                erros_sugestoes.append("Horas")
-
-                        if sug.get("Redução Minutos") in ["", None]:
-                                erros_sugestoes.append("Minutos")
-
+                dificuldades_limpas = []
+                for i, row in edit_dif.iterrows():
+                        faltantes = []
+                        if not row["Dificuldade"]:
+                                faltantes.append("Descrição")
+                        if not row["Setor/Parceiro Envolvido"]:
+                                faltantes.append("Setor/Parceiro")
+                        if not row["Frequência"]:
+                                faltantes.append("Frequência")
+                        if row["Horas Perdidas"] in ["", None]:
+                                faltantes.append("Horas")
+                        if row["Minutos Perdidos"] in ["", None]:
+                                faltantes.append("Minutos")
+                        if faltantes:
+                                pendencias.setdefault("Dificuldades", []).append(f"Dificuldade {i+1}: {', '.join(faltantes)}")
+                        dificuldades_limpas.append(row.to_dict())
 
                 # -------------------------------------------------
-                # 5. DISC
+                # 5. SUGESTÕES
                 # -------------------------------------------------
+                sugestoes_limpas = []
+                for i, row in edit_sug.iterrows():
+                        faltantes = []
+                        if not row["Sugestão de Melhoria"]:
+                                faltantes.append("Descrição")
+                        if not row["Impacto Esperado"]:
+                                faltantes.append("Impacto Esperado")
+                        if not row["Frequência do Impacto"]:
+                                faltantes.append("Frequência")
+                        if row["Redução Horas"] in ["", None]:
+                                faltantes.append("Horas")
+                        if row["Redução Minutos"] in ["", None]:
+                                faltantes.append("Minutos")
+                        if faltantes:
+                                pendencias.setdefault("Sugestões", []).append(f"Sugestão {i+1}: {', '.join(faltantes)}")
+                        sugestoes_limpas.append(row.to_dict())
 
+                # -------------------------------------------------
+                # 6. DISC
+                # -------------------------------------------------
+                disc_faltando = []
                 for i in range(1, 25):
-
                         if not st.session_state.get(f"disc_{i}"):
-                                erros_disc.append(i)
-
+                                disc_faltando.append(f"Questão {i}")
+                if disc_faltando:
+                        pendencias["DISC"] = [", ".join(disc_faltando)]
 
                 # -------------------------------------------------
                 # RESULTADO DAS VALIDAÇÕES
                 # -------------------------------------------------
-
-                if (
-                        erros_identificacao
-                        or erros_atividades
-                        or erros_dificuldades
-                        or erros_sugestoes
-                        or erros_disc
-                ):
-
-                        st.error("⚠️ O formulário possui pendências. Revise as seções abaixo:")
-
-                        if erros_identificacao:
-                                st.write("Identificação: existem campos obrigatórios não preenchidos.")
-
-                        if erros_atividades:
-                                st.write("Atividades: faltam campos de frequência ou tempo.")
-
-                        if erros_dificuldades:
-                                st.write("Dificuldades: faltam campos obrigatórios.")
-
-                        if erros_sugestoes:
-                                st.write("Sugestões: faltam campos obrigatórios.")
-
-                        if erros_disc:
-                                st.write("DISC: existem perguntas não respondidas.")
-
+                if pendencias:
+                        st.error("⚠️ O formulário possui pendências. Todos os campos são obrigatórios. Confira abaixo:")
+                        for secao, itens in pendencias.items():
+                                st.write(f"**{secao}**:")
+                                for item in itens:
+                                        st.write(f"- {item}")
                         st.session_state["confirmado"] = False
+                        st.stop()
 
+                # -------------------------------------------------
+                # CONFIRMAÇÃO EM DOIS CLIQUES
+                # -------------------------------------------------
+                if not st.session_state.get("confirmado", False):
+                        st.warning(
+                                "⚠️ Todos os campos foram preenchidos. Revise o formulário. O envio é único. Clique novamente em ENVIAR para confirmar."
+                        )
+                        st.session_state["confirmado"] = True
                         st.stop()
 
 
