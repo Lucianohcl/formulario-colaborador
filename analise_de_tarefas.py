@@ -571,10 +571,27 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
         if enviar:
 
-                pendencias = {}
+
+                # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
+                nome_limpo = nome.strip().replace(" ", "_")
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+
+                if not os.path.exists(dados_dir):
+                    os.makedirs(dados_dir, exist_ok=True)
+
+                arquivo_esperado = f"{nome_limpo}.json"
+
+                # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
+                if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                    st.session_state["confirmado"] = False
+                    st.stop()
+
+                # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES
 
                 # -------------------------------------------------
-                # 1. IDENTIFICAÇÃO
+                # 2. IDENTIFICAÇÃO
                 # -------------------------------------------------
                 campos_ident = {
                         "Nome": nome,
@@ -592,7 +609,7 @@ if st.query_params.get("page") == "formulario":
                                 pendencias.setdefault("Identificação", []).append(campo)
 
                 # -------------------------------------------------
-                # 2. Cursos e Trabalho/Objetivo
+                # 3. Cursos e Trabalho/Objetivo
                 # -------------------------------------------------
                 if not cursos:
                         pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
@@ -600,7 +617,7 @@ if st.query_params.get("page") == "formulario":
                         pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
                 # -------------------------------------------------
-                # 3. ATIVIDADES (Mínimo 1 linha completa)
+                # 4. ATIVIDADES (Mínimo 1 linha completa)
                 # -------------------------------------------------
                 atividades_limpas = []
                 atividade_valida = False
@@ -625,7 +642,7 @@ if st.query_params.get("page") == "formulario":
                         pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
 
                 # -------------------------------------------------
-                # 4. DIFICULDADES (Mínimo 1 linha completa)
+                # 5. DIFICULDADES (Mínimo 1 linha completa)
                 # -------------------------------------------------
                 dificuldades_limpas = []
                 dificuldade_valida = False
@@ -650,7 +667,7 @@ if st.query_params.get("page") == "formulario":
                         pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
 
                 # -------------------------------------------------
-                # 5. SUGESTÕES (Mínimo 1 linha completa)
+                # 6. SUGESTÕES (Mínimo 1 linha completa)
                 # -------------------------------------------------
                 sugestoes_limpas = []
                 sugestao_valida = False
@@ -675,7 +692,7 @@ if st.query_params.get("page") == "formulario":
                         pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
 
                 # -------------------------------------------------
-                # 6. DISC
+                # 7. DISC
                 # -------------------------------------------------
                 disc_faltando = []
                 for i in range(1, 25):
@@ -696,19 +713,7 @@ if st.query_params.get("page") == "formulario":
                         st.session_state["confirmado"] = False
                         st.stop()
 
-                # -------------------------------------------------
-                # EVITAR DUPLICIDADE (Mover para antes da confirmação)
-                # -------------------------------------------------
-                nome_limpo = nome.strip().replace(" ", "_")
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
                 
-                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
-                if arquivos_existentes:
-                        st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-                        st.stop()
-
                 # -------------------------------------------------
                 # CONFIRMAÇÃO EM DOIS CLIQUES
                 # -------------------------------------------------
