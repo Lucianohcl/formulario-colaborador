@@ -981,9 +981,17 @@ if st.session_state.get("pagina") == "visualizar":
                 caminho = os.path.join(dados_dir, arquivo)
 
                 with open(caminho, "r", encoding="utf-8") as f:
-                    dados = json.load(f)
+                    try:
+                        dados = json.load(f)
 
-                nome = dados.get("nome", "Colaborador")
+                        if isinstance(dados, dict):
+                            nome = dados.get("nome", "Colaborador")
+                        else:
+                            nome = "Registro inválido"
+
+                    except:
+                        nome = "Arquivo corrompido"
+
                 opcoes.append((arquivo, nome))
 
             # Mostrar opções
