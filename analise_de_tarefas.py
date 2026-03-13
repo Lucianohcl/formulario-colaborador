@@ -966,14 +966,45 @@ if st.session_state.get("pagina") == "visualizar":
 
 
 
-        # Botão de Limpeza
         st.markdown("---")
-        if st.button("🗑️ LIMPAR TODOS OS FORMULÁRIOS"):
-            for arquivo in os.listdir(dados_dir):
-                if arquivo.endswith(".json"): 
-                    os.remove(os.path.join(dados_dir, arquivo))
-            st.session_state["formularios"] = []
-            st.success("✅ Banco de dados limpo!"); st.rerun()
+        st.subheader("🗑️ Excluir formulário específico")
+
+        # Lista os arquivos
+        arquivos_json = [f for f in os.listdir(dados_dir) if f.endswith(".json")]
+
+        if arquivos_json:
+
+            # Criar lista com nome do colaborador
+            opcoes = []
+
+            for arquivo in arquivos_json:
+                caminho = os.path.join(dados_dir, arquivo)
+
+                with open(caminho, "r", encoding="utf-8") as f:
+                    dados = json.load(f)
+
+                nome = dados.get("nome", "Colaborador")
+                opcoes.append((arquivo, nome))
+
+            # Mostrar opções
+            nomes_para_select = [f"{nome} ({arquivo})" for arquivo, nome in opcoes]
+
+            escolha = st.selectbox(
+                "Selecione o formulário que deseja excluir:",
+                nomes_para_select
+            )
+
+            if st.button("❌ Excluir formulário selecionado"):
+
+                arquivo_escolhido = opcoes[nomes_para_select.index(escolha)][0]
+
+                os.remove(os.path.join(dados_dir, arquivo_escolhido))
+
+                st.success("✅ Formulário excluído com sucesso!")
+                st.rerun()
+
+        else:
+            st.info("Nenhum formulário salvo.")
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
