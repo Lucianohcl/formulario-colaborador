@@ -688,13 +688,16 @@ if st.query_params.get("page") == "formulario":
                                 erros.append(f"DISC questão {i} não respondida.")
 
 
-                                # -------------------------------------------------
+                # -------------------------------------------------
                 # RESULTADO DAS VALIDAÇÕES
                 # -------------------------------------------------
 
                 if erros:
 
-                        st.error("⚠️ O formulário possui pendências. Revise pois todos os campos são obrigatórios!")
+                        st.error("⚠️ O formulário possui pendências:")
+
+                        for erro in erros:
+                            st.write(f"- {erro}")
 
                         st.session_state["confirmado"] = False
 
@@ -779,41 +782,7 @@ if st.query_params.get("page") == "formulario":
                 st.session_state["confirmado"] = False
 
 
-                # -------------------------------------------------
-                # SALVAMENTO FINAL
-                # -------------------------------------------------
-
-                dados = {
-                        "nome": nome,
-                        "data_envio": datetime.now(
-                                ZoneInfo("America/Sao_Paulo")
-                        ).strftime("%d/%m/%Y %H:%M"),
-                        "setor": setor,
-                        "cargo": cargo,
-                        "chefe": chefe,
-                        "departamento": departamento,
-                        "empresa": empresa,
-                        "escolaridade": escolaridade,
-                        "devolucao": devolucao,
-                        "cursos": cursos,
-                        "objetivo": objetivo,
-                        "atividades": atividades_limpas,
-                        "dificuldades": dificuldades_limpas,
-                        "sugestoes": sugestoes_limpas,
-                        "disc": {
-                                f"disc_{i}": st.session_state.get(f"disc_{i}")
-                                for i in range(1, 25)
-                        }
-                }
-
-                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-
-                with open(caminho, "w", encoding="utf-8") as f:
-                        json.dump(dados, f, ensure_ascii=False, indent=4)
-
-                st.success("✅ Formulário enviado com sucesso!")
-
-                st.session_state["confirmado"] = False
+                
 
 
 # --- VISUALIZAÇÃO ---
