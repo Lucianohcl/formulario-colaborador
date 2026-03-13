@@ -581,6 +581,11 @@ if st.query_params.get("page") == "formulario":
             if not all([nome, setor, cargo, chefe, departamento, empresa]):
                 erros.append("Preencha todos os campos de identificação.")
 
+            # LIMPAR TABELAS ANTES DA VALIDAÇÃO
+            atividades_limpas = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict('records')
+            dificuldades_limpas = edit_dif[edit_dif["Dificuldade"] != ""].to_dict('records')
+            sugestoes_limpas = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict('records')
+
             # ----------------------------
             # 2. ATIVIDADES
             # ----------------------------
