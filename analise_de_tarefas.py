@@ -663,8 +663,8 @@ if st.session_state.get("pagina") == "visualizar":
         for idx, form in enumerate(lista_de_arquivos, 1):
             nome_exibir = str(form.get('nome', f'Colaborador {idx}')).upper()
             
-           with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}"):
-                # [Aqui você mantém o seu código de exibição de dados]
+           
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=True):               
                 
             
             
