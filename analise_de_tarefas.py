@@ -1619,23 +1619,37 @@ def salvar_formulario_json(formulario):
 st.session_state["formularios"] = carregar_todos_formularios()
 
 # ============================================================
-# SEÇÃO COLETIVA (DASHBOARD DA EQUIPE) 
-# BLOCO FINAL - SEM RECUO (COLADO NA ESQUERDA)
+# GARANTIA DE PERSISTÊNCIA (INDIVIDUAL E COLETIVA)
 # ============================================================
 
-st.divider() 
+# 1. CARGA GLOBAL: Força a leitura dos arquivos da nuvem/disco
+st.session_state["formularios"] = carregar_todos_formularios()
 
-# Verificação baseada nos dados físicos carregados
-if "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+# 2. CONDIÇÃO DE EXIBIÇÃO: Só roda na página correta e se houver dados
+if st.session_state.get("pagina") == "Visualizar Dados" and "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+    
+    # --- PERSISTÊNCIA INDIVIDUAL ---
+    # Se existe um colaborador selecionado, garantimos que os dados dele sejam recuperados do arquivo salvo
+    if st.session_state.get("colaborador_selecionado"):
+        nome_sel = st.session_state["colaborador_selecionado"]
+        # Busca o dicionário exato do colaborador dentro da lista persistida
+        dados_individuais = next((f for f in st.session_state["formularios"] if f.get("nome") == nome_sel), None)
+        
+        if dados_individuais:
+            # Aqui você pode garantir que as variáveis de análise individual usem 'dados_individuais'
+            # Exemplo: st.session_state["dados_analise_corrente"] = dados_individuais
+            pass
+
+    # --- PERSISTÊNCIA COLETIVA ---
+    st.divider() 
     st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
 
     with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
         
-        # 1. PROCESSAMENTO DOS DADOS (Puxando de cada arquivo individual salvo)
         lista_resultados = []
         for f in st.session_state["formularios"]:
             try:
-                # Extrai o perfil DISC de cada arquivo físico
+                # Extrai o perfil DISC de cada arquivo físico salvo
                 res, _ = calcular_disc(f.get("disc", {}))
                 lista_resultados.append(res)
             except:
@@ -1644,19 +1658,18 @@ if "formularios" in st.session_state and len(st.session_state["formularios"]) > 
         if lista_resultados:
             df_equipe = pd.DataFrame(lista_resultados)
             
-            # Média percentual para leitura intuitiva
+            # Média do time
             dados_agrupados = df_equipe.mean().reset_index()
             dados_agrupados.columns = ["Tipo", "Media"]
             
-            # Identifica o perfil predominante do grupo
             perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
 
-            # 2. EXPLICAÇÕES E INSIGHTS
+            # EXPLICAÇÕES E INSIGHTS
             explicações = {
-                "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida. Cuidado com o estresse.",
-                "I": "☀️ **Influência Alta:** Time comunicativo e criativo. Cuidado com a falta de foco.",
-                "S": "🌱 **Estabilidade Alta:** Time leal e processual. Cuidado com a resistência a mudanças.",
-                "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista. Cuidado com o excesso de análise."
+                "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida.",
+                "I": "☀️ **Influência Alta:** Time comunicativo e criativo.",
+                "S": "🌱 **Estabilidade Alta:** Time leal e processual.",
+                "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista."
             }
 
             col_txt, col_grf = st.columns([1, 1.5])
@@ -1665,36 +1678,21 @@ if "formularios" in st.session_state and len(st.session_state["formularios"]) > 
                 st.write("### 🧠 Insight do Consultor")
                 st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
                 
-                # Identifica a maior carência da equipe
                 menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
                 st.warning(f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time.")
                 
-                st.caption(f"Análise baseada em {len(st.session_state['formularios'])} formulários persistidos no banco.")
+                st.caption(f"Sincronizado: {len(st.session_state['formularios'])} arquivos individuais carregados.")
 
             with col_grf:
                 fig_eq = px.bar(
-                    dados_agrupados,
-                    x="Tipo",
-                    y="Media",
-                    color="Tipo",
-                    text_auto='.1f',
-                    color_discrete_map={
-                        "D":"#FF4136", 
-                        "I":"#FF851B", 
-                        "S":"#2ECC40", 
-                        "C":"#0074D9"
-                    }
+                    dados_agrupados, x="Tipo", y="Media", color="Tipo", text_auto='.1f',
+                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
                 )
-                
                 fig_eq.update_layout(
-                    template="plotly_white", 
-                    height=300, 
-                    showlegend=False, 
-                    yaxis_range=[0,100],
-                    margin=dict(l=10, r=10, t=10, b=10)
+                    template="plotly_white", height=300, showlegend=False, 
+                    yaxis_range=[0,100], margin=dict(l=10, r=10, t=10, b=10)
                 )
-                
                 st.plotly_chart(fig_eq, use_container_width=True)
 else:
-    # Se a pasta de dados estiver vazia (Página Inicial), não exibe nada
+    # Se estiver na Home, o bloco é ignorado para evitar erros de inicialização
     pass
