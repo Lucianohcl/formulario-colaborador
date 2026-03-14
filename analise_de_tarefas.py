@@ -430,6 +430,80 @@ if st.session_state.pagina == "disc":
         st.markdown("## 🔹 Painel DISC do Colaborador")
         col1, col2 = st.columns([2,1])
 
+        # 1. EXIBIÇÃO DOS MÉTRICOS NAS COLUNAS
+        with col1:
+            st.metric("Perfil Dominante", dominante)
+        with col2:
+            st.metric("Intensidade (Score)", score)
+
+        # ============================================================
+        # EXPLICAÇÃO DINÂMICA (COLE EXATAMENTE AQUI)
+        # ============================================================
+        st.markdown("---")
+        st.subheader("📖 Interpretação do Perfil DISC")
+
+        # Dicionário de configurações por letra
+        textos_disc = {
+            "D": {
+                "nome": "Dominante",
+                "caracteristica": "Foco em Resultados e Assertividade.",
+                "descricao": "Pessoas com perfil D alto são decididas, diretas e competitivas. Elas buscam desafios e resultados rápidos.",
+                "cor": "red"
+            },
+            "I": {
+                "nome": "Influente",
+                "caracteristica": "Foco em Pessoas e Comunicação.",
+                "descricao": "Pessoas com perfil I alto são entusiasmadas, comunicativas e otimistas. Elas buscam conexão e influência social.",
+                "cor": "orange"
+            },
+            "S": {
+                "nome": "Estável",
+                "caracteristica": "Foco em Colaboração e Persistência.",
+                "descricao": "Pessoas com perfil S alto são pacientes, leais e ótimas ouvintes. Elas buscam harmonia, segurança e processos claros.",
+                "cor": "green"
+            },
+            "C": {
+                "nome": "Conformidade",
+                "caracteristica": "Foco em Precisão e Qualidade.",
+                "descricao": "Pessoas com perfil C alto são analíticas, detalhistas e disciplinadas. Elas buscam exatidão, lógica e seguem regras.",
+                "cor": "blue"
+            }
+        }
+
+        # Função para explicar o que o número significa
+        def interpretar_percentual(p):
+            try:
+                valor = float(p.replace('%', ''))
+                if valor > 85: return "🔥 **Intensidade Extrema:** O comportamento deste perfil é sua marca registrada e domina suas reações."
+                if valor > 60: return "✅ **Intensidade Alta:** Características muito fortes e visíveis no dia a dia."
+                if valor > 40: return "⚖️ **Intensidade Moderada:** Equilíbrio entre este perfil e outras características."
+                return "❄️ **Intensidade Baixa:** Esta característica é usada apenas quando estritamente necessário."
+            except:
+                return ""
+
+        # Recupera as informações da letra dominante atual
+        info = textos_disc.get(dominante, {"nome": "N/A", "descricao": "", "caracteristica": "", "cor": "gray"})
+
+        # Layout de explicação
+        col_res, col_leg = st.columns([1.5, 1])
+
+        with col_res:
+            st.markdown(f"### Perfil Principal: :{info['cor']}[{info['nome']}]")
+            st.write(f"**Estilo:** {info['caracteristica']}")
+            st.info(info['descricao'])
+            st.write(interpretar_percentual(score))
+
+        with col_leg:
+            st.markdown("### 🔍 Legenda Geral")
+            st.write("**D (Dominante):** Rapidez e Desafios.")
+            st.write("**I (Influente):** Liberdade e Contatos.")
+            st.write("**S (Estável):** Segurança e Cooperação.")
+            st.write("**C (Conformidade):** Ordem e Lógica.")
+            st.caption("O percentual indica a força desse estilo no comportamento.")
+
+
+
+
         # ============================================================
         # GRÁFICO DISC
         # ============================================================
