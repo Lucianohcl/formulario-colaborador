@@ -1626,7 +1626,10 @@ st.session_state["formularios"] = carregar_todos_formularios()
 st.session_state["formularios"] = carregar_todos_formularios()
 
 # 2. CONDIÇÃO DE EXIBIÇÃO: Só roda na página correta e se houver dados
-if st.session_state.get("pagina") == "Visualizar Dados" and "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+# Garante que espaços extras não quebrem a lógica
+pagina_atual = str(st.session_state.get("pagina", "")).strip()
+
+if pagina_atual == "Visualizar Dados" and len(st.session_state.get("formularios", [])) > 0:
     
     # --- PERSISTÊNCIA INDIVIDUAL ---
     # Se existe um colaborador selecionado, garantimos que os dados dele sejam recuperados do arquivo salvo
