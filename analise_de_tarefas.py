@@ -428,261 +428,60 @@ if st.session_state.pagina == "disc":
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
-        col1, col2 = st.columns([2,1])
+        
+        # 1. GRÁFICO E MÉTRICAS (Lado a Lado)
+        col_graf, col_met = st.columns([2,1])
+        
+        with col_graf:
+            fig = px.bar(
+                x=list(percentuais.keys()),
+                y=list(percentuais.values()),
+                labels={'x':'Tipo','y':'Percentual (%)'},
+                text=list(percentuais.values()),
+                color=list(percentuais.keys()),
+                color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+            )
+            fig.update_layout(yaxis_range=[0,100], height=350, margin=dict(l=20, r=20, t=30, b=20), template="plotly_white")
+            st.plotly_chart(fig, use_container_width=True)
 
-        # 1. EXIBIÇÃO DOS MÉTRICOS NAS COLUNAS
-        with col1:
+        with col_met:
             st.metric("Perfil Dominante", dominante)
-        with col2:
-            st.metric("Intensidade (Score)", score)
+            st.metric("Intensidade (Score)", f"{score}%")
+            
+            # Explicação rápida do nível de intensidade
+            def interpretar_valor(p):
+                try:
+                    v = float(str(p).replace('%',''))
+                    if v > 85: return "🎯 **Muito Alta**"
+                    if v > 60: return "✅ **Alta**"
+                    return "⚖️ **Equilibrada**"
+                except: return ""
+            st.write(interpretar_valor(score))
 
-        # ============================================================
-        # EXPLICAÇÃO DINÂMICA (COLE EXATAMENTE AQUI)
-        # ============================================================
         st.markdown("---")
-        st.subheader("📖 Interpretação do Perfil DISC")
 
-        # Dicionário de configurações por letra
+        # 2. INTERPRETAÇÃO DETALHADA (Substitui a Base de Conhecimento e o Parecer)
         textos_disc = {
-            "D": {
-                "nome": "Dominante",
-                "caracteristica": "Foco em Resultados e Assertividade.",
-                "descricao": "Pessoas com perfil D alto são decididas, diretas e competitivas. Elas buscam desafios e resultados rápidos.",
-                "cor": "red"
-            },
-            "I": {
-                "nome": "Influente",
-                "caracteristica": "Foco em Pessoas e Comunicação.",
-                "descricao": "Pessoas com perfil I alto são entusiasmadas, comunicativas e otimistas. Elas buscam conexão e influência social.",
-                "cor": "orange"
-            },
-            "S": {
-                "nome": "Estável",
-                "caracteristica": "Foco em Colaboração e Persistência.",
-                "descricao": "Pessoas com perfil S alto são pacientes, leais e ótimas ouvintes. Elas buscam harmonia, segurança e processos claros.",
-                "cor": "green"
-            },
-            "C": {
-                "nome": "Conformidade",
-                "caracteristica": "Foco em Precisão e Qualidade.",
-                "descricao": "Pessoas com perfil C alto são analíticas, detalhistas e disciplinadas. Elas buscam exatidão, lógica e seguem regras.",
-                "cor": "blue"
-            }
+            "D": {"nome": "Dominante", "estilo": "Resultados e Assertividade", "desc": "Decidido e direto. Busca desafios e rapidez.", "cor": "red", "tarefas": "Tomada de decisão, Gestão de crises, Metas."},
+            "I": {"nome": "Influente", "estilo": "Pessoas e Comunicação", "desc": "Entusiasmado e otimista. Busca conexão social.", "cor": "orange", "tarefas": "Apresentações, Networking, Motivação."},
+            "S": {"nome": "Estável", "estilo": "Colaboração e Persistência", "desc": "Paciente e leal. Busca harmonia e segurança.", "cor": "green", "tarefas": "Apoio operacional, Suporte, Processos."},
+            "C": {"nome": "Conformidade", "estilo": "Precisão e Qualidade", "desc": "Analítico e detalhista. Busca lógica e regras.", "cor": "blue", "tarefas": "Auditoria, Análise de dados, Padronização."}
         }
 
-        # Função para explicar o que o número significa
-        def interpretar_percentual(p):
-            try:
-                valor = float(p.replace('%', ''))
-                if valor > 85: return "🔥 **Intensidade Extrema:** O comportamento deste perfil é sua marca registrada e domina suas reações."
-                if valor > 60: return "✅ **Intensidade Alta:** Características muito fortes e visíveis no dia a dia."
-                if valor > 40: return "⚖️ **Intensidade Moderada:** Equilíbrio entre este perfil e outras características."
-                return "❄️ **Intensidade Baixa:** Esta característica é usada apenas quando estritamente necessário."
-            except:
-                return ""
+        info = textos_disc.get(dominante, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""})
 
-        # Recupera as informações da letra dominante atual
-        info = textos_disc.get(dominante, {"nome": "N/A", "descricao": "", "caracteristica": "", "cor": "gray"})
+        st.markdown(f"### Análise do Perfil: :{info['cor']}[{info['nome']}]")
+        st.write(f"**Foco Principal:** {info['estilo']}")
+        
+        col_desc, col_tar = st.columns(2)
+        with col_desc:
+            st.info(info['desc'])
+        with col_tar:
+            st.warning(f"**Tarefas Sugeridas:**\n{info['tarefas']}")
 
-        # Layout de explicação
-        col_res, col_leg = st.columns([1.5, 1])
-
-        with col_res:
-            st.markdown(f"### Perfil Principal: :{info['cor']}[{info['nome']}]")
-            st.write(f"**Estilo:** {info['caracteristica']}")
-            st.info(info['descricao'])
-            st.write(interpretar_percentual(score))
-
-        with col_leg:
-            st.markdown("### 🔍 Legenda Geral")
-            st.write("**D (Dominante):** Rapidez e Desafios.")
-            st.write("**I (Influente):** Liberdade e Contatos.")
-            st.write("**S (Estável):** Segurança e Cooperação.")
-            st.write("**C (Conformidade):** Ordem e Lógica.")
-            st.caption("O percentual indica a força desse estilo no comportamento.")
-
-
-
-
-        # ============================================================
-        # GRÁFICO DISC
-        # ============================================================
-
-        fig = px.bar(
-            x=list(percentuais.keys()),
-            y=list(percentuais.values()),
-            labels={'x':'Tipo','y':'Percentual (%)'},
-            text=list(percentuais.values()),
-            color=list(percentuais.keys()),
-            color_discrete_map={
-                "D":"#FF4136",
-                "I":"#FF851B",
-                "S":"#2ECC40",
-                "C":"#0074D9"
-            }
-        )
-
-        fig.update_layout(
-            yaxis_range=[0,100],
-            title=f"Distribuição DISC - {form.get('nome','')}"
-        )
-
-        fig.update_layout(template="plotly_white")
-        fig.update_layout(margin=dict(l=20, r=20, t=40, b=20))
-        fig.update_layout(height=400)
-
-
-        col1.plotly_chart(fig, use_container_width=True)
-
-        # ============================================================
-        # MÉTRICAS
-        # ============================================================
-
-        col2.metric("Tipo Dominante", dominante if dominante else "N/A")
-        col2.metric("Score DISC", f"{score}%")
-
-        # ============================================================
-        # BASE DE CONHECIMENTO DISC
-        # ============================================================
-
-        disc_info = {
-
-            "D": {
-                "caracteristicas": [
-                    "Decidido",
-                    "Direto",
-                    "Focado em resultados",
-                    "Competitivo"
-                ],
-                "cargos": [
-                    "Gerente",
-                    "Diretor",
-                    "Coordenador",
-                    "Líder de equipe"
-                ],
-                "tarefas": [
-                    "Tomada de decisão",
-                    "Gestão de crises",
-                    "Negociação",
-                    "Gestão de metas"
-                ]
-            },
-
-            "I": {
-                "caracteristicas": [
-                    "Comunicativo",
-                    "Sociável",
-                    "Persuasivo",
-                    "Motivador"
-                ],
-                "cargos": [
-                    "Marketing",
-                    "Vendas",
-                    "Relacionamento com cliente",
-                    "Treinamentos"
-                ],
-                "tarefas": [
-                    "Apresentações",
-                    "Networking",
-                    "Relacionamento",
-                    "Eventos"
-                ]
-            },
-
-            "S": {
-                "caracteristicas": [
-                    "Paciente",
-                    "Cooperativo",
-                    "Leal",
-                    "Estável"
-                ],
-                "cargos": [
-                    "RH",
-                    "Suporte",
-                    "Atendimento",
-                    "Administração"
-                ],
-                "tarefas": [
-                    "Treinamento",
-                    "Apoio operacional",
-                    "Suporte interno",
-                    "Gestão de processos"
-                ]
-            },
-
-            "C": {
-                "caracteristicas": [
-                    "Analítico",
-                    "Detalhista",
-                    "Organizado",
-                    "Preciso"
-                ],
-                "cargos": [
-                    "Contabilidade",
-                    "Controladoria",
-                    "Qualidade",
-                    "Auditoria"
-                ],
-                "tarefas": [
-                    "Auditorias",
-                    "Controle de processos",
-                    "Análise de dados",
-                    "Padronização"
-                ]
-            }
-
-        }
-
-        info = disc_info.get(dominante)
-
-        # ============================================================
-        # PERFIL COMPORTAMENTAL
-        # ============================================================
-
-        if info:
-
-            st.markdown("### 🔹 Características do Perfil")
-
-            colA, colB, colC = st.columns(3)
-
-            colA.write("**Características**")
-            for c in info["caracteristicas"]:
-                colA.write(f"• {c}")
-
-            colB.write("**Cargos Sugeridos**")
-            for c in info["cargos"]:
-                colB.write(f"• {c}")
-
-            colC.write("**Tarefas Recomendadas**")
-            for t in info["tarefas"]:
-                colC.write(f"• {t}")
-
-        # ============================================================
-        # PARECER INTEGRADO
-        # ============================================================
-
-        st.markdown("### 🔹 Parecer Integrado")
-
-        dificuldades = len(form.get("dificuldades", []))
-        sugestoes = len(form.get("sugestoes", []))
-
-        st.info(
-            f"""
-Perfil predominante **{dominante}**.
-
-Este perfil tende a apresentar melhor desempenho em tarefas como:
-
-{", ".join(info['tarefas']) if info else "Não identificado"}.
-
-O colaborador registrou:
-
-• **{dificuldades} dificuldades operacionais**  
-• **{sugestoes} sugestões de melhoria**
-
-A análise indica aderência comportamental às funções que exigem
-{", ".join(info['caracteristicas']) if info else "características não identificadas"}.
-"""
-        )
+        # 3. LEGENDA (Final da página)
+        with st.expander("🔍 Legenda Geral DISC"):
+            st.write("**D**: Dominância | **I**: Influência | **S**: Estabilidade | **C**: Conformidade")
 
         # ============================================================
         # DASHBOARD EQUIPE
