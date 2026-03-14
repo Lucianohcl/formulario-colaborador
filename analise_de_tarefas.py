@@ -1630,26 +1630,28 @@ st.session_state["formularios"] = carregar_todos_formularios()
 dados_vivos = carregar_todos_formularios()
 st.session_state["formularios"] = dados_vivos
 
-# 2. CONDIÇÃO DE EXIBIÇÃO (Ajustada para o nome do seu botão)
-if st.session_state.get("pagina") == "visualizar":
-    
-    if len(dados_vivos) > 0:
-        # --- PERSISTÊNCIA INDIVIDUAL ---
-        if st.session_state.get("colaborador_selecionado"):
-            nome_sel = st.session_state["colaborador_selecionado"]
-            # Busca o colaborador na lista carregada agora
-            dados_individuais = next((f for f in dados_vivos if f.get("nome") == nome_sel), None)
+# ============================================================
+# 2. CONDIÇÃO DE EXIBIÇÃO
+# ============================================================
 
-        # --- PERSISTÊNCIA COLETIVA ---
-        st.divider() 
-        st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
-        
-        # O resto do seu código (with st.expander...) vem aqui abaixo
-    else:
-        st.warning("Nenhum dado encontrado na pasta 'dados' para exibir o Panorama Coletivo.")
+if len(dados_vivos) > 0:
+
+    # --- PERSISTÊNCIA INDIVIDUAL ---
+    if st.session_state.get("colaborador_selecionado"):
+        nome_sel = st.session_state["colaborador_selecionado"]
+        dados_individuais = next((f for f in dados_vivos if f.get("nome") == nome_sel), None)
+
+    st.divider()
+    st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+
+    # ============================================================
+    # PAINEL COLETIVO
+    # ============================================================
+
     with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
-        
+
         lista_resultados = []
+
         for f in st.session_state["formularios"]:
             try:
                 # Extrai o perfil DISC de cada arquivo físico salvo
@@ -1659,13 +1661,16 @@ if st.session_state.get("pagina") == "visualizar":
                 continue
 
         if lista_resultados:
+
             df_equipe = pd.DataFrame(lista_resultados)
-            
+
             # Média do time
             dados_agrupados = df_equipe.mean().reset_index()
             dados_agrupados.columns = ["Tipo", "Media"]
-            
-            perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
+
+            perfil_dominante_equipe = dados_agrupados.loc[
+                dados_agrupados['Media'].idxmax(), 'Tipo'
+            ]
 
             # EXPLICAÇÕES E INSIGHTS
             explicações = {
@@ -1677,25 +1682,62 @@ if st.session_state.get("pagina") == "visualizar":
 
             col_txt, col_grf = st.columns([1, 1.5])
 
+            # -----------------------------------------------------
+
             with col_txt:
+
                 st.write("### 🧠 Insight do Consultor")
-                st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
-                
-                menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
-                st.warning(f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time.")
-                
-                st.caption(f"Sincronizado: {len(st.session_state['formularios'])} arquivos individuais carregados.")
+
+                st.info(
+                    explicações.get(
+                        perfil_dominante_equipe,
+                        "Perfil equilibrado."
+                    )
+                )
+
+                menor_perfil = dados_agrupados.loc[
+                    dados_agrupados['Media'].idxmin(),
+                    'Tipo'
+                ]
+
+                st.warning(
+                    f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time."
+                )
+
+                st.caption(
+                    f"Sincronizado: {len(st.session_state['formularios'])} arquivos individuais carregados."
+                )
+
+            # -----------------------------------------------------
 
             with col_grf:
+
                 fig_eq = px.bar(
-                    dados_agrupados, x="Tipo", y="Media", color="Tipo", text_auto='.1f',
-                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+                    dados_agrupados,
+                    x="Tipo",
+                    y="Media",
+                    color="Tipo",
+                    text_auto='.1f',
+                    color_discrete_map={
+                        "D":"#FF4136",
+                        "I":"#FF851B",
+                        "S":"#2ECC40",
+                        "C":"#0074D9"
+                    }
                 )
+
                 fig_eq.update_layout(
-                    template="plotly_white", height=300, showlegend=False, 
-                    yaxis_range=[0,100], margin=dict(l=10, r=10, t=10, b=10)
+                    template="plotly_white",
+                    height=300,
+                    showlegend=False,
+                    yaxis_range=[0,100],
+                    margin=dict(l=10, r=10, t=10, b=10)
                 )
+
                 st.plotly_chart(fig_eq, use_container_width=True)
+
 else:
-    # Se estiver na Home, o bloco é ignorado para evitar erros de inicialização
-    pass
+
+    st.warning(
+        "Nenhum dado encontrado na pasta 'dados' para exibir o Panorama Coletivo."
+    )
