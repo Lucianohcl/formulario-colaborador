@@ -571,6 +571,8 @@ if st.query_params.get("page") == "formulario":
         # -------------------------------------------------
         if enviar:
 
+                # Inicializa pendencias para evitar NameError
+                pendencias = {}
 
                 # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
                 nome_limpo = nome.strip().replace(" ", "_")
@@ -1417,28 +1419,41 @@ if not os.path.exists(json_master):
         json.dump([], f, ensure_ascii=False, indent=4)
 
 # ============================================================
-# FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON
+# FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON E ENVIAR PARA GITHUB
 # ============================================================
 def salvar_formulario_json(formulario):
     """
     Recebe um dicionário do formulário preenchido, salva no arquivo 
-    JSON único dentro da pasta 'dados' e atualiza a sessão para 
-    espelhamento imediato na interface.
+    JSON único dentro da pasta 'dados', atualiza a sessão e envia para GitHub.
     """
     # 1. Tenta carregar os dados existentes ou cria uma lista vazia
     try:
         with open(json_master, "r", encoding="utf-8") as f:
             dados_existentes = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
-        # Se o arquivo não existir ou estiver vazio/inválido, inicia como lista vazia
         dados_existentes = []
 
     # 2. Adiciona o novo formulário à lista
     dados_existentes.append(formulario)
 
-    # 3. Salva a lista completa de volta no arquivo
+    # 3. Salva a lista completa de volta no arquivo local (container efêmero)
     with open(json_master, "w", encoding="utf-8") as f:
         json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
 
-    # 4. Atualiza o estado da sessão do Streamlit para refletir a mudança instantaneamente
+    # 4. Atualiza o estado da sessão do Streamlit
     st.session_state["formularios"] = dados_existentes
+
+    # 5. Envio automático para GitHub para persistência permanente
+    import subprocess
+
+    repo_url = "https://<TOKEN>@github.com/SeuUsuario/analise_formularios.git"  # substitua <TOKEN>
+    try:
+        if not os.path.exists(os.path.join(dados_dir, ".git")):
+            subprocess.run(["git", "init"], cwd=dados_dir, check=True)
+            subprocess.run(["git", "remote", "add", "origin", repo_url], cwd=dados_dir, check=True)
+
+        subprocess.run(["git", "add", json_master], cwd=dados_dir, check=True)
+        subprocess.run(["git", "commit", "-m", f"Formulário de {formulario['nome']}"], cwd=dados_dir, check=True)
+        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=dados_dir, check=True)
+    except subprocess.CalledProcessError as e:
+        st.warning(f"Não foi possível enviar para o GitHub automaticamente: {e}")
