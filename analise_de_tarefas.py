@@ -434,6 +434,11 @@ if st.session_state.pagina == "disc":
             title=f"Distribuição DISC - {form.get('nome','')}"
         )
 
+        fig.update_layout(template="plotly_white")
+        fig.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+        fig.update_layout(height=400)
+
+
         col1.plotly_chart(fig, use_container_width=True)
 
         # ============================================================
@@ -610,6 +615,10 @@ A análise indica aderência comportamental às funções que exigem
             }
         )
 
+        fig_eq.update_layout(template="plotly_white")
+        fig_eq.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+        fig_eq.update_layout(height=400)
+
         st.plotly_chart(fig_eq, use_container_width=True)
 
         # ============================================================
@@ -630,8 +639,13 @@ A análise indica aderência comportamental às funções que exigem
             line_color='darkblue'
         )
 
+        fig_radar.update_layout(template="plotly_white")
+        fig_radar.update_layout(margin=dict(l=20, r=20, t=40, b=20))
+        fig_radar.update_layout(height=400)
+
         st.plotly_chart(fig_radar, use_container_width=True)
 
+        
         # ============================================================
         # COMPATIBILIDADE CARGO × PERFIL DISC
         # ============================================================
