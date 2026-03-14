@@ -484,90 +484,36 @@ if st.session_state.pagina == "disc":
             st.write("**D**: Dominância | **I**: Influência | **S**: Estabilidade | **C**: Conformidade")
 
         
+                
         # ============================================================
-        # GRÁFICO DISC (VERSÃO BARRAS - MAIS CLARO E PRECISO)
-        # ============================================================
-
-        st.markdown("### 🔹 Distribuição do Perfil DISC")
-
-        fig_barras = px.bar(
-            x=list(percentuais.keys()),
-            y=list(percentuais.values()),
-            labels={'x':'Perfil','y':'Percentual (%)'},
-            text=[f"{v}%" for v in percentuais.values()],
-            color=list(percentuais.keys()),
-            color_discrete_map={
-                "D":"#FF4136", # Vermelho
-                "I":"#FF851B", # Laranja
-                "S":"#2ECC40", # Verde
-                "C":"#0074D9"  # Azul
-            }
-        )
-
-        fig_barras.update_layout(
-            yaxis_range=[0,100],
-            template="plotly_white",
-            height=400,
-            margin=dict(l=20, r=20, t=40, b=20),
-            showlegend=False
-        )
-
-        st.plotly_chart(fig_barras, use_container_width=True)
-
-        
-        # ============================================================
-        # COMPATIBILIDADE CARGO × PERFIL DISC
+        # COMPATIBILIDADE CARGO × PERFIL DISC (APENAS MENSAGEM)
         # ============================================================
 
         st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
 
         cargo_atual = form.get("cargo", "").lower()
 
+        # Mapeamento de cargos por perfil dominante
         compatibilidade = {
-            "D": ["gerente", "diretor", "coordenador", "lider"],
-            "I": ["vendas", "marketing", "comercial", "relacionamento"],
-            "S": ["rh", "suporte", "atendimento", "administrativo"],
-            "C": ["contabilidade", "qualidade", "auditoria", "financeiro"]
+            "D": ["gerente", "diretor", "coordenador", "lider", "gestor"],
+            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação"],
+            "S": ["rh", "suporte", "atendimento", "administrativo", "operacional"],
+            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista"]
         }
 
         cargos_compatíveis = compatibilidade.get(dominante, [])
-
         match = any(c in cargo_atual for c in cargos_compatíveis)
 
+        # Exibição simplificada em métricas
         colA, colB = st.columns(2)
+        colA.metric("Cargo Atual", form.get("cargo","N/A").title())
+        colB.metric("Perfil Dominante", dominante if dominante else "N/A")
 
-        colA.metric("Cargo Atual", form.get("cargo","N/A"))
-        colB.metric("Perfil DISC", dominante if dominante else "N/A")
-
+        # Mensagem direta sem gráfico
         if match:
-            st.success("✔ Alta compatibilidade entre perfil comportamental e cargo atual.")
+            st.success(f"**Alta aderência:** O perfil **{dominante}** possui características naturais que favorecem o desempenho em cargos de **{cargo_atual.title()}**.")
         else:
-            st.warning("⚠ Baixa compatibilidade entre perfil e cargo atual.")
-
-        # gráfico visual de compatibilidade
-
-        df_comp = pd.DataFrame({
-            "Indicador":["Compatível","Não compatível"],
-            "Valor":[100 if match else 30, 0 if match else 70]
-        })
-
-        fig_comp = px.bar(
-            df_comp,
-            x="Indicador",
-            y="Valor",
-            color="Indicador",
-            color_discrete_map={
-                "Compatível":"#2ECC40",
-                "Não compatível":"#FF4136"
-            }
-        )
-
-        fig_comp.update_layout(
-            title="Aderência Perfil × Cargo",
-            yaxis_range=[0,100]
-        )
-
-        st.plotly_chart(fig_comp, use_container_width=True)
+            st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
 
 
 
@@ -1664,64 +1610,91 @@ def salvar_formulario_json(formulario):
     except subprocess.CalledProcessError as e:
         st.warning(f"Não foi possível enviar para o GitHub automaticamente: {e}")
 
+
+# ============================================================
+# GARANTIA DE PERSISTÊNCIA (CARGA DOS DADOS)
+# ============================================================
+
+# Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
+st.session_state["formularios"] = carregar_todos_formularios()
+
 # ============================================================
 # SEÇÃO COLETIVA (DASHBOARD DA EQUIPE) 
-# ESTE BLOCO FICA FORA DE QUALQUER IF PARA NÃO SUMIR
+# BLOCO FINAL - SEM RECUO (COLADO NA ESQUERDA)
 # ============================================================
 
-st.divider() # Linha que separa o indivíduo do grupo
+st.divider() 
 
-st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+# Verificação baseada nos dados físicos carregados
+if "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+    st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
 
-with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
-    
-    # Verifica se a lista de formulários existe e tem alguém
-    if "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+    with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
         
-        # 1. PROCESSAMENTO (Transforma todos os testes em uma tabela única)
-        df_equipe = pd.DataFrame(
-            [calcular_disc(f.get("disc", {}))[0] for f in st.session_state["formularios"]]
-        )
-        
-        # Tira a média (ex: 30%, 25%, etc)
-        dados_agrupados = df_equipe.mean().reset_index()
-        dados_agrupados.columns = ["Tipo", "Media"]
-        
-        # Descobre quem é o 'chefe' comportamental do grupo
-        perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
+        # 1. PROCESSAMENTO DOS DADOS (Puxando de cada arquivo individual salvo)
+        lista_resultados = []
+        for f in st.session_state["formularios"]:
+            try:
+                # Extrai o perfil DISC de cada arquivo físico
+                res, _ = calcular_disc(f.get("disc", {}))
+                lista_resultados.append(res)
+            except:
+                continue
 
-        # 2. EXPLICAÇÕES PARA O GESTOR
-        explicações = {
-            "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida. Cuidado com o estresse e competitividade.",
-            "I": "☀️ **Influência Alta:** Time comunicativo e criativo. Cuidado com a falta de foco e prazos perdidos.",
-            "S": "🌱 **Estabilidade Alta:** Time leal, calmo e processual. Cuidado com a resistência a mudanças rápidas.",
-            "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista. Cuidado com a lentidão por excesso de análise."
-        }
-
-        col_txt, col_grf = st.columns([1, 1.5])
-
-        with col_txt:
-            st.write("### 🧠 Insight do Consultor")
-            st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
+        if lista_resultados:
+            df_equipe = pd.DataFrame(lista_resultados)
             
-            # Identifica o que está faltando no time
-            menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
-            st.warning(f"**Atenção:** O perfil **{menor_perfil}** está baixo. Considere buscar essa característica em novas contratações.")
+            # Média percentual para leitura intuitiva
+            dados_agrupados = df_equipe.mean().reset_index()
+            dados_agrupados.columns = ["Tipo", "Media"]
             
-            st.caption(f"Análise baseada em {len(st.session_state['formularios'])} respostas.")
+            # Identifica o perfil predominante do grupo
+            perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
 
-        with col_grf:
-            fig_eq = px.bar(
-                dados_agrupados,
-                x="Tipo",
-                y="Media",
-                color="Tipo",
-                text_auto='.1f',
-                color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
-            )
-            fig_eq.update_layout(template="plotly_white", height=300, showlegend=False, yaxis_range=[0,100])
-            st.plotly_chart(fig_eq, use_container_width=True)
-            
-    else:
-        # Se não tiver ninguém na base ainda, mostra isso:
-        st.info("Aguardando o envio dos primeiros formulários para consolidar os dados da equipe.")
+            # 2. EXPLICAÇÕES E INSIGHTS
+            explicações = {
+                "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida. Cuidado com o estresse.",
+                "I": "☀️ **Influência Alta:** Time comunicativo e criativo. Cuidado com a falta de foco.",
+                "S": "🌱 **Estabilidade Alta:** Time leal e processual. Cuidado com a resistência a mudanças.",
+                "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista. Cuidado com o excesso de análise."
+            }
+
+            col_txt, col_grf = st.columns([1, 1.5])
+
+            with col_txt:
+                st.write("### 🧠 Insight do Consultor")
+                st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
+                
+                # Identifica a maior carência da equipe
+                menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
+                st.warning(f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time.")
+                
+                st.caption(f"Análise baseada em {len(st.session_state['formularios'])} formulários persistidos no banco.")
+
+            with col_grf:
+                fig_eq = px.bar(
+                    dados_agrupados,
+                    x="Tipo",
+                    y="Media",
+                    color="Tipo",
+                    text_auto='.1f',
+                    color_discrete_map={
+                        "D":"#FF4136", 
+                        "I":"#FF851B", 
+                        "S":"#2ECC40", 
+                        "C":"#0074D9"
+                    }
+                )
+                
+                fig_eq.update_layout(
+                    template="plotly_white", 
+                    height=300, 
+                    showlegend=False, 
+                    yaxis_range=[0,100],
+                    margin=dict(l=10, r=10, t=10, b=10)
+                )
+                
+                st.plotly_chart(fig_eq, use_container_width=True)
+else:
+    # Se a pasta de dados estiver vazia (Página Inicial), não exibe nada
+    pass
