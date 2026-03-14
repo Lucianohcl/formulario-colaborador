@@ -1625,23 +1625,16 @@ st.session_state["formularios"] = carregar_todos_formularios()
 # 1. CARGA GLOBAL: Força a leitura dos arquivos da nuvem/disco
 st.session_state["formularios"] = carregar_todos_formularios()
 
-# 2. CONDIÇÃO DE EXIBIÇÃO: Só roda na página correta e se houver dados
-# Garante que espaços extras não quebrem a lógica
+# 2. CONDIÇÃO DE EXIBIÇÃO: Focada exatamente em "Visualizar Dados"
 pagina_atual = str(st.session_state.get("pagina", "")).strip()
 
 if pagina_atual == "Visualizar Dados" and len(st.session_state.get("formularios", [])) > 0:
     
     # --- PERSISTÊNCIA INDIVIDUAL ---
-    # Se existe um colaborador selecionado, garantimos que os dados dele sejam recuperados do arquivo salvo
     if st.session_state.get("colaborador_selecionado"):
         nome_sel = st.session_state["colaborador_selecionado"]
-        # Busca o dicionário exato do colaborador dentro da lista persistida
         dados_individuais = next((f for f in st.session_state["formularios"] if f.get("nome") == nome_sel), None)
-        
-        if dados_individuais:
-            # Aqui você pode garantir que as variáveis de análise individual usem 'dados_individuais'
-            # Exemplo: st.session_state["dados_analise_corrente"] = dados_individuais
-            pass
+        pass
 
     # --- PERSISTÊNCIA COLETIVA ---
     st.divider() 
