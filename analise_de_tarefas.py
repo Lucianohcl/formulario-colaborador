@@ -64,6 +64,11 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+dados_dir = "dados"
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
 
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
@@ -242,7 +247,6 @@ def score_disc(disc):
         return 0
     calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
     return round((calculo/total)*100,2)
-
 
 
 # ============================================================
@@ -1622,23 +1626,27 @@ st.session_state["formularios"] = carregar_todos_formularios()
 # GARANTIA DE PERSISTÊNCIA (INDIVIDUAL E COLETIVA)
 # ============================================================
 
-# 1. CARGA GLOBAL: Força a leitura dos arquivos da nuvem/disco
-st.session_state["formularios"] = carregar_todos_formularios()
+# 1. CARGA GLOBAL
+dados_vivos = carregar_todos_formularios()
+st.session_state["formularios"] = dados_vivos
 
-# 2. CONDIÇÃO DE EXIBIÇÃO: Focada exatamente em "Visualizar Dados"
-pagina_atual = str(st.session_state.get("pagina", "")).strip()
+# 2. CONDIÇÃO DE EXIBIÇÃO (Ajustada para o nome do seu botão)
+if st.session_state.get("pagina") == "visualizar":
+    
+    if len(dados_vivos) > 0:
+        # --- PERSISTÊNCIA INDIVIDUAL ---
+        if st.session_state.get("colaborador_selecionado"):
+            nome_sel = st.session_state["colaborador_selecionado"]
+            # Busca o colaborador na lista carregada agora
+            dados_individuais = next((f for f in dados_vivos if f.get("nome") == nome_sel), None)
 
-if st.session_state.get("pagina") == "visualizar" and len(st.session_state.get("formularios", [])) > 0:    
-    # --- PERSISTÊNCIA INDIVIDUAL ---
-    if st.session_state.get("colaborador_selecionado"):
-        nome_sel = st.session_state["colaborador_selecionado"]
-        dados_individuais = next((f for f in st.session_state["formularios"] if f.get("nome") == nome_sel), None)
-        pass
-
-    # --- PERSISTÊNCIA COLETIVA ---
-    st.divider() 
-    st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
-
+        # --- PERSISTÊNCIA COLETIVA ---
+        st.divider() 
+        st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+        
+        # O resto do seu código (with st.expander...) vem aqui abaixo
+    else:
+        st.warning("Nenhum dado encontrado na pasta 'dados' para exibir o Panorama Coletivo.")
     with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
         
         lista_resultados = []
