@@ -1628,8 +1628,7 @@ st.session_state["formularios"] = carregar_todos_formularios()
 # 2. CONDIÇÃO DE EXIBIÇÃO: Focada exatamente em "Visualizar Dados"
 pagina_atual = str(st.session_state.get("pagina", "")).strip()
 
-if pagina_atual == "Visualizar Dados" and len(st.session_state.get("formularios", [])) > 0:
-    
+if st.session_state.get("pagina") == "visualizar" and len(st.session_state.get("formularios", [])) > 0:    
     # --- PERSISTÊNCIA INDIVIDUAL ---
     if st.session_state.get("colaborador_selecionado"):
         nome_sel = st.session_state["colaborador_selecionado"]
