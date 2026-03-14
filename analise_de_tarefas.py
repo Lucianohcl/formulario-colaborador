@@ -366,44 +366,37 @@ if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
 # ============================================================
-# PÁGINA PERFIL DISC
+# PÁGINA PERFIL DISC (VERSÃO SINCRO)
 # ============================================================
 
 if st.session_state.pagina == "disc":
-
     import plotly.express as px
     import pandas as pd
 
     st.title("🧠 Análise de Perfil DISC")
 
-    if not st.session_state.get("formularios"):
-        st.warning("Nenhum formulário encontrado.")
+    # 1. FORÇAR LEITURA DIRETA (IGUAL AO VISUALIZAR REGISTROS)
+    # Isso garante que não dependemos de um session_state que pode estar vazio
+    lista_fresca = carregar_todos_formularios()
+
+    if not lista_fresca:
+        st.warning("Nenhum formulário encontrado na pasta de dados.")
+        if st.button("♻️ Tentar recarregar dados"):
+            st.rerun()
         st.stop()
 
-    # ============================================================
-    # SELEÇÃO DE COLABORADOR (AJUSTADO)
-    # ============================================================
-
-    # Recarregamos a lista para garantir que novos envios apareçam
-    st.session_state["formularios"] = carregar_todos_formularios()
-    
-    # Criamos um dicionário para mapear o texto do selectbox ao objeto real do formulário
-    # Isso elimina o erro de busca do 'next'
+    # 2. MAPEAMENTO SEGURO
     opcoes_colaboradores = {
         f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
-        for f in st.session_state["formularios"]
+        for f in lista_fresca
     }
-
-    if not opcoes_colaboradores:
-        st.warning("Nenhum formulário encontrado na pasta de dados.")
-        st.stop()
 
     colaborador_chave = st.selectbox(
         "Escolha o colaborador",
         options=list(opcoes_colaboradores.keys())
     )
 
-    # Recuperamos o formulário diretamente do dicionário
+    # 3. RECUPERAÇÃO DO FORMULÁRIO
     formulario_sel = opcoes_colaboradores.get(colaborador_chave)
 
     # ============================================================
@@ -411,15 +404,16 @@ if st.session_state.pagina == "disc":
     # ============================================================
 
     if formulario_sel and st.button("🔎 Gerar análise DISC"):
-
+        # A partir daqui o seu processamento continua normal
         form = formulario_sel
-
+        
         mapa_disc = {
             "A": "D",
             "B": "I",
             "C": "S",
             "D": "C"
         }
+        
 
         # Extraímos as respostas garantindo que o dicionário 'disc' existe no JSON
         respostas_raw = form.get("disc", {})
