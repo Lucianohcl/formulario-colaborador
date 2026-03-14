@@ -404,7 +404,21 @@ if st.session_state.pagina == "disc":
 
         form = formulario_sel
 
-        percentuais, dominante = calcular_disc(form.get("disc", {}))
+        mapa_disc = {
+        "A": "D",
+        "B": "I",
+        "C": "S",
+        "D": "C"
+        }
+
+        respostas_disc = {}
+
+        for i in range(1, len(perguntas_disc)+1):
+            r = form.get(f"Q{i}")
+            if r in mapa_disc:
+                respostas_disc[f"Q{i}"] = mapa_disc[r]
+
+        percentuais, dominante = calcular_disc(respostas_disc)
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
