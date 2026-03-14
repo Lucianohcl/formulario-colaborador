@@ -213,6 +213,37 @@ def gerar_pdf(form):
     buffer.seek(0)
     return buffer
 
+# ============================================================
+# CALCULAR DISC PERCENTUAL E DOMINANTE
+# ============================================================
+
+def calcular_disc(respostas_disc):
+    contagem = {"D":0, "I":0, "S":0, "C":0}
+    for r in respostas_disc.values():
+        if r in contagem:
+            contagem[r] += 1
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = contagem
+        dominante = None
+    return percentuais, dominante
+
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
+
+def score_disc(disc):
+    pesos = {"D":1.0,"I":0.9,"S":0.85,"C":0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
+    return round((calculo/total)*100,2)
+
+
 
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
@@ -333,6 +364,329 @@ elif btn_logout:
 
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
+
+# ============================================================
+# PÁGINA PERFIL DISC
+# ============================================================
+
+if st.session_state.pagina == "disc":
+
+    import plotly.express as px
+    import pandas as pd
+
+    st.title("🧠 Análise de Perfil DISC")
+
+    if not st.session_state.get("formularios"):
+        st.warning("Nenhum formulário encontrado.")
+        st.stop()
+
+    # ============================================================
+    # SELEÇÃO DE COLABORADOR
+    # ============================================================
+
+    nomes = [f"{f.get('nome','')} - {f.get('cargo','')}" for f in st.session_state["formularios"]]
+
+    colaborador = st.selectbox(
+        "Escolha o colaborador",
+        nomes
+    )
+
+    formulario_sel = next(
+        (f for f in st.session_state["formularios"] if f.get('nome') in colaborador),
+        None
+    )
+
+    # ============================================================
+    # BOTÃO GERAR ANÁLISE
+    # ============================================================
+
+    if formulario_sel and st.button("🔎 Gerar análise DISC"):
+
+        form = formulario_sel
+
+        percentuais, dominante = calcular_disc(form.get("disc", {}))
+        score = score_disc(percentuais)
+
+        st.markdown("## 🔹 Painel DISC do Colaborador")
+
+        col1, col2 = st.columns([2,1])
+
+        # ============================================================
+        # GRÁFICO DISC
+        # ============================================================
+
+        fig = px.bar(
+            x=list(percentuais.keys()),
+            y=list(percentuais.values()),
+            labels={'x':'Tipo','y':'Percentual (%)'},
+            text=list(percentuais.values()),
+            color=list(percentuais.keys()),
+            color_discrete_map={
+                "D":"#FF4136",
+                "I":"#FF851B",
+                "S":"#2ECC40",
+                "C":"#0074D9"
+            }
+        )
+
+        fig.update_layout(
+            yaxis_range=[0,100],
+            title=f"Distribuição DISC - {form.get('nome','')}"
+        )
+
+        col1.plotly_chart(fig, use_container_width=True)
+
+        # ============================================================
+        # MÉTRICAS
+        # ============================================================
+
+        col2.metric("Tipo Dominante", dominante if dominante else "N/A")
+        col2.metric("Score DISC", f"{score}%")
+
+        # ============================================================
+        # BASE DE CONHECIMENTO DISC
+        # ============================================================
+
+        disc_info = {
+
+            "D": {
+                "caracteristicas": [
+                    "Decidido",
+                    "Direto",
+                    "Focado em resultados",
+                    "Competitivo"
+                ],
+                "cargos": [
+                    "Gerente",
+                    "Diretor",
+                    "Coordenador",
+                    "Líder de equipe"
+                ],
+                "tarefas": [
+                    "Tomada de decisão",
+                    "Gestão de crises",
+                    "Negociação",
+                    "Gestão de metas"
+                ]
+            },
+
+            "I": {
+                "caracteristicas": [
+                    "Comunicativo",
+                    "Sociável",
+                    "Persuasivo",
+                    "Motivador"
+                ],
+                "cargos": [
+                    "Marketing",
+                    "Vendas",
+                    "Relacionamento com cliente",
+                    "Treinamentos"
+                ],
+                "tarefas": [
+                    "Apresentações",
+                    "Networking",
+                    "Relacionamento",
+                    "Eventos"
+                ]
+            },
+
+            "S": {
+                "caracteristicas": [
+                    "Paciente",
+                    "Cooperativo",
+                    "Leal",
+                    "Estável"
+                ],
+                "cargos": [
+                    "RH",
+                    "Suporte",
+                    "Atendimento",
+                    "Administração"
+                ],
+                "tarefas": [
+                    "Treinamento",
+                    "Apoio operacional",
+                    "Suporte interno",
+                    "Gestão de processos"
+                ]
+            },
+
+            "C": {
+                "caracteristicas": [
+                    "Analítico",
+                    "Detalhista",
+                    "Organizado",
+                    "Preciso"
+                ],
+                "cargos": [
+                    "Contabilidade",
+                    "Controladoria",
+                    "Qualidade",
+                    "Auditoria"
+                ],
+                "tarefas": [
+                    "Auditorias",
+                    "Controle de processos",
+                    "Análise de dados",
+                    "Padronização"
+                ]
+            }
+
+        }
+
+        info = disc_info.get(dominante)
+
+        # ============================================================
+        # PERFIL COMPORTAMENTAL
+        # ============================================================
+
+        if info:
+
+            st.markdown("### 🔹 Características do Perfil")
+
+            colA, colB, colC = st.columns(3)
+
+            colA.write("**Características**")
+            for c in info["caracteristicas"]:
+                colA.write(f"• {c}")
+
+            colB.write("**Cargos Sugeridos**")
+            for c in info["cargos"]:
+                colB.write(f"• {c}")
+
+            colC.write("**Tarefas Recomendadas**")
+            for t in info["tarefas"]:
+                colC.write(f"• {t}")
+
+        # ============================================================
+        # PARECER INTEGRADO
+        # ============================================================
+
+        st.markdown("### 🔹 Parecer Integrado")
+
+        dificuldades = len(form.get("dificuldades", []))
+        sugestoes = len(form.get("sugestoes", []))
+
+        st.info(
+            f"""
+Perfil predominante **{dominante}**.
+
+Este perfil tende a apresentar melhor desempenho em tarefas como:
+
+{", ".join(info['tarefas']) if info else "Não identificado"}.
+
+O colaborador registrou:
+
+• **{dificuldades} dificuldades operacionais**  
+• **{sugestoes} sugestões de melhoria**
+
+A análise indica aderência comportamental às funções que exigem
+{", ".join(info['caracteristicas']) if info else "características não identificadas"}.
+"""
+        )
+
+        # ============================================================
+        # DASHBOARD EQUIPE
+        # ============================================================
+
+        st.markdown("### 🔹 Distribuição DISC da Equipe")
+
+        df = pd.DataFrame(
+            [calcular_disc(f.get("disc", {}))[0] for f in st.session_state["formularios"]]
+        )
+
+        fig_eq = px.bar(
+            df.sum().reset_index(),
+            x="index",
+            y=0,
+            labels={"index":"Tipo","0":"Total (%)"},
+            color="index",
+            color_discrete_map={
+                "D":"#FF4136",
+                "I":"#FF851B",
+                "S":"#2ECC40",
+                "C":"#0074D9"
+            }
+        )
+
+        st.plotly_chart(fig_eq, use_container_width=True)
+
+        # ============================================================
+        # RADAR DISC
+        # ============================================================
+
+        st.markdown("### 🔹 Radar DISC do Colaborador")
+
+        fig_radar = px.line_polar(
+            r=list(percentuais.values()),
+            theta=list(percentuais.keys()),
+            line_close=True,
+            markers=True
+        )
+
+        fig_radar.update_traces(
+            fill='toself',
+            line_color='darkblue'
+        )
+
+        st.plotly_chart(fig_radar, use_container_width=True)
+
+        # ============================================================
+        # COMPATIBILIDADE CARGO × PERFIL DISC
+        # ============================================================
+
+        st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
+
+        cargo_atual = form.get("cargo", "").lower()
+
+        compatibilidade = {
+            "D": ["gerente", "diretor", "coordenador", "lider"],
+            "I": ["vendas", "marketing", "comercial", "relacionamento"],
+            "S": ["rh", "suporte", "atendimento", "administrativo"],
+            "C": ["contabilidade", "qualidade", "auditoria", "financeiro"]
+        }
+
+        cargos_compatíveis = compatibilidade.get(dominante, [])
+
+        match = any(c in cargo_atual for c in cargos_compatíveis)
+
+        colA, colB = st.columns(2)
+
+        colA.metric("Cargo Atual", form.get("cargo","N/A"))
+        colB.metric("Perfil DISC", dominante if dominante else "N/A")
+
+        if match:
+            st.success("✔ Alta compatibilidade entre perfil comportamental e cargo atual.")
+        else:
+            st.warning("⚠ Baixa compatibilidade entre perfil e cargo atual.")
+
+        # gráfico visual de compatibilidade
+
+        df_comp = pd.DataFrame({
+            "Indicador":["Compatível","Não compatível"],
+            "Valor":[100 if match else 30, 0 if match else 70]
+        })
+
+        fig_comp = px.bar(
+            df_comp,
+            x="Indicador",
+            y="Valor",
+            color="Indicador",
+            color_discrete_map={
+                "Compatível":"#2ECC40",
+                "Não compatível":"#FF4136"
+            }
+        )
+
+        fig_comp.update_layout(
+            title="Aderência Perfil × Cargo",
+            yaxis_range=[0,100]
+        )
+
+        st.plotly_chart(fig_comp, use_container_width=True)
+
+
 
 import streamlit as st
 import pandas as pd
@@ -779,8 +1133,7 @@ if st.session_state.get("pagina") == "visualizar":
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=True):               
                 
             
-            
-            
+                            
                 # 1. Cabeçalho Completo
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
@@ -1125,36 +1478,6 @@ if st.session_state.get("pagina") == "visualizar":
 
         else:
             st.info("Nenhum formulário salvo.")
-
-# ============================================================
-# CALCULAR DISC PERCENTUAL E DOMINANTE
-# ============================================================
-
-def calcular_disc(respostas_disc):
-    contagem = {"D":0, "I":0, "S":0, "C":0}
-    for r in respostas_disc.values():
-        if r in contagem:
-            contagem[r] += 1
-    total = sum(contagem.values())
-    if total > 0:
-        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
-        dominante = max(percentuais, key=percentuais.get)
-    else:
-        percentuais = contagem
-        dominante = None
-    return percentuais, dominante
-
-# ============================================================
-# SCORE DISC PONDERADO
-# ============================================================
-
-def score_disc(disc):
-    pesos = {"D":1.0,"I":0.9,"S":0.85,"C":0.95}
-    total = sum(disc.values())
-    if total == 0:
-        return 0
-    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
-    return round((calculo/total)*100,2)
 
 # ============================================================
 # CALCULAR CARGA HORÁRIA
