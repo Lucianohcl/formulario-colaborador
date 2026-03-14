@@ -405,18 +405,19 @@ if st.session_state.pagina == "disc":
         form = formulario_sel
 
         mapa_disc = {
-        "A": "D",
-        "B": "I",
-        "C": "S",
-        "D": "C"
+            "A": "D",
+            "B": "I",
+            "C": "S",
+            "D": "C"
         }
 
         respostas_disc = {}
 
-        for i in range(1, len(perguntas_disc)+1):
-            r = form.get(f"Q{i}")
-            if r in mapa_disc:
-                respostas_disc[f"Q{i}"] = mapa_disc[r]
+        respostas_raw = form.get("disc", {})
+
+        for k, v in respostas_raw.items():
+            if v in mapa_disc:
+                respostas_disc[k] = mapa_disc[v]
 
         percentuais, dominante = calcular_disc(respostas_disc)
         score = score_disc(percentuais)
