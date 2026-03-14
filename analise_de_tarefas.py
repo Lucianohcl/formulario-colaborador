@@ -17,6 +17,7 @@ from datetime import datetime
 import pytz
 import time
 from zoneinfo import ZoneInfo
+import plotly.express as px
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -1615,129 +1616,127 @@ def salvar_formulario_json(formulario):
         st.warning(f"Não foi possível enviar para o GitHub automaticamente: {e}")
 
 
-# ============================================================
-# GARANTIA DE PERSISTÊNCIA (CARGA DOS DADOS)
-# ============================================================
-
-# Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
-st.session_state["formularios"] = carregar_todos_formularios()
-
-# ============================================================
-# GARANTIA DE PERSISTÊNCIA (INDIVIDUAL E COLETIVA)
-# ============================================================
-
-# 1. CARGA GLOBAL
-dados_vivos = carregar_todos_formularios()
-st.session_state["formularios"] = dados_vivos
-
-# ============================================================
-# 2. CONDIÇÃO DE EXIBIÇÃO
-# ============================================================
-
-if len(dados_vivos) > 0:
-
-    # --- PERSISTÊNCIA INDIVIDUAL ---
-    if st.session_state.get("colaborador_selecionado"):
-        nome_sel = st.session_state["colaborador_selecionado"]
-        dados_individuais = next((f for f in dados_vivos if f.get("nome") == nome_sel), None)
-
-    st.divider()
-    st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+if st.session_state.get("pagina") == "disc":
 
     # ============================================================
-    # PAINEL COLETIVO
+    # GARANTIA DE PERSISTÊNCIA (CARGA DOS DADOS)
     # ============================================================
 
-    with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
+    # Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
+    st.session_state["formularios"] = carregar_todos_formularios()
 
-        lista_resultados = []
+    # ============================================================
+    # GARANTIA DE PERSISTÊNCIA (INDIVIDUAL E COLETIVA)
+    # ============================================================
 
-        for f in st.session_state["formularios"]:
-            try:
-                # Extrai o perfil DISC de cada arquivo físico salvo
-                res, _ = calcular_disc(f.get("disc", {}))
-                lista_resultados.append(res)
-            except:
-                continue
+    # 1. CARGA GLOBAL
+    dados_vivos = carregar_todos_formularios()
+    st.session_state["formularios"] = dados_vivos
 
-        if lista_resultados:
+    # ============================================================
+    # 2. CONDIÇÃO DE EXIBIÇÃO
+    # ============================================================
 
-            df_equipe = pd.DataFrame(lista_resultados)
+    if len(dados_vivos) > 0:
 
-            # Média do time
-            dados_agrupados = df_equipe.mean().reset_index()
-            dados_agrupados.columns = ["Tipo", "Media"]
+        # --- PERSISTÊNCIA INDIVIDUAL ---
+        if st.session_state.get("colaborador_selecionado"):
+            nome_sel = st.session_state["colaborador_selecionado"]
+            dados_individuais = next((f for f in dados_vivos if f.get("nome") == nome_sel), None)
 
-            perfil_dominante_equipe = dados_agrupados.loc[
-                dados_agrupados['Media'].idxmax(), 'Tipo'
-            ]
+        st.divider()
+        st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
 
-            # EXPLICAÇÕES E INSIGHTS
-            explicações = {
-                "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida.",
-                "I": "☀️ **Influência Alta:** Time comunicativo e criativo.",
-                "S": "🌱 **Estabilidade Alta:** Time leal e processual.",
-                "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista."
-            }
+        # ============================================================
+        # PAINEL COLETIVO
+        # ============================================================
 
-            col_txt, col_grf = st.columns([1, 1.5])
+        with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
 
-            # -----------------------------------------------------
+            lista_resultados = []
 
-            with col_txt:
+            for f in st.session_state["formularios"]:
+                try:
+                    # Extrai o perfil DISC de cada arquivo físico salvo
+                    res, _ = calcular_disc(f.get("disc", {}))
+                    lista_resultados.append(res)
+                except:
+                    continue
 
-                st.write("### 🧠 Insight do Consultor")
+            if lista_resultados:
 
-                st.info(
-                    explicações.get(
-                        perfil_dominante_equipe,
-                        "Perfil equilibrado."
-                    )
-                )
+                df_equipe = pd.DataFrame(lista_resultados)
 
-                menor_perfil = dados_agrupados.loc[
-                    dados_agrupados['Media'].idxmin(),
-                    'Tipo'
+                # Média do time
+                dados_agrupados = df_equipe.mean().reset_index()
+                dados_agrupados.columns = ["Tipo", "Media"]
+
+                perfil_dominante_equipe = dados_agrupados.loc[
+                    dados_agrupados['Media'].idxmax(), 'Tipo'
                 ]
 
-                st.warning(
-                    f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time."
-                )
+                # EXPLICAÇÕES E INSIGHTS
+                explicações = {
+                    "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida.",
+                    "I": "☀️ **Influência Alta:** Time comunicativo e criativo.",
+                    "S": "🌱 **Estabilidade Alta:** Time leal e processual.",
+                    "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista."
+                }
 
-                st.caption(
-                    f"Sincronizado: {len(st.session_state['formularios'])} arquivos individuais carregados."
-                )
+                col_txt, col_grf = st.columns([1, 1.5])
 
-            # -----------------------------------------------------
+                with col_txt:
 
-            with col_grf:
+                    st.write("### 🧠 Insight do Consultor")
 
-                fig_eq = px.bar(
-                    dados_agrupados,
-                    x="Tipo",
-                    y="Media",
-                    color="Tipo",
-                    text_auto='.1f',
-                    color_discrete_map={
-                        "D":"#FF4136",
-                        "I":"#FF851B",
-                        "S":"#2ECC40",
-                        "C":"#0074D9"
-                    }
-                )
+                    st.info(
+                        explicações.get(
+                            perfil_dominante_equipe,
+                            "Perfil equilibrado."
+                        )
+                    )
 
-                fig_eq.update_layout(
-                    template="plotly_white",
-                    height=300,
-                    showlegend=False,
-                    yaxis_range=[0,100],
-                    margin=dict(l=10, r=10, t=10, b=10)
-                )
+                    menor_perfil = dados_agrupados.loc[
+                        dados_agrupados['Media'].idxmin(),
+                        'Tipo'
+                    ]
 
-                st.plotly_chart(fig_eq, use_container_width=True)
+                    st.warning(
+                        f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time."
+                    )
 
-else:
+                    st.caption(
+                        f"Sincronizado: {len(st.session_state['formularios'])} arquivos individuais carregados."
+                    )
 
-    st.warning(
-        "Nenhum dado encontrado na pasta 'dados' para exibir o Panorama Coletivo."
-    )
+                with col_grf:
+
+                    fig_eq = px.bar(
+                        dados_agrupados,
+                        x="Tipo",
+                        y="Media",
+                        color="Tipo",
+                        text_auto='.1f',
+                        color_discrete_map={
+                            "D":"#FF4136",
+                            "I":"#FF851B",
+                            "S":"#2ECC40",
+                            "C":"#0074D9"
+                        }
+                    )
+
+                    fig_eq.update_layout(
+                        template="plotly_white",
+                        height=300,
+                        showlegend=False,
+                        yaxis_range=[0,100],
+                        margin=dict(l=10, r=10, t=10, b=10)
+                    )
+
+                    st.plotly_chart(fig_eq, use_container_width=True)
+
+    else:
+
+        st.warning(
+            "Nenhum dado encontrado na pasta 'dados' para exibir o Panorama Coletivo."
+        )
