@@ -381,20 +381,30 @@ if st.session_state.pagina == "disc":
         st.stop()
 
     # ============================================================
-    # SELEÇÃO DE COLABORADOR
+    # SELEÇÃO DE COLABORADOR (AJUSTADO)
     # ============================================================
 
-    nomes = [f"{f.get('nome','')} - {f.get('cargo','')}" for f in st.session_state["formularios"]]
+    # Recarregamos a lista para garantir que novos envios apareçam
+    st.session_state["formularios"] = carregar_todos_formularios()
+    
+    # Criamos um dicionário para mapear o texto do selectbox ao objeto real do formulário
+    # Isso elimina o erro de busca do 'next'
+    opcoes_colaboradores = {
+        f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
+        for f in st.session_state["formularios"]
+    }
 
-    colaborador = st.selectbox(
+    if not opcoes_colaboradores:
+        st.warning("Nenhum formulário encontrado na pasta de dados.")
+        st.stop()
+
+    colaborador_chave = st.selectbox(
         "Escolha o colaborador",
-        nomes
+        options=list(opcoes_colaboradores.keys())
     )
 
-    formulario_sel = next(
-        (f for f in st.session_state["formularios"] if f.get('nome') in colaborador),
-        None
-    )
+    # Recuperamos o formulário diretamente do dicionário
+    formulario_sel = opcoes_colaboradores.get(colaborador_chave)
 
     # ============================================================
     # BOTÃO GERAR ANÁLISE
@@ -411,19 +421,19 @@ if st.session_state.pagina == "disc":
             "D": "C"
         }
 
-        respostas_disc = {}
-
+        # Extraímos as respostas garantindo que o dicionário 'disc' existe no JSON
         respostas_raw = form.get("disc", {})
+        respostas_disc = {}
 
         for k, v in respostas_raw.items():
             if v in mapa_disc:
                 respostas_disc[k] = mapa_disc[v]
 
+        # Cálculos
         percentuais, dominante = calcular_disc(respostas_disc)
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
-
         col1, col2 = st.columns([2,1])
 
         # ============================================================
