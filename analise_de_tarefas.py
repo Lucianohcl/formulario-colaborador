@@ -483,59 +483,36 @@ if st.session_state.pagina == "disc":
         with st.expander("🔍 Legenda Geral DISC"):
             st.write("**D**: Dominância | **I**: Influência | **S**: Estabilidade | **C**: Conformidade")
 
+        
         # ============================================================
-        # DASHBOARD EQUIPE
+        # GRÁFICO DISC (VERSÃO BARRAS - MAIS CLARO E PRECISO)
         # ============================================================
 
-        st.markdown("### 🔹 Distribuição DISC da Equipe")
+        st.markdown("### 🔹 Distribuição do Perfil DISC")
 
-        df = pd.DataFrame(
-            [calcular_disc(f.get("disc", {}))[0] for f in st.session_state["formularios"]]
-        )
-
-        fig_eq = px.bar(
-            df.sum().reset_index(),
-            x="index",
-            y=0,
-            labels={"index":"Tipo","0":"Total (%)"},
-            color="index",
+        fig_barras = px.bar(
+            x=list(percentuais.keys()),
+            y=list(percentuais.values()),
+            labels={'x':'Perfil','y':'Percentual (%)'},
+            text=[f"{v}%" for v in percentuais.values()],
+            color=list(percentuais.keys()),
             color_discrete_map={
-                "D":"#FF4136",
-                "I":"#FF851B",
-                "S":"#2ECC40",
-                "C":"#0074D9"
+                "D":"#FF4136", # Vermelho
+                "I":"#FF851B", # Laranja
+                "S":"#2ECC40", # Verde
+                "C":"#0074D9"  # Azul
             }
         )
 
-        fig_eq.update_layout(template="plotly_white")
-        fig_eq.update_layout(margin=dict(l=20, r=20, t=40, b=20))
-        fig_eq.update_layout(height=400)
-
-        st.plotly_chart(fig_eq, use_container_width=True)
-
-        # ============================================================
-        # RADAR DISC
-        # ============================================================
-
-        st.markdown("### 🔹 Radar DISC do Colaborador")
-
-        fig_radar = px.line_polar(
-            r=list(percentuais.values()),
-            theta=list(percentuais.keys()),
-            line_close=True,
-            markers=True
+        fig_barras.update_layout(
+            yaxis_range=[0,100],
+            template="plotly_white",
+            height=400,
+            margin=dict(l=20, r=20, t=40, b=20),
+            showlegend=False
         )
 
-        fig_radar.update_traces(
-            fill='toself',
-            line_color='darkblue'
-        )
-
-        fig_radar.update_layout(template="plotly_white")
-        fig_radar.update_layout(margin=dict(l=20, r=20, t=40, b=20))
-        fig_radar.update_layout(height=400)
-
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.plotly_chart(fig_barras, use_container_width=True)
 
         
         # ============================================================
@@ -1686,3 +1663,65 @@ def salvar_formulario_json(formulario):
         subprocess.run(["git", "push", "-u", "origin", "main"], cwd=dados_dir, check=True)
     except subprocess.CalledProcessError as e:
         st.warning(f"Não foi possível enviar para o GitHub automaticamente: {e}")
+
+# ============================================================
+# SEÇÃO COLETIVA (DASHBOARD DA EQUIPE) 
+# ESTE BLOCO FICA FORA DE QUALQUER IF PARA NÃO SUMIR
+# ============================================================
+
+st.divider() # Linha que separa o indivíduo do grupo
+
+st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+
+with st.expander("📊 Clique aqui para analisar o equilíbrio do time"):
+    
+    # Verifica se a lista de formulários existe e tem alguém
+    if "formularios" in st.session_state and len(st.session_state["formularios"]) > 0:
+        
+        # 1. PROCESSAMENTO (Transforma todos os testes em uma tabela única)
+        df_equipe = pd.DataFrame(
+            [calcular_disc(f.get("disc", {}))[0] for f in st.session_state["formularios"]]
+        )
+        
+        # Tira a média (ex: 30%, 25%, etc)
+        dados_agrupados = df_equipe.mean().reset_index()
+        dados_agrupados.columns = ["Tipo", "Media"]
+        
+        # Descobre quem é o 'chefe' comportamental do grupo
+        perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
+
+        # 2. EXPLICAÇÕES PARA O GESTOR
+        explicações = {
+            "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida. Cuidado com o estresse e competitividade.",
+            "I": "☀️ **Influência Alta:** Time comunicativo e criativo. Cuidado com a falta de foco e prazos perdidos.",
+            "S": "🌱 **Estabilidade Alta:** Time leal, calmo e processual. Cuidado com a resistência a mudanças rápidas.",
+            "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista. Cuidado com a lentidão por excesso de análise."
+        }
+
+        col_txt, col_grf = st.columns([1, 1.5])
+
+        with col_txt:
+            st.write("### 🧠 Insight do Consultor")
+            st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
+            
+            # Identifica o que está faltando no time
+            menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
+            st.warning(f"**Atenção:** O perfil **{menor_perfil}** está baixo. Considere buscar essa característica em novas contratações.")
+            
+            st.caption(f"Análise baseada em {len(st.session_state['formularios'])} respostas.")
+
+        with col_grf:
+            fig_eq = px.bar(
+                dados_agrupados,
+                x="Tipo",
+                y="Media",
+                color="Tipo",
+                text_auto='.1f',
+                color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+            )
+            fig_eq.update_layout(template="plotly_white", height=300, showlegend=False, yaxis_range=[0,100])
+            st.plotly_chart(fig_eq, use_container_width=True)
+            
+    else:
+        # Se não tiver ninguém na base ainda, mostra isso:
+        st.info("Aguardando o envio dos primeiros formulários para consolidar os dados da equipe.")
