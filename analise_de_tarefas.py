@@ -620,26 +620,26 @@ if st.session_state.pagina == "disc":
             if not any(p in texto for p in atividades_compativeis):
                 atividades_desvio.append(ativ)
 
-                ranking_atividades = []
+                        ranking_atividades = []
 
-        for ativ in atividades_lista:
+                        for ativ in atividades_lista:
 
-            texto = str(ativ).lower()
+                            texto = str(ativ).lower()
 
-            score = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
+                            score = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
 
-            ranking_atividades.append((score, ativ))
+                            ranking_atividades.append((score, ativ))
 
-        ranking_atividades.sort(key=lambda x: x[0])
+                        ranking_atividades.sort(key=lambda x: x[0])
 
-        if ranking_atividades:
+                        if ranking_atividades:
 
-            st.markdown("#### ⚠ Podem exigir adaptação")
+                            st.markdown("#### ⚠ Podem exigir adaptação")
 
-            limite = min(3, len(ranking_atividades))
+                            limite = min(3, len(ranking_atividades))
 
-            for score, atividade in ranking_atividades[:limite]:
-                st.write("•", atividade)    
+                            for score, atividade in ranking_atividades[:limite]:
+                                st.write("•", atividade)
 
 
 
