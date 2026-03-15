@@ -521,46 +521,95 @@ if st.session_state.pagina == "disc":
             st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
 
         # ============================================================
-        # COMPATIBILIDADE ATIVIDADES × PERFIL DISC
+        # PERFIL DISC EXIGIDO PELAS ATIVIDADES
         # ============================================================
 
-        st.markdown("### 🔹 Compatibilidade Atividades × Perfil DISC")
+        st.markdown("### 🔹 Perfil DISC Exigido pelas Atividades")
 
         atividades_lista = [
             a.get("Atividade Descrita","")
             for a in form.get("atividades",[])
         ]
-        atividades_texto = " ".join(str(a) for a in atividades_lista).lower()
 
-        # Mapeamento de atividades por perfil
+        atividades_texto = " ".join(atividades_lista).lower()
+
         compatibilidade_ativ = {
-            "D": ["decisão", "meta", "resultado", "liderar", "negociar", "estratégia"],
-            "I": ["apresentar", "convencer", "comunicar", "clientes", "reunião"],
-            "S": ["suporte", "atender", "organizar", "rotina", "apoio"],
-            "C": ["analisar", "relatório", "dados", "controle", "planilha", "auditar"]
+
+            "D": [
+                "decisão","meta","resultado","liderar","negociar",
+                "estratégia","direcionar","definir","priorizar"
+            ],
+
+            "I": [
+                "apresentar","convencer","comunicar","clientes",
+                "reunião","relacionamento","treinamento"
+            ],
+
+            "S": [
+                "suporte","atender","organizar","rotina",
+                "apoio","assistir","acompanhar","colaborar"
+            ],
+
+            "C": [
+                "analisar","dados","relatório","planilha",
+                "controle","auditar","conferir","classificar",
+                "registrar","custos","informações","base",
+                "indicadores","verificar","validar"
+            ]
+
         }
 
-        atividades_compativeis = compatibilidade_ativ.get(dominante, [])
+        scores = {}
 
-        match_ativ = any(a in atividades_texto for a in atividades_compativeis)
+        for perfil, palavras in compatibilidade_ativ.items():
 
-        colA, colB = st.columns(2)
-
-        colA.metric("Perfil DISC", dominante if dominante else "N/A")
-        colB.metric("Atividades Analisadas", len(atividades_lista))
-
-        if match_ativ:
-            st.success(
-                f"**Alta aderência:** As atividades executadas possuem características compatíveis com o perfil **{dominante}**."
+            pontos = sum(
+                atividades_texto.count(p) for p in palavras
             )
+
+            scores[perfil] = pontos
+
+        perfil_exigido = max(scores, key=scores.get)
+
+        # ============================================================
+        # MÉTRICAS
+        # ============================================================
+
+        colA, colB, colC = st.columns(3)
+
+        colA.metric("Perfil do Colaborador", dominante if dominante else "N/A")
+        colB.metric("Perfil Exigido pelas Atividades", perfil_exigido)
+
+        total_pontos = sum(scores.values())
+
+        if total_pontos > 0:
+            compat_percent = int((scores.get(dominante,0) / total_pontos) * 100)
         else:
+            compat_percent = 0
+
+        colC.metric("Compatibilidade", f"{compat_percent}%")
+
+        # ============================================================
+        # MENSAGEM PRINCIPAL
+        # ============================================================
+
+        if perfil_exigido == dominante:
+
+            st.success(
+                f"Alta aderência: As atividades indicam um perfil **{perfil_exigido}**, compatível com o perfil do colaborador."
+            )
+
+        else:
+
             st.warning(
-                f"**Ponto de Atenção:** As atividades executadas podem exigir maior adaptação comportamental para um perfil **{dominante}**."
+                f"As atividades indicam um perfil **{perfil_exigido}**, enquanto o colaborador apresenta perfil **{dominante}**."
             )
 
         # ============================================================
-        # IDENTIFICAÇÃO DE ATIVIDADES QUE EXIGEM ADAPTAÇÃO
+        # ATIVIDADES QUE EXIGEM ADAPTAÇÃO
         # ============================================================
+
+        atividades_compativeis = compatibilidade_ativ.get(perfil_exigido, [])
 
         atividades_desvio = []
 
