@@ -526,7 +526,10 @@ if st.session_state.pagina == "disc":
 
         st.markdown("### 🔹 Compatibilidade Atividades × Perfil DISC")
 
-        atividades_lista = form.get("atividades", {}).get("Atividade Descrita", [])
+        atividades_lista = [
+            a.get("Atividade Descrita","")
+            for a in form.get("atividades",[])
+        ]
         atividades_texto = " ".join(str(a) for a in atividades_lista).lower()
 
         # Mapeamento de atividades por perfil
