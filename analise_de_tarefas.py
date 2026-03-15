@@ -522,9 +522,51 @@ if st.session_state.pagina == "disc":
         with col_tar:
             st.warning(f"**Tarefas Sugeridas:**\n{info['tarefas']}")
 
-        # 3. LEGENDA (Final da página)
-        with st.expander("🔍 Legenda Geral DISC"):
-            st.write("**D**: Dominância | **I**: Influência | **S**: Estabilidade | **C**: Conformidade")
+        # 3. LEGENDA DETALHADA (Final da página)
+        with st.expander("🔍 Legenda Geral DISC - Detalhada", expanded=False):
+            textos_disc = {
+                "D": {
+                    "nome": "Dominante",
+                    "estilo": "Resultados e Assertividade",
+                    "desc": "Decidido e direto. Busca desafios, rapidez e liderança.",
+                    "cargos": "Gerente, Líder de Projeto, Coordenador",
+                    "tarefas_mais": "Tomada de decisão, Gestão de crises, Definir metas",
+                    "tarefas_menos": "Atendimento de rotina, Processos detalhados, Documentação"
+                },
+                "I": {
+                    "nome": "Influente",
+                    "estilo": "Pessoas e Comunicação",
+                    "desc": "Entusiasmado, sociável e persuasivo. Busca conexão e motivação do grupo.",
+                    "cargos": "Marketing, Vendas, Comunicação, Treinamento",
+                    "tarefas_mais": "Apresentações, Networking, Reuniões de equipe, Motivação",
+                    "tarefas_menos": "Tarefas repetitivas, Processos rígidos, Detalhes técnicos"
+                },
+                "S": {
+                    "nome": "Estável",
+                    "estilo": "Colaboração e Persistência",
+                    "desc": "Paciente, leal e confiável. Busca harmonia e segurança.",
+                    "cargos": "Suporte, Administrativo, RH, Atendimento ao Cliente",
+                    "tarefas_mais": "Suporte operacional, Atendimento, Organizar processos",
+                    "tarefas_menos": "Mudanças constantes, Pressão por resultados rápidos, Competição intensa"
+                },
+                "C": {
+                    "nome": "Conformidade",
+                    "estilo": "Precisão e Qualidade",
+                    "desc": "Analítico, detalhista e criterioso. Busca lógica, regras e perfeição.",
+                    "cargos": "Auditoria, Contabilidade, TI, Qualidade",
+                    "tarefas_mais": "Análise de dados, Relatórios, Controle de qualidade, Padronização",
+                    "tarefas_menos": "Decisões rápidas sem dados, Interações sociais constantes, Ambiguidade"
+                }
+            }
+
+            for key, info in textos_disc.items():
+                st.markdown(f"### **{key} - {info['nome']}**")
+                st.write(f"**Estilo de trabalho:** {info['estilo']}")
+                st.write(f"**Descrição:** {info['desc']}")
+                st.write(f"**Cargos mais compatíveis:** {info['cargos']}")
+                st.write(f"**Atividades que combinam mais:** {info['tarefas_mais']}")
+                st.write(f"**Atividades que combinam menos:** {info['tarefas_menos']}")
+                st.markdown("---")
 
         
                 
