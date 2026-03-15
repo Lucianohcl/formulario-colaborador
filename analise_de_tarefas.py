@@ -1763,12 +1763,16 @@ def salvar_formulario_json(formulario):
     # ============================================================
     # GARANTIA DE PERSISTÊNCIA (INDIVIDUAL E COLETIVA)
     # ============================================================
+    
+    # Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
+    st.session_state["formularios"] = carregar_todos_formularios()
+    formularios = st.session_state.get("formularios", [])
 
-    # 1. CARGA GLOBAL
-    dados_vivos = carregar_todos_formularios()
-    st.session_state["formularios"] = dados_vivos
+    # ============================================================
+    # 2️⃣ Condição de exibição da análise coletiva
+    # ============================================================
 
-if st.session_state.get("formularios"):
+    if formularios:
 
         st.divider()
         st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
@@ -1777,16 +1781,18 @@ if st.session_state.get("formularios"):
         # Coletando resultados DISC e atividades de todos os formulários
         # ============================================================
 
-        lista_resultados = [
-            calcular_disc(f["disc"])[0]  # res, _ ignorado
-            for f in st.session_state["formularios"]
-        ]
-
+        lista_resultados = []
         atividades_coletivas = []
-        for f in st.session_state["formularios"]:
+
+        for f in formularios:
+            # Extrai o DISC
+            res, _ = calcular_disc(f.get("disc", {}))
+            lista_resultados.append(res)
+
+            # Extrai atividades
             for a in f.get("atividades", []):
-                desc = a.get("Atividade Descrita", "")
-                if desc.strip():
+                desc = a.get("Atividade Descrita", "").strip()
+                if desc:
                     atividades_coletivas.append(desc)
 
         # ============================================================
@@ -1804,7 +1810,7 @@ if st.session_state.get("formularios"):
         # Insights de perfis
         # ============================================================
 
-        explicações = {
+        explicacoes = {
             "D": "🔥 **Dominância Alta:** Time focado em metas e execução rápida.",
             "I": "☀️ **Influência Alta:** Time comunicativo e criativo.",
             "S": "🌱 **Estabilidade Alta:** Time leal e processual.",
@@ -1815,9 +1821,9 @@ if st.session_state.get("formularios"):
 
         with col_txt:
             st.write("### 🧠 Insight do Consultor")
-            st.info(explicações.get(perfil_dominante_equipe, "Perfil equilibrado."))
+            st.info(explicacoes.get(perfil_dominante_equipe, "Perfil equilibrado."))
             st.warning(f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time.")
-            st.caption(f"Sincronizado: {len(st.session_state['formularios'])} arquivo(s) individual(is) carregado(s).")
+            st.caption(f"Sincronizado: {len(formularios)} arquivo(s) individual(is) carregado(s).")
 
         # ============================================================
         # Gráfico de distribuição de perfis
@@ -1857,11 +1863,10 @@ if st.session_state.get("formularios"):
             "C": ["analisar","dados","relatório","planilha","controle","auditar","conferir","classificar","registrar","custos","informações","base","indicadores","verificar","validar"]
         }
 
-        # Score por atividade comparado ao perfil dominante coletivo
         ranking_atividades = []
         for ativ in atividades_coletivas:
-            texto = str(ativ).lower()
-            if not texto.strip():
+            texto = ativ.lower()
+            if not texto:
                 continue
             score = sum(p in texto for p in compatibilidade_ativ.get(perfil_dominante_equipe, []))
             ranking_atividades.append((score, ativ))
@@ -1875,5 +1880,5 @@ if st.session_state.get("formularios"):
             for score, atividade in ranking_atividades[:limite]:
                 st.write("•", atividade)
 
-else:
-    st.warning("Nenhum dado encontrado para exibir o Panorama Coletivo.")    
+    else:
+        st.warning("Nenhum dado encontrado para exibir o Panorama Coletivo.")        
