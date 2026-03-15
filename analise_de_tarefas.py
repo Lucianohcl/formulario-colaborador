@@ -428,15 +428,39 @@ if st.session_state.pagina == "disc":
             if v in mapa_disc:
                 respostas_disc[k] = mapa_disc[v]
 
-        # Cálculos
+        # ============================================================
+        # PAINEL DISC DO COLABORADOR (AJUSTADO)
+        # ============================================================
+
+        # 1️⃣ Função ajustada de cálculo de score
+        def score_disc(percentuais):
+            """
+            Calcula a intensidade do perfil dominante considerando a diferença
+            entre ele e o segundo maior perfil.
+            Retorna um valor de 0 a 100, refletindo a certeza relativa.
+            """
+            if not percentuais:
+                return 0
+            
+            valores = sorted(percentuais.values(), reverse=True)
+            dominante_val = valores[0]
+            segundo_val = valores[1] if len(valores) > 1 else 0
+            
+            diff = dominante_val - segundo_val
+            score_normalizado = round((diff / dominante_val) * 100, 1) if dominante_val > 0 else 0
+            score_normalizado = max(0, min(score_normalizado, 100))
+            
+            return score_normalizado
+
+        # 2️⃣ Cálculos
         percentuais, dominante = calcular_disc(respostas_disc)
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
-        
-        # 1. GRÁFICO E MÉTRICAS (Lado a Lado)
+
+        # 3️⃣ Gráfico e Métricas lado a lado
         col_graf, col_met = st.columns([2,1])
-        
+
         with col_graf:
             fig = px.bar(
                 x=list(percentuais.keys()),
@@ -446,24 +470,38 @@ if st.session_state.pagina == "disc":
                 color=list(percentuais.keys()),
                 color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
             )
-            fig.update_layout(yaxis_range=[0,100], height=350, margin=dict(l=20, r=20, t=30, b=20), template="plotly_white")
+            fig.update_layout(
+                yaxis_range=[0,100], 
+                height=350, 
+                margin=dict(l=20, r=20, t=30, b=20), 
+                template="plotly_white",
+                showlegend=False
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         with col_met:
             st.metric("Perfil Dominante", dominante)
             st.metric("Intensidade (Score)", f"{score}%")
             
-            # Explicação rápida do nível de intensidade
+            # Interpretação rápida do nível de intensidade
             def interpretar_valor(p):
                 try:
                     v = float(str(p).replace('%',''))
                     if v > 85: return "🎯 **Muito Alta**"
                     if v > 60: return "✅ **Alta**"
-                    return "⚖️ **Equilibrada**"
-                except: return ""
+                    if v > 30: return "⚖️ **Moderada**"
+                    return "⚠️ **Baixa**"
+                except:
+                    return ""
+            
             st.write(interpretar_valor(score))
 
-        st.markdown("---")
+            st.caption("ℹ️ Score indica a intensidade relativa do perfil dominante em relação aos outros perfis. Quanto maior a diferença, maior a certeza do perfil.")
+
+
+            st.markdown("---")
+
+            
 
         # 2. INTERPRETAÇÃO DETALHADA (Substitui a Base de Conhecimento e o Parecer)
         textos_disc = {
