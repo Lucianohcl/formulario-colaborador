@@ -496,7 +496,7 @@ if st.session_state.pagina == "disc":
 
         st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
 
-        cargo_atual = form.get("cargo", "").lower()
+        cargo_atual = str(form.get("cargo", "")).lower()
 
         # Mapeamento de cargos por perfil dominante
         compatibilidade = {
@@ -519,6 +519,61 @@ if st.session_state.pagina == "disc":
             st.success(f"**Alta aderência:** O perfil **{dominante}** possui características naturais que favorecem o desempenho em cargos de **{cargo_atual.title()}**.")
         else:
             st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
+
+        # ============================================================
+        # COMPATIBILIDADE ATIVIDADES × PERFIL DISC
+        # ============================================================
+
+        st.markdown("### 🔹 Compatibilidade Atividades × Perfil DISC")
+
+        atividades_lista = form.get("atividades", {}).get("Atividade Descrita", [])
+        atividades_texto = " ".join(str(a) for a in atividades_lista).lower()
+
+        # Mapeamento de atividades por perfil
+        compatibilidade_ativ = {
+            "D": ["decisão", "meta", "resultado", "liderar", "negociar", "estratégia"],
+            "I": ["apresentar", "convencer", "comunicar", "clientes", "reunião"],
+            "S": ["suporte", "atender", "organizar", "rotina", "apoio"],
+            "C": ["analisar", "relatório", "dados", "controle", "planilha", "auditar"]
+        }
+
+        atividades_compativeis = compatibilidade_ativ.get(dominante, [])
+
+        match_ativ = any(a in atividades_texto for a in atividades_compativeis)
+
+        colA, colB = st.columns(2)
+
+        colA.metric("Perfil DISC", dominante if dominante else "N/A")
+        colB.metric("Atividades Analisadas", len(atividades_lista))
+
+        if match_ativ:
+            st.success(
+                f"**Alta aderência:** As atividades executadas possuem características compatíveis com o perfil **{dominante}**."
+            )
+        else:
+            st.warning(
+                f"**Ponto de Atenção:** As atividades executadas podem exigir maior adaptação comportamental para um perfil **{dominante}**."
+            )
+
+        # ============================================================
+        # IDENTIFICAÇÃO DE ATIVIDADES QUE EXIGEM ADAPTAÇÃO
+        # ============================================================
+
+        atividades_desvio = []
+
+        for ativ in atividades_lista:
+
+            texto = str(ativ).lower()
+
+            if not any(p in texto for p in atividades_compativeis):
+                atividades_desvio.append(ativ)
+
+        if atividades_desvio:
+
+            st.markdown("#### ⚠ Podem exigir adaptação")
+
+            for a in atividades_desvio:
+                st.write("•", a)    
 
 
 
