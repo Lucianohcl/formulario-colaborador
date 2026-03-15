@@ -1578,45 +1578,54 @@ if not os.path.exists(json_master):
 # ============================================================
 # FUNÇÃO PARA SALVAR FORMULÁRIO EM JSON E ENVIAR PARA GITHUB
 # ============================================================
+import requests
+import base64
+import json
+
+GITHUB_USER = st.secrets["DB_USERNAME"]
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO = f"{GITHUB_USER}/analise_formularios"
+ARQUIVO = "dados/formularios.json"
+
+
 def salvar_formulario_json(formulario):
-    """
-    Recebe um dicionário do formulário preenchido, salva no arquivo 
-    JSON único dentro da pasta 'dados', atualiza a sessão e envia para GitHub.
-    """
-    # 1. Tenta carregar os dados existentes ou cria uma lista vazia
-    try:
-        with open(json_master, "r", encoding="utf-8") as f:
-            dados_existentes = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        dados_existentes = []
+    url = f"https://api.github.com/repos/{REPO}/contents/{ARQUIVO}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
-    # 2. Adiciona o novo formulário à lista
-    dados_existentes.append(formulario)
+    # 1. Carregar dados existentes
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        conteudo = r.json()
+        sha = conteudo["sha"]
+        dados = json.loads(base64.b64decode(conteudo["content"]).decode())
+    else:
+        sha = None
+        dados = []
 
-    # 3. Salva a lista completa de volta no arquivo local (container efêmero)
-    with open(json_master, "w", encoding="utf-8") as f:
-        json.dump(dados_existentes, f, ensure_ascii=False, indent=4)
+    # 2. Adicionar formulário
+    dados.append(formulario)
 
-    # 4. Atualiza o estado da sessão do Streamlit
-    st.session_state["formularios"] = dados_existentes
+    # 3. Converter para base64
+    novo_conteudo = base64.b64encode(
+        json.dumps(dados, ensure_ascii=False, indent=4).encode()
+    ).decode()
 
-    # 5. Envio automático para GitHub para persistência permanente
-    import subprocess
+    payload = {
+        "message": f"Novo formulário {formulario.get('nome','SemNome')}",
+        "content": novo_conteudo,
+        "branch": "main"
+    }
 
-    repo_url = "https://<TOKEN>@github.com/SeuUsuario/analise_formularios.git"  # substitua <TOKEN>
-    try:
-        if not os.path.exists(os.path.join(dados_dir, ".git")):
-            subprocess.run(["git", "init"], cwd=dados_dir, check=True)
-            subprocess.run(["git", "remote", "add", "origin", repo_url], cwd=dados_dir, check=True)
+    if sha:
+        payload["sha"] = sha
 
-        subprocess.run(["git", "add", json_master], cwd=dados_dir, check=True)
-        subprocess.run(["git", "commit", "-m", f"Formulário de {formulario['nome']}"], cwd=dados_dir, check=True)
-        subprocess.run(["git", "push", "-u", "origin", "main"], cwd=dados_dir, check=True)
-    except subprocess.CalledProcessError as e:
-        st.warning(f"Não foi possível enviar para o GitHub automaticamente: {e}")
+    # 4. Enviar para GitHub
+    r_put = requests.put(url, headers=headers, json=payload)
+    if r_put.status_code not in [200, 201]:
+        st.warning(f"Erro ao enviar para GitHub: {r_put.status_code} {r_put.text}")
 
-
-if st.session_state.get("pagina") == "disc":
+    # 5. Atualizar sessão
+    st.session_state["formularios"] = dados
 
     # ============================================================
     # GARANTIA DE PERSISTÊNCIA (CARGA DOS DADOS)
