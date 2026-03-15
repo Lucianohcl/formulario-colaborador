@@ -1760,29 +1760,59 @@ def salvar_formulario_json(formulario):
     # Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
     st.session_state["formularios"] = carregar_todos_formularios()
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
 # ============================================================
-# GARANTIA DE PERSISTÊNCIA E ANÁLISE COLETIVA DINÂMICA
+# 1. FUNÇÕES DE APOIO (CÁLCULOS E TRADUÇÃO)
 # ============================================================
 
-# 1. Carga dos dados (Sempre fora do expander para garantir que os dados existam)
-st.session_state["formularios"] = carregar_todos_formularios()
-formularios = st.session_state.get("formularios", [])
+MAPA_DISC = {
+    "A": "D", "B": "I", "C": "S", "D": "C"
+}
 
-# 2. Criamos o Expander apenas se houver dados
+def calcular_disc(respostas_disc):
+    """Traduz A, B, C, D para D, I, S, C e calcula percentuais."""
+    contagem = {"D": 0, "I": 0, "S": 0, "C": 0}
+    for r in respostas_disc.values():
+        perfil = MAPA_DISC.get(r)
+        if perfil in contagem:
+            contagem[perfil] += 1
+    
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100, 1) for k, v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = {"D": 0, "I": 0, "S": 0, "C": 0}
+        dominante = None
+    return percentuais, dominante
+
+# ============================================================
+# 2. CARREGAMENTO E PERSISTÊNCIA
+# ============================================================
+
+# Garante que os dados estejam carregados na sessão
+formularios = carregar_todos_formularios()
+st.session_state["formularios"] = formularios
+
+# ============================================================
+# 3. PANORAMA COLETIVO (DENTRO DO EXPANDER)
+# ============================================================
+
 if formularios:
-    with st.expander("📊 Clique aqui para ver o Panorama Coletivo da Equipe", expanded=False):
-        st.markdown("## 👥 Gestão Coletiva: Insights do Time")
+    # O 'expanded=False' garante que ele comece FECHADO
+    with st.expander("📊 Ver Panorama Coletivo da Equipe", expanded=False):
+        st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
         
-        # ------------------------------------------------------------
-        # 1️⃣ Processamento dos dados DISC
-        # ------------------------------------------------------------
         lista_resultados = []
         atividades_coletivas = []
 
+        # Processamento de todos os formulários carregados
         for f in formularios:
-            # Usando a função calcular_disc que já traduz A, B, C, D
-            res, _ = calcular_disc(f.get("disc", {}))
-            lista_resultados.append(res)
+            res_percentual, _ = calcular_disc(f.get("disc", {}))
+            lista_resultados.append(res_percentual)
 
             for a in f.get("atividades", []):
                 desc = a.get("Atividade Descrita", "").strip()
@@ -1790,61 +1820,72 @@ if formularios:
                     atividades_coletivas.append(desc)
 
         if lista_resultados:
+            # Criando DataFrame com a média de todos os perfis
             df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric, errors='coerce')
-            dados_agrupados = df_equipe.mean().reset_index()
-            dados_agrupados.columns = ["Tipo", "Media"]
+            medias = df_equipe.mean()
+            
+            # VARIÁVEIS DO GRUPO (A média real)
+            dominante_grupo = medias.idxmax()
+            menor_grupo = medias.idxmin()
 
-            perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
-            menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
-
-            # ------------------------------------------------------------
-            # 2️⃣ Layout de colunas dentro do Expander
-            # ------------------------------------------------------------
+            # --- Layout de Colunas ---
             col_txt, col_grf = st.columns([1, 1.5])
             
             with col_txt:
-                st.write("### 🧠 Insight do Consultor")
+                st.write("### 🧠 Insight do Grupo")
                 explicacoes = {
-                    "D": "🔥 **Dominância Alta:** Foco em metas e execução.",
-                    "I": "☀️ **Influência Alta:** Comunicação e criatividade.",
-                    "S": "🌱 **Estabilidade Alta:** Lealdade e processos.",
-                    "C": "💎 **Conformidade Alta:** Técnica e perfeccionismo."
+                    "D": "🔥 **Dominância:** Foco em metas e execução rápida.",
+                    "I": "☀️ **Influência:** Comunicação e criatividade em alta.",
+                    "S": "🌱 **Estabilidade:** Time leal, processual e resiliente.",
+                    "C": "💎 **Conformidade:** Alta precisão técnica e perfeccionismo."
                 }
-                st.info(f"**Dominante:** {perfil_dominante_equipe}\n\n{explicacoes.get(perfil_dominante_equipe)}")
-                st.warning(f"**Menos presente:** {menor_perfil}")
-                st.caption(f"Baseado em {len(formularios)} formulários.")
+                
+                st.info(f"**Perfil Dominante do Time:** {dominante_grupo}\n\n{explicacoes.get(dominante_grupo)}")
+                st.warning(f"**Menor Presença no Time:** {menor_grupo}")
+                st.caption(f"Análise baseada em {len(formularios)} formulários sincronizados.")
 
             with col_grf:
+                # Gráfico baseado nos dados agrupados
+                dados_plot = medias.reset_index()
+                dados_plot.columns = ["Tipo", "Media"]
+                
                 fig_eq = px.bar(
-                    dados_agrupados, x="Tipo", y="Media", color="Tipo",
+                    dados_plot, x="Tipo", y="Media", color="Tipo",
                     text_auto='.1f',
-                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+                    color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
                 )
-                fig_eq.update_layout(template="plotly_white", height=280, showlegend=False, margin=dict(l=10, r=10, t=10, b=10))
+                fig_eq.update_layout(
+                    template="plotly_white", height=280, showlegend=False,
+                    yaxis_range=[0, 100], margin=dict(l=10, r=10, t=10, b=10)
+                )
                 st.plotly_chart(fig_eq, use_container_width=True)
 
-            # ------------------------------------------------------------
-            # 3️⃣ Ranking de Adaptação
-            # ------------------------------------------------------------
+            # --- Dificuldades de Adaptação ---
             st.divider()
-            st.markdown("#### ⚠ Dificuldades de adaptação coletiva")
+            st.markdown(f"#### ⚠ Principais desafios de adaptação para o perfil {dominante_grupo}")
             
+            # Lógica de ranking: Atividades menos compatíveis com o dominante do grupo
             compatibilidade_ativ = {
-                "D": ["decisão","meta","resultado","liderar","negociar","estratégia","direcionar","definir","priorizar"],
-                "I": ["apresentar","convencer","comunicar","clientes","reunião","relacionamento","treinamento"],
-                "S": ["suporte","atender","organizar","rotina","apoio","assistir","acompanhar","colaborar"],
-                "C": ["analisar","dados","relatório","planilha","controle","auditar","conferir","classificar","registrar","custos","informações","base","indicadores","verificar","validar"]
+                "D": ["decisão","meta","resultado","liderar","estratégia"],
+                "I": ["apresentar","comunicar","clientes","reunião"],
+                "S": ["suporte","atender","organizar","rotina","apoio"],
+                "C": ["analisar","dados","relatório","planilha","controle"]
             }
 
             ranking = []
             for ativ in atividades_coletivas:
                 texto = ativ.lower()
-                score = sum(p in texto for p in compatibilidade_ativ.get(perfil_dominante_equipe, []))
+                score = sum(p in texto for p in compatibilidade_ativ.get(dominante_grupo, []))
                 ranking.append((score, ativ))
             
+            # Ordena pelo menor score (maior necessidade de adaptação)
             ranking.sort(key=lambda x: x[0])
-            for _, ativ in ranking[:3]:
-                st.write(f"• {ativ}")
+            
+            if ranking:
+                for _, atividade in ranking[:3]:
+                    st.write(f"• {atividade}")
+            else:
+                st.write("Nenhuma atividade descrita para análise.")
 
 else:
-    st.warning("Aguardando carregamento de formulários para gerar análise.")
+    st.info("Carregue formulários para habilitar o Panorama Coletivo.")
