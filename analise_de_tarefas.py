@@ -1875,5 +1875,5 @@ if st.session_state.get("formularios"):
             for score, atividade in ranking_atividades[:limite]:
                 st.write("•", atividade)
 
-    else:
-        st.warning("Nenhum dado encontrado para exibir o Panorama Coletivo.")    
+else:
+    st.warning("Nenhum dado encontrado para exibir o Panorama Coletivo.")    
