@@ -624,7 +624,9 @@ if st.session_state.pagina == "disc":
 
             st.markdown("#### ⚠ Podem exigir adaptação")
 
-            for a in atividades_desvio:
+            limite = min(3, len(atividades_desvio))
+
+            for a in atividades_desvio[:limite]:
                 st.write("•", a)    
 
 
