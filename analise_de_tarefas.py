@@ -620,21 +620,32 @@ if st.session_state.pagina == "disc":
             if not any(p in texto for p in atividades_compativeis):
                 atividades_desvio.append(ativ)
 
-            ranking_atividades = []
 
-            for ativ in atividades_lista:
-                texto = str(ativ).lower()
-                score = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
-                ranking_atividades.append((score, ativ))
+        ranking_atividades = []
 
-            ranking_atividades.sort(key=lambda x: x[0])
+        for ativ in atividades_lista:
 
-            if ranking_atividades:
-                st.markdown("#### ⚠ Podem exigir adaptação")
-                limite = min(3, len(ranking_atividades))
-                for score, atividade in ranking_atividades[:limite]:
-                    st.write("•", atividade)
+            texto = str(ativ).lower()
 
+            if not texto.strip():
+                continue
+
+            score = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
+
+            ranking_atividades.append((score, ativ))
+
+
+        ranking_atividades.sort(key=lambda x: x[0])
+
+
+        if ranking_atividades:
+
+            st.markdown("#### ⚠ Lista das principais dificuldades de adaptação")
+
+            limite = min(3, len(ranking_atividades))
+
+            for score, atividade in ranking_atividades[:limite]:
+                st.write("•", atividade)
 
 
 import streamlit as st
