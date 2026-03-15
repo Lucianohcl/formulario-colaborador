@@ -1760,42 +1760,45 @@ def salvar_formulario_json(formulario):
     # Recarregamos os dados diretamente do disco/nuvem para garantir persistência total
     st.session_state["formularios"] = carregar_todos_formularios()
 
-    # ============================================================
-    # GARANTIA DE PERSISTÊNCIA E ANÁLISE COLETIVA DINÂMICA
-    # ============================================================
+# ============================================================
+# GARANTIA DE PERSISTÊNCIA E ANÁLISE COLETIVA DINÂMICA
+# ============================================================
 
-    # Carrega todos os formulários do disco/nuvem
-    st.session_state["formularios"] = carregar_todos_formularios()
-    formularios = st.session_state.get("formularios", [])
+# 1. Carga única dos dados para persistência
+st.session_state["formularios"] = carregar_todos_formularios()
+formularios = st.session_state.get("formularios", [])
 
-    if formularios:
-        st.divider()
-        st.markdown("## 👥 Panorama Coletivo da Equipe")
+# 2. Verificação de existência de dados
+if formularios:
+    st.divider()
+    st.markdown("## 👥 Panorama Coletivo da Equipe")
 
-        # ------------------------------------------------------------
-        # 1️⃣ Coletando resultados DISC e atividades de todos os formulários
-        # ------------------------------------------------------------
-        lista_resultados = []
-        atividades_coletivas = []
+    # ------------------------------------------------------------
+    # 1️⃣ Coletando resultados DISC e atividades de todos os formulários
+    # ------------------------------------------------------------
+    lista_resultados = []
+    atividades_coletivas = []
 
-        for f in formularios:
-            # Extrai DISC
-            res, _ = calcular_disc(f.get("disc", {}))
-            lista_resultados.append(res)
+    for f in formularios:
+        # Extrai DISC (Assume que calcular_disc retorna [dicionario, algo])
+        res, _ = calcular_disc(f.get("disc", {}))
+        lista_resultados.append(res)
 
-            # Extrai atividades
-            for a in f.get("atividades", []):
-                desc = a.get("Atividade Descrita", "").strip()
-                if desc:
-                    atividades_coletivas.append(desc)
+        # Extrai atividades
+        for a in f.get("atividades", []):
+            desc = a.get("Atividade Descrita", "").strip()
+            if desc:
+                atividades_coletivas.append(desc)
 
-        # ------------------------------------------------------------
-        # 2️⃣ Criando DataFrame de médias por perfil
-        # ------------------------------------------------------------
+    # ------------------------------------------------------------
+    # 2️⃣ Criando DataFrame de médias por perfil
+    # ------------------------------------------------------------
+    if lista_resultados:
         df_equipe = pd.DataFrame(lista_resultados)
         dados_agrupados = df_equipe.mean().reset_index()
         dados_agrupados.columns = ["Tipo", "Media"]
 
+        # Identifica extremos
         perfil_dominante_equipe = dados_agrupados.loc[dados_agrupados['Media'].idxmax(), 'Tipo']
         menor_perfil = dados_agrupados.loc[dados_agrupados['Media'].idxmin(), 'Tipo']
 
@@ -1803,17 +1806,19 @@ def salvar_formulario_json(formulario):
         # 3️⃣ Insights de perfis
         # ------------------------------------------------------------
         explicacoes = {
-            "D": "🔥 Dominância Alta: metas e execução rápida",
-            "I": "☀️ Influência Alta: comunicativo e criativo",
-            "S": "🌱 Estabilidade Alta: leal e processual",
-            "C": "💎 Conformidade Alta: técnico e perfeccionista"
+            "D": "🔥 **Dominância Alta:** Foco em metas e execução rápida.",
+            "I": "☀️ **Influência Alta:** Time comunicativo e criativo.",
+            "S": "🌱 **Estabilidade Alta:** Time leal e processual.",
+            "C": "💎 **Conformidade Alta:** Time técnico e perfeccionista."
         }
 
         col_txt, col_grf = st.columns([1, 1.5])
+        
         with col_txt:
-            st.info(f"Perfil dominante coletivo: **{perfil_dominante_equipe}** - {explicacoes.get(perfil_dominante_equipe)}")
-            st.warning(f"Perfil menos presente: **{menor_perfil}**")
-            st.caption(f"{len(formularios)} formulário(s) carregado(s)")
+            st.write("### 🧠 Insight do Consultor")
+            st.info(f"**Perfil Dominante:** {perfil_dominante_equipe}\n\n{explicacoes.get(perfil_dominante_equipe, '')}")
+            st.warning(f"**Atenção:** O perfil **{menor_perfil}** é o menos presente no time.")
+            st.caption(f"Sincronizado: {len(formularios)} formulário(s) carregado(s).")
 
         # ------------------------------------------------------------
         # 4️⃣ Gráfico de distribuição de perfis
@@ -1825,9 +1830,20 @@ def salvar_formulario_json(formulario):
                 y="Media",
                 color="Tipo",
                 text_auto='.1f',
-                color_discrete_map={"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}
+                color_discrete_map={
+                    "D": "#FF4136", 
+                    "I": "#FF851B", 
+                    "S": "#2ECC40", 
+                    "C": "#0074D9"
+                }
             )
-            fig_eq.update_layout(template="plotly_white", height=300, showlegend=False, yaxis_range=[0,100])
+            fig_eq.update_layout(
+                template="plotly_white", 
+                height=300, 
+                showlegend=False, 
+                yaxis_range=[0, 100],
+                margin=dict(l=10, r=10, t=10, b=10)
+            )
             st.plotly_chart(fig_eq, use_container_width=True)
 
         # ------------------------------------------------------------
@@ -1843,15 +1859,21 @@ def salvar_formulario_json(formulario):
         ranking_atividades = []
         for ativ in atividades_coletivas:
             texto = ativ.lower()
+            # Score baseado no perfil dominante: quanto mais palavras-chave do perfil, maior o score
             score = sum(p in texto for p in compatibilidade_ativ.get(perfil_dominante_equipe, []))
             ranking_atividades.append((score, ativ))
 
-        ranking_atividades.sort(key=lambda x: x[0])  # menor score = maior adaptação necessária
+        # Ordena pelo menor score (menor compatibilidade = maior esforço de adaptação)
+        ranking_atividades.sort(key=lambda x: x[0])
 
         if ranking_atividades:
-            st.markdown("#### ⚠ Principais dificuldades de adaptação do time")
+            st.markdown("#### ⚠ Principais pontos de atenção (Esforço de Adaptação)")
+            # Pega as 3 atividades com menor score
             for score, atividade in ranking_atividades[:3]:
-                st.write("•", atividade)
-
+                st.write(f"• {atividade}")
     else:
-        st.warning("Nenhum formulário disponível para gerar a análise coletiva.")       
+        st.error("Erro ao processar os dados dos formulários.")
+
+else:
+    # Este bloco aparece se 'formularios' estiver vazio
+    st.warning("Nenhum dado encontrado para exibir o Panorama Coletivo. Certifique-se de que os arquivos foram carregados corretamente.")
