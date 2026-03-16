@@ -2055,6 +2055,8 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
+st.markdown("### Gerar Rascunho") # A legenda que você pediu
+
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
@@ -2073,7 +2075,7 @@ if nome_usuario:
             if st.button("✅ Criar meu Rascunho"):
                 if salvar({"nome": nome_usuario}, arquivo_nome, "Início"):
                     st.success("🚀 Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    st.balloons()
+                    
     else:
         # Se 'dados' estiver vazio ou não tiver a chave 'nome', ele barra
         if not dados or "nome" not in dados:
@@ -2140,15 +2142,62 @@ if nome_usuario:
                                                 horizontal=True, key=f"q_{i}")
 
         # BOTÃO SALVAR
-        if st.button("💾 SALVAR TUDO"):
-            payload = {
-                "nome": nome_c, "setor": setor, "cargo": cargo, "chefe": chefe,
-                "departamento": depto, "empresa": empresa, "escolaridade": escolaridade,
-                "devolucao": devolucao, "cursos": cursos, "objetivo": objetivo,
-                "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
-                **respostas_disc
-            }
-            if salvar(payload, arquivo_nome):
-                st.success("Rascunho atualizado no GitHub!")
+        # if st.button("💾 SALVAR TUDO"):
+            # payload = {
+                # "nome": nome_c, "setor": setor, "cargo": cargo, "chefe": chefe,
+                # "departamento": depto, "empresa": empresa, "escolaridade": escolaridade,
+                # "devolucao": devolucao, "cursos": cursos, "objetivo": objetivo,
+                # "atividades": edit_ativ.to_dict("records"),
+                # "dificuldades": edit_dif.to_dict("records"),
+                # "sugestoes": edit_sug.to_dict("records"),
+                # **respostas_disc
+            # }
+            # if salvar(payload, arquivo_nome):
+                # st.success("Rascunho atualizado no GitHub!")
+
+        
+# --- SEÇÃO DE SALVAMENTO E FINALIZAÇÃO ---
+st.divider()
+st.subheader("🏁 Finalização do Formulário")
+
+# Checkbox que libera o envio definitivo
+pronto = st.checkbox("✅ O rascunho está OK? (Marque para liberar o envio final para o RH)")
+
+if pronto:
+    # Se marcou OK, aparece o botão de ENVIO FINAL
+    if st.button("🚀 ENVIAR FORMULÁRIO FINALIZADO"):
+        payload_final = {
+            "status": "FINALIZADO",
+            "data_envio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"),
+            "nome": nome_c, "setor": setor, "cargo": cargo, "chefe": chefe,
+            "departamento": depto, "empresa": empresa, "escolaridade": escolaridade,
+            "devolucao": devolucao, "cursos": cursos, "objetivo": objetivo,
+            "atividades": edit_ativ.to_dict("records"),
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+            **respostas_disc
+        }
+        # AQUI ESTÁ O SEGREDO: Salva em um arquivo com prefixo "final_"
+        arquivo_final = f"final_{nome_limpo}.json"
+        
+        if salvar(payload_final, arquivo_final, "Envio Finalizado"):
+            st.success("✨ Excelente! Seu formulário original foi gerado com sucesso.")
+            st.balloons()
+        else:
+            st.error("Erro ao enviar o formulário final.")
+else:
+    # Se NÃO marcou o checkbox, aparece apenas o botão de RASCUNHO
+    if st.button("💾 SALVAR APENAS RASCUNHO"):
+        payload_rascunho = {
+            "status": "EM_ANDAMENTO",
+            "nome": nome_c, "setor": setor, "cargo": cargo, "chefe": chefe,
+            "departamento": depto, "empresa": empresa, "escolaridade": escolaridade,
+            "devolucao": devolucao, "cursos": cursos, "objetivo": objetivo,
+            "atividades": edit_ativ.to_dict("records"),
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+            **respostas_disc
+        }
+        # Salva no arquivo de rascunho normal
+        if salvar(payload_rascunho, arquivo_nome, "Atualização de Rascunho"):
+            st.info("Rascunho salvo! Você pode fechar e continuar editando depois.")
