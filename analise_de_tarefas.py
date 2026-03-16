@@ -2027,13 +2027,26 @@ def carregar(arquivo):
     return {}, None
 
 def salvar(dados, arquivo, sha=None):
-    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
-    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github+json"}
+    url = f"https://api.github.com/repos/lucianohcl/formulario-colaborador/contents/{arquivo}"
+    headers = {
+        "Authorization": f"token {TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+
     conteudo = base64.b64encode(json.dumps(dados, indent=4).encode()).decode()
-    payload = {"message": "Salvar rascunho do formulário","content": conteudo}
+
+    payload = {
+        "message": "Salvar rascunho do formulário",
+        "content": conteudo,
+        "branch": "main"  # branch explícita
+    }
+
+    # Somente adicionar sha se for atualização
     if sha:
         payload["sha"] = sha
+
     r = requests.put(url, headers=headers, json=payload)
+
     if r.status_code in [200, 201]:
         return r.json()["content"]["sha"]
     else:
