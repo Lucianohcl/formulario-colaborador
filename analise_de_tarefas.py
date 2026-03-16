@@ -2072,22 +2072,25 @@ primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo = f"rascunho_{nome_limpo}.json"
+
+    # Carrega dados se existir
     dados, sha = carregar(arquivo)
 
     # ================================
     # PRIMEIRA VEZ
     # ================================
     if primeira_vez:
-        if dados:
+
+        if dados:  # Arquivo já existe
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
-        else:
-            # Inicializa flag de sessão
+
+        else:  # Arquivo não existe
             if "cadastrado" not in st.session_state:
                 st.session_state.cadastrado = False
 
             if not st.session_state.cadastrado:
                 if st.button("Cadastrar Nome"):
-                    novo_sha = salvar({}, arquivo)
+                    novo_sha = salvar({}, arquivo)  # Criar arquivo vazio no GitHub
                     if novo_sha:
                         st.session_state.cadastrado = True
                         st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
@@ -2095,14 +2098,15 @@ if nome_usuario:
                 st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
 
     # ================================
-    # JÁ CADASTRADO OU FLUXO NORMAL
+    # JÁ CADASTRADO
     # ================================
-    if st.session_state.get("cadastrado", False) or not primeira_vez:
-        dados, sha = carregar(arquivo)  # Carrega rascunho existente ou vazio
-        if not dados and not primeira_vez:
+    else:
+        if not dados:
             st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
+            st.stop()
         else:
             st.success("Rascunho carregado!")
+            # Aqui continua o restante do formulário usando 'dados' e 'sha'
             
 
         # ================================
