@@ -2057,7 +2057,7 @@ nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 
 if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ","_")
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo = f"rascunho_{nome_limpo}.json"
 
     # ================================
@@ -2069,12 +2069,18 @@ if nome_usuario:
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
-            if st.button("Cadastrar Nome"):
-                novo_sha = salvar({}, arquivo)
-                st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
-                st.rerun()
+            if "cadastrado" not in st.session_state:
+                st.session_state.cadastrado = False
+
+            if not st.session_state.cadastrado:
+                if st.button("Cadastrar Nome"):
+                    novo_sha = salvar({}, arquivo)
+                    if novo_sha:
+                        st.session_state.cadastrado = True
+                        st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
+                        st.experimental_rerun()  # Recarrega a página para continuar
             else:
-                st.info("Clique em 'Cadastrar Nome' para registrar seu nome antes de prosseguir.")
+                st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
 
     # ================================
     # JÁ CADASTRADO
