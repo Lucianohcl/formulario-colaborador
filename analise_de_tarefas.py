@@ -1991,17 +1991,10 @@ REPO = f"{USER}/analise_formularios"
 # ================================
 # LISTAS
 # ================================
-lista_frequencia = [
-    "DVD",
-    "D",
-    "S",
-    "Q",
-    "M",
-    "T",
-    "A"
-]
+lista_frequencia = ["DVD","D","S","Q","M","T","A"]
 lista_horas = [f"{i} h" for i in range(0,13)]
 lista_minutos = [f"{i} min" for i in range(0,60,5)]
+
 # ================================
 # PERGUNTAS DISC
 # ================================
@@ -2055,34 +2048,71 @@ def salvar(dados, arquivo, sha=None):
     if sha:
         payload["sha"] = sha
 
-    requests.put(url, headers=headers, json=payload)
+    r = requests.put(url, headers=headers, json=payload)
+
+    if r.status_code in [200,201]:
+        return r.json()["content"]["sha"]
+    else:
+        st.error("Erro ao salvar no GitHub")
+        return None
 
 
 # ================================
 # INTERFACE
 # ================================
 
+st.title("📋 Rascunho da Análise de Atividades")
 
-if "acesso_rascunho" not in st.session_state:
-    st.session_state.acesso_rascunho = False
+st.warning("""
+⚠️ **ATENÇÃO**
 
-if st.button("📝 Iniciar ou Continuar Rascunho"):
-    st.session_state.acesso_rascunho = True
+• Utilize **seu NOME COMPLETO** para acessar o rascunho  
+• O rascunho ficará salvo automaticamente no sistema  
+• Caso seja sua primeira vez, cadastre seu nome antes de iniciar  
+""")
 
+st.markdown("### 🔐 Acesso ao Rascunho")
 
-if st.session_state.acesso_rascunho:
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 
-    usuario = st.text_input("Usuário")
-    senha = st.text_input("Senha", type="password")
+primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 
-    if usuario and senha:
+if nome_usuario:
 
-        arquivo = f"rascunho_{usuario.lower()}_{senha}.json"
+    nome_limpo = nome_usuario.strip().lower().replace(" ","_")
+    arquivo = f"rascunho_{nome_limpo}.json"
 
-        dados, sha = carregar(arquivo)
+    dados, sha = carregar(arquivo)
+
+    # ================================
+    # CADASTRO
+    # ================================
+    if primeira_vez:
+
+        if st.button("Cadastrar Nome"):
+
+            if dados:
+                st.warning("Este nome já está cadastrado.")
+            else:
+
+                novo_sha = salvar({}, arquivo)
+
+                st.success("Nome cadastrado! Agora entre normalmente.")
+                st.rerun()
+
+    # ================================
+    # FORMULÁRIO
+    # ================================
+    else:
+
+        if not dados:
+            st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
+            st.stop()
+
+        st.success("Rascunho carregado!")
 
         # ================================
-        # DADOS DE IDENTIFICAÇÃO
+        # IDENTIFICAÇÃO
         # ================================
         st.subheader("👤 Dados de Identificação")
 
@@ -2104,10 +2134,24 @@ if st.session_state.acesso_rascunho:
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo",""))
 
         # ================================
+        # LEGENDA FREQUÊNCIA
+        # ================================
+        st.info("""
+📋 **LEGENDA DE FREQUÊNCIA**
+
+DVD = Diário várias vezes  
+D = Diário  
+S = Semanal  
+Q = Quinzenal  
+M = Mensal  
+T = Trimestral  
+A = Anual
+""")
+
+        # ================================
         # ATIVIDADES
         # ================================
-        st.markdown("---")
-        st.subheader("🔹 Atividades")
+        st.subheader("🔹 Atividades Executadas")
 
         df_ativ = pd.DataFrame(
             dados.get(
@@ -2125,14 +2169,12 @@ if st.session_state.acesso_rascunho:
             },
             hide_index=True,
             num_rows="fixed",
-            use_container_width=True,
-            key="rascunho_editor_atividades"
+            use_container_width=True
         )
 
         # ================================
         # DIFICULDADES
         # ================================
-        st.markdown("---")
         st.subheader("⚠️ Dificuldades")
 
         df_dif = pd.DataFrame(
@@ -2151,14 +2193,12 @@ if st.session_state.acesso_rascunho:
             },
             hide_index=True,
             num_rows="fixed",
-            use_container_width=True,
-            key="rascunho_editor_dificuldades"
+            use_container_width=True
         )
 
         # ================================
         # SUGESTÕES
         # ================================
-        st.markdown("---")
         st.subheader("💡 Sugestões")
 
         df_sug = pd.DataFrame(
@@ -2177,14 +2217,12 @@ if st.session_state.acesso_rascunho:
             },
             hide_index=True,
             num_rows="fixed",
-            use_container_width=True,
-            key="rascunho_editor_sugestoes"
+            use_container_width=True
         )
 
         # ================================
         # DISC
         # ================================
-        st.markdown("---")
         st.subheader("🧠 Questionário DISC")
 
         respostas = {}
@@ -2197,7 +2235,6 @@ if st.session_state.acesso_rascunho:
                 f"{i}. {pergunta}",
                 ["A","B","C","D"],
                 horizontal=True,
-                key=f"rascunho_disc_{i}",
                 index=["A","B","C","D"].index(valor) if valor else None
             )
 
@@ -2223,9 +2260,11 @@ if st.session_state.acesso_rascunho:
                 **respostas
             }
 
-            salvar(payload, arquivo, sha)
+            novo_sha = salvar(payload, arquivo, sha)
 
-            st.success("Rascunho salvo no GitHub!")
+            if novo_sha:
+                st.success("Rascunho salvo com sucesso!")
+                st.rerun()
 
 
 
