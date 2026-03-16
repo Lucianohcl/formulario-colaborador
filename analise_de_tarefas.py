@@ -1972,3 +1972,183 @@ if st.session_state.get("pagina") == "disc":
 
     else:
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
+
+
+# app.py
+import streamlit as st
+import json
+import base64
+import requests
+
+# ===============================
+# CONFIGURAÇÃO INICIAL
+# ===============================
+st.set_page_config(page_title="Sistema de Formulário", page_icon="📊", layout="wide")
+
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "home"
+if "ultimo_rascunho_enviado" not in st.session_state:
+    st.session_state["ultimo_rascunho_enviado"] = {}
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []
+
+# ===============================
+# GITHUB CONFIG
+# ===============================
+GITHUB_USER = st.secrets["DB_USERNAME"]
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO = f"{GITHUB_USER}/analise_formularios"
+ARQUIVO_OFICIAL = "dados/formularios.json"
+PASTA_RASCUNHOS = "dados/rascunhos"  # cada rascunho: rascunho_<nome>.json
+
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+# ===============================
+# FUNÇÕES GITHUB
+# ===============================
+def carregar_json_github(path):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    r = requests.get(url, headers=HEADERS)
+    if r.status_code == 200:
+        conteudo = r.json()
+        return json.loads(base64.b64decode(conteudo["content"]).decode()), conteudo.get("sha")
+    return None, None
+
+def salvar_json_github(path, dados, msg, sha=None):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    conteudo = base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
+    payload = {"message": msg, "content": conteudo, "branch": "main"}
+    if sha:
+        payload["sha"] = sha
+    r = requests.put(url, headers=HEADERS, json=payload)
+    return r.status_code in [200, 201]
+
+def deletar_arquivo_github(path, sha, msg="Deletar arquivo"):
+    url = f"https://api.github.com/repos/{REPO}/contents/{path}"
+    payload = {"message": msg, "sha": sha, "branch": "main"}
+    r = requests.delete(url, headers=HEADERS, json=payload)
+    return r.status_code in [200, 204]
+
+# ===============================
+# SIDEBAR
+# ===============================
+st.sidebar.title("📌 Menu")
+btn_home = st.sidebar.button("🏠 Home")
+btn_form_rascunho = st.sidebar.button("📝 Preencher Rascunho")
+btn_form_oficial = st.sidebar.button("📋 Formulário Oficial")
+
+if btn_home:
+    st.session_state["pagina"] = "home"
+elif btn_form_rascunho:
+    st.session_state["pagina"] = "rascunho"
+elif btn_form_oficial:
+    st.session_state["pagina"] = "formulario"
+
+# ===============================
+# PÁGINA HOME
+# ===============================
+if st.session_state["pagina"] == "home":
+    st.title("🏠 Home")
+    st.write("Use o menu lateral para acessar Rascunho ou Formulário Oficial.")
+
+# ===============================
+# PÁGINA RASCUNHO
+# ===============================
+elif st.session_state["pagina"] == "rascunho":
+    st.title("📝 Rascunho do Formulário")
+    st.info("Você pode salvar aos poucos. Nome e senha são obrigatórios.")
+
+    nome_colab = st.text_input("Nome do Colaborador")
+    senha = st.text_input("Senha", type="password")
+
+    rascunho_path = f"{PASTA_RASCUNHOS}/rascunho_{nome_colab}.json"
+
+    # Carregar rascunho existente
+    rascunho_existente, sha = carregar_json_github(rascunho_path) if nome_colab else (None, None)
+
+    if rascunho_existente and rascunho_existente.get("senha") != senha and senha:
+        st.error("Senha incorreta para este rascunho!")
+        st.stop()
+
+    # Campos
+    setor = st.text_input("Setor", value=rascunho_existente.get("setor", "") if rascunho_existente else "")
+    cargo = st.text_input("Cargo", value=rascunho_existente.get("cargo", "") if rascunho_existente else "")
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=rascunho_existente.get("cursos", "") if rascunho_existente else "")
+    objetivo = st.text_area("Trabalho e principal objetivo", value=rascunho_existente.get("objetivo", "") if rascunho_existente else "")
+
+    salvar_rascunho = st.button("💾 Salvar Rascunho")
+
+    if salvar_rascunho:
+        if not nome_colab or not senha:
+            st.error("Preencha nome e senha obrigatoriamente!")
+        else:
+            dados_rascunho = {
+                "nome": nome_colab,
+                "senha": senha,
+                "setor": setor,
+                "cargo": cargo,
+                "cursos": cursos,
+                "objetivo": objetivo
+            }
+            ok = salvar_json_github(rascunho_path, dados_rascunho, msg=f"Salvar rascunho {nome_colab}", sha=sha)
+            if ok:
+                st.success("Rascunho salvo na nuvem com sucesso!")
+
+    enviar_oficial = st.button("🚀 Enviar para Formulário Oficial")
+    if enviar_oficial:
+        if not nome_colab or not senha:
+            st.error("Nome e senha obrigatórios!")
+        elif not rascunho_existente:
+            st.error("Rascunho não encontrado!")
+        else:
+            dados_form = {
+                "nome": rascunho_existente["nome"],
+                "setor": rascunho_existente["setor"],
+                "cargo": rascunho_existente["cargo"],
+                "cursos": rascunho_existente["cursos"],
+                "objetivo": rascunho_existente["objetivo"]
+            }
+            # Salvar no JSON oficial
+            oficiais, sha_oficial = carregar_json_github(ARQUIVO_OFICIAL)
+            if not oficiais:
+                oficiais = []
+            oficiais.append(dados_form)
+            salvar_json_github(ARQUIVO_OFICIAL, oficiais, msg=f"Novo formulário {nome_colab}", sha=sha_oficial)
+            # Deletar rascunho
+            if sha:
+                deletar_arquivo_github(rascunho_path, sha, msg=f"Deletar rascunho {nome_colab}")
+            st.session_state["ultimo_rascunho_enviado"] = dados_form
+            st.success("Rascunho enviado para formulário oficial!")
+
+# ===============================
+# FORMULÁRIO OFICIAL
+# ===============================
+elif st.session_state["pagina"] == "formulario":
+    st.title("📋 Formulário Oficial")
+    preenchimento_inicial = st.session_state.get("ultimo_rascunho_enviado", {})
+
+    with st.form("form_oficial"):
+        nome_colab = st.text_input("Nome do Colaborador", value=preenchimento_inicial.get("nome", ""))
+        setor = st.text_input("Setor", value=preenchimento_inicial.get("setor", ""))
+        cargo = st.text_input("Cargo", value=preenchimento_inicial.get("cargo", ""))
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=preenchimento_inicial.get("cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", value=preenchimento_inicial.get("objetivo", ""))
+
+        enviar_oficial = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
+        if enviar_oficial:
+            dados_form = {
+                "nome": nome_colab,
+                "setor": setor,
+                "cargo": cargo,
+                "cursos": cursos,
+                "objetivo": objetivo
+            }
+            # Salvar no JSON oficial
+            oficiais, sha_oficial = carregar_json_github(ARQUIVO_OFICIAL)
+            if not oficiais:
+                oficiais = []
+            oficiais.append(dados_form)
+            salvar_json_github(ARQUIVO_OFICIAL, oficiais, msg=f"Novo formulário {nome_colab}", sha=sha_oficial)
+            st.session_state["ultimo_rascunho_enviado"] = {}
+            st.success("Formulário oficial enviado com sucesso!")
