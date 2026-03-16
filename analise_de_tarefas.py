@@ -2033,9 +2033,10 @@ def deletar_arquivo_github(path, sha, msg="Deletar arquivo"):
 # SIDEBAR
 # ===============================
 st.sidebar.title("📌 Menu")
-btn_home = st.sidebar.button("🏠 Home")
-btn_form_rascunho = st.sidebar.button("📝 Preencher Rascunho")
-btn_form_oficial = st.sidebar.button("📋 Formulário Oficial")
+
+btn_home = st.sidebar.button("🏠 Home", key="sidebar_home")
+btn_form_rascunho = st.sidebar.button("📝 Preencher Rascunho", key="sidebar_rascunho")
+btn_form_oficial = st.sidebar.button("📋 Formulário Oficial", key="sidebar_oficial")
 
 if btn_home:
     st.session_state["pagina"] = "home"
