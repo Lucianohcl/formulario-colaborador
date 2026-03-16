@@ -2037,6 +2037,7 @@ def formulario_oficial():
     
     if st.button("📝 Gerar Rascunho"):
         st.session_state["pagina"] = "rascunho"
+        st.rerun()
 
 # ============================================================
 # 5. FORMULÁRIO RASCUNHO
