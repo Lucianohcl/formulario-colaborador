@@ -1974,23 +1974,30 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
+```python
 import streamlit as st
 import pandas as pd
 import json
 import base64
 import requests
 
+# ================================
 # CONFIG GITHUB
+# ================================
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
 REPO = f"{USER}/analise_formularios"
 
+# ================================
 # LISTAS
+# ================================
 lista_frequencia = ["Diário","Semanal","Mensal","Esporádico"]
 lista_horas = [str(i) for i in range(0,13)]
 lista_minutos = [str(i) for i in range(0,60,5)]
 
+# ================================
 # PERGUNTAS DISC
+# ================================
 perguntas_disc = [
 "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
 "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2018,7 +2025,9 @@ perguntas_disc = [
 "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+# ================================
 # FUNÇÕES GITHUB
+# ================================
 def carregar(arquivo):
 
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
@@ -2044,7 +2053,7 @@ def salvar(dados, arquivo, sha=None):
     ).decode()
 
     payload = {
-        "message": "Salvar rascunho",
+        "message": "Salvar rascunho do formulário",
         "content": conteudo
     }
 
@@ -2054,19 +2063,21 @@ def salvar(dados, arquivo, sha=None):
     requests.put(url, headers=headers, json=payload)
 
 
+# ================================
 # INTERFACE
-st.title("📋 **Rascunho da Análise de Atividades**")
+# ================================
+st.title("📋 Rascunho da Análise")
 
-if "acesso" not in st.session_state:
-    st.session_state.acesso = False
+if "acesso_rascunho" not in st.session_state:
+    st.session_state.acesso_rascunho = False
 
-if st.button("📝 Iniciar / Continuar Rascunho"):
-    st.session_state.acesso = True
+if st.button("📝 Iniciar ou Continuar Rascunho"):
+    st.session_state.acesso_rascunho = True
 
 
-if st.session_state.acesso:
+if st.session_state.acesso_rascunho:
 
-    nome = st.text_input("Nome")
+    nome = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
 
     if nome and senha:
@@ -2075,112 +2086,129 @@ if st.session_state.acesso:
 
         dados, sha = carregar(arquivo)
 
-        st.subheader("👤 Dados do Colaborador")
+        # ================================
+        # DADOS
+        # ================================
+        st.subheader("👤 Dados")
 
         nome_form = st.text_input("Nome completo", dados.get("nome",""))
         setor = st.text_input("Setor", dados.get("setor",""))
         cargo = st.text_input("Cargo", dados.get("cargo",""))
 
+        # ================================
         # ATIVIDADES
+        # ================================
         st.markdown("---")
-        st.subheader("🔹 Atividades Executadas")
+        st.subheader("🔹 Atividades")
 
         df_ativ = pd.DataFrame(
             dados.get(
                 "atividades",
-                [{"Atividade Descrita":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]
+                [{"Atividade":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]
             )
         )
 
         edit_ativ = st.data_editor(
             df_ativ,
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
             },
             hide_index=True,
             num_rows="fixed",
             use_container_width=True,
-            key="ativ_editor"
+            key="rascunho_editor_atividades"
         )
 
+        # ================================
         # DIFICULDADES
+        # ================================
         st.markdown("---")
         st.subheader("⚠️ Dificuldades")
 
         df_dif = pd.DataFrame(
             dados.get(
                 "dificuldades",
-                [{"Dificuldade":"","Setor/Parceiro":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]
+                [{"Dificuldade":"","Setor":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]
             )
         )
 
         edit_dif = st.data_editor(
             df_dif,
             column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
             },
             hide_index=True,
             num_rows="fixed",
             use_container_width=True,
-            key="dif_editor"
+            key="rascunho_editor_dificuldades"
         )
 
+        # ================================
         # SUGESTÕES
+        # ================================
         st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria")
+        st.subheader("💡 Sugestões")
 
         df_sug = pd.DataFrame(
             dados.get(
                 "sugestoes",
-                [{"Sugestão":"","Impacto Esperado":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]
+                [{"Sugestão":"","Impacto":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]
             )
         )
 
         edit_sug = st.data_editor(
             df_sug,
             column_config={
-                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
-                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
-                "Frequência Impacto": st.column_config.SelectboxColumn("Frequência Impacto", options=lista_frequencia),
+                "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+                "Frequência Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
             },
             hide_index=True,
             num_rows="fixed",
             use_container_width=True,
-            key="sug_editor"
+            key="rascunho_editor_sugestoes"
         )
 
+        # ================================
         # DISC
+        # ================================
         st.markdown("---")
         st.subheader("🧠 Questionário DISC")
 
         respostas = {}
 
-        for i,p in enumerate(perguntas_disc,1):
+        for i, pergunta in enumerate(perguntas_disc, 1):
+
+            valor = dados.get(f"disc_{i}")
 
             respostas[f"disc_{i}"] = st.radio(
-                f"{i}. {p}",
+                f"{i}. {pergunta}",
                 ["A","B","C","D"],
                 horizontal=True,
                 key=f"rascunho_disc_{i}",
-                index=["A","B","C","D"].index(dados.get(f"disc_{i}","A")) if dados.get(f"disc_{i}") else None
+                index=["A","B","C","D"].index(valor) if valor else None
             )
 
+        # ================================
+        # SALVAR
+        # ================================
         if st.button("💾 Salvar Rascunho"):
 
             payload = {
-                "nome":nome_form,
-                "setor":setor,
-                "cargo":cargo,
-                "atividades":edit_ativ.to_dict("records"),
-                "dificuldades":edit_dif.to_dict("records"),
-                "sugestoes":edit_sug.to_dict("records"),
+                "nome": nome_form,
+                "setor": setor,
+                "cargo": cargo,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
                 **respostas
             }
 
             salvar(payload, arquivo, sha)
 
-            st.success("Rascunho salvo com sucesso!")
+            st.success("Rascunho salvo no GitHub!")
+
