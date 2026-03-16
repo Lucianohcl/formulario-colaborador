@@ -2081,7 +2081,7 @@ def formulario_rascunho():
                 "objetivo": objetivo
             })
             # Salva no GitHub
-            salvar_github([dados_rascunho], f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json", f"Rascunho {nome}")
+            salvar_github(dados_rascunho, f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json", f"Rascunho {nome}")
             st.success("Rascunho salvo com sucesso!")
 
         if st.button("🚀 Enviar Rascunho para Formulário Oficial"):
@@ -2090,11 +2090,10 @@ def formulario_rascunho():
             salvar_github(dados_oficial, ARQUIVO_OFICIAL, f"Rascunho {nome} enviado para oficial", sha)
             st.success("Rascunho enviado para formulário oficial!")
             # Deleta rascunho
-            if os.path.exists(arquivo_rascunho):
-                os.remove(arquivo_rascunho)
             st.session_state.pop("rascunho_nome", None)
             st.session_state.pop("rascunho_senha", None)
             st.session_state["pagina"] = "formulario"
+            st.rerun()
 
 # ============================================================
 # 6. FLUXO PRINCIPAL
@@ -2104,5 +2103,8 @@ if "pagina" not in st.session_state:
 
 if st.session_state["pagina"] == "formulario":
     formulario_oficial()
+    st.stop()
+
 elif st.session_state["pagina"] == "rascunho":
     formulario_rascunho()
+    st.stop()
