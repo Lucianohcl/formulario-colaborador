@@ -2053,22 +2053,35 @@ primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
-    dados, _ = carregar(arquivo_nome)
+    
+    # Busca os dados no GitHub
+    dados, sha_atual = carregar(arquivo_nome)
 
     if primeira_vez:
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
-            if st.button("Cadastrar Nome"):
-                if salvar({}, arquivo_nome, "Cadastro inicial"):
-                    st.success("Nome cadastrado! Agora preencha os dados.")
-                    st.rerun()
+            if st.button("✅ Cadastrar Nome"):
+                # Criamos um arquivo com um conteúdo básico para o Git não rejeitar
+                payload_inicial = {"status": "iniciado", "nome": nome_usuario}
+                if salvar(payload_inicial, arquivo_nome, "Cadastro inicial"):
+                    st.success("Nome cadastrado com sucesso!")
+                    # FORÇAMOS O RECARREGAMENTO PARA O FORMULÁRIO APARECER
+                    st.cache_data.clear() 
+                    st.rerun() 
     else:
-        if not dados and not primeira_vez:
-            st.error("Nome não encontrado. Marque a opção de cadastro.")
+        # Se não carregou dados, o formulário não abre. 
+        # Esta é a barreira que está impedindo você de ver o form.
+        if not dados:
+            st.error("Nome não encontrado. Se você acabou de cadastrar, aguarde 2 segundos e tente digitar o nome novamente.")
             st.stop()
         
-        st.success("Rascunho carregado!")
+        # --- SE CHEGOU AQUI, O FORMULÁRIO APARECE ---
+        st.success(f"📋 Formulário Liberado: {nome_usuario}")
+
+        # --- SEUS CAMPOS (DADOS DE IDENTIFICAÇÃO) ---
+        st.subheader("👤 Dados de Identificação")
+        # ... resto do seu código de inputs ...
 
         # --- CAMPOS DE IDENTIFICAÇÃO ---
         st.subheader("👤 Dados de Identificação")
