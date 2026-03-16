@@ -2072,51 +2072,38 @@ primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo = f"rascunho_{nome_limpo}.json"
-
-    # Inicializa flag de cadastro na sessão
-    if "cadastrado" not in st.session_state:
-        st.session_state.cadastrado = False
+    dados, sha = carregar(arquivo)
 
     # ================================
     # PRIMEIRA VEZ
     # ================================
     if primeira_vez:
-        dados, sha = carregar(arquivo)  # Checa se já existe
-
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
-            # Se ainda não clicou em cadastrar
+            # Inicializa flag de sessão
+            if "cadastrado" not in st.session_state:
+                st.session_state.cadastrado = False
+
             if not st.session_state.cadastrado:
                 if st.button("Cadastrar Nome"):
-                    novo_sha = salvar({}, arquivo)  # Cria arquivo vazio no GitHub
+                    novo_sha = salvar({}, arquivo)
                     if novo_sha:
                         st.session_state.cadastrado = True
-                        st.session_state.dados = {}  # Inicializa rascunho vazio
-                        st.session_state.sha = novo_sha
                         st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
-                        st.experimental_rerun()  # Recarrega a página para continuar
             else:
                 st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
 
     # ================================
-    # JÁ CADASTRADO / FLUXO NORMAL
+    # JÁ CADASTRADO OU FLUXO NORMAL
     # ================================
-    else:
-        # Usa dados da sessão se acabou de cadastrar
-        if st.session_state.get("cadastrado"):
-            dados = st.session_state.get("dados", {})
-            sha = st.session_state.get("sha")
-            st.success("Rascunho carregado! Você pode preencher agora.")
+    if st.session_state.get("cadastrado", False) or not primeira_vez:
+        dados, sha = carregar(arquivo)  # Carrega rascunho existente ou vazio
+        if not dados and not primeira_vez:
+            st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
         else:
-            # Carrega do GitHub
-            dados, sha = carregar(arquivo)
-            if not dados:
-                st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
-                st.stop()
-            else:
-                st.success("Rascunho carregado!")
-            # Aqui você continua com o seu formulário completo
+            st.success("Rascunho carregado!")
+            
 
         # ================================
         # DADOS DE IDENTIFICAÇÃO
