@@ -2059,12 +2059,13 @@ primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ","_")
     arquivo = f"rascunho_{nome_limpo}.json"
-    dados, sha = carregar(arquivo)
 
     # ================================
     # PRIMEIRA VEZ
     # ================================
     if primeira_vez:
+        dados, sha = carregar(arquivo)  # Checa se já existe
+
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
@@ -2073,17 +2074,19 @@ if nome_usuario:
                 st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
                 st.rerun()
             else:
-                st.error("Você precisa clicar em 'Cadastrar Nome' para registrar seu nome antes de prosseguir.")
+                st.info("Clique em 'Cadastrar Nome' para registrar seu nome antes de prosseguir.")
 
     # ================================
     # JÁ CADASTRADO
     # ================================
     else:
+        dados, sha = carregar(arquivo)  # Carrega rascunho existente
         if not dados:
             st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
             st.stop()
-
-        st.success("Rascunho carregado!")
+        else:
+            st.success("Rascunho carregado!")
+            # Aqui continua seu formulário completo
 
         # ================================
         # DADOS DE IDENTIFICAÇÃO
