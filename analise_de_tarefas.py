@@ -2097,7 +2097,7 @@ if st.session_state.acesso:
                 f"{i}. {p}",
                 ["A","B","C","D"],
                 horizontal=True,
-                key=f"disc_{i}",
+                key=f"rascunho_disc_{i}",
                 index=["A","B","C","D"].index(dados.get(f"disc_{i}","A")) if dados.get(f"disc_{i}") else None
             )
 
