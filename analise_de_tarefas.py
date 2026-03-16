@@ -2061,19 +2061,28 @@ primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
+    
+    # Tenta carregar. Se não existir, retorna None explicitamente
     dados, _ = carregar(arquivo_nome)
 
     if primeira_vez:
-        if dados:
-            st.warning("Usuário já existe.")
-        elif st.button("Criar Rascunho"):
-            if salvar({"nome": nome_usuario}, arquivo_nome, "Início"):
-                st.success("Cadastrado! Desmarque a caixa para abrir.")
-                st.rerun()
+        # Agora checamos se o conteúdo de dados realmente tem algo (como a chave 'nome')
+        if dados and "nome" in dados:
+            st.warning("⚠️ Este usuário já possui um rascunho. Desmarque a opção de cadastro para editar.")
+        else:
+            if st.button("✅ Criar meu Rascunho"):
+                if salvar({"nome": nome_usuario}, arquivo_nome, "Início"):
+                    st.success("🚀 Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+                    st.balloons()
     else:
-        if not dados:
-            st.error("Nome não encontrado.")
+        # Se 'dados' estiver vazio ou não tiver a chave 'nome', ele barra
+        if not dados or "nome" not in dados:
+            st.error("❌ Nome não encontrado. Se é novo aqui, marque a opção de cadastro acima.")
             st.stop()
+
+        # --- SE CHEGOU AQUI, O FORMULÁRIO ABRE ---
+        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
+        # ... resto do código (Identificação, DISC, etc)
 
         # IDENTIFICAÇÃO
         st.subheader("👤 Identificação Profissional")
