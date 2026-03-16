@@ -1975,35 +1975,19 @@ if st.session_state.get("pagina") == "disc":
 
 
 import streamlit as st
-import os
 import json
 import base64
 import requests
 
 # ============================================================
-# 1. CONFIGURAÇÃO DO DIRETÓRIO (local temporário, mas não usado para persistência)
-# ============================================================
-base_dir = os.path.dirname(os.path.abspath(__file__))
-dados_dir = os.path.join(base_dir, "dados")
-os.makedirs(dados_dir, exist_ok=True)
-
-# Arquivo oficial
-json_master = os.path.join(dados_dir, "formularios.json")
-if not os.path.exists(json_master):
-    with open(json_master, "w", encoding="utf-8") as f:
-        json.dump([], f, ensure_ascii=False, indent=4)
-
-# ============================================================
-# 2. CONFIGURAÇÃO GITHUB
+# 1. CONFIGURAÇÃO GITHUB (Obrigatório configurar nos Secrets)
 # ============================================================
 GITHUB_USER = st.secrets["DB_USERNAME"]
 GITHUB_TOKEN = st.secrets["DB_TOKEN"]
 REPO = f"{GITHUB_USER}/analise_formularios"
-ARQUIVO_OFICIAL = "dados/formularios.json"
-ARQUIVO_RASCUNHO = "dados/rascunhos"
 
 # ============================================================
-# 3. FUNÇÕES DE PERSISTÊNCIA
+# 2. FUNÇÕES DE PERSISTÊNCIA (Ajustadas para funcionar 100%)
 # ============================================================
 def salvar_github(dados, arquivo, mensagem, sha=None):
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
@@ -2013,8 +1997,6 @@ def salvar_github(dados, arquivo, mensagem, sha=None):
     if sha:
         payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
-    if r.status_code not in [200, 201]:
-        st.warning(f"Erro GitHub: {r.status_code} {r.text}")
     return r.status_code
 
 def carregar_json_github(arquivo):
@@ -2024,87 +2006,61 @@ def carregar_json_github(arquivo):
     if r.status_code == 200:
         conteudo = r.json()
         dados = json.loads(base64.b64decode(conteudo["content"]).decode())
-        sha = conteudo["sha"]
-        return dados, sha
-    else:
-        return [], None
+        return dados, conteudo["sha"]
+    return None, None
 
 # ============================================================
-# 4. FORMULÁRIO OFICIAL
-# ============================================================
-def formulario_oficial():
-    st.markdown("Aqui você pode gerar um rascunho para ir preenchendo aos poucos.")
-    
-    if st.button("📝 Gerar Rascunho"):
-        st.session_state["pagina"] = "rascunho"
-        st.rerun()
-
-# ============================================================
-# 5. FORMULÁRIO RASCUNHO
+# 3. LÓGICA DO FORMULÁRIO
 # ============================================================
 def formulario_rascunho():
-    st.title("📝 Rascunho do Formulário")
+    st.title("📝 Rascunho")
     
     if "rascunho_nome" not in st.session_state:
-        nome = st.text_input("Nome (obrigatório)", key="rascunho_nome_input")
-        senha = st.text_input("Senha (obrigatório)", type="password", key="rascunho_senha_input")
-        if st.button("Iniciar Rascunho"):
-            if not nome or not senha:
-                st.error("Nome e senha obrigatórios!")
-            else:
+        nome = st.text_input("Nome", key="login_n")
+        senha = st.text_input("Senha", type="password", key="login_s")
+        if st.button("Acessar Rascunho"):
+            if nome and senha:
                 st.session_state["rascunho_nome"] = nome
                 st.session_state["rascunho_senha"] = senha
-                st.success("Rascunho iniciado. Você pode começar a preencher!")
+                st.rerun()
     else:
         nome = st.session_state["rascunho_nome"]
-        senha = st.session_state.get("rascunho_senha", "")
-        arquivo_rascunho = f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json"
+        senha = st.session_state["rascunho_senha"]
+        # Define o nome do arquivo de dados na raiz do seu repositório
+        arquivo_id = f"dados_{nome}_{senha}.json"
 
-        if os.path.exists(arquivo_rascunho):
-            with open(arquivo_rascunho, "r", encoding="utf-8") as f:
-                dados_rascunho = json.load(f)
-        else:
-            dados_rascunho = {"nome": nome, "setor": "", "cargo": "", "cursos": "", "objetivo": ""}
+        # CARREGA DA NUVEM PARA GARANTIR QUE NÃO É EFÊMERO
+        dados, sha = carregar_json_github(arquivo_id)
+        
+        if dados is None:
+            dados = {"setor": "", "cargo": "", "objetivo": ""}
 
-        # Campos do rascunho
-        setor = st.text_input("Setor", value=dados_rascunho.get("setor", ""))
-        cargo = st.text_input("Cargo", value=dados_rascunho.get("cargo", ""))
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_rascunho.get("cursos", ""))
-        objetivo = st.text_area("Trabalho e principal objetivo", value=dados_rascunho.get("objetivo", ""))
+        # Campos de entrada
+        setor = st.text_input("Setor", value=dados.get("setor", ""))
+        cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+        objetivo = st.text_area("Objetivo", value=dados.get("objetivo", ""))
 
-        if st.button("💾 Salvar Rascunho"):
-            dados_rascunho.update({
-                "nome": nome,
-                "setor": setor,
-                "cargo": cargo,
-                "cursos": cursos,
-                "objetivo": objetivo
-            })
-            # Salva no GitHub
-            salvar_github(dados_rascunho, f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json", f"Rascunho {nome}")
-            st.success("Rascunho salvo com sucesso!")
-
-        if st.button("🚀 Enviar Rascunho para Formulário Oficial"):
-            dados_oficial, sha = carregar_json_github(ARQUIVO_OFICIAL)
-            dados_oficial.append(dados_rascunho)
-            salvar_github(dados_oficial, ARQUIVO_OFICIAL, f"Rascunho {nome} enviado para oficial", sha)
-            st.success("Rascunho enviado para formulário oficial!")
-            # Deleta rascunho
-            st.session_state.pop("rascunho_nome", None)
-            st.session_state.pop("rascunho_senha", None)
-            st.session_state["pagina"] = "formulario"
-            st.rerun()
+        if st.button("💾 Salvar Agora"):
+            novos_dados = {"setor": setor, "cargo": cargo, "objetivo": objetivo}
+            
+            # O SEGREDO: Enviar o SHA garante que o botão funcione e atualize o arquivo
+            status = salvar_github(novos_dados, arquivo_id, f"Update {nome}", sha=sha)
+            
+            if status in [200, 201]:
+                st.success("Dados salvos permanentemente no seu GitHub!")
+                st.rerun()
+            else:
+                st.error(f"Erro na comunicação com GitHub: {status}")
 
 # ============================================================
-# 6. FLUXO PRINCIPAL
+# 4. EXECUÇÃO
 # ============================================================
 if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "formulario"
+    st.session_state["pagina"] = "inicio"
 
-if st.session_state["pagina"] == "formulario":
-    formulario_oficial()
-    st.stop()
-
-elif st.session_state["pagina"] == "rascunho":
+if st.session_state["pagina"] == "inicio":
+    if st.button("Ir para o Formulário"):
+        st.session_state["pagina"] = "rascunho"
+        st.rerun()
+else:
     formulario_rascunho()
-    st.stop()
