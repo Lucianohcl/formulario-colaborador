@@ -1986,78 +1986,62 @@ import requests
 # ================================
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
-REPO = f"{USER}/analise_formularios"
+REPO = "formulario-colaborador"
 
 # ================================
 # LISTAS
 # ================================
 lista_frequencia = ["DVD","D","S","Q","M","T","A"]
-lista_horas = [f"{i} h" for i in range(0,13)]
-lista_minutos = [f"{i} min" for i in range(0,60,5)]
+lista_horas = [f"{i} h" for i in range(0, 13)]
+lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
 # ================================
 # PERGUNTAS DISC
 # ================================
 perguntas_disc = [
-"Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-"Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-"Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-"No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-"Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-"Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-"Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-"Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-"Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-"Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-"Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-"Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
 ]
 
 # ================================
-# FUNÇÕES GITHUB
+# FUNÇÕES GITHUB SIMPLIFICADAS
 # ================================
 def carregar(arquivo):
-    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
+    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
     r = requests.get(url, headers=headers)
     if r.status_code == 200:
         data = r.json()
         conteudo = base64.b64decode(data["content"]).decode()
-        return json.loads(conteudo), data["sha"]
-    return {}, None
+        return json.loads(conteudo)
+    return {}
 
-def salvar(dados, arquivo, sha=None):
-    url = f"https://api.github.com/repos/lucianohcl/formulario-colaborador/contents/{arquivo}"
-    headers = {
-        "Authorization": f"token {TOKEN}",
-        "Accept": "application/vnd.github+json"
-    }
-
-    conteudo = base64.b64encode(json.dumps(dados, indent=4).encode()).decode()
-
-    payload = {
-        "message": "Salvar rascunho do formulário",
-        "content": conteudo,
-        "branch": "main"  # branch explícita
-    }
-
-    # Somente adicionar sha se for atualização
-    if sha:
-        payload["sha"] = sha
-
+def salvar(dados, arquivo, mensagem="Salvar rascunho"):
+    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
+    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github+json"}
+    conteudo = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode()).decode()
+    payload = {"message": mensagem, "content": conteudo, "branch": "main"}
     r = requests.put(url, headers=headers, json=payload)
-
     if r.status_code in [200, 201]:
-        return r.json()["content"]["sha"]
+        return True
     else:
         st.error(f"Erro GitHub: {r.status_code}")
         st.write(r.text)
-        return None
+        return False
 
 # ================================
 # INTERFACE
 # ================================
-
 st.warning("""
 ⚠️ **ATENÇÃO**
 • Utilize **seu NOME COMPLETO** para acessar o rascunho  
@@ -2065,53 +2049,30 @@ st.warning("""
 • Caso seja sua primeira vez, cadastre seu nome antes de iniciar
 """)
 
-# Entrada do nome
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo = f"rascunho_{nome_limpo}.json"
+    dados = carregar(arquivo)
 
-    # Carrega dados se existir
-    dados, sha = carregar(arquivo)
-
-    # ================================
-    # PRIMEIRA VEZ
-    # ================================
     if primeira_vez:
-
-        if dados:  # Arquivo já existe
+        if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
-
-        else:  # Arquivo não existe
-            if "cadastrado" not in st.session_state:
-                st.session_state.cadastrado = False
-
-            if not st.session_state.cadastrado:
-                if st.button("Cadastrar Nome"):
-                    novo_sha = salvar({}, arquivo)  # Criar arquivo vazio no GitHub
-                    if novo_sha:
-                        st.session_state.cadastrado = True
-                        st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
-            else:
-                st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
-
-    # ================================
-    # JÁ CADASTRADO
-    # ================================
+        else:
+            if st.button("Cadastrar Nome"):
+                if salvar({}, arquivo, "Cadastro inicial"):
+                    st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
     else:
         if not dados:
             st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
             st.stop()
-        else:
-            st.success("Rascunho carregado!")
-            # Aqui continua o restante do formulário usando 'dados' e 'sha'
-            
+        st.success("Rascunho carregado!")
 
-        # ================================
+        # ----------------------------
         # DADOS DE IDENTIFICAÇÃO
-        # ================================
+        # ----------------------------
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
@@ -2138,9 +2099,9 @@ T = Trimestral
 A = Anual
 """)
 
-        # ================================
+        # ----------------------------
         # ATIVIDADES
-        # ================================
+        # ----------------------------
         st.subheader("🔹 Atividades Executadas")
         df_ativ = pd.DataFrame(dados.get("atividades",[{"Atividade":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]))
         edit_ativ = st.data_editor(
@@ -2155,9 +2116,9 @@ A = Anual
             use_container_width=True
         )
 
-        # ================================
+        # ----------------------------
         # DIFICULDADES
-        # ================================
+        # ----------------------------
         st.subheader("⚠️ Dificuldades")
         df_dif = pd.DataFrame(dados.get("dificuldades",[{"Dificuldade":"","Setor":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]))
         edit_dif = st.data_editor(
@@ -2172,9 +2133,9 @@ A = Anual
             use_container_width=True
         )
 
-        # ================================
+        # ----------------------------
         # SUGESTÕES
-        # ================================
+        # ----------------------------
         st.subheader("💡 Sugestões")
         df_sug = pd.DataFrame(dados.get("sugestoes",[{"Sugestão":"","Impacto":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]))
         edit_sug = st.data_editor(
@@ -2189,9 +2150,9 @@ A = Anual
             use_container_width=True
         )
 
-        # ================================
+        # ----------------------------
         # DISC
-        # ================================
+        # ----------------------------
         st.subheader("🧠 Questionário DISC")
         respostas = {}
         for i, pergunta in enumerate(perguntas_disc,1):
@@ -2203,9 +2164,9 @@ A = Anual
                 index=["A","B","C","D"].index(valor) if valor else None
             )
 
-        # ================================
+        # ----------------------------
         # SALVAR
-        # ================================
+        # ----------------------------
         if st.button("💾 Salvar Rascunho"):
             payload = {
                 "nome": nome,
@@ -2223,10 +2184,7 @@ A = Anual
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas
             }
-            novo_sha = salvar(payload, arquivo, sha)
-            if novo_sha:
+            if salvar(payload, arquivo, "Atualização de rascunho"):
                 st.success("Rascunho salvo com sucesso!")
-                st.rerun()
-
 
 
