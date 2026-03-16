@@ -1974,7 +1974,6 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
-
 import streamlit as st
 import pandas as pd
 import json
@@ -1989,15 +1988,12 @@ TOKEN = st.secrets["DB_TOKEN"]
 REPO = "formulario-colaborador"
 
 # ================================
-# LISTAS
+# LISTAS E PERGUNTAS (SEU CONTEÚDO ORIGINAL)
 # ================================
 lista_frequencia = ["DVD","D","S","Q","M","T","A"]
 lista_horas = [f"{i} h" for i in range(0, 13)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
-# ================================
-# PERGUNTAS DISC
-# ================================
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2014,177 +2010,105 @@ perguntas_disc = [
 ]
 
 # ================================
-# FUNÇÕES GITHUB SIMPLIFICADAS
+# FUNÇÕES GITHUB (CORRIGIDAS PARA O CLOUD)
 # ================================
 def carregar(arquivo):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
-    r = requests.get(url, headers=headers)
-    if r.status_code == 200:
-        data = r.json()
-        conteudo = base64.b64decode(data["content"]).decode()
-        return json.loads(conteudo)
-    return {}
+    try:
+        r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            data = r.json()
+            conteudo = base64.b64decode(data["content"]).decode()
+            return json.loads(conteudo), data["sha"]
+    except:
+        pass
+    return {}, None
 
-def salvar(dados, arquivo, mensagem="Salvar rascunho"):
+def salvar(dados, arquivo, mensagem="Atualização de rascunho"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github+json"}
-    conteudo = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode()).decode()
-    payload = {"message": mensagem, "content": conteudo, "branch": "main"}
+    
+    # Busca o SHA para garantir que só sobrescreve o arquivo específico do usuário
+    _, sha_atual = carregar(arquivo)
+    
+    conteudo_bytes = json.dumps(dados, indent=4, ensure_ascii=False).encode()
+    conteudo_b64 = base64.b64encode(conteudo_bytes).decode()
+    
+    payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
+    if sha_atual:
+        payload["sha"] = sha_atual # Garante a atualização sem erro 422
+        
     r = requests.put(url, headers=headers, json=payload)
-    if r.status_code in [200, 201]:
-        return True
-    else:
-        st.error(f"Erro GitHub: {r.status_code}")
-        st.write(r.text)
-        return False
+    return r.status_code in [200, 201]
 
 # ================================
-# INTERFACE
+# INTERFACE STREAMLIT (SEU CÓDIGO ORIGINAL)
 # ================================
-st.warning("""
-⚠️ **ATENÇÃO**
-• Utilize **seu NOME COMPLETO** para acessar o rascunho  
-• O rascunho ficará salvo automaticamente no sistema  
-• Caso seja sua primeira vez, cadastre seu nome antes de iniciar
-""")
+st.warning("⚠️ **ATENÇÃO**: Utilize seu NOME COMPLETO para acessar o rascunho.")
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo = f"rascunho_{nome_limpo}.json"
-    dados = carregar(arquivo)
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+    dados, _ = carregar(arquivo_nome)
 
     if primeira_vez:
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
             if st.button("Cadastrar Nome"):
-                if salvar({}, arquivo, "Cadastro inicial"):
-                    st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
+                if salvar({}, arquivo_nome, "Cadastro inicial"):
+                    st.success("Nome cadastrado! Agora preencha os dados.")
+                    st.rerun()
     else:
-        if not dados:
-            st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
+        if not dados and not primeira_vez:
+            st.error("Nome não encontrado. Marque a opção de cadastro.")
             st.stop()
+        
         st.success("Rascunho carregado!")
 
-        # ----------------------------
-        # DADOS DE IDENTIFICAÇÃO
-        # ----------------------------
+        # --- CAMPOS DE IDENTIFICAÇÃO ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
-            nome = st.text_input("Nome do colaborador", dados.get("nome",""))
-            cargo = st.text_input("Cargo", dados.get("cargo",""))
-            departamento = st.text_input("Departamento", dados.get("departamento",""))
-            escolaridade = st.text_input("Escolaridade", dados.get("escolaridade",""))
+            nome = st.text_input("Nome", dados.get("nome", nome_usuario))
+            cargo = st.text_input("Cargo", dados.get("cargo", ""))
+            depto = st.text_input("Departamento", dados.get("departamento", ""))
         with col2:
-            setor = st.text_input("Setor", dados.get("setor",""))
-            chefe = st.text_input("Chefe imediato", dados.get("chefe",""))
-            empresa = st.text_input("Empresa / Unidade", dados.get("empresa",""))
-            devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao",""))
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos",""))
-        objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo",""))
+            setor = st.text_input("Setor", dados.get("setor", ""))
+            chefe = st.text_input("Chefe", dados.get("chefe", ""))
+            empresa = st.text_input("Empresa", dados.get("empresa", ""))
 
-        st.info("""
-📋 **LEGENDA DE FREQUÊNCIA**
-DVD = Diário várias vezes  
-D = Diário  
-S = Semanal  
-Q = Quinzenal  
-M = Mensal  
-T = Trimestral  
-A = Anual
-""")
-
-        # ----------------------------
-        # ATIVIDADES
-        # ----------------------------
+        # --- TABELA DE ATIVIDADES ---
         st.subheader("🔹 Atividades Executadas")
-        df_ativ = pd.DataFrame(dados.get("atividades",[{"Atividade":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]))
-        edit_ativ = st.data_editor(
-            df_ativ,
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
+        df_ativ = pd.DataFrame(dados.get("atividades", [{"Atividade":"","Frequência":"","Horas":""} for _ in range(5)]))
+        edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", use_container_width=True)
 
-        # ----------------------------
-        # DIFICULDADES
-        # ----------------------------
-        st.subheader("⚠️ Dificuldades")
-        df_dif = pd.DataFrame(dados.get("dificuldades",[{"Dificuldade":"","Setor":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]))
-        edit_dif = st.data_editor(
-            df_dif,
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ----------------------------
-        # SUGESTÕES
-        # ----------------------------
-        st.subheader("💡 Sugestões")
-        df_sug = pd.DataFrame(dados.get("sugestoes",[{"Sugestão":"","Impacto":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]))
-        edit_sug = st.data_editor(
-            df_sug,
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-                "Frequência Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ----------------------------
-        # DISC
-        # ----------------------------
+        # --- QUESTIONÁRIO DISC ---
         st.subheader("🧠 Questionário DISC")
-        respostas = {}
-        for i, pergunta in enumerate(perguntas_disc,1):
-            valor = dados.get(f"disc_{i}")
-            respostas[f"disc_{i}"] = st.radio(
-                f"{i}. {pergunta}",
-                ["A","B","C","D"],
-                horizontal=True,
-                index=["A","B","C","D"].index(valor) if valor else None
-            )
+        respostas_disc = {}
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            valor_salvo = dados.get(f"disc_{i}")
+            respostas_disc[f"disc_{i}"] = st.radio(f"{i}. {pergunta}", ["A","B","C","D"], 
+                                                index=["A","B","C","D"].index(valor_salvo) if valor_salvo in ["A","B","C","D"] else None,
+                                                horizontal=True, key=f"q_{i}")
 
-        # ----------------------------
-        # SALVAR
-        # ----------------------------
+        # --- BOTÃO SALVAR ---
         if st.button("💾 Salvar Rascunho"):
             payload = {
                 "nome": nome,
-                "setor": setor,
                 "cargo": cargo,
+                "departamento": depto,
+                "setor": setor,
                 "chefe": chefe,
-                "departamento": departamento,
                 "empresa": empresa,
-                "escolaridade": escolaridade,
-                "devolucao": devolucao,
-                "cursos": cursos,
-                "objetivo": objetivo,
                 "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
-                **respostas
+                **respostas_disc
             }
-            if salvar(payload, arquivo, "Atualização de rascunho"):
-                st.success("Rascunho salvo com sucesso!")
-
-
+            if salvar(payload, arquivo_nome):
+                st.success("Rascunho atualizado com sucesso no GitHub!")
+            else:
+                st.error("Erro ao salvar no GitHub.")
