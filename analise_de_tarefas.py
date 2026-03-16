@@ -1981,7 +1981,7 @@ import base64
 import requests
 
 # ============================================================
-# 1. CONFIGURAÇÃO GITHUB (Obrigatório nos Secrets)
+# 1. CONFIGURAÇÃO GITHUB (Secrets do Streamlit)
 # ============================================================
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
@@ -2016,7 +2016,7 @@ perguntas_disc = [
 ]
 
 # ============================================================
-# 2. FUNÇÕES DE PUSH/PULL (Garantia de Persistência)
+# 2. FUNÇÕES DE PERSISTÊNCIA (API GITHUB)
 # ============================================================
 def carregar_github(arquivo):
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
@@ -2030,46 +2030,43 @@ def carregar_github(arquivo):
 def salvar_github(dados, arquivo, sha=None):
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
-    payload = {
-        "message": f"Sincronização Rascunho: {arquivo}",
-        "content": base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
-    }
+    conteudo = base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
+    payload = {"message": f"Push rascunho: {arquivo}", "content": conteudo}
     if sha: payload["sha"] = sha
-    r = requests.put(url, headers=headers, json=payload)
-    return r.status_code
+    return requests.put(url, headers=headers, json=payload).status_code
 
 # ============================================================
-# 3. NAVEGAÇÃO
+# 3. NAVEGAÇÃO E INTERFACE
 # ============================================================
-if "pagina" not in st.session_state: st.session_state.pagina = "home"
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "home"
 
+# --- TELA INICIAL ---
 if st.session_state.pagina == "home":
-    st.title("Bem-vindo")
+    st.title("Sistema de Gestão de Colaboradores")
     if st.button("📝 Gerar Rascunho"):
         st.session_state.pagina = "cadastro"
         st.rerun()
 
+# --- TELA DE CADASTRO/ACESSO ---
 elif st.session_state.pagina == "cadastro":
-    st.subheader("Cadastro / Acesso de Colaborador")
-    u = st.text_input("Escolha seu Nome de Usuário (ex: joao_silva)")
-    p = st.text_input("Escolha sua Senha", type="password")
-    if st.button("Entrar no Formulário"):
+    st.subheader("Identificação do Colaborador")
+    u = st.text_input("Defina seu Usuário")
+    p = st.text_input("Defina sua Senha", type="password")
+    if st.button("Acessar Espelho do Formulário"):
         if u and p:
-            st.session_state.user_key = f"{u.strip().replace(' ', '_')}_{p}"
+            st.session_state.user_key = f"{u.strip().lower()}_{p}"
             st.session_state.pagina = "espelho"
             st.rerun()
 
-# ============================================================
-# 4. ESPELHO DO FORMULÁRIO (PUSH DIRETO)
-# ============================================================
+# --- TELA DO FORMULÁRIO (O ESPELHO) ---
 elif st.session_state.pagina == "espelho":
     file_id = f"rascunho_{st.session_state.user_key}.json"
     dados_nuvem, sha_nuvem = carregar_github(file_id)
 
     st.title("📋 Espelho do Formulário")
     
-    with st.form("espelho_push"):
-        # Seção 1: Identificação
+    with st.form("espelho_completo"):
         col1, col2 = st.columns(2)
         f_nome = col1.text_input("Nome", value=dados_nuvem.get("nome", ""))
         f_setor = col2.text_input("Setor", value=dados_nuvem.get("setor", ""))
@@ -2079,7 +2076,6 @@ elif st.session_state.pagina == "espelho":
         f_cursos = st.text_area("Cursos", value=dados_nuvem.get("cursos", ""))
         f_objetivo = st.text_area("Objetivo", value=dados_nuvem.get("objetivo", ""))
 
-        # Seção 2: Tabelas
         st.subheader("🔹 Atividades")
         df_ativ = pd.DataFrame(dados_nuvem.get("atividades", [{"Atividade Descrita": "", "Frequência": "D", "Horas": "0 h", "Minutos": "0 min"}] * 10))
         edit_ativ = st.data_editor(df_ativ, use_container_width=True, hide_index=True)
@@ -2088,30 +2084,29 @@ elif st.session_state.pagina == "espelho":
         df_dif = pd.DataFrame(dados_nuvem.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro": "", "Frequência": "D"}] * 10))
         edit_dif = st.data_editor(df_dif, use_container_width=True, hide_index=True)
 
-        # Seção 3: DISC
         st.subheader("📊 Questionário DISC")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
-            val = dados_nuvem.get(chave)
-            idx = ["A", "B", "C", "D"].index(val) if val in ["A", "B", "C", "D"] else None
+            val_ant = dados_nuvem.get(chave)
+            idx = ["A", "B", "C", "D"].index(val_ant) if val_ant in ["A", "B", "C", "D"] else None
             respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=chave)
 
-        # O PUSH (SALVAR)
-        if st.form_submit_button("💾 SALVAR RASCUNHO (PUSH PARA GITHUB)"):
-            doc = {
+        # O COMMIT/PUSH de dados acontece aqui:
+        if st.form_submit_button("💾 SALVAR E SINCRONIZAR"):
+            payload = {
                 "nome": f_nome, "setor": f_setor, "cargo": f_cargo, "chefe": f_chefe,
                 "cursos": f_cursos, "objetivo": f_objetivo,
                 "atividades": edit_ativ.to_dict('records'),
                 "dificuldades": edit_dif.to_dict('records'),
                 **respostas_disc
             }
-            status = salvar_github(doc, file_id, sha=sha_nuvem)
+            status = salvar_github(payload, file_id, sha=sha_nuvem)
             if status in [200, 201]:
-                st.success("✅ Sincronizado com sucesso!")
+                st.success("✅ Push realizado! Dados salvos no GitHub.")
                 st.rerun()
             else:
-                st.error(f"Falha no Push. Erro: {status}")
+                st.error(f"Erro no Push: {status}")
 
     if st.button("⬅️ Sair"):
         st.session_state.pagina = "home"
