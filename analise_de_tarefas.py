@@ -2004,25 +2004,13 @@ perguntas_disc = [
 "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
 "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
 "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-"Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
 "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
 "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
 "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-"Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-"Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-"Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-"Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-"Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-"Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
 "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
 "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
 "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-"Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-"Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
-"Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
-"Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
-"Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
-"Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+"Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
 ]
 
 # ================================
@@ -2077,23 +2065,36 @@ if st.button("📝 Iniciar ou Continuar Rascunho"):
 
 if st.session_state.acesso_rascunho:
 
-    nome = st.text_input("Usuário")
+    usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
 
-    if nome and senha:
+    if usuario and senha:
 
-        arquivo = f"rascunho_{nome.lower()}_{senha}.json"
+        arquivo = f"rascunho_{usuario.lower()}_{senha}.json"
 
         dados, sha = carregar(arquivo)
 
         # ================================
-        # DADOS
+        # DADOS DE IDENTIFICAÇÃO
         # ================================
-        st.subheader("👤 Dados")
+        st.subheader("👤 Dados de Identificação")
 
-        nome_form = st.text_input("Nome completo", dados.get("nome",""))
-        setor = st.text_input("Setor", dados.get("setor",""))
-        cargo = st.text_input("Cargo", dados.get("cargo",""))
+        col1, col2 = st.columns(2)
+
+        with col1:
+            nome = st.text_input("Nome do colaborador", dados.get("nome",""))
+            cargo = st.text_input("Cargo", dados.get("cargo",""))
+            departamento = st.text_input("Departamento", dados.get("departamento",""))
+            escolaridade = st.text_input("Escolaridade", dados.get("escolaridade",""))
+
+        with col2:
+            setor = st.text_input("Setor", dados.get("setor",""))
+            chefe = st.text_input("Chefe imediato", dados.get("chefe",""))
+            empresa = st.text_input("Empresa / Unidade", dados.get("empresa",""))
+            devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao",""))
+
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos",""))
+        objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo",""))
 
         # ================================
         # ATIVIDADES
@@ -2199,9 +2200,16 @@ if st.session_state.acesso_rascunho:
         if st.button("💾 Salvar Rascunho"):
 
             payload = {
-                "nome": nome_form,
+                "nome": nome,
                 "setor": setor,
                 "cargo": cargo,
+                "chefe": chefe,
+                "departamento": departamento,
+                "empresa": empresa,
+                "escolaridade": escolaridade,
+                "devolucao": devolucao,
+                "cursos": cursos,
+                "objetivo": objetivo,
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
@@ -2211,4 +2219,6 @@ if st.session_state.acesso_rascunho:
             salvar(payload, arquivo, sha)
 
             st.success("Rascunho salvo no GitHub!")
+
+
 
