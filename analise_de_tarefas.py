@@ -1991,10 +1991,17 @@ REPO = f"{USER}/analise_formularios"
 # ================================
 # LISTAS
 # ================================
-lista_frequencia = ["Diário","Semanal","Mensal","Esporádico"]
-lista_horas = [str(i) for i in range(0,13)]
-lista_minutos = [str(i) for i in range(0,60,5)]
-
+lista_frequencia = [
+    "DVD",
+    "D",
+    "S",
+    "Q",
+    "M",
+    "T",
+    "A"
+]
+lista_horas = [f"{i} h" for i in range(0,13)]
+lista_minutos = [f"{i} min" for i in range(0,60,5)]
 # ================================
 # PERGUNTAS DISC
 # ================================
@@ -2054,7 +2061,7 @@ def salvar(dados, arquivo, sha=None):
 # ================================
 # INTERFACE
 # ================================
-st.title("📋 Rascunho da Análise")
+
 
 if "acesso_rascunho" not in st.session_state:
     st.session_state.acesso_rascunho = False
