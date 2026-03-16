@@ -1974,3 +1974,134 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
+import streamlit as st
+import os
+import json
+import base64
+import requests
+
+# ============================================================
+# 1. CONFIGURAÇÃO DO DIRETÓRIO (local temporário, mas não usado para persistência)
+# ============================================================
+base_dir = os.path.dirname(os.path.abspath(__file__))
+dados_dir = os.path.join(base_dir, "dados")
+os.makedirs(dados_dir, exist_ok=True)
+
+# Arquivo oficial
+json_master = os.path.join(dados_dir, "formularios.json")
+if not os.path.exists(json_master):
+    with open(json_master, "w", encoding="utf-8") as f:
+        json.dump([], f, ensure_ascii=False, indent=4)
+
+# ============================================================
+# 2. CONFIGURAÇÃO GITHUB
+# ============================================================
+GITHUB_USER = st.secrets["DB_USERNAME"]
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO = f"{GITHUB_USER}/analise_formularios"
+ARQUIVO_OFICIAL = "dados/formularios.json"
+ARQUIVO_RASCUNHO = "dados/rascunhos"
+
+# ============================================================
+# 3. FUNÇÕES DE PERSISTÊNCIA
+# ============================================================
+def salvar_github(dados, arquivo, mensagem, sha=None):
+    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    conteudo = base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
+    payload = {"message": mensagem, "content": conteudo}
+    if sha:
+        payload["sha"] = sha
+    r = requests.put(url, headers=headers, json=payload)
+    if r.status_code not in [200, 201]:
+        st.warning(f"Erro GitHub: {r.status_code} {r.text}")
+    return r.status_code
+
+def carregar_json_github(arquivo):
+    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        conteudo = r.json()
+        dados = json.loads(base64.b64decode(conteudo["content"]).decode())
+        sha = conteudo["sha"]
+        return dados, sha
+    else:
+        return [], None
+
+# ============================================================
+# 4. FORMULÁRIO OFICIAL
+# ============================================================
+def formulario_oficial():
+    st.markdown("Aqui você pode gerar um rascunho para ir preenchendo aos poucos.")
+    
+    if st.button("📝 Gerar Rascunho"):
+        st.session_state["pagina"] = "rascunho"
+
+# ============================================================
+# 5. FORMULÁRIO RASCUNHO
+# ============================================================
+def formulario_rascunho():
+    st.title("📝 Rascunho do Formulário")
+    
+    if "rascunho_nome" not in st.session_state:
+        nome = st.text_input("Nome (obrigatório)", key="rascunho_nome_input")
+        senha = st.text_input("Senha (obrigatório)", type="password", key="rascunho_senha_input")
+        if st.button("Iniciar Rascunho"):
+            if not nome or not senha:
+                st.error("Nome e senha obrigatórios!")
+            else:
+                st.session_state["rascunho_nome"] = nome
+                st.session_state["rascunho_senha"] = senha
+                st.success("Rascunho iniciado. Você pode começar a preencher!")
+    else:
+        nome = st.session_state["rascunho_nome"]
+        senha = st.session_state.get("rascunho_senha", "")
+        arquivo_rascunho = f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json"
+
+        if os.path.exists(arquivo_rascunho):
+            with open(arquivo_rascunho, "r", encoding="utf-8") as f:
+                dados_rascunho = json.load(f)
+        else:
+            dados_rascunho = {"nome": nome, "setor": "", "cargo": "", "cursos": "", "objetivo": ""}
+
+        # Campos do rascunho
+        setor = st.text_input("Setor", value=dados_rascunho.get("setor", ""))
+        cargo = st.text_input("Cargo", value=dados_rascunho.get("cargo", ""))
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_rascunho.get("cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", value=dados_rascunho.get("objetivo", ""))
+
+        if st.button("💾 Salvar Rascunho"):
+            dados_rascunho.update({
+                "nome": nome,
+                "setor": setor,
+                "cargo": cargo,
+                "cursos": cursos,
+                "objetivo": objetivo
+            })
+            # Salva no GitHub
+            salvar_github([dados_rascunho], f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json", f"Rascunho {nome}")
+            st.success("Rascunho salvo com sucesso!")
+
+        if st.button("🚀 Enviar Rascunho para Formulário Oficial"):
+            dados_oficial, sha = carregar_json_github(ARQUIVO_OFICIAL)
+            dados_oficial.append(dados_rascunho)
+            salvar_github(dados_oficial, ARQUIVO_OFICIAL, f"Rascunho {nome} enviado para oficial", sha)
+            st.success("Rascunho enviado para formulário oficial!")
+            # Deleta rascunho
+            if os.path.exists(arquivo_rascunho):
+                os.remove(arquivo_rascunho)
+            st.session_state.pop("rascunho_nome", None)
+            st.session_state.pop("rascunho_senha", None)
+            st.session_state["pagina"] = "formulario"
+
+# ============================================================
+# 6. FLUXO PRINCIPAL
+# ============================================================
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "formulario"
+
+if st.session_state["pagina"] == "formulario":
+    formulario_oficial()
+elif st.session_state["pagina"] == "rascunho":
+    formulario_rascunho()
