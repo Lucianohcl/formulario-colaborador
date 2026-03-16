@@ -1974,7 +1974,7 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
-```python
+
 import streamlit as st
 import pandas as pd
 import json
