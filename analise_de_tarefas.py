@@ -1982,7 +1982,7 @@ import base64
 import requests
 
 # ============================================================
-# CONFIGURAÇÃO BASE (JSON local, mas usamos nuvem)
+# CONFIGURAÇÃO DE DIRETÓRIO
 # ============================================================
 if getattr(sys, 'frozen', False):
     base_dir = os.path.dirname(sys.executable)
@@ -1990,9 +1990,8 @@ else:
     base_dir = os.path.dirname(os.path.abspath(__file__))
 
 dados_dir = os.path.join(base_dir, "dados")
-rascunho_dir = os.path.join(dados_dir, "rascunhos")
-os.makedirs(dados_dir, exist_ok=True)
-os.makedirs(rascunho_dir, exist_ok=True)
+json_rascunho_dir = os.path.join(dados_dir, "rascunhos")
+os.makedirs(json_rascunho_dir, exist_ok=True)
 
 # Arquivo oficial
 json_master = os.path.join(dados_dir, "formularios.json")
@@ -2037,14 +2036,39 @@ def carregar_json_github(arquivo):
         return [], None
 
 # ============================================================
-# FORMULÁRIO OFICIAL (somente botão de gerar rascunho)
+# FORMULÁRIO OFICIAL
 # ============================================================
 def formulario_oficial():
-    st.title("📋 Formulário Oficial do Colaborador")
     
+    
+    st.markdown("Aqui você pode gerar um rascunho para ir preenchendo aos poucos.")
+
+    # Botão apenas para gerar rascunho
     if st.button("📝 Gerar Rascunho"):
         st.session_state["pagina"] = "rascunho"
-        st.experimental_rerun()  # garante que a página vá para rascunho
+
+    # Botão enviar oficial (após rascunho ou preenchimento manual)
+    if st.button("🚀 Enviar Formulário Oficial"):
+        # Carrega rascunho se houver
+        nome = st.session_state.get("rascunho_nome", "")
+        arquivo_rascunho = f"{json_rascunho_dir}/{nome}.json" if nome else None
+        if arquivo_rascunho and os.path.exists(arquivo_rascunho):
+            with open(arquivo_rascunho, "r", encoding="utf-8") as f:
+                dados_rascunho = json.load(f)
+        else:
+            st.warning("Nenhum rascunho encontrado. Preencha manualmente antes de enviar.")
+            return
+
+        dados_oficial, sha = carregar_json_github(ARQUIVO_OFICIAL)
+        dados_oficial.append(dados_rascunho)
+        salvar_github(dados_oficial, ARQUIVO_OFICIAL, f"Formulário oficial {nome}", sha)
+        st.success("Formulário oficial enviado com sucesso!")
+
+        # Opcional: deletar rascunho após envio
+        if arquivo_rascunho and os.path.exists(arquivo_rascunho):
+            os.remove(arquivo_rascunho)
+        st.session_state.pop("rascunho_nome", None)
+        st.session_state.pop("rascunho_senha", None)
 
 # ============================================================
 # FORMULÁRIO RASCUNHO
@@ -2052,36 +2076,36 @@ def formulario_oficial():
 def formulario_rascunho():
     st.title("📝 Rascunho do Formulário")
     
-    # Nome + Senha (primeira vez)
     if "rascunho_nome" not in st.session_state:
-        nome = st.text_input("Nome (obrigatório)", key="input_nome")
-        senha = st.text_input("Senha (obrigatório)", type="password", key="input_senha")
+        # Primeira vez: solicita Nome + Senha
+        nome = st.text_input("Nome (obrigatório)", key="rascunho_nome_input")
+        senha = st.text_input("Senha (obrigatório)", type="password", key="rascunho_senha_input")
         if st.button("Iniciar Rascunho"):
             if not nome or not senha:
                 st.error("Nome e senha obrigatórios!")
             else:
                 st.session_state["rascunho_nome"] = nome
                 st.session_state["rascunho_senha"] = senha
-                st.experimental_rerun()
+                st.success("Rascunho iniciado. Você pode começar a preencher!")
     else:
         nome = st.session_state["rascunho_nome"]
-        senha = st.session_state["rascunho_senha"]
-        
-        arquivo_rascunho = f"{rascunho_dir}/{nome}_{senha}.json"
+        senha = st.session_state.get("rascunho_senha", "")
+
         # Carrega rascunho existente
+        arquivo_rascunho = f"{json_rascunho_dir}/{nome}_{senha}.json"
         if os.path.exists(arquivo_rascunho):
             with open(arquivo_rascunho, "r", encoding="utf-8") as f:
                 dados_rascunho = json.load(f)
         else:
             dados_rascunho = {"nome": nome, "setor": "", "cargo": "", "cursos": "", "objetivo": ""}
-        
-        # Campos do rascunho
-        setor = st.text_input("Setor", value=dados_rascunho.get("setor", ""), key="rasc_setor")
-        cargo = st.text_input("Cargo", value=dados_rascunho.get("cargo", ""), key="rasc_cargo")
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_rascunho.get("cursos", ""), key="rasc_cursos")
-        objetivo = st.text_area("Trabalho e principal objetivo", value=dados_rascunho.get("objetivo", ""), key="rasc_objetivo")
-        
-        # Salvar rascunho progressivo
+
+        # Campos do formulário rascunho
+        setor = st.text_input("Setor", value=dados_rascunho.get("setor", ""), key="rascunho_setor")
+        cargo = st.text_input("Cargo", value=dados_rascunho.get("cargo", ""), key="rascunho_cargo")
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_rascunho.get("cursos", ""), key="rascunho_cursos")
+        objetivo = st.text_area("Trabalho e principal objetivo", value=dados_rascunho.get("objetivo", ""), key="rascunho_objetivo")
+
+        # Salvar rascunho
         if st.button("💾 Salvar Rascunho"):
             dados_rascunho.update({
                 "nome": nome,
@@ -2092,7 +2116,6 @@ def formulario_rascunho():
             })
             with open(arquivo_rascunho, "w", encoding="utf-8") as f:
                 json.dump(dados_rascunho, f, ensure_ascii=False, indent=4)
-            # salvar na nuvem
             salvar_github([dados_rascunho], f"{ARQUIVO_RASCUNHO}/{nome}_{senha}.json", f"Rascunho {nome}")
             st.success("Rascunho salvo com sucesso!")
 
@@ -2102,13 +2125,12 @@ def formulario_rascunho():
             dados_oficial.append(dados_rascunho)
             salvar_github(dados_oficial, ARQUIVO_OFICIAL, f"Rascunho {nome} enviado para oficial", sha)
             st.success("Rascunho enviado para formulário oficial!")
-            # opcional: deletar rascunho
+            # Deletar rascunho
             if os.path.exists(arquivo_rascunho):
                 os.remove(arquivo_rascunho)
-            st.session_state.pop("rascunho_nome")
-            st.session_state.pop("rascunho_senha")
+            st.session_state.pop("rascunho_nome", None)
+            st.session_state.pop("rascunho_senha", None)
             st.session_state["pagina"] = "formulario"
-            st.experimental_rerun()
 
 # ============================================================
 # FLUXO PRINCIPAL
