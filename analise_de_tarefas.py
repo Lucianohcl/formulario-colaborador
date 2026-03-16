@@ -1975,92 +1975,144 @@ if st.session_state.get("pagina") == "disc":
 
 
 import streamlit as st
+import pandas as pd
 import json
 import base64
 import requests
 
 # ============================================================
-# 1. CONFIGURAÇÃO GITHUB (Obrigatório configurar nos Secrets)
+# 1. CONFIGURAÇÃO GITHUB (Obrigatório nos Secrets)
 # ============================================================
-GITHUB_USER = st.secrets["DB_USERNAME"]
-GITHUB_TOKEN = st.secrets["DB_TOKEN"]
-REPO = f"{GITHUB_USER}/analise_formularios"
+USER = st.secrets["DB_USERNAME"]
+TOKEN = st.secrets["DB_TOKEN"]
+REPO = f"{USER}/analise_formularios"
+
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
 
 # ============================================================
-# 2. FUNÇÕES DE PERSISTÊNCIA (Ajustadas para funcionar 100%)
+# 2. FUNÇÕES DE PUSH/PULL (Garantia de Persistência)
 # ============================================================
-def salvar_github(dados, arquivo, mensagem, sha=None):
+def carregar_github(arquivo):
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    conteudo = base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
-    payload = {"message": mensagem, "content": conteudo}
-    if sha:
-        payload["sha"] = sha
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+    if r.status_code == 200:
+        res = r.json()
+        return json.loads(base64.b64decode(res["content"]).decode()), res["sha"]
+    return {}, None
+
+def salvar_github(dados, arquivo, sha=None):
+    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    payload = {
+        "message": f"Sincronização Rascunho: {arquivo}",
+        "content": base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
+    }
+    if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code
 
-def carregar_json_github(arquivo):
-    url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
-    r = requests.get(url, headers=headers)
-    if r.status_code == 200:
-        conteudo = r.json()
-        dados = json.loads(base64.b64decode(conteudo["content"]).decode())
-        return dados, conteudo["sha"]
-    return None, None
+# ============================================================
+# 3. NAVEGAÇÃO
+# ============================================================
+if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
+if st.session_state.pagina == "home":
+    st.title("Bem-vindo")
+    if st.button("📝 Gerar Rascunho"):
+        st.session_state.pagina = "cadastro"
+        st.rerun()
+
+elif st.session_state.pagina == "cadastro":
+    st.subheader("Cadastro / Acesso de Colaborador")
+    u = st.text_input("Escolha seu Nome de Usuário (ex: joao_silva)")
+    p = st.text_input("Escolha sua Senha", type="password")
+    if st.button("Entrar no Formulário"):
+        if u and p:
+            st.session_state.user_key = f"{u.strip().replace(' ', '_')}_{p}"
+            st.session_state.pagina = "espelho"
+            st.rerun()
 
 # ============================================================
-# 3. LÓGICA DO FORMULÁRIO
+# 4. ESPELHO DO FORMULÁRIO (PUSH DIRETO)
 # ============================================================
-def formulario_rascunho():
-    st.title("📝 Rascunho")
+elif st.session_state.pagina == "espelho":
+    file_id = f"rascunho_{st.session_state.user_key}.json"
+    dados_nuvem, sha_nuvem = carregar_github(file_id)
+
+    st.title("📋 Espelho do Formulário")
     
-    if "rascunho_nome" not in st.session_state:
-        nome = st.text_input("Nome", key="login_n")
-        senha = st.text_input("Senha", type="password", key="login_s")
-        if st.button("Acessar Rascunho"):
-            if nome and senha:
-                st.session_state["rascunho_nome"] = nome
-                st.session_state["rascunho_senha"] = senha
-                st.rerun()
-    else:
-        nome = st.session_state["rascunho_nome"]
-        senha = st.session_state["rascunho_senha"]
-        # Define o nome do arquivo de dados na raiz do seu repositório
-        arquivo_id = f"dados_{nome}_{senha}.json"
-
-        # CARREGA DA NUVEM PARA GARANTIR QUE NÃO É EFÊMERO
-        dados, sha = carregar_json_github(arquivo_id)
+    with st.form("espelho_push"):
+        # Seção 1: Identificação
+        col1, col2 = st.columns(2)
+        f_nome = col1.text_input("Nome", value=dados_nuvem.get("nome", ""))
+        f_setor = col2.text_input("Setor", value=dados_nuvem.get("setor", ""))
+        f_cargo = col1.text_input("Cargo", value=dados_nuvem.get("cargo", ""))
+        f_chefe = col2.text_input("Chefe", value=dados_nuvem.get("chefe", ""))
         
-        if dados is None:
-            dados = {"setor": "", "cargo": "", "objetivo": ""}
+        f_cursos = st.text_area("Cursos", value=dados_nuvem.get("cursos", ""))
+        f_objetivo = st.text_area("Objetivo", value=dados_nuvem.get("objetivo", ""))
 
-        # Campos de entrada
-        setor = st.text_input("Setor", value=dados.get("setor", ""))
-        cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
-        objetivo = st.text_area("Objetivo", value=dados.get("objetivo", ""))
+        # Seção 2: Tabelas
+        st.subheader("🔹 Atividades")
+        df_ativ = pd.DataFrame(dados_nuvem.get("atividades", [{"Atividade Descrita": "", "Frequência": "D", "Horas": "0 h", "Minutos": "0 min"}] * 10))
+        edit_ativ = st.data_editor(df_ativ, use_container_width=True, hide_index=True)
 
-        if st.button("💾 Salvar Agora"):
-            novos_dados = {"setor": setor, "cargo": cargo, "objetivo": objetivo}
-            
-            # O SEGREDO: Enviar o SHA garante que o botão funcione e atualize o arquivo
-            status = salvar_github(novos_dados, arquivo_id, f"Update {nome}", sha=sha)
-            
+        st.subheader("⚠️ Dificuldades")
+        df_dif = pd.DataFrame(dados_nuvem.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro": "", "Frequência": "D"}] * 10))
+        edit_dif = st.data_editor(df_dif, use_container_width=True, hide_index=True)
+
+        # Seção 3: DISC
+        st.subheader("📊 Questionário DISC")
+        respostas_disc = {}
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            chave = f"disc_{i}"
+            val = dados_nuvem.get(chave)
+            idx = ["A", "B", "C", "D"].index(val) if val in ["A", "B", "C", "D"] else None
+            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=chave)
+
+        # O PUSH (SALVAR)
+        if st.form_submit_button("💾 SALVAR RASCUNHO (PUSH PARA GITHUB)"):
+            doc = {
+                "nome": f_nome, "setor": f_setor, "cargo": f_cargo, "chefe": f_chefe,
+                "cursos": f_cursos, "objetivo": f_objetivo,
+                "atividades": edit_ativ.to_dict('records'),
+                "dificuldades": edit_dif.to_dict('records'),
+                **respostas_disc
+            }
+            status = salvar_github(doc, file_id, sha=sha_nuvem)
             if status in [200, 201]:
-                st.success("Dados salvos permanentemente no seu GitHub!")
+                st.success("✅ Sincronizado com sucesso!")
                 st.rerun()
             else:
-                st.error(f"Erro na comunicação com GitHub: {status}")
+                st.error(f"Falha no Push. Erro: {status}")
 
-# ============================================================
-# 4. EXECUÇÃO
-# ============================================================
-if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "inicio"
-
-if st.session_state["pagina"] == "inicio":
-    if st.button("Ir para o Formulário"):
-        st.session_state["pagina"] = "rascunho"
+    if st.button("⬅️ Sair"):
+        st.session_state.pagina = "home"
         st.rerun()
-else:
-    formulario_rascunho()
