@@ -2034,7 +2034,11 @@ def carregar(arquivo):
 def salvar(dados, arquivo, sha=None):
 
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
-    headers = {"Authorization": f"token {TOKEN}"}
+
+    headers = {
+        "Authorization": f"token {TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
 
     conteudo = base64.b64encode(
         json.dumps(dados, indent=4).encode()
@@ -2050,10 +2054,12 @@ def salvar(dados, arquivo, sha=None):
 
     r = requests.put(url, headers=headers, json=payload)
 
-    if r.status_code in [200,201]:
+    if r.status_code in [200, 201]:
         return r.json()["content"]["sha"]
+
     else:
-        st.error("Erro ao salvar no GitHub")
+        st.error(f"Erro GitHub: {r.status_code}")
+        st.write(r.text)
         return None
 
 
@@ -2061,7 +2067,6 @@ def salvar(dados, arquivo, sha=None):
 # INTERFACE
 # ================================
 
-st.title("📋 Rascunho da Análise de Atividades")
 
 st.warning("""
 ⚠️ **ATENÇÃO**
