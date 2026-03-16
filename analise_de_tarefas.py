@@ -2017,99 +2017,68 @@ perguntas_disc = [
 # FUNÇÕES GITHUB
 # ================================
 def carregar(arquivo):
-
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
-
     r = requests.get(url, headers=headers)
-
     if r.status_code == 200:
         data = r.json()
         conteudo = base64.b64decode(data["content"]).decode()
         return json.loads(conteudo), data["sha"]
-
     return {}, None
 
-
 def salvar(dados, arquivo, sha=None):
-
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
-
-    headers = {
-        "Authorization": f"token {TOKEN}",
-        "Accept": "application/vnd.github+json"
-    }
-
-    conteudo = base64.b64encode(
-        json.dumps(dados, indent=4).encode()
-    ).decode()
-
-    payload = {
-        "message": "Salvar rascunho do formulário",
-        "content": conteudo
-    }
-
+    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github+json"}
+    conteudo = base64.b64encode(json.dumps(dados, indent=4).encode()).decode()
+    payload = {"message": "Salvar rascunho do formulário","content": conteudo}
     if sha:
         payload["sha"] = sha
-
     r = requests.put(url, headers=headers, json=payload)
-
     if r.status_code in [200, 201]:
         return r.json()["content"]["sha"]
-
     else:
         st.error(f"Erro GitHub: {r.status_code}")
         st.write(r.text)
         return None
 
-
 # ================================
 # INTERFACE
 # ================================
 
-
 st.warning("""
 ⚠️ **ATENÇÃO**
-
 • Utilize **seu NOME COMPLETO** para acessar o rascunho  
 • O rascunho ficará salvo automaticamente no sistema  
-• Caso seja sua primeira vez, cadastre seu nome antes de iniciar  
+• Caso seja sua primeira vez, cadastre seu nome antes de iniciar
 """)
 
-st.markdown("### 🔐 Acesso ao Rascunho")
-
+# Entrada do nome
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-
 primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
 
 if nome_usuario:
-
     nome_limpo = nome_usuario.strip().lower().replace(" ","_")
     arquivo = f"rascunho_{nome_limpo}.json"
-
     dados, sha = carregar(arquivo)
 
     # ================================
-    # CADASTRO
+    # PRIMEIRA VEZ
     # ================================
     if primeira_vez:
-
-        if st.button("Cadastrar Nome"):
-
-            if dados:
-                st.warning("Este nome já está cadastrado.")
-            else:
-
+        if dados:
+            st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
+        else:
+            if st.button("Cadastrar Nome"):
                 novo_sha = salvar({}, arquivo)
-
-                st.success("Nome cadastrado! Agora entre normalmente.")
+                st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
                 st.rerun()
+            else:
+                st.error("Você precisa clicar em 'Cadastrar Nome' para registrar seu nome antes de prosseguir.")
 
     # ================================
-    # FORMULÁRIO
+    # JÁ CADASTRADO
     # ================================
     else:
-
         if not dados:
             st.error("Nome não encontrado. Marque a opção de cadastro se for sua primeira vez.")
             st.stop()
@@ -2117,33 +2086,25 @@ if nome_usuario:
         st.success("Rascunho carregado!")
 
         # ================================
-        # IDENTIFICAÇÃO
+        # DADOS DE IDENTIFICAÇÃO
         # ================================
         st.subheader("👤 Dados de Identificação")
-
         col1, col2 = st.columns(2)
-
         with col1:
             nome = st.text_input("Nome do colaborador", dados.get("nome",""))
             cargo = st.text_input("Cargo", dados.get("cargo",""))
             departamento = st.text_input("Departamento", dados.get("departamento",""))
             escolaridade = st.text_input("Escolaridade", dados.get("escolaridade",""))
-
         with col2:
             setor = st.text_input("Setor", dados.get("setor",""))
             chefe = st.text_input("Chefe imediato", dados.get("chefe",""))
             empresa = st.text_input("Empresa / Unidade", dados.get("empresa",""))
             devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao",""))
-
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos",""))
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo",""))
 
-        # ================================
-        # LEGENDA FREQUÊNCIA
-        # ================================
         st.info("""
 📋 **LEGENDA DE FREQUÊNCIA**
-
 DVD = Diário várias vezes  
 D = Diário  
 S = Semanal  
@@ -2157,14 +2118,7 @@ A = Anual
         # ATIVIDADES
         # ================================
         st.subheader("🔹 Atividades Executadas")
-
-        df_ativ = pd.DataFrame(
-            dados.get(
-                "atividades",
-                [{"Atividade":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]
-            )
-        )
-
+        df_ativ = pd.DataFrame(dados.get("atividades",[{"Atividade":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]))
         edit_ativ = st.data_editor(
             df_ativ,
             column_config={
@@ -2181,14 +2135,7 @@ A = Anual
         # DIFICULDADES
         # ================================
         st.subheader("⚠️ Dificuldades")
-
-        df_dif = pd.DataFrame(
-            dados.get(
-                "dificuldades",
-                [{"Dificuldade":"","Setor":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]
-            )
-        )
-
+        df_dif = pd.DataFrame(dados.get("dificuldades",[{"Dificuldade":"","Setor":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]))
         edit_dif = st.data_editor(
             df_dif,
             column_config={
@@ -2205,14 +2152,7 @@ A = Anual
         # SUGESTÕES
         # ================================
         st.subheader("💡 Sugestões")
-
-        df_sug = pd.DataFrame(
-            dados.get(
-                "sugestoes",
-                [{"Sugestão":"","Impacto":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]
-            )
-        )
-
+        df_sug = pd.DataFrame(dados.get("sugestoes",[{"Sugestão":"","Impacto":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]))
         edit_sug = st.data_editor(
             df_sug,
             column_config={
@@ -2229,13 +2169,9 @@ A = Anual
         # DISC
         # ================================
         st.subheader("🧠 Questionário DISC")
-
         respostas = {}
-
-        for i, pergunta in enumerate(perguntas_disc, 1):
-
+        for i, pergunta in enumerate(perguntas_disc,1):
             valor = dados.get(f"disc_{i}")
-
             respostas[f"disc_{i}"] = st.radio(
                 f"{i}. {pergunta}",
                 ["A","B","C","D"],
@@ -2247,7 +2183,6 @@ A = Anual
         # SALVAR
         # ================================
         if st.button("💾 Salvar Rascunho"):
-
             payload = {
                 "nome": nome,
                 "setor": setor,
@@ -2264,9 +2199,7 @@ A = Anual
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas
             }
-
             novo_sha = salvar(payload, arquivo, sha)
-
             if novo_sha:
                 st.success("Rascunho salvo com sucesso!")
                 st.rerun()
