@@ -1980,134 +1980,137 @@ import json
 import base64
 import requests
 
-# ============================================================
-# 1. CONFIGURAÇÃO GITHUB (Secrets do Streamlit)
-# ============================================================
+# CONFIG GITHUB
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
 REPO = f"{USER}/analise_formularios"
 
-# --- LISTA DE PERGUNTAS DISC ---
+# PERGUNTAS DISC (FORMULÁRIO COMPLETO)
 perguntas_disc = [
-    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
-    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
-    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
-    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
-    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+"Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+"Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+"Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+"No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+"Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+"Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+"Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+"Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+"Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+"Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+"Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+"Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+"Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+"Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+"Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+"Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+"Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+"Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+"Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+"Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+"Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+"Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+"Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+"Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# ============================================================
-# 2. FUNÇÕES DE PERSISTÊNCIA (API GITHUB)
-# ============================================================
-def carregar_github(arquivo):
+# FUNÇÕES GITHUB
+def carregar(arquivo):
+
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
+
     r = requests.get(url, headers=headers)
+
     if r.status_code == 200:
-        res = r.json()
-        return json.loads(base64.b64decode(res["content"]).decode()), res["sha"]
+        data = r.json()
+        conteudo = base64.b64decode(data["content"]).decode()
+        return json.loads(conteudo), data["sha"]
+
     return {}, None
 
-def salvar_github(dados, arquivo, sha=None):
+
+def salvar(dados, arquivo, sha=None):
+
     url = f"https://api.github.com/repos/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
-    conteudo = base64.b64encode(json.dumps(dados, ensure_ascii=False, indent=4).encode()).decode()
-    payload = {"message": f"Push rascunho: {arquivo}", "content": conteudo}
-    if sha: payload["sha"] = sha
-    return requests.put(url, headers=headers, json=payload).status_code
 
-# ============================================================
-# 3. NAVEGAÇÃO E INTERFACE
-# ============================================================
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "home"
+    conteudo = base64.b64encode(
+        json.dumps(dados, indent=4).encode()
+    ).decode()
 
-# --- TELA INICIAL ---
-if st.session_state.pagina == "home":
-    st.title("Sistema de Gestão de Colaboradores")
-    if st.button("📝 Gerar Rascunho"):
-        st.session_state.pagina = "cadastro"
-        st.rerun()
+    payload = {
+        "message": "Salvar rascunho",
+        "content": conteudo
+    }
 
-# --- TELA DE CADASTRO/ACESSO ---
-elif st.session_state.pagina == "cadastro":
-    st.subheader("Identificação do Colaborador")
-    u = st.text_input("Defina seu Usuário")
-    p = st.text_input("Defina sua Senha", type="password")
-    if st.button("Acessar Espelho do Formulário"):
-        if u and p:
-            st.session_state.user_key = f"{u.strip().lower()}_{p}"
-            st.session_state.pagina = "espelho"
-            st.rerun()
+    if sha:
+        payload["sha"] = sha
 
-# --- TELA DO FORMULÁRIO (O ESPELHO) ---
-elif st.session_state.pagina == "espelho":
-    file_id = f"rascunho_{st.session_state.user_key}.json"
-    dados_nuvem, sha_nuvem = carregar_github(file_id)
+    requests.put(url, headers=headers, json=payload)
 
-    st.title("📋 Espelho do Formulário")
-    
-    with st.form("espelho_completo"):
-        col1, col2 = st.columns(2)
-        f_nome = col1.text_input("Nome", value=dados_nuvem.get("nome", ""))
-        f_setor = col2.text_input("Setor", value=dados_nuvem.get("setor", ""))
-        f_cargo = col1.text_input("Cargo", value=dados_nuvem.get("cargo", ""))
-        f_chefe = col2.text_input("Chefe", value=dados_nuvem.get("chefe", ""))
-        
-        f_cursos = st.text_area("Cursos", value=dados_nuvem.get("cursos", ""))
-        f_objetivo = st.text_area("Objetivo", value=dados_nuvem.get("objetivo", ""))
 
-        st.subheader("🔹 Atividades")
-        df_ativ = pd.DataFrame(dados_nuvem.get("atividades", [{"Atividade Descrita": "", "Frequência": "D", "Horas": "0 h", "Minutos": "0 min"}] * 10))
-        edit_ativ = st.data_editor(df_ativ, use_container_width=True, hide_index=True)
+# INTERFACE
+st.title("Rascunho do Formulário")
 
-        st.subheader("⚠️ Dificuldades")
-        df_dif = pd.DataFrame(dados_nuvem.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro": "", "Frequência": "D"}] * 10))
-        edit_dif = st.data_editor(df_dif, use_container_width=True, hide_index=True)
+if "acesso" not in st.session_state:
+    st.session_state.acesso = False
 
-        st.subheader("📊 Questionário DISC")
-        respostas_disc = {}
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-            val_ant = dados_nuvem.get(chave)
-            idx = ["A", "B", "C", "D"].index(val_ant) if val_ant in ["A", "B", "C", "D"] else None
-            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=chave)
+if st.button("📝 Gerar ou Continuar Rascunho"):
+    st.session_state.acesso = True
 
-        # O COMMIT/PUSH de dados acontece aqui:
-        if st.form_submit_button("💾 SALVAR E SINCRONIZAR"):
+
+if st.session_state.acesso:
+
+    nome = st.text_input("Nome")
+    senha = st.text_input("Senha", type="password")
+
+    if nome and senha:
+
+        arquivo = f"rascunho_{nome.lower()}_{senha}.json"
+
+        dados, sha = carregar(arquivo)
+
+        st.subheader("Dados")
+
+        nome_form = st.text_input("Nome completo", dados.get("nome",""))
+        setor = st.text_input("Setor", dados.get("setor",""))
+        cargo = st.text_input("Cargo", dados.get("cargo",""))
+
+        st.subheader("Atividades")
+
+        df = pd.DataFrame(
+            dados.get(
+                "atividades",
+                [{"Atividade":"","Frequência":"","Horas":"","Minutos":""}]*10
+            )
+        )
+
+        atividades = st.data_editor(df)
+
+        st.subheader("Questionário DISC")
+
+        respostas = {}
+
+        for i,p in enumerate(perguntas_disc,1):
+
+            respostas[f"disc_{i}"] = st.radio(
+                f"{i}. {p}",
+                ["A","B","C","D"],
+                horizontal=True,
+                key=f"disc_{i}",
+                index=["A","B","C","D"].index(dados.get(f"disc_{i}","A")) if dados.get(f"disc_{i}") else None
+            )
+
+        if st.button("💾 Salvar rascunho"):
+
             payload = {
-                "nome": f_nome, "setor": f_setor, "cargo": f_cargo, "chefe": f_chefe,
-                "cursos": f_cursos, "objetivo": f_objetivo,
-                "atividades": edit_ativ.to_dict('records'),
-                "dificuldades": edit_dif.to_dict('records'),
-                **respostas_disc
+                "nome":nome_form,
+                "setor":setor,
+                "cargo":cargo,
+                "atividades":atividades.to_dict("records"),
+                **respostas
             }
-            status = salvar_github(payload, file_id, sha=sha_nuvem)
-            if status in [200, 201]:
-                st.success("✅ Push realizado! Dados salvos no GitHub.")
-                st.rerun()
-            else:
-                st.error(f"Erro no Push: {status}")
 
-    if st.button("⬅️ Sair"):
-        st.session_state.pagina = "home"
-        st.rerun()
+            salvar(payload, arquivo, sha)
+
+            st.success("Rascunho salvo")
