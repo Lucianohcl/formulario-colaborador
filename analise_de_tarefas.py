@@ -1985,7 +1985,12 @@ USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
 REPO = f"{USER}/analise_formularios"
 
-# PERGUNTAS DISC (FORMULÁRIO COMPLETO)
+# LISTAS
+lista_frequencia = ["Diário","Semanal","Mensal","Esporádico"]
+lista_horas = [str(i) for i in range(0,13)]
+lista_minutos = [str(i) for i in range(0,60,5)]
+
+# PERGUNTAS DISC
 perguntas_disc = [
 "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
 "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2050,12 +2055,12 @@ def salvar(dados, arquivo, sha=None):
 
 
 # INTERFACE
-st.title("Rascunho do Formulário")
+st.title("📋 **Rascunho da Análise de Atividades**")
 
 if "acesso" not in st.session_state:
     st.session_state.acesso = False
 
-if st.button("📝 Gerar ou Continuar Rascunho"):
+if st.button("📝 Iniciar / Continuar Rascunho"):
     st.session_state.acesso = True
 
 
@@ -2070,24 +2075,87 @@ if st.session_state.acesso:
 
         dados, sha = carregar(arquivo)
 
-        st.subheader("Dados")
+        st.subheader("👤 Dados do Colaborador")
 
         nome_form = st.text_input("Nome completo", dados.get("nome",""))
         setor = st.text_input("Setor", dados.get("setor",""))
         cargo = st.text_input("Cargo", dados.get("cargo",""))
 
-        st.subheader("Atividades")
+        # ATIVIDADES
+        st.markdown("---")
+        st.subheader("🔹 Atividades Executadas")
 
-        df = pd.DataFrame(
+        df_ativ = pd.DataFrame(
             dados.get(
                 "atividades",
-                [{"Atividade":"","Frequência":"","Horas":"","Minutos":""}]*10
+                [{"Atividade Descrita":"","Frequência":"","Horas":"","Minutos":""} for _ in range(20)]
             )
         )
 
-        atividades = st.data_editor(df)
+        edit_ativ = st.data_editor(
+            df_ativ,
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="ativ_editor"
+        )
 
-        st.subheader("Questionário DISC")
+        # DIFICULDADES
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades")
+
+        df_dif = pd.DataFrame(
+            dados.get(
+                "dificuldades",
+                [{"Dificuldade":"","Setor/Parceiro":"","Frequência":"","Horas Perdidas":"","Minutos Perdidos":""} for _ in range(20)]
+            )
+        )
+
+        edit_dif = st.data_editor(
+            df_dif,
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="dif_editor"
+        )
+
+        # SUGESTÕES
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+
+        df_sug = pd.DataFrame(
+            dados.get(
+                "sugestoes",
+                [{"Sugestão":"","Impacto Esperado":"","Redução Horas":"","Redução Minutos":"","Frequência Impacto":""} for _ in range(20)]
+            )
+        )
+
+        edit_sug = st.data_editor(
+            df_sug,
+            column_config={
+                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                "Frequência Impacto": st.column_config.SelectboxColumn("Frequência Impacto", options=lista_frequencia),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="sug_editor"
+        )
+
+        # DISC
+        st.markdown("---")
+        st.subheader("🧠 Questionário DISC")
 
         respostas = {}
 
@@ -2101,16 +2169,18 @@ if st.session_state.acesso:
                 index=["A","B","C","D"].index(dados.get(f"disc_{i}","A")) if dados.get(f"disc_{i}") else None
             )
 
-        if st.button("💾 Salvar rascunho"):
+        if st.button("💾 Salvar Rascunho"):
 
             payload = {
                 "nome":nome_form,
                 "setor":setor,
                 "cargo":cargo,
-                "atividades":atividades.to_dict("records"),
+                "atividades":edit_ativ.to_dict("records"),
+                "dificuldades":edit_dif.to_dict("records"),
+                "sugestoes":edit_sug.to_dict("records"),
                 **respostas
             }
 
             salvar(payload, arquivo, sha)
 
-            st.success("Rascunho salvo")
+            st.success("Rascunho salvo com sucesso!")
