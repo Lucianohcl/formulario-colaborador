@@ -2082,6 +2082,7 @@ if nome_usuario:
         if dados:
             st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
         else:
+            # Inicializa flag de sessão
             if "cadastrado" not in st.session_state:
                 st.session_state.cadastrado = False
 
@@ -2091,7 +2092,6 @@ if nome_usuario:
                     if novo_sha:
                         st.session_state.cadastrado = True
                         st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
-                        st.experimental_rerun()  # Recarrega a página para continuar
             else:
                 st.success("Nome cadastrado! Agora você pode preencher o rascunho.")
 
@@ -2105,7 +2105,7 @@ if nome_usuario:
             st.stop()
         else:
             st.success("Rascunho carregado!")
-            # Aqui continua seu formulário completo
+            # Aqui você continua com o seu formulário completo
 
         # ================================
         # DADOS DE IDENTIFICAÇÃO
