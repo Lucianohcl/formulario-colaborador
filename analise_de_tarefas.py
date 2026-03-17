@@ -2199,4 +2199,9 @@ if nome_usuario:
                     st.success("📤 Dados enviados para o formulário!")
                     # Atualiza a sessão para refletir os dados enviados
                     for chave, valor in dados_para_formulario.items():
-                        st.session_state[chave] = valor
+                        try:
+                            # Streamlit aceita strings, números, listas, dicionários simples
+                            st.session_state[chave] = valor
+                        except Exception as e:
+                            # Ignora campos problemáticos (como DataFrames diretamente)
+                            print(f"Ignorado na sessão {chave}: {e}")
