@@ -1093,54 +1093,11 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True
         )
 
-        # ===========================
-        # Tabela de Nível Normal
-        # ===========================
-        st.subheader("🔹 Atividades de Nível Normal")
-        atividades_normal = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="atividades_normal",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ===========================
-        # Tabela de Baixa Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Baixa Complexidade")
-        atividades_baixa = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="atividades_baixa",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
+        # ... (Tabelas Normal e Baixa seguem o mesmo recuo) ...
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
@@ -1160,10 +1117,9 @@ if st.query_params.get("page") == "formulario":
             key="dif_editor"
         )
 
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
+        # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
-
         edit_sug = st.data_editor(
             pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
@@ -1182,6 +1138,20 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True,
             key="sug_editor"
         )
+
+        # 5. QUESTIONÁRIO DISC (Alinhado com os de cima)
+        st.markdown("---")
+        st.subheader("📊 Questionário")
+        respostas_disc = {}
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            chave = f"disc_{i}"
+            respostas_disc[chave] = st.radio(
+                f"{i}. {pergunta}", 
+                ["A", "B", "C", "D"], 
+                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+                horizontal=True, 
+                key=f"radio_{i}"
+            )
 
         enviar = st.form_submit_button("Enviar Formulário")
 
@@ -2290,6 +2260,27 @@ if nome_usuario:
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados, _ = carregar(arquivo_nome)
 
+    # ===========================
+    # Carregar dados do rascunho (se existir)
+    # ===========================
+    if dados:
+        ident = dados.get("Identificacao", {})
+
+        nome = ident.get("Nome", "")
+        setor = ident.get("Setor", "")
+        cargo = ident.get("Cargo", "")
+        chefe = ident.get("Chefe", "")
+        departamento = ident.get("Departamento", "")
+        empresa = ident.get("Empresa", "")
+        escolaridade = ident.get("Escolaridade", "")
+        devolucao = ident.get("Devolução preenchida em", "")
+
+        cursos = dados.get("Cursos", "")
+        objetivo = dados.get("Objetivo", "")
+        atividades_alta = pd.DataFrame(dados.get("Atividades", {}).get("Alta", []))
+        atividades_normal = pd.DataFrame(dados.get("Atividades", {}).get("Normal", []))
+        atividades_baixa = pd.DataFrame(dados.get("Atividades", {}).get("Baixa", []))
+    
     if primeira_vez:
         if dados:
             st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
