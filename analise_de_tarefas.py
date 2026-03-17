@@ -18,13 +18,6 @@ import pytz
 import time
 from zoneinfo import ZoneInfo
 import plotly.express as px
-import streamlit as st
-import pandas as pd
-import json
-import os
-import requests
-import base64
-from datetime import datetime
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -72,22 +65,6 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# ============================================================
-# INICIALIZAÇÃO DE VARIÁVEIS GLOBAIS (EVITA NAMEERROR)
-# ============================================================
-if "nome_usuario" not in st.session_state:
-    st.session_state["nome_usuario"] = ""
-
-# Criamos uma variável local apontando para o session_state
-# Isso garante que 'nome_usuario' SEMPRE exista para a linha 808
-nome_usuario = st.session_state["nome_usuario"]
-
-# Agora definimos o nome_limpo com uma trava de segurança
-if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-else:
-    nome_limpo = "usuario_desconhecido"
-
 # DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
 dados_dir = "dados"
 if not os.path.exists(dados_dir):
@@ -121,40 +98,6 @@ perguntas_disc = [
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
-
-# Configurações vindas do seu Secrets do Streamlit
-USER = st.secrets["DB_USERNAME"]
-TOKEN = st.secrets["DB_TOKEN"]
-REPO = "formulario-colaborador"
-
-def carregar(arquivo_nome):
-    """Lê o arquivo direto do GitHub"""
-    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo_nome}"
-    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github.v3.raw"}
-    try:
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            return json.loads(r.text), True
-        return {}, False
-    except:
-        return {}, False
-
-def salvar(dados, arquivo_nome, msg="Update"):
-    """Salva o arquivo direto no GitHub"""
-    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo_nome}"
-    headers = {"Authorization": f"token {TOKEN}"}
-    r = requests.get(url, headers=headers)
-    sha = r.json().get("sha") if r.status_code == 200 else None
-    conteudo = base64.b64encode(json.dumps(dados, indent=4).encode("utf-8")).decode("utf-8")
-    payload = {"message": msg, "content": conteudo, "branch": "main"}
-    if sha: payload["sha"] = sha
-    res = requests.put(url, json=payload, headers=headers)
-    return res.status_code in [200, 201]
-
-# --- LISTAS PADRONIZADAS (Agora na margem esquerda, sem espaços antes) ---
-lista_horas = [f"{i} h" for i in range(25)]
-lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
 # --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
@@ -856,109 +799,10 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-
-    # 1. VALIDAÇÃO E CARGA DOS DADOS (SÓ ENTRA SE ESTIVER CONCLUÍDO NO RASCUNHO)
-    if "rascunho_carregado" not in st.session_state:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        arquivo_nome = f"rascunho_{nome_limpo}.json"
-        
-        rascunho, _ = carregar(arquivo_nome)
-        
-        # CHECAGEM DA TRAVA: Existe rascunho E o status é CONCLUIDO?
-        if rascunho and rascunho.get("rascunho_status") == "CONCLUIDO":
-            st.session_state.update(rascunho)
-            st.session_state["rascunho_carregado"] = True
-            st.toast("✅ Dados importados com sucesso!", icon="📥")
-        else:
-            # Se não estiver concluído, bloqueia o formulário
-            # st.error("⚠️ ACESSO NEGADO: Você precisa marcar seu rascunho como 'CONCLUÍDO' na página anterior antes de acessar este formulário.")
-            # st.info("Volte ao rascunho, marque o checkbox de conclusão e salve.")
-            # st.stop() # Interrompe a execução do restante da página
-            pass
-
-
-    # 2. SEÇÃO DE IDENTIFICAÇÃO (Puxando do Session State)
-    st.subheader("👤 Dados de Identificação")
-    col1, col2 = st.columns(2)
-    with col1:
-        nome = st.text_input("Nome do colaborador", st.session_state.get("nome", nome_usuario))
-        cargo = st.text_input("Cargo", st.session_state.get("cargo", ""))
-        departamento = st.text_input("Departamento", st.session_state.get("departamento", ""))
-        escolaridade = st.text_input("Escolaridade", st.session_state.get("escolaridade", ""))
-    with col2:
-        setor = st.text_input("Setor", st.session_state.get("setor", ""))
-        chefe = st.text_input("Chefe imediato", st.session_state.get("chefe", ""))
-        empresa = st.text_input("Empresa / Unidade", st.session_state.get("empresa", ""))
-        devolucao = st.text_input("Devolver preenchido em", st.session_state.get("devolucao", ""))
-    
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais", st.session_state.get("cursos", ""))
-    objetivo = st.text_area("Trabalho e principal objetivo", st.session_state.get("objetivo", ""))
-
-    # 3. TABELAS COMPLETAS (ATIVIDADES, DIFICULDADES, SUGESTÕES)
-    st.markdown("---")
-    
-    # ATIVIDADES
-    st.subheader("🔹 Atividades Executadas")
-    df_ativ = pd.DataFrame(st.session_state.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-    edit_ativ = st.data_editor(df_ativ, column_config={
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-        "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key="f_ativ")
-
-    # DIFICULDADES
-    st.subheader("⚠️ Dificuldades e Bloqueios")
-    df_dif = pd.DataFrame(st.session_state.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(20)]))
-    edit_dif = st.data_editor(df_dif, column_config={
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-        "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key="f_dif")
-
-    # SUGESTÕES
-    st.subheader("💡 Sugestões de Melhoria")
-    df_sug = pd.DataFrame(st.session_state.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(20)]))
-    edit_sug = st.data_editor(df_sug, column_config={
-        "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-    }, hide_index=True, use_container_width=True, key="f_sug")
-
-    # 4. QUESTIONÁRIO DISC (24 QUESTÕES)
-    st.markdown("---")
-    st.subheader("📊 Questionário DISC")
-    respostas_disc = {}
-    opcoes_disc = ["A", "B", "C", "D"]
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        chave = f"disc_{i}"
-        valor_salvo = st.session_state.get(chave)
-        idx_padrao = opcoes_disc.index(valor_salvo) if valor_salvo in opcoes_disc else None
-        respostas_disc[chave] = st.radio(f"{i}. {pergunta}", opcoes_disc, index=idx_padrao, horizontal=True, key=f"f_radio_{i}")
-
-    # 5. ENVIO DEFINITIVO
-    st.markdown("---")
-    if st.button("🚀 ENVIAR FORMULÁRIO FINAL"):
-        payload_final = {
-            "nome": nome, "cargo": cargo, "departamento": departamento,
-            "setor": setor, "chefe": chefe, "empresa": empresa,
-            "escolaridade": escolaridade, "devolucao": devolucao,
-            "cursos": cursos, "objetivo": objetivo,
-            "atividades": edit_ativ.to_dict("records"),
-            "dificuldades": edit_dif.to_dict("records"),
-            "sugestoes": edit_sug.to_dict("records"),
-            **respostas_disc,
-            "status": "ENTREGA_OFICIAL",
-            "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M")
-        }
-        
-        if salvar(payload_final, f"FINAL_{nome_limpo}.json", f"Entrega Oficial: {nome}"):
-            st.balloons()
-            st.success("🎉 Formulário enviado com sucesso! Sua participação foi registrada.")
-            st.info("Você já pode fechar esta aba.")
-
     
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
@@ -2195,134 +2039,116 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
     _, sha = carregar(arquivo)
-    conteudo_json = json.dumps(dados, indent=4, ensure_ascii=False)
-    conteudo_b64 = base64.b64encode(conteudo_json.encode('utf-8')).decode('utf-8')
+    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
     payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
     if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code in [200, 201]
 
 # ================================
-# 3. INTERFACE E NAVEGAÇÃO
+# 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
-st.set_page_config(page_title="Sistema DISC Avançado", layout="wide")
+st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
+st.title("🚀 Analise de Tarefas e Perfil")
 
-with st.sidebar:
-    st.title("📌 Menu Principal")
-    nome_usuario = st.text_input("Seu NOME COMPLETO").strip()
-    pagina = st.radio("Selecione a etapa:", ["✍️ 1. Rascunho", "🚀 2. Envio Final"])
-    st.markdown("---")
-    st.info("Primeiro preencha o rascunho. Quando terminar, marque como concluído para liberar o envio final.")
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
-if not nome_usuario:
-    st.warning("⚠️ Digite seu nome na barra lateral para começar.")
-    st.stop()
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+    dados, _ = carregar(arquivo_nome)
 
-nome_limpo = nome_usuario.lower().replace(" ", "_")
-arquivo_rascunho = f"rascunho_{nome_limpo}.json"
-dados, _ = carregar(arquivo_rascunho)
-
-# ================================
-# 4. PÁGINA DE RASCUNHO
-# ================================
-if pagina == "✍️ 1. Rascunho":
-    st.title("✍️ Edição de Rascunho")
-    
-    if not dados:
-        st.info("Nenhum rascunho encontrado para este nome.")
-        if st.button("🆕 Criar Novo Rascunho"):
-            if salvar({"nome": nome_usuario, "rascunho_status": "EM_ANDAMENTO"}, arquivo_rascunho):
-                st.success("Rascunho criado! Recarregando...")
-                st.rerun()
-        st.stop()
-
-    # --- FORMULÁRIO ---
-    st.subheader("👤 Identificação")
-    col1, col2 = st.columns(2)
-    with col1:
-        cargo = st.text_input("Cargo", dados.get("cargo", ""))
-        depto = st.text_input("Departamento", dados.get("departamento", ""))
-        escolaridade = st.text_input("Escolaridade", dados.get("escolaridade", ""))
-    with col2:
-        setor = st.text_input("Setor", dados.get("setor", ""))
-        chefe = st.text_input("Chefe imediato", dados.get("chefe", ""))
-        empresa = st.text_input("Empresa", dados.get("empresa", ""))
-
-    st.markdown("---")
-    st.subheader("🔹 Atividades e Dificuldades")
-    
-    # Editor Atividades
-    st.write("Atividades principais:")
-    df_ativ = pd.DataFrame(dados.get("atividades", [{"Atividade": "", "Frequência": "", "Horas": ""} for _ in range(10)]))
-    edit_ativ = st.data_editor(df_ativ, key="tab_ativ", use_container_width=True)
-
-    # Editor Dificuldades
-    st.write("Dificuldades e Bloqueios:")
-    df_dif = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor Envolvido": "", "Horas Perdidas": ""} for _ in range(5)]))
-    edit_dif = st.data_editor(df_dif, key="tab_dif", use_container_width=True)
-
-    st.markdown("---")
-    st.subheader("📊 Perfil DISC")
-    resp_disc = {}
-    for i, p in enumerate(perguntas_disc, 1):
-        chave = f"disc_{i}"
-        val_salvo = dados.get(chave)
-        # Tenta encontrar o índice da resposta salva (A, B, C ou D)
-        try:
-            idx = ["A", "B", "C", "D"].index(val_salvo)
-        except:
-            idx = None
-        resp_disc[chave] = st.radio(f"{i}. {p}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"rd_{i}")
-
-    st.markdown("---")
-    concluido = st.checkbox("✅ Marcar rascunho como CONCLUÍDO", value=(dados.get("rascunho_status") == "CONCLUIDO"))
-    
-    if st.button("💾 Salvar Rascunho"):
-        payload = {
-            "nome": nome_usuario, 
-            "cargo": cargo, 
-            "departamento": depto, 
-            "setor": setor,
-            "chefe": chefe, 
-            "empresa": empresa, 
-            "escolaridade": escolaridade,
-            "atividades": edit_ativ.to_dict("records"),
-            "dificuldades": edit_dif.to_dict("records"),
-            **resp_disc,
-            "rascunho_status": "CONCLUIDO" if concluido else "EM_ANDAMENTO",
-            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-        }
-        if salvar(payload, arquivo_rascunho):
-            st.success("✅ Tudo salvo com sucesso!")
-            st.rerun()
+    if primeira_vez:
+        if dados:
+            st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
         else:
-            st.error("❌ Erro ao salvar no GitHub.")
+            if st.button("✅ Criar meu Rascunho"):
+                if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
+                    st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+    else:
+        if not dados:
+            st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
+            st.stop()
 
-# ================================
-# 5. PÁGINA FINAL (ENVIO OFICIAL)
-# ================================
-elif pagina == "🚀 2. Envio Final":
-    st.title("🚀 Finalizar Entrega")
+        # --- INÍCIO DO FORMULÁRIO ---
+        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-    # Verifica se o arquivo existe e se está marcado como CONCLUIDO
-    if not dados or dados.get("rascunho_status") != "CONCLUIDO":
-        st.error("⛔ ACESSO NEGADO: Você precisa salvar o rascunho como 'CONCLUÍDO' antes de enviar.")
-        st.info("Volte para a aba de rascunho, marque o checkbox no final e clique em Salvar.")
-        st.stop()
-
-    st.write(f"**Revisão Final para:** {nome_usuario}")
-    st.warning("Atenção: Após clicar em enviar, os dados serão registrados como entrega oficial.")
-    
-    # Mostra um pequeno resumo para o usuário ter certeza
-    st.info(f"Status do rascunho: {dados.get('rascunho_status')} | Última atualização: {dados.get('ultima_atualizacao')}")
-
-    if st.button("🎯 ENVIAR AGORA"):
-        # Adiciona selo de envio oficial ao arquivo final
-        dados["status_entrega"] = "FINALIZADO"
-        dados["data_entrega_final"] = datetime.now().strftime("%d/%m/%Y %H:%M")
+        # --- CAMPOS DE IDENTIFICAÇÃO (VERSÃO COMPLETA) ---
+        st.subheader("👤 Dados de Identificação")
+        col1, col2 = st.columns(2)
+        with col1:
+            nome = st.text_input("Nome do colaborador", dados.get("nome", nome_usuario))
+            cargo = st.text_input("Cargo", dados.get("cargo", ""))
+            departamento = st.text_input("Departamento", dados.get("departamento", ""))
+            escolaridade = st.text_input("Escolaridade", dados.get("escolaridade", ""))
+        with col2:
+            setor = st.text_input("Setor", dados.get("setor", ""))
+            chefe = st.text_input("Chefe imediato", dados.get("chefe", ""))
+            empresa = st.text_input("Empresa / Unidade", dados.get("empresa", ""))
+            devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao", ""))
         
-        if salvar(dados, f"FINAL_{nome_limpo}.json", f"Entrega Final: {nome_usuario}"):
-            st.balloons()
-            st.success("🎉 FORMULÁRIO ENVIADO COM SUCESSO! Sua participação foi registrada.")
-        else:
-            st.error("❌ Erro ao processar o envio final. Tente novamente.")
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
+
+        # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
+        # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
+
+        # 2. TABELA ATIVIDADES
+        st.markdown("---")
+        st.subheader("🔹 Atividades Executadas")
+        df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
+        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="ativ_ed")
+
+        # 3. TABELA DIFICULDADES
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
+        edit_dif = st.data_editor(df_dif_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="dif_ed")
+
+        # 4. TABELA SUGESTÕES
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+        df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
+        edit_sug = st.data_editor(df_sug_padrao, column_config={
+            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+        }, hide_index=True, use_container_width=True, key="sug_ed")
+
+        # 5. QUESTIONÁRIO DISC
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        respostas_disc = {}
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            chave = f"disc_{i}"
+            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], 
+                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+                horizontal=True, key=f"radio_{i}")
+
+        # 6. BOTÃO SALVAR
+        st.markdown("---")
+        if st.button("💾 Salvar Rascunho"):
+            payload = {
+                "nome": nome, "cargo": cargo, "departamento": depto,
+                "setor": setor, "chefe": chefe, "empresa": empresa,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            if salvar(payload, arquivo_nome):
+                st.success("✅ Rascunho salvo com sucesso no servidor!")
+            else:
+                st.error("❌ Falha ao salvar. Verifique sua conexão.")
+
+# Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
