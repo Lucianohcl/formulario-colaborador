@@ -249,7 +249,48 @@ def score_disc(disc):
     calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
     return round((calculo/total)*100,2)
 
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
 
+def score_disc(disc):
+    pesos = {"D": 1.0, "I": 0.9, "S": 0.85, "C": 0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k] * pesos.get(k, 1) for k in disc)
+    return round((calculo / total) * 100, 2)
+
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
+
+def score_disc(disc):
+    pesos = {"D": 1.0, "I": 0.9, "S": 0.85, "C": 0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k] * pesos.get(k, 1) for k in disc)
+    return round((calculo / total) * 100, 2)
+
+import streamlit as st
+import pandas as pd
+from datetime import datetime
+# ... outros imports
+
+# 1. INICIALIZAÇÃO (Garante que as variáveis existam ao abrir o app)
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {}
+
+if "formulario" not in st.session_state:
+    st.session_state["formulario"] = {}
+
+# 2. ENTRADA DE DADOS
+nome_usuario = st.text_input("Nome:")
+# ... resto do seu código
+
+
+# ... resto do seu código
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
 # ============================================================
@@ -804,19 +845,13 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-    # Inicializa nome_usuario para evitar NameError
-    if "nome_usuario" not in st.session_state:
-        st.session_state["nome_usuario"] = ""
-
-    # Pega o valor atual (input ou sessão)
-    nome_usuario = st.session_state["nome_usuario"]
-
-    # Só tenta carregar se já tiver nome
     if nome_usuario and "rascunho_carregado" not in st.session_state:
         nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
         dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
         if sucesso:
-            st.session_state.update(dados)
+            st.session_state["rascunho"] = dados
+            st.session_state["formulario"] = dados
+            st.session_state["formulario_carregado"] = True
         st.session_state["rascunho_carregado"] = True   
 
     # Listas padronizadas (devem vir antes do form)
