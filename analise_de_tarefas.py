@@ -1996,6 +1996,13 @@ import base64
 import requests
 from datetime import datetime
 
+import streamlit as st
+import pandas as pd
+import json
+import base64
+import requests
+from datetime import datetime
+
 # ================================
 # 1. CONFIGURAÇÕES E LISTAS
 # ================================
@@ -2044,7 +2051,7 @@ def carregar(arquivo):
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             data = r.json()
-            conteudo = base64.b64decode(data["content"]).decode('utf-8')
+            conteudo = base64.b64decode(data["content"]).decode("utf-8")
             return json.loads(conteudo), data["sha"]
     except:
         pass
@@ -2054,7 +2061,9 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
     _, sha = carregar(arquivo)
-    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
+    conteudo_b64 = base64.b64encode(
+        json.dumps(dados, indent=4, ensure_ascii=False).encode("utf-8")
+    ).decode("utf-8")
     payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
     if sha:
         payload["sha"] = sha
@@ -2062,43 +2071,50 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     return r.status_code in [200, 201]
 
 # ================================
-# 3. CONFIGURAÇÃO DO STREAMLIT
+# 3. INTERFACE
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# Inicializa variáveis de sessão
-if "nome_usuario" not in st.session_state:
-    st.session_state["nome_usuario"] = ""
-if "rascunho_carregado" not in st.session_state:
-    st.session_state["rascunho_carregado"] = False
-if "enviado_formulario" not in st.session_state:
-    st.session_state["enviado_formulario"] = False
+st.title("📄 Gerar Rascunho")
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
-params = st.query_params
-pagina_formulario = params.get("page") == "formulario"
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_rascunho = f"rascunho_{nome_limpo}.json"
+    arquivo_formulario = f"formulario_{nome_limpo}.json"
+    dados_existentes, _ = carregar(arquivo_rascunho)
+
+    if primeira_vez:
+        if dados_existentes:
+            st.warning("⚠️ Já existe cadastro.")
+        elif st.button("✅ Criar Rascunho"):
+            if salvar({"nome": nome_usuario}, arquivo_rascunho):
+                st.success("Rascunho criado! Agora você pode editar e salvar.")
+    else:
+        if dados_existentes:
+            st.success(f"✅ Bem-vindo, {nome_usuario}!")
+            st.session_state["nome_usuario"] = nome_usuario
+
+            if st.button("➡️ Abrir Rascunho"):
+                st.session_state["abrir_formulario"] = True
+                st.experimental_rerun()
+        else:
+            st.error("❌ Nome não encontrado.")
 
 # ================================
-# 4. TELA DE FORMULÁRIO
+# 4. FORMULÁRIO / EDIÇÃO
 # ================================
-if pagina_formulario:
-    st.title("📋 Formulário Completo do Colaborador")
+if st.session_state.get("abrir_formulario"):
+    st.header(f"📋 Rascunho de {nome_usuario}")
 
-    # Input do nome
-    st.session_state["nome_usuario"] = st.text_input(
-        "Confirme seu **NOME COMPLETO**", value=st.session_state["nome_usuario"]
-    )
-    nome_usuario = st.session_state["nome_usuario"]
-
-    # Carrega rascunho se houver
-    if nome_usuario and not st.session_state["rascunho_carregado"]:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
-        if sucesso:
-            st.session_state.update(dados)
+    # Carregar rascunho apenas uma vez
+    if "rascunho_carregado" not in st.session_state:
+        dados, _ = carregar(arquivo_rascunho)
+        st.session_state.update(dados)
         st.session_state["rascunho_carregado"] = True
-        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-    # --- DADOS DE IDENTIFICAÇÃO ---
+    # --- DADOS PESSOAIS ---
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
     with col1:
@@ -2118,120 +2134,107 @@ if pagina_formulario:
     # --- ATIVIDADES ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
+    df_ativ = pd.DataFrame(st.session_state.get("atividades", [
+        {"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)
+    ]))
     edit_ativ = st.data_editor(
-        pd.DataFrame({
-            "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
-        }).reset_index(drop=True),
+        df_ativ,
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
             "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
+        use_container_width=True,
+        key="ativ_ed"
     )
-    st.session_state["atividades"] = edit_ativ.to_dict("records")
 
     # --- DIFICULDADES ---
     st.markdown("---")
     st.subheader("⚠️ Dificuldades e Bloqueios")
+    df_dif = pd.DataFrame(st.session_state.get("dificuldades", [
+        {"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(20)
+    ]))
     edit_dif = st.data_editor(
-        pd.DataFrame({
-            "Dificuldade": [""] * 20,
-            "Setor/Parceiro Envolvido": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas Perdidas": [""] * 20,
-            "Minutos Perdidos": [""] * 20
-        }),
+        df_dif,
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
             "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
         use_container_width=True,
-        key="dif_editor"
+        key="dif_ed"
     )
-    st.session_state["dificuldades"] = edit_dif.to_dict("records")
 
     # --- SUGESTÕES ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria e Impacto")
+    df_sug = pd.DataFrame(st.session_state.get("sugestoes", [
+        {"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(20)
+    ]))
     edit_sug = st.data_editor(
-        pd.DataFrame({
-            "Sugestão de Melhoria": [""] * 20,
-            "Impacto Esperado": [""] * 20,
-            "Redução Horas": [""] * 20,
-            "Redução Minutos": [""] * 20,
-            "Frequência do Impacto": [""] * 20
-        }).reset_index(drop=True),
+        df_sug,
         column_config={
             "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
             "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
             "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
         },
         hide_index=True,
-        num_rows="fixed",
         use_container_width=True,
-        key="sug_editor"
+        key="sug_ed"
     )
-    st.session_state["sugestoes"] = edit_sug.to_dict("records")
 
     # --- QUESTIONÁRIO DISC ---
     st.markdown("---")
     st.subheader("📊 Questionário DISC")
+    respostas_disc = {}
     for i, pergunta in enumerate(perguntas_disc, 1):
-        st.radio(
+        chave = f"disc_{i}"
+        valor_salvo = st.session_state.get(chave)
+        idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
+        respostas_disc[chave] = st.radio(
             label=f"{i}. {pergunta}",
             options=["A", "B", "C", "D"],
-            key=f"disc_{i}",
-            horizontal=True
+            index=idx,
+            horizontal=True,
+            key=f"disc_ed_{i}"
         )
 
     # --- BOTÕES ---
     st.markdown("---")
-    col1, col2 = st.columns(2)
-
-    with col1:
+    col_save, col_send = st.columns(2)
+    with col_save:
         if st.button("💾 Salvar Rascunho"):
             payload = {
                 "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
                 "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
                 "cursos": cursos, "objetivo": objetivo,
-                "atividades": st.session_state["atividades"],
-                "dificuldades": st.session_state["dificuldades"],
-                "sugestoes": st.session_state["sugestoes"],
-                **{f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, len(perguntas_disc)+1)},
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload, f"rascunho_{nome_usuario.strip().lower().replace(' ', '_')}.json"):
+            if salvar(payload, arquivo_rascunho):
                 st.success("✅ Rascunho salvo no GitHub!")
             else:
-                st.error("❌ Erro ao salvar.")
+                st.error("❌ Erro ao salvar rascunho.")
 
-    with col2:
-        if not st.session_state["enviado_formulario"]:
-            if st.button("📤 Enviar Formulário"):
-                payload_formulario = {
-                    "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
-                    "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
-                    "cursos": cursos, "objetivo": objetivo,
-                    "atividades": st.session_state["atividades"],
-                    "dificuldades": st.session_state["dificuldades"],
-                    "sugestoes": st.session_state["sugestoes"],
-                    **{f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, len(perguntas_disc)+1)},
-                    "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M")
-                }
-                arquivo_formulario = f"formulario_{nome_usuario.strip().lower().replace(' ', '_')}.json"
-                if salvar(payload_formulario, arquivo_formulario, mensagem="Envio do formulário final"):
-                    st.success("✅ Formulário enviado com sucesso!")
-                    st.session_state["enviado_formulario"] = True
-                else:
-                    st.error("❌ Erro ao enviar o formulário.")
-        else:
-            st.info("📌 Formulário já enviado. Não é possível enviar novamente.")
+    with col_send:
+        if st.button("📤 Enviar para Formulário") and not st.session_state.get("enviado_para_formulario"):
+            payload = {
+                "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
+                "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
+                "cursos": cursos, "objetivo": objetivo,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
+                "enviado_em": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            if salvar(payload, arquivo_formulario):
+                st.success("✅ Dados enviados para o formulário!")
+                st.session_state["enviado_para_formulario"] = True
+            else:
+                st.error("❌ Erro ao enviar para o formulário.")
