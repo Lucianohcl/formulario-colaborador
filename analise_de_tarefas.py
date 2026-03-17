@@ -2059,56 +2059,64 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# Pega o parâmetro da URL uma vez
+# Inicialização de segurança para evitar o erro de NameError
+nome_usuario = ""
 params = st.query_params
 
-# 1. TELA DE FORMULÁRIO (Se a URL tiver ?page=formulario)
+# Lógica para alternar entre Títulos e Telas
 if params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-    nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**")
+    nome_sessao = st.session_state.get("nome", "")
+    nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**", value=nome_sessao)
+else:
+    st.title("📄 Gerar rascunho")
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 
-    if nome_usuario:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        
-        # INJEÇÃO: Carrega o rascunho para a memória
+# Só processa se o nome_usuario não estiver vazio
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+
+    # --- TELA 1: FORMULÁRIO (Onde o rascunho aparece preenchido) ---
+    if params.get("page") == "formulario":
         if "rascunho_carregado" not in st.session_state:
-            dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
+            dados, sucesso = carregar(arquivo_nome)
             if sucesso:
                 st.session_state.update(dados)
                 st.session_state["rascunho_carregado"] = True
                 st.rerun()
 
-        # Seus campos puxando do rascunho
+        # Listas para os Data Editors
+        lista_horas = [f"{i} h" for i in range(25)]
+        lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+        # SEU CÓDIGO PERFEITO CONTINUA DAQUI (Exemplo de campo):
+        st.subheader("👤 Dados de Identificação")
         nome_campo = st.text_input("Nome do colaborador", value=st.session_state.get("nome", nome_usuario))
 
-# 2. TELA DE ACESSO/CADASTRO (Página Inicial)
-else:
-    st.title("📄 Gerar rascunho")
-    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-
-    if nome_usuario:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        arquivo_nome = f"rascunho_{nome_limpo}.json"
+    # --- TELA 2: ENTRADA/CADASTRO ---
+    else:
         primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
-        
-        dados, _ = carregar(arquivo_nome)
+        dados_existentes, _ = carregar(arquivo_nome)
 
         if primeira_vez:
-            if dados:
+            if dados_existentes:
                 st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
             else:
                 if st.button("✅ Criar meu Rascunho"):
                     if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
                         st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
         else:
-            if not dados:
+            if not dados_existentes:
                 st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
-                st.stop()
             else:
                 st.success(f"✅ Bem-vindo, {nome_usuario}!")
                 if st.button("➡️ Ir para o Formulário Completo"):
+                    st.session_state["nome"] = nome_usuario
                     st.query_params["page"] = "formulario"
                     st.rerun()
+
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
