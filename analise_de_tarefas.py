@@ -2059,60 +2059,50 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-nome_usuario = ""
+# ESTA LINHA ABAIXO MATA O NAMEERROR:
+nome_usuario = "" 
 params = st.query_params
 
+# Verificamos a página primeiro
 if params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-    nome_sessao = st.session_state.get("nome", "")
-    nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**", value=nome_sessao)
+    # Tenta pegar o nome da sessão, se não tiver, fica vazio
+    nome_usuario = st.session_state.get("nome", "")
     
-    if nome_usuario:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        arquivo_nome = f"rascunho_{nome_limpo}.json"
+    # Se ainda estiver vazio, mostra o input
+    if not nome_usuario:
+        nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**")
+else:
+    st.title("📄 Gerar rascunho")
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 
+# SÓ executa o tratamento de string se o nome_usuario não estiver vazio
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+
+    # Lógica de Injeção e Navegação (O resto do seu código...)
+    if params.get("page") == "formulario":
         if "rascunho_carregado" not in st.session_state:
             dados, sucesso = carregar(arquivo_nome)
             if sucesso:
                 st.session_state.update(dados)
                 st.session_state["rascunho_carregado"] = True
                 st.rerun()
-
-        # Listas padronizadas
-        lista_horas = [f"{i} h" for i in range(25)]
-        lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-        lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-
+        
+        # Aqui seguem seus campos...
         st.subheader("👤 Dados de Identificação")
-        nome_campo = st.text_input("Nome do colaborador", value=st.session_state.get("nome", nome_usuario))
-
-else:
-    st.title("📄 Gerar rascunho")
-    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-
-    if nome_usuario:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        arquivo_nome = f"rascunho_{nome_limpo}.json"
+        nome_campo = st.text_input("Nome", value=st.session_state.get("nome", nome_usuario))
+    
+    else:
+        # Lógica da tela inicial (botão de rascunho, etc)
         primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
-        dados_existentes, _ = carregar(arquivo_nome)
-
-        if primeira_vez:
-            if dados_existentes:
-                st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
-            else:
-                if st.button("✅ Criar meu Rascunho"):
-                    if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                        st.success("Rascunho criado! Desmarque a caixa para entrar.")
-        else:
-            if not dados_existentes:
-                st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
-                st.stop()
-            else:
-                st.success(f"✅ Bem-vindo, {nome_usuario}!")
-                if st.button("➡️ Ir para o Formulário Completo"):
-                    st.session_state["nome"] = nome_usuario
-                    st.query_params["page"] = "formulario"
-                    st.rerun()
+        dados_e, _ = carregar(arquivo_nome)
+        if not primeira_vez and dados_e:
+            if st.button("➡️ Ir para o Formulário Completo"):
+                st.session_state["nome"] = nome_usuario
+                st.query_params["page"] = "formulario"
+                st.rerun()
 
     else:
         if not dados:
