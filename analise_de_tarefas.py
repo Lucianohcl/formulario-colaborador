@@ -2162,7 +2162,6 @@ if nome_usuario:
                 horizontal=True, key=f"radio_{i}")
 
         # 6. BOTÃO SALVAR E ALIMENTAR
-        st.markdown("---")
         if st.button("💾 Salvar e Alimentar Formulário"):
             # 12 espaços de recuo na linha abaixo:
             payload = {
@@ -2181,17 +2180,14 @@ if nome_usuario:
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
             
-            # 1. Salva no servidor (para o usuário não perder o progresso)
-            nuvem_ok = salvar(payload, arquivo_nome)
-            
-            # 2. ALIMENTA o formulário principal do App (O que você queria!)
+            # Alimenta o formulário
             st.session_state["formulario"] = payload
+            salvar(payload, arquivo_nome)
             
-            if nuvem_ok:
-                st.success("✅ Rascunho salvo e Formulário alimentado com sucesso!")
-            else:
-                st.warning("⚠️ Formulário alimentado, mas houve erro ao salvar na nuvem.")
-
-# Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
+            # TRAVA: Esconde o rascunho após o envio
+            st.session_state["exibir_rascunho"] = False
+            
+            st.success("✅ Alimentado! Saindo do modo rascunho...")
+            st.rerun()
 
 
