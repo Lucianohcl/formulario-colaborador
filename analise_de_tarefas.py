@@ -2106,8 +2106,12 @@ if st.session_state.get("ir_para_formulario") or st.session_state.get("nome_usua
     if not st.session_state.get("rascunho_carregado"):
         dados_rascunho, _ = carregar(arquivo_nome)
         if dados_rascunho:
-            st.session_state.update(dados_rascunho)
-        st.session_state["rascunho_carregado"] = True
+            for chave, valor in dados_rascunho.items():
+                try:
+                    st.session_state[chave] = valor
+                except Exception as e:
+                    print(f"Ignorado {chave}: {e}")
+            st.session_state["rascunho_carregado"] = True
 
     # --- Dados de Identificação ---
     st.subheader("👤 Dados de Identificação")
