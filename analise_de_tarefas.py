@@ -1239,19 +1239,19 @@ if st.query_params.get("page") == "formulario":
                 # 2. IDENTIFICAÇÃO
                 # -------------------------------------------------
                 campos_ident = {
-                        "Nome": nome,
-                        "Setor": setor,
-                        "Cargo": cargo,
-                        "Chefe": chefe,
-                        "Departamento": departamento,
-                        "Empresa": empresa,
-                        "Escolaridade": escolaridade,
-                        "Devolução preenchida em": devolucao
+                    "Nome": nome,
+                    "Setor": setor,
+                    "Cargo": cargo,
+                    "Chefe": chefe,
+                    "Departamento": departamento,
+                    "Empresa": empresa,
+                    "Escolaridade": escolaridade,
+                    "Devolução preenchida em": devolucao
                 }
 
                 for campo, valor in campos_ident.items():
-                        if not valor:
-                                pendencias.setdefault("Identificação", []).append(campo)
+                    if not valor:
+                        pendencias.setdefault("Identificação", []).append(campo)                
 
                 # -------------------------------------------------
                 # 3. Cursos e Trabalho/Objetivo
