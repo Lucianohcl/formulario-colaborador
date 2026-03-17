@@ -841,172 +841,75 @@ perguntas_disc = [
 ]
 
 
-# --- FORMULÁRIO ---
+# --- FORMULÁRIO MINIMALISTA PARA TRANSFERÊNCIA DE RASCUNHO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
+    # Inicializa nome_usuario para evitar NameError
+    if "nome_usuario" not in st.session_state:
+        st.session_state["nome_usuario"] = ""
+
+    nome_usuario = st.session_state["nome_usuario"]
+
+    # Carrega rascunho se existir
     if nome_usuario and "rascunho_carregado" not in st.session_state:
         nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
         dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
         if sucesso:
             st.session_state["rascunho"] = dados
             st.session_state["formulario"] = dados
-            st.session_state["formulario_carregado"] = True
-        st.session_state["rascunho_carregado"] = True   
+        st.session_state["rascunho_carregado"] = True
 
-    # Listas padronizadas (devem vir antes do form)
-    lista_horas = [f"{i} h" for i in range(25)]
-    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    
-    # ÚNICO BLOCO DO FORMULÁRIO
-    with st.form("form_colaborador"):
-        # Dados de Identificação
-        col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador")
-        setor = col2.text_input("Setor")
-        cargo = col1.text_input("Cargo")
-        chefe = col2.text_input("Chefe imediato")
-        departamento = col1.text_input("Departamento")
-        empresa = col2.text_input("Empresa / Unidade")
-        escolaridade = col1.text_input("Escolaridade")
-        devolucao = col2.text_input("Devolver preenchido em")
-        
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
-        
-        
-        
-        # --- SEÇÃO DE ATIVIDADES ---
-        st.markdown("---")
-        
-        # Mude para 3 colunas
-        col1, col2, col3 = st.columns(3)
-        
-        # Supondo que você tenha definido col1, col2 e col3 anteriormente
-        with col1:
-            st.info("""
-            **📋 LEGENDA DE FREQUÊNCIA:**
-            * **DVD**: Diário Várias Vezes
-            * **D**: Diário | **S**: Semanal
-            * **Q**: Quinzenal | **M**: Mensal
-            * **T**: Trimestral | **A**: Anual
-            """)
+    formulario = st.session_state.get("formulario", {})
 
-        with col2:
-            st.warning("""
-            **⏱️ COMO REGISTRAR O TEMPO:**
-            * **Horas e Minutos**: Selecione o valor em cada coluna.
-            * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
-            """)
-            
-        with col3:
-            st.error("""
-            **⚠️ DETALHE:**
-            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
-            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            """)        
-        
-        
-        
-        st.subheader("🔹 Atividades Executadas")
-        
-        edit_ativ = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
+    # -------------------------
+    # Inputs do formulário
+    # -------------------------
+    col1, col2 = st.columns(2)
+    nome = col1.text_input("Nome do colaborador", value=formulario.get("nome", ""))
+    setor = col2.text_input("Setor", value=formulario.get("setor", ""))
+    cargo = col1.text_input("Cargo", value=formulario.get("cargo", ""))
+    chefe = col2.text_input("Chefe imediato", value=formulario.get("chefe", ""))
+    departamento = col1.text_input("Departamento", value=formulario.get("departamento", ""))
+    empresa = col2.text_input("Empresa / Unidade", value=formulario.get("empresa", ""))
+    escolaridade = col1.text_input("Escolaridade", value=formulario.get("escolaridade", ""))
+    devolucao = col2.text_input("Devolver preenchido em", value=formulario.get("devolucao", ""))
+
+    cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=formulario.get("cursos", ""))
+    objetivo = st.text_area("Trabalho e principal objetivo", value=formulario.get("objetivo", ""))
+
+    # DataFrames: atividades, dificuldades, sugestões
+    edit_ativ = st.data_editor(
+        pd.DataFrame(formulario.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""}]*20)),
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    edit_dif = st.data_editor(
+        pd.DataFrame(formulario.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""}]*20)),
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    edit_sug = st.data_editor(
+        pd.DataFrame(formulario.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""}]*20)),
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # Questionário DISC
+    perguntas_disc = [...]  # sua lista de perguntas
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        st.radio(
+            label=f"{i}. {pergunta}",
+            options=["A", "B", "C", "D"],
+            key=f"disc_{i}",
+            horizontal=True,
+            index=None
         )
-
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        
-        edit_dif = st.data_editor(
-                pd.DataFrame({
-                        "Dificuldade": [""] * 20,
-                        "Setor/Parceiro Envolvido": [""] * 20,
-                        "Frequência": [""] * 20,
-                        "Horas Perdidas": [""] * 20,
-                        "Minutos Perdidos": [""] * 20
-                }),
-                column_config={
-                        "Frequência": st.column_config.SelectboxColumn(
-                                "Frequência", 
-                                options=lista_frequencia
-                        ),
-                        "Horas Perdidas": st.column_config.SelectboxColumn(
-                                "Horas Perdidas", 
-                                options=lista_horas
-                        ),
-                        "Minutos Perdidos": st.column_config.SelectboxColumn(
-                                "Minutos Perdidos", 
-                                options=lista_minutos
-                        ),
-                },
-                hide_index=True,
-                num_rows="fixed",
-                use_container_width=True,
-                key="dif_editor"
-        )
-
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
-        edit_sug = st.data_editor(
-            pd.DataFrame({
-                "Sugestão de Melhoria": [""] * 20,
-                "Impacto Esperado": [""] * 20,
-                "Redução Horas": [""] * 20,
-                "Redução Minutos": [""] * 20,
-                "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="sug_editor"
-        )
-
-        
-
-        
-
-        st.markdown("---")
-        st.subheader("📊 Questionário DISC")
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(
-                label=f"{i}. {pergunta}", 
-                options=["A", "B", "C", "D"], 
-                key=f"disc_{i}", 
-                horizontal=True, 
-                index=None
-            )
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
