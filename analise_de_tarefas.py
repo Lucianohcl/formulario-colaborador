@@ -2010,7 +2010,28 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    # ... restante das perguntas ...
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
 # ================================
@@ -2040,84 +2061,72 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     return r.status_code in [200, 201]
 
 # ================================
-# 3. INICIALIZAÇÃO DE SESSÃO
+# 3. INTERFACE STREAMLIT
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
+st.title("📝 Gerar Rascunho")
 
-if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "rascunho"
-if "nome_usuario" not in st.session_state:
-    st.session_state["nome_usuario"] = ""
-if "rascunho_carregado" not in st.session_state:
-    st.session_state["rascunho_carregado"] = False
-if "enviado_formulario" not in st.session_state:
-    st.session_state["enviado_formulario"] = False
+# --- Nome do colaborador ---
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
 
-# ================================
-# 4. PÁGINA INICIAL - GERAR RASCUNHO
-# ================================
-if st.session_state["pagina"] == "rascunho":
-    st.title("📝 Gerar Rascunho")
-    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", value=st.session_state["nome_usuario"])
-    primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
+# --- Caixa de cadastro ---
+primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)", key="primeira_vez_checkbox")
 
-    if nome_usuario:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        arquivo_nome = f"rascunho_{nome_limpo}.json"
-        dados_existentes, _ = carregar(arquivo_nome)
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+    dados_rascunho, _ = carregar(arquivo_nome)
 
-        if primeira_vez:
-            if dados_existentes:
-                st.warning("⚠️ Já existe cadastro.")
-            elif st.button("✅ Criar Rascunho"):
-                salvar({"nome": nome_usuario}, arquivo_nome, "Criar rascunho inicial")
-                st.success("Rascunho criado! Agora desmarque a caixa e continue.")
-        else:
-            if dados_existentes:
-                st.success(f"✅ Bem-vindo, {nome_usuario}!")
-                if st.button("➡️ Ir para o Formulário"):
-                    st.session_state["pagina"] = "formulario"
-                    st.session_state["nome_usuario"] = nome_usuario
-                    st.experimental_rerun()
-            else:
-                st.error("❌ Nome não encontrado.")
+    if primeira_vez:
+        if dados_rascunho:
+            st.warning("⚠️ Já existe cadastro.")
+        elif st.button("✅ Criar Rascunho", key=f"btn_criar_{nome_limpo}"):
+            if salvar({"nome": nome_usuario}, arquivo_nome, "Criação do rascunho"):
+                st.success("✅ Rascunho criado!")
+    else:
+        if dados_rascunho:
+            st.success(f"✅ Bem-vindo, {nome_usuario}!")
+            if st.button("➡️ Ir para o Formulário", key=f"btn_form_{nome_limpo}"):
+                st.session_state["nome_usuario"] = nome_usuario
+                st.session_state["rascunho_carregado"] = False
+                st.experimental_rerun = False  # evitamos experimental_rerun
+                st.session_state["ir_para_formulario"] = True
 
 # ================================
-# 5. FORMULÁRIO COMPLETO
+# 4. FORMULÁRIO
 # ================================
-elif st.session_state["pagina"] == "formulario":
-    st.title("📋 Formulário Completo do Colaborador")
-    nome_usuario = st.session_state["nome_usuario"]
+if st.session_state.get("ir_para_formulario") or st.session_state.get("nome_usuario"):
+    nome_usuario = st.session_state.get("nome_usuario")
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
 
-    # Carregar rascunho uma única vez
-    if not st.session_state["rascunho_carregado"]:
-        dados, _ = carregar(arquivo_nome)
-        if dados:
-            st.session_state.update(dados)
+    st.header(f"📋 Formulário de {nome_usuario}")
+
+    # Carrega rascunho se ainda não carregado
+    if not st.session_state.get("rascunho_carregado"):
+        dados_rascunho, _ = carregar(arquivo_nome)
+        if dados_rascunho:
+            st.session_state.update(dados_rascunho)
         st.session_state["rascunho_carregado"] = True
 
-    st.success(f"📋 Rascunho de {nome_usuario} carregado!")
-
-    # --- DADOS DE IDENTIFICAÇÃO ---
+    # --- Dados de Identificação ---
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
     with col1:
-        nome = st.text_input("Nome", st.session_state.get("nome", nome_usuario), key="nome")
-        cargo = st.text_input("Cargo", st.session_state.get("cargo", ""), key="cargo")
-        depto = st.text_input("Departamento", st.session_state.get("departamento", ""), key="departamento")
-        escolaridade = st.text_input("Escolaridade", st.session_state.get("escolaridade", ""), key="escolaridade")
+        nome = st.text_input("Nome", st.session_state.get("nome", nome_usuario), key=f"nome_{nome_limpo}")
+        cargo = st.text_input("Cargo", st.session_state.get("cargo", ""), key=f"cargo_{nome_limpo}")
+        depto = st.text_input("Departamento", st.session_state.get("departamento", ""), key=f"depto_{nome_limpo}")
+        escolaridade = st.text_input("Escolaridade", st.session_state.get("escolaridade", ""), key=f"escolaridade_{nome_limpo}")
     with col2:
-        setor = st.text_input("Setor", st.session_state.get("setor", ""), key="setor")
-        chefe = st.text_input("Chefe imediato", st.session_state.get("chefe", ""), key="chefe")
-        empresa = st.text_input("Empresa", st.session_state.get("empresa", ""), key="empresa")
-        devolucao = st.text_input("Devolver em", st.session_state.get("devolucao", ""), key="devolucao")
+        setor = st.text_input("Setor", st.session_state.get("setor", ""), key=f"setor_{nome_limpo}")
+        chefe = st.text_input("Chefe imediato", st.session_state.get("chefe", ""), key=f"chefe_{nome_limpo}")
+        empresa = st.text_input("Empresa", st.session_state.get("empresa", ""), key=f"empresa_{nome_limpo}")
+        devolucao = st.text_input("Devolver em", st.session_state.get("devolucao", ""), key=f"devolucao_{nome_limpo}")
 
-    cursos = st.text_area("Cursos", st.session_state.get("cursos", ""), key="cursos")
-    objetivo = st.text_area("Objetivo", st.session_state.get("objetivo", ""), key="objetivo")
+    cursos = st.text_area("Cursos", st.session_state.get("cursos", ""), key=f"cursos_{nome_limpo}")
+    objetivo = st.text_area("Objetivo", st.session_state.get("objetivo", ""), key=f"objetivo_{nome_limpo}")
 
-    # --- ATIVIDADES ---
+    # --- Atividades ---
     st.markdown("---")
     st.subheader("🔹 Atividades Executadas")
     df_ativ = pd.DataFrame(st.session_state.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
@@ -2125,9 +2134,9 @@ elif st.session_state["pagina"] == "formulario":
         "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
         "Horas": st.column_config.SelectboxColumn(options=lista_horas),
         "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key="ativ_ed")
+    }, hide_index=True, use_container_width=True, key=f"ativ_ed_{nome_limpo}")
 
-    # --- DIFICULDADES ---
+    # --- Dificuldades ---
     st.markdown("---")
     st.subheader("⚠️ Dificuldades e Bloqueios")
     df_dif = pd.DataFrame(st.session_state.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(20)]))
@@ -2135,9 +2144,9 @@ elif st.session_state["pagina"] == "formulario":
         "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
         "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
         "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key="dif_editor")
+    }, hide_index=True, use_container_width=True, key=f"dif_editor_{nome_limpo}")
 
-    # --- SUGESTÕES ---
+    # --- Sugestões ---
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria e Impacto")
     df_sug = pd.DataFrame(st.session_state.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(20)]))
@@ -2145,23 +2154,23 @@ elif st.session_state["pagina"] == "formulario":
         "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
         "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
         "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-    }, hide_index=True, use_container_width=True, key="sug_editor")
+    }, hide_index=True, use_container_width=True, key=f"sug_editor_{nome_limpo}")
 
-    # --- QUESTIONÁRIO DISC ---
+    # --- Questionário DISC ---
     st.markdown("---")
     st.subheader("📊 Questionário DISC")
     respostas_disc = {}
     for i, pergunta in enumerate(perguntas_disc, 1):
         chave = f"disc_{i}"
         valor_salvo = st.session_state.get(chave)
-        idx = ["A","B","C","D"].index(valor_salvo) if valor_salvo in ["A","B","C","D"] else None
-        respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A","B","C","D"], index=idx, horizontal=True, key=f"disc_{i}")
+        idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else 0
+        respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"r_{i}_{nome_limpo}")
 
-    # --- BOTÕES ---
+    # --- Botões ---
     st.markdown("---")
-    col_save, col_send = st.columns(2)
-    with col_save:
-        if st.button("💾 Salvar Rascunho"):
+    col_bot1, col_bot2 = st.columns(2)
+    with col_bot1:
+        if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
             payload = {
                 "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
                 "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
@@ -2172,13 +2181,13 @@ elif st.session_state["pagina"] == "formulario":
                 **respostas_disc,
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload, arquivo_nome, "Atualizar rascunho"):
-                st.success("✅ Rascunho salvo!")
+            if salvar(payload, arquivo_nome, "Atualização do rascunho"):
+                st.success("✅ Rascunho salvo no GitHub!")
             else:
-                st.error("❌ Erro ao salvar.")
+                st.error("❌ Erro ao salvar o rascunho.")
 
-    with col_send:
-        if st.button("📤 Enviar para Formulário") and not st.session_state["enviado_formulario"]:
+    with col_bot2:
+        if st.button("📤 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
             payload = {
                 "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
                 "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
@@ -2187,11 +2196,10 @@ elif st.session_state["pagina"] == "formulario":
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas_disc,
-                "enviado": True,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+                "enviado_para_formulario": True,
+                "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload, f"formulario_{nome_limpo}.json", "Enviar para formulário"):
-                st.success("📤 Formulário enviado!")
-                st.session_state["enviado_formulario"] = True
+            if salvar(payload, f"formulario_{nome_limpo}.json", "Envio para formulário"):
+                st.success("📤 Dados enviados para o formulário!")
             else:
-                st.error("❌ Erro ao enviar.")
+                st.error("❌ Erro ao enviar para o formulário.")
