@@ -151,6 +151,11 @@ def salvar(dados, arquivo_nome, msg="Update"):
     res = requests.put(url, json=payload, headers=headers)
     return res.status_code in [200, 201]
 
+# --- LISTAS PADRONIZADAS (Agora na margem esquerda, sem espaços antes) ---
+lista_horas = [f"{i} h" for i in range(25)]
+lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
 # --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
 from fpdf import FPDF
