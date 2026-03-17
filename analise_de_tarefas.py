@@ -2161,9 +2161,10 @@ if nome_usuario:
                 index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
                 horizontal=True, key=f"radio_{i}")
 
-        # 6. BOTÃO SALVAR
+        # 6. BOTÃO SALVAR E ALIMENTAR
         st.markdown("---")
-        if st.button("💾 Salvar Rascunho"):
+        if st.button("💾 Salvar e Alimentar Formulário"):
+            # 12 espaços de recuo na linha abaixo:
             payload = {
                 "nome": nome,
                 "cargo": cargo,
@@ -2171,18 +2172,25 @@ if nome_usuario:
                 "setor": setor,
                 "chefe": chefe,
                 "empresa": empresa,
-                "cursos": cursos,       # <- valor atualizado do usuário
-                "objetivo": objetivo,   # <- valor atualizado do usuário
+                "cursos": cursos,
+                "objetivo": objetivo,
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas_disc,
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload, arquivo_nome):
-                st.success("✅ Rascunho salvo com sucesso no servidor!")
+            
+            # 1. Salva no servidor (para o usuário não perder o progresso)
+            nuvem_ok = salvar(payload, arquivo_nome)
+            
+            # 2. ALIMENTA o formulário principal do App (O que você queria!)
+            st.session_state["formulario"] = payload
+            
+            if nuvem_ok:
+                st.success("✅ Rascunho salvo e Formulário alimentado com sucesso!")
             else:
-                st.error("❌ Falha ao salvar. Verifique sua conexão.")
+                st.warning("⚠️ Formulário alimentado, mas houve erro ao salvar na nuvem.")
 
 # Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
 
