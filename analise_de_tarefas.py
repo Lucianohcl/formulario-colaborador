@@ -1025,6 +1025,9 @@ if st.query_params.get("page") == "formulario":
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
+    # Entrada do nome do colaborador
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+   
     # ===========================
     # COPIAR RASCUNHO PARA O FORMULÁRIO
     # ===========================
