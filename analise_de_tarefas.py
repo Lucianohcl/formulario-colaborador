@@ -18,6 +18,13 @@ import pytz
 import time
 from zoneinfo import ZoneInfo
 import plotly.express as px
+import streamlit as st
+import pandas as pd
+import json
+import os
+import requests
+import base64
+from datetime import datetime
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -114,6 +121,35 @@ perguntas_disc = [
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
+
+# Configurações vindas do seu Secrets do Streamlit
+USER = st.secrets["DB_USERNAME"]
+TOKEN = st.secrets["DB_TOKEN"]
+REPO = "formulario-colaborador"
+
+def carregar(arquivo_nome):
+    """Lê o arquivo direto do GitHub"""
+    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo_nome}"
+    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github.v3.raw"}
+    try:
+        r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            return json.loads(r.text), True
+        return {}, False
+    except:
+        return {}, False
+
+def salvar(dados, arquivo_nome, msg="Update"):
+    """Salva o arquivo direto no GitHub"""
+    url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo_nome}"
+    headers = {"Authorization": f"token {TOKEN}"}
+    r = requests.get(url, headers=headers)
+    sha = r.json().get("sha") if r.status_code == 200 else None
+    conteudo = base64.b64encode(json.dumps(dados, indent=4).encode("utf-8")).decode("utf-8")
+    payload = {"message": msg, "content": conteudo, "branch": "main"}
+    if sha: payload["sha"] = sha
+    res = requests.put(url, json=payload, headers=headers)
+    return res.status_code in [200, 201]
 
 # --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
