@@ -1041,13 +1041,16 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
+        
+        
         # --- SEÇÃO DE ATIVIDADES ---
         st.markdown("---")
         
         # Mude para 3 colunas
-        col1_info, col2_info, col3_info = st.columns(3)
+        col1, col2, col3 = st.columns(3)
         
-        with col1_info:
+        # Supondo que você tenha definido col1, col2 e col3 anteriormente
+        with col1:
             st.info("""
             **📋 LEGENDA DE FREQUÊNCIA:**
             * **DVD**: Diário Várias Vezes
@@ -1056,7 +1059,7 @@ if st.query_params.get("page") == "formulario":
             * **T**: Trimestral | **A**: Anual
             """)
 
-        with col2_info:
+        with col2:
             st.warning("""
             **⏱️ COMO REGISTRAR O TEMPO:**
             * **Horas e Minutos**: Selecione o valor em cada coluna.
@@ -1064,226 +1067,163 @@ if st.query_params.get("page") == "formulario":
             * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
             """)
             
-        with col3_info:
+        with col3:
             st.error("""
             **⚠️ DETALHE:**
             * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
             * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            """) 
-  
+            """)        
         
         
         
+    # ===========================
+    # Tabela de Alta Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Alta Complexidade")
+    atividades_alta = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_alta",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
 
-        
-    # --- FINAL DO BLOCO 'WITH' ---
+    # ===========================
+    # Tabela de Nível Normal
+    # ===========================
+    st.subheader("🔹 Atividades de Nível Normal")
+    atividades_normal = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_normal",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
 
-# ===========================
-# QUESTIONÁRIO DISC (FORA DO FORM)
-# ===========================
-st.markdown("---")
-st.subheader("📊 Questionário")
-
-respostas_disc = {}
-
-for i, pergunta in enumerate(perguntas_disc, 1):
-    respostas_disc[f"disc_{i}"] = st.radio(
-        f"{i}. {pergunta}",
-        ["A", "B", "C", "D"],
-        horizontal=True,
-        key=f"disc_radio_{i}"
+    # ===========================
+    # Tabela de Baixa Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Baixa Complexidade")
+    atividades_baixa = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_baixa",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
     )
 
 
-    if enviar:
-        pendencias = {}
-        # ... aqui entra sua lógica de salvar JSON e validações ...
-        st.write("Processando envio...")       
-
-# --- FINAL DO BLOCO 'WITH' ---
-    # Alinhado com o 'with' (4 espaços)
-    if enviar:
-        # Tudo que está dentro do 'if' tem exatamente 8 espaços
-        # Inicializa pendencias para evitar NameError
-        pendencias = {}
-
-        # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
-        nome_limpo = nome.strip().replace(" ", "_")
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        dados_dir = os.path.join(base_dir, "dados")
-
-        if not os.path.exists(dados_dir):
-            os.makedirs(dados_dir, exist_ok=True)
-
-        arquivo_esperado = f"{nome_limpo}.json"
-
-        # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
-        if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
-            st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-            st.session_state["confirmado"] = False
-            st.stop()
-
-        # -------------------------------------------------
-        # 2. IDENTIFICAÇÃO
-        # -------------------------------------------------
-        campos_ident = {
-            "Nome": nome,
-            "Setor": setor,
-            "Cargo": cargo,
-            "Chefe": chefe,
-            "Departamento": departamento,
-            "Empresa": empresa,
-            "Escolaridade": escolaridade,
-            "Devolução preenchida em": devolucao
-        }
-
-        for campo, valor in campos_ident.items():
-            if not valor:
-                pendencias.setdefault("Identificação", []).append(campo)
-
-        # -------------------------------------------------
-        # 3. Cursos e Trabalho/Objetivo
-        # -------------------------------------------------
-        if not cursos:
-            pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
-        if not objetivo:
-            pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
-
-        # -------------------------------------------------
-        # 4. ATIVIDADES (Mínimo 1 linha completa)
-        # -------------------------------------------------
-        atividades_limpas = []
-        atividade_valida = False
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
         
-        # Unificando as tabelas de atividades se necessário ou processando a principal
-        # Aqui assumimos que edit_ativ se refere às tabelas acima. 
-        # Exemplo para uma tabela (repita a lógica se houver mais de uma):
-        for i, row in atividades_alta.iterrows():
-            tem_algo = any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]])
-            
-            if tem_algo:
-                faltantes = []
-                if not row["Atividade Descrita"]: faltantes.append("Descrição")
-                if not row["Frequência"]: faltantes.append("Frequência")
-                if row["Horas"] in ["", None]: faltantes.append("Horas")
-                if row["Minutos"] in ["", None]: faltantes.append("Minutos")
-                
-                if not faltantes:
-                    atividade_valida = True
-                    atividades_limpas.append(row.to_dict())
-                else:
-                    pendencias.setdefault("Atividades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+        edit_dif = st.data_editor(
+                pd.DataFrame({
+                        "Dificuldade": [""] * 20,
+                        "Setor/Parceiro Envolvido": [""] * 20,
+                        "Frequência": [""] * 20,
+                        "Horas Perdidas": [""] * 20,
+                        "Minutos Perdidos": [""] * 20
+                }),
+                column_config={
+                        "Frequência": st.column_config.SelectboxColumn(
+                                "Frequência", 
+                                options=lista_frequencia
+                        ),
+                        "Horas Perdidas": st.column_config.SelectboxColumn(
+                                "Horas Perdidas", 
+                                options=lista_horas
+                        ),
+                        "Minutos Perdidos": st.column_config.SelectboxColumn(
+                                "Minutos Perdidos", 
+                                options=lista_minutos
+                        ),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="dif_editor"
+        )
 
-        if not atividade_valida:
-            pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
+        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria e Impacto")
+        
+        edit_sug = st.data_editor(
+            pd.DataFrame({
+                "Sugestão de Melhoria": [""] * 20,
+                "Impacto Esperado": [""] * 20,
+                "Redução Horas": [""] * 20,
+                "Redução Minutos": [""] * 20,
+                "Frequência do Impacto": [""] * 20
+            }).reset_index(drop=True),
+            column_config={
+                "Redução Horas": st.column_config.SelectboxColumn(
+                    "Redução Horas", 
+                    options=lista_horas
+                ),
+                "Redução Minutos": st.column_config.SelectboxColumn(
+                    "Redução Minutos", 
+                    options=lista_minutos
+                ),
+                "Frequência do Impacto": st.column_config.SelectboxColumn(
+                    "Frequência do Impacto", 
+                    options=lista_frequencia
+                ),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="sug_editor"
+        )
 
-        # -------------------------------------------------
-        # 5. DIFICULDADES (Mínimo 1 linha completa)
-        # -------------------------------------------------
-        dificuldades_limpas = []
-        dificuldade_valida = False
-        for i, row in edit_dif.iterrows():
-            tem_algo = any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"], row["Horas Perdidas"], row["Minutos Perdidos"]])
-            
-            if tem_algo:
-                faltantes = []
-                if not row["Dificuldade"]: faltantes.append("Descrição")
-                if not row["Setor/Parceiro Envolvido"]: faltantes.append("Setor/Parceiro")
-                if not row["Frequência"]: faltantes.append("Frequência")
-                if row["Horas Perdidas"] in ["", None]: faltantes.append("Horas")
-                if row["Minutos Perdidos"] in ["", None]: faltantes.append("Minutos")
-                
-                if not faltantes:
-                    dificuldade_valida = True
-                    dificuldades_limpas.append(row.to_dict())
-                else:
-                    pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+        
 
-        if not dificuldade_valida:
-            pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
+        
 
-        # -------------------------------------------------
-        # 6. SUGESTÕES (Mínimo 1 linha completa)
-        # -------------------------------------------------
-        sugestoes_limpas = []
-        sugestao_valida = False
-        for i, row in edit_sug.iterrows():
-            tem_algo = any([row["Sugestão de Melhoria"], row["Impacto Esperado"], row["Frequência do Impacto"], row["Redução Horas"], row["Redução Minutos"]])
-            
-            if tem_algo:
-                faltantes = []
-                if not row["Sugestão de Melhoria"]: faltantes.append("Descrição")
-                if not row["Impacto Esperado"]: faltantes.append("Impacto Esperado")
-                if not row["Frequência do Impacto"]: faltantes.append("Frequência")
-                if row["Redução Horas"] in ["", None]: faltantes.append("Horas")
-                if row["Redução Minutos"] in ["", None]: faltantes.append("Minutos")
-                
-                if not faltantes:
-                    sugestao_valida = True
-                    sugestoes_limpas.append(row.to_dict())
-                else:
-                    pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-        if not sugestao_valida:
-            pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
-
-        # -------------------------------------------------
-        # 7. DISC
-        # -------------------------------------------------
-        disc_faltando = []
-        for i in range(1, 25):
-            if not st.session_state.get(f"disc_{i}"):
-                disc_faltando.append(f"Questão {i}")
-        if disc_faltando:
-            pendencias["DISC"] = [", ".join(disc_faltando)]
-
-        # -------------------------------------------------
-        # RESULTADO DAS VALIDAÇÕES
-        # -------------------------------------------------
-        if pendencias:
-            st.error("⚠️ O formulário possui pendências. Confira abaixo:")
-            for secao, itens in pendencias.items():
-                st.write(f"**{secao}**:")
-                for item in itens:
-                    st.write(f"- {item}")
-            st.session_state["confirmado"] = False
-            st.stop()
-
-        # -------------------------------------------------
-        # CONFIRMAÇÃO EM DOIS CLIQUES
-        # -------------------------------------------------
-        if not st.session_state.get("confirmado", False):
-            st.warning("⚠️ Tudo certo! Revise suas respostas. O envio é único. Clique em ENVIAR novamente.")
-            st.session_state["confirmado"] = True
-            st.stop()
-
-        # -------------------------------------------------
-        # ENVIO FINAL (Salvar JSON)
-        # -------------------------------------------------
-        dados = {
-            "nome": nome,
-            "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
-            "setor": setor,
-            "cargo": cargo,
-            "chefe": chefe,
-            "departamento": departamento,
-            "empresa": empresa,
-            "escolaridade": escolaridade,
-            "devolucao": devolucao,
-            "cursos": cursos,
-            "objetivo": objetivo,
-            "atividades": atividades_limpas,
-            "dificuldades": dificuldades_limpas,
-            "sugestoes": sugestoes_limpas,
-            "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-        }
-
-        caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-        with open(caminho, "w", encoding="utf-8") as f:
-            json.dump(dados, f, ensure_ascii=False, indent=4)
-
-        st.success("✅ Formulário enviado com sucesso!")
-        st.session_state["confirmado"] = False        
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None
+            )
+        # BOTÃO DO FORMULÁRIO
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+       
     
 
 
@@ -2256,7 +2196,7 @@ if nome_usuario:
         # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
         
-        # ===========================
+    # ===========================
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
