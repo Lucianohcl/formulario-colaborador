@@ -1076,24 +1076,68 @@ if st.query_params.get("page") == "formulario":
         
         
         
-        st.subheader("🔹 Atividades Executadas")
-        
-        edit_ativ = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
+    # ===========================
+    # Tabela de Alta Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Alta Complexidade")
+    atividades_alta = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Nível Normal
+    # ===========================
+    st.subheader("🔹 Atividades de Nível Normal")
+    atividades_normal = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Baixa Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Baixa Complexidade")
+    atividades_baixa = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
 
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
@@ -1164,7 +1208,7 @@ if st.query_params.get("page") == "formulario":
         
 
         st.markdown("---")
-        st.subheader("📊 Questionário DISC")
+        st.subheader("📊 Questionário")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
@@ -2265,7 +2309,7 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.title("🚀 Analise de Tarefas e Perfil")
+st.info("📝 Gerar Rascunho")
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
@@ -2310,15 +2354,68 @@ if nome_usuario:
         # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
         # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
-        # 2. TABELA ATIVIDADES
-        st.markdown("---")
-        st.subheader("🔹 Atividades Executadas")
-        df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="ativ_ed")
+    # ===========================
+    # Tabela de Alta Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Alta Complexidade")
+    atividades_alta = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Nível Normal
+    # ===========================
+    st.subheader("🔹 Atividades de Nível Normal")
+    atividades_normal = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Baixa Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Baixa Complexidade")
+    atividades_baixa = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
 
         # 3. TABELA DIFICULDADES
         st.markdown("---")
@@ -2342,7 +2439,7 @@ if nome_usuario:
 
         # 5. QUESTIONÁRIO DISC
         st.markdown("---")
-        st.subheader("📊 Questionário DISC")
+        st.subheader("📊 Questionário")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
