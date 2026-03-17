@@ -804,12 +804,16 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-    # Inicializa usuário
+    
+    # Inicializa sem criar widget visível
     if "nome_usuario" not in st.session_state:
         st.session_state["nome_usuario"] = ""
+
+    # Atualiza diretamente com o valor do rascunho
+    st.session_state["nome_usuario"] = "Pedro Marcelo"  # exemplo
     nome_usuario = st.session_state["nome_usuario"]
 
-    # --- BOTÃO DE CRIAR RASCUNHO (aparece só se ainda não houver rascunho) ---
+    # --- BOTÃO DE CRIAR RASCUNHO ---
     if "rascunho" not in st.session_state:
         col1, _ = st.columns(2)
         with col1:
@@ -829,9 +833,6 @@ if st.query_params.get("page") == "formulario":
                 }
                 st.session_state["rascunho"] = payload
                 st.success("✅ Rascunho criado dentro do formulário!")
-    else:
-        st.info("📝 Rascunho já criado. Os campos abaixo já estão preenchidos.")
-    
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
