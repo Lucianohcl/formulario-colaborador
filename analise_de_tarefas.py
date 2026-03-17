@@ -804,14 +804,12 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-    # 1. INJEÇÃO MINIMALISTA (Carrega o rascunho para a memória uma única vez)
-    if "rascunho_carregado" not in st.session_state:
-        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-        dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
-        if sucesso:
-            st.session_state.update(dados)
-            st.session_state["rascunho_carregado"] = True
-            st.rerun()    
+    if "rascunho_carregado" not in st.session_state and nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
+    if sucesso:
+        st.session_state.update(dados)
+    st.session_state["rascunho_carregado"] = True    
 
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
@@ -2137,7 +2135,8 @@ else:
         arquivo_nome = f"rascunho_{nome_limpo}.json"
         
         primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
-        dados_e, _ = carregar(arquivo_nome)
+        if nome_usuario:
+            dados_e, _ = carregar(arquivo_nome)
 
         if primeira_vez:
             if dados_e: st.warning("⚠️ Já existe cadastro.")
