@@ -1072,7 +1072,7 @@ if st.query_params.get("page") == "formulario":
             """) 
   
         # ===========================
-        # 5. QUESTIONÁRIO DISC  👈 AQUI
+        # 5. QUESTIONÁRIO DISC
         # ===========================
         st.markdown("---")
         st.subheader("📊 Questionário")
@@ -1086,11 +1086,9 @@ if st.query_params.get("page") == "formulario":
                 f"{i}. {pergunta}",
                 ["A", "B", "C", "D"],
                 horizontal=True,
-                key=f"form_disc_radio_{i}"  # chave única
+                key=f"form_disc_radio_{i}",
+                index=None  # 🔥 ESSA LINHA É O AJUSTE CRÍTICO
             )
-
-        # 🔻 BOTÃO TEM QUE VIR DEPOIS
-        enviar = st.form_submit_button("Enviar Formulário")       
         
         
 
