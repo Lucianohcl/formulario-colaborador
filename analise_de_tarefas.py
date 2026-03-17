@@ -2084,7 +2084,12 @@ st.info("📝 Gerar Rascunho")
 if "exibir_rascunho" not in st.session_state:
     st.session_state["exibir_rascunho"] = True
 
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+# Inicializa rascunho invisível sem criar widget
+if "nome_usuario" not in st.session_state:
+    st.session_state["nome_usuario"] = valor_do_rascunho  # pegue o nome do arquivo JSON ou do payload
+
+nome_usuario = st.session_state["nome_usuario"]
+
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
 if nome_usuario and st.session_state.get("exibir_rascunho", True):
