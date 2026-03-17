@@ -1024,23 +1024,49 @@ if st.query_params.get("page") == "formulario":
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-    
-    # ÚNICO BLOCO DO FORMULÁRIO
+
+    # ===========================
+    # COPIAR RASCUNHO PARA O FORMULÁRIO
+    # ===========================
+    if nome_usuario:
+        arquivo_nome = f"rascunho_{nome_usuario.strip().replace(' ', '_')}.json"
+
+        if st.button("📥 Copiar rascunho para o formulário"):
+            dados, _ = carregar(arquivo_nome)
+            if dados:
+                st.session_state["dados_importados"] = dados
+                st.success("Rascunho copiado com sucesso para o formulário!")
+            else:
+                st.warning("Nenhum rascunho encontrado para copiar.")
+
+    # Pegando dados importados
+    dados_importados = st.session_state.get("dados_importados", {})
+    ident = dados_importados.get("Identificacao", {})
+    atividades_alta_df = pd.DataFrame(dados_importados.get("Atividades", {}).get("Alta", []))
+    atividades_normal_df = pd.DataFrame(dados_importados.get("Atividades", {}).get("Normal", []))
+    atividades_baixa_df = pd.DataFrame(dados_importados.get("Atividades", {}).get("Baixa", []))
+    dificuldades_df = pd.DataFrame(dados_importados.get("Dificuldades", []))
+    sugestoes_df = pd.DataFrame(dados_importados.get("Sugestoes", []))
+    disc_importado = dados_importados.get("DISC", {})
+
+    # ===========================
+    # BLOCO DO FORMULÁRIO
+    # ===========================
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome do colaborador")
-        setor = col2.text_input("Setor")
-        cargo = col1.text_input("Cargo")
-        chefe = col2.text_input("Chefe imediato")
-        departamento = col1.text_input("Departamento")
-        empresa = col2.text_input("Empresa / Unidade")
-        escolaridade = col1.text_input("Escolaridade")
-        devolucao = col2.text_input("Devolver preenchido em")
+        nome = col1.text_input("Nome", key="nome", value=ident.get("Nome", ""))
+        setor = col2.text_input("Setor", value=ident.get("Setor", ""))
+        cargo = col1.text_input("Cargo", value=ident.get("Cargo", ""))
+        chefe = col2.text_input("Chefe imediato", value=ident.get("Chefe", ""))
+        departamento = col1.text_input("Departamento", value=ident.get("Departamento", ""))
+        empresa = col2.text_input("Empresa / Unidade", value=ident.get("Empresa", ""))
+        escolaridade = col1.text_input("Escolaridade", value=ident.get("Escolaridade", ""))
+        devolucao = col2.text_input("Devolver preenchido em", value=ident.get("Devolução preenchida em", ""))
         
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
-        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_importados.get("Cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", value=dados_importados.get("Objetivo", ""))
+
         # --- SEÇÃO DE INSTRUÇÕES ---
         st.markdown("---")
         col_inst1, col_inst2, col_inst3 = st.columns(3)
@@ -1068,18 +1094,18 @@ if st.query_params.get("page") == "formulario":
             * A numeração lateral (nones) é nativa do sistema.
             * Ignore-a e preencha normalmente; isso não afeta os dados.
             """)        
-        
+
         # ===========================
-        # Tabela de Alta Complexidade
+        # Tabelas de Atividades
         # ===========================
         st.subheader("🔹 Atividades de Alta Complexidade")
         atividades_alta = st.data_editor(
-            pd.DataFrame({
+            atividades_alta_df if not atividades_alta_df.empty else pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True),
+            }),
             key="form_atividades_alta",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -1091,17 +1117,14 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True
         )
 
-        # ===========================
-        # Tabela de Nível Normal
-        # ===========================
         st.subheader("🔹 Atividades de Nível Normal")
         atividades_normal = st.data_editor(
-            pd.DataFrame({
+            atividades_normal_df if not atividades_normal_df.empty else pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True),
+            }),
             key="form_atividades_normal",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -1113,17 +1136,14 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True
         )
 
-        # ===========================
-        # Tabela de Baixa Complexidade
-        # ===========================
         st.subheader("🔹 Atividades de Baixa Complexidade")
         atividades_baixa = st.data_editor(
-            pd.DataFrame({
+            atividades_baixa_df if not atividades_baixa_df.empty else pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True),
+            }),
             key="form_atividades_baixa",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -1138,9 +1158,8 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        
         edit_dif = st.data_editor(
-            pd.DataFrame({
+            dificuldades_df if not dificuldades_df.empty else pd.DataFrame({
                 "Dificuldade": [""] * 20,
                 "Setor/Parceiro Envolvido": [""] * 20,
                 "Frequência": [""] * 20,
@@ -1161,15 +1180,14 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
         edit_sug = st.data_editor(
-            pd.DataFrame({
+            sugestoes_df if not sugestoes_df.empty else pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
                 "Impacto Esperado": [""] * 20,
                 "Redução Horas": [""] * 20,
                 "Redução Minutos": [""] * 20,
                 "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
+            }),
             column_config={
                 "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
                 "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
@@ -1190,12 +1208,22 @@ if st.query_params.get("page") == "formulario":
                 options=["A", "B", "C", "D"], 
                 key=f"disc_{i}", 
                 horizontal=True, 
-                index=None
+                index=["A","B","C","D"].index(disc_importado.get(f"disc_{i}", "A")) if disc_importado.get(f"disc_{i}") in ["A","B","C","D"] else 0
             )
 
-        # BOTÃO DO FORMULÁRIO
+        # BOTÃO DO FORMULÁRIO FINAL
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-       
+
+# ===========================
+# ✅ CHECKLIST DE FUNCIONALIDADES
+# ===========================
+# [x] Botão para copiar rascunho para o formulário
+# [x] Preenchimento automático de identificação
+# [x] Preenchimento de cursos e objetivo
+# [x] Preenchimento de atividades alta/normal/baixa
+# [x] Preenchimento de dificuldades e sugestões
+# [x] Preenchimento automático do questionário DISC
+# [x] Botão final para enviar o formulário       
     
 
 
