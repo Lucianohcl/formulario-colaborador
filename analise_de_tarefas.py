@@ -803,6 +803,37 @@ perguntas_disc = [
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
+    # 1. CARREGAR TUDO DO GITHUB
+    # A função carregar_dados já deve buscar o rascunho_nome.json
+    dados = carregar_dados(arquivo_nome) 
+
+    # 2. IDENTIFICAÇÃO (Puxando do JSON)
+    nome_c = st.text_input("Nome", value=dados.get("nome", ""))
+    setor = st.text_input("Setor", value=dados.get("setor", ""))
+    cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+    # ... faça isso para chefe, empresa, etc.
+
+    # 3. TABELAS (Atividades, Dificuldades, Sugestões)
+    # Se existirem dados no JSON, carrega. Se não, cria tabela vazia.
+    df_ativ = pd.DataFrame(dados.get("atividades", [{"Atividade": "", "Tempo": ""}] ))
+    edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", key="ativ_editor")
+
+    # 4. QUESTIONÁRIO DISC (As 24 perguntas)
+    # Aqui usamos um loop para marcar as respostas que já estavam salvas
+    respostas_disc = {}
+    for i in range(1, 25):
+        valor_salvo = dados.get(f"pergunta_{i}", "Selecione") # Busca o que foi salvo
+        respostas_disc[f"pergunta_{i}"] = st.selectbox(
+            f"Questão {i}", 
+            options=["Selecione", "D", "I", "S", "C"],
+            index=["Selecione", "D", "I", "S", "C"].index(valor_salvo),
+            key=f"disc_{i}"
+        )
+
+    # 5. O BOTÃO DE ENVIO FINAL (Que usa todos esses dados acima)
+    # Quando clicar aqui, ele pega o 'nome_c', o 'edit_ativ' e o 'respostas_disc' 
+    # e salva no arquivo final_...
+    
     
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
@@ -2051,39 +2082,81 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     return r.status_code in [200, 201]
 
 # ================================
-# 3. INTERFACE
+# 3. INTERFACE DO FORMULÁRIO
 # ================================
-st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-
-st.markdown("### Gerar Rascunho") # A legenda que você pediu
-
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
-
-if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
+if st.query_params.get("page") == "formulario":
+    st.title("📋 Formulário Completo do Colaborador")
     
-    # Tenta carregar. Se não existir, retorna None explicitamente
-    dados, _ = carregar(arquivo_nome)
+    # 1. CARREGAR TUDO (Memória Automática)
+    dados = carregar_dados(arquivo_nome)
 
-    if primeira_vez:
-        # Agora checamos se o conteúdo de dados realmente tem algo (como a chave 'nome')
-        if dados and "nome" in dados:
-            st.warning("⚠️ Este usuário já possui um rascunho. Desmarque a opção de cadastro para editar.")
-        else:
-            if st.button("✅ Criar meu Rascunho"):
-                if salvar({"nome": nome_usuario}, arquivo_nome, "Início"):
-                    st.success("🚀 Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    
-    else:
-        # Se 'dados' estiver vazio ou não tiver a chave 'nome', ele barra
-        if not dados or "nome" not in dados:
-            st.error("❌ Nome não encontrado. Se é novo aqui, marque a opção de cadastro acima.")
-            st.stop()
+    # 2. IDENTIFICAÇÃO (Preenchimento Automático)
+    st.markdown("### 👤 Identificação")
+    nome_c = st.text_input("Nome Completo", value=dados.get("nome", ""))
+    setor = st.text_input("Setor", value=dados.get("setor", ""))
+    cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+    chefe = st.text_input("Gestor Imediato", value=dados.get("chefe", ""))
+    depto = st.text_input("Departamento", value=dados.get("departamento", ""))
+    empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
+    escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
+    devolucao = st.text_input("Já recebeu devolução DISC?", value=dados.get("devolucao", ""))
+    cursos = st.text_area("Cursos Extracurriculares", value=dados.get("cursos", ""))
+    objetivo = st.text_area("Objetivo Profissional", value=dados.get("objetivo", ""))
 
-        # --- SE CHEGOU AQUI, O FORMULÁRIO ABRE ---
-        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
+    # Listas padronizadas para as tabelas
+    lista_horas = [f"{i} h" for i in range(25)]
+    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+
+    # 3. TABELAS (Carregando Atividades, Dificuldades e Sugestões)
+    st.divider()
+    st.subheader("🛠 Inventário de Atividades")
+    
+    # Carrega os dados salvos ou inicia com uma linha vazia se for novo
+    df_ativ = pd.DataFrame(dados.get("atividades", [{"Atividade": "", "Horas": "0 h", "Minutos": "0 min", "Freq": "D"}]))
+    edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", key="ativ_editor",
+        column_config={
+            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            "Freq": st.column_config.SelectboxColumn(options=lista_frequencia)
+        })
+
+    # 4. QUESTIONÁRIO DISC (Carregando as 24 respostas)
+    st.divider()
+    st.subheader("🧠 Perfil DISC")
+    respostas_disc = {}
+    
+    for i in range(1, 25):
+        valor_salvo = dados.get(f"pergunta_{i}", "Selecione")
+        # O index garante que o selectbox já apareça com o que foi salvo no rascunho
+        opcoes = ["Selecione", "D", "I", "S", "C"]
+        respostas_disc[f"pergunta_{i}"] = st.selectbox(
+            f"Questão {i}", 
+            options=opcoes,
+            index=opcoes.index(valor_salvo) if valor_salvo in opcoes else 0,
+            key=f"disc_{i}"
+        )
+
+    # 5. FINALIZAÇÃO E ENVIO (A trava que criamos)
+    st.divider()
+    pronto = st.checkbox("✅ O formulário está completo? (Marque para enviar o original)")
+
+    if pronto:
+        if st.button("🚀 ENVIAR FORMULÁRIO ORIGINAL"):
+            # Monta o payload final com TUDO o que está na tela
+            payload_final = {
+                "status": "FINALIZADO",
+                "data_envio": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M"),
+                "nome": nome_c, "setor": setor, "cargo": cargo, "chefe": chefe,
+                "departamento": depto, "empresa": empresa, "escolaridade": escolaridade,
+                "devolucao": devolucao, "cursos": cursos, "objetivo": objetivo,
+                "atividades": edit_ativ.to_dict("records"),
+                **respostas_disc
+            }
+            arquivo_final = f"final_{nome_limpo}.json"
+            if salvar(payload_final, arquivo_final, "Envio Final Automático"):
+                st.success("✨ SUCESSO! Dados enviados ao formulário original.")
+                
         # ... resto do código (Identificação, DISC, etc)
 
         # IDENTIFICAÇÃO
