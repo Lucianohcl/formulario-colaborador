@@ -2137,8 +2137,12 @@ if nome_usuario:
         st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
             payload = {
-                "nome": nome, "cargo": cargo, "departamento": depto,
-                "setor": setor, "chefe": chefe, "empresa": empresa,
+                "nome": nome,
+                "cargo": cargo,
+                "departamento": departamento,  # ✅ corrigido
+                "setor": setor,
+                "chefe": chefe,
+                "empresa": empresa,
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
