@@ -2081,21 +2081,25 @@ if nome_usuario:
 
     if primeira_vez:
         if st.button("✅ Criar Rascunho", key=f"btn_criar_{nome_limpo}"):
-            if salvar({"nome": nome_usuario}, arquivo_nome, "Novo rascunho"):
-                st.success("✅ Rascunho criado! Preencha os dados abaixo.")
-    else:
-        # Carrega rascunho existente
-        if not st.session_state.get("rascunho_carregado"):
-            dados_rascunho, _ = carregar(arquivo_nome)
-            if dados_rascunho:
-                for chave, valor in dados_rascunho.items():
-                    try:
-                        st.session_state[chave] = valor
-                    except Exception as e:
-                        print(f"Ignorado {chave}: {e}")
+            dados_iniciais = {"nome": nome_usuario}
+            if salvar(dados_iniciais, arquivo_nome, "Novo rascunho"):
+                # Atualiza a sessão imediatamente
+                st.session_state.update(dados_iniciais)
                 st.session_state["rascunho_carregado"] = True
+                st.success("✅ Rascunho criado! Preencha os dados abaixo.")
+        else:
+            # Carrega rascunho existente
+            if not st.session_state.get("rascunho_carregado"):
+                dados_rascunho, _ = carregar(arquivo_nome)
+                if dados_rascunho:
+                    for chave, valor in dados_rascunho.items():
+                        try:
+                            st.session_state[chave] = valor
+                        except Exception as e:
+                            print(f"Ignorado {chave}: {e}")
+                    st.session_state["rascunho_carregado"] = True
 
-        st.success(f"✅ Rascunho carregado: {nome_usuario}")
+            st.success(f"✅ Rascunho carregado: {nome_usuario}")
 
         # --- DADOS DE IDENTIFICAÇÃO ---
         st.subheader("👤 Dados de Identificação")
@@ -2154,54 +2158,62 @@ if nome_usuario:
             idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
             respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"disc_ed_{i}")
 
-        # --- BOTÕES ---
-        st.markdown("---")
-        col_bot1, col_bot2 = st.columns(2)
+    # -------------------------------------------------
+    # BOTÕES DE SALVAR RASCUNHO E ENVIAR FORMULÁRIO
+    # -------------------------------------------------
+    st.markdown("---")
+    col_bot1, col_bot2 = st.columns(2)
 
-        with col_bot1:
-            if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
-                payload = {
-                    "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
-                    "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
-                    "cursos": cursos, "objetivo": objetivo,
-                    "atividades": edit_ativ.to_dict("records"),
-                    "dificuldades": edit_dif.to_dict("records"),
-                    "sugestoes": edit_sug.to_dict("records"),
-                    **respostas_disc,
-                    "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-                }
-                if salvar(payload, arquivo_nome, "Atualização do rascunho"):
-                    st.success("✅ Rascunho salvo no GitHub!")
-                else:
-                    st.error("❌ Erro ao salvar o rascunho.")
+    with col_bot1:
+        if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
+            payload_rascunho = {
+                "nome": nome,
+                "cargo": cargo,
+                "departamento": depto,
+                "escolaridade": escolaridade,
+                "setor": setor,
+                "chefe": chefe,
+                "empresa": empresa,
+                "devolucao": devolucao,
+                "cursos": cursos,
+                "objetivo": objetivo,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            if salvar(payload_rascunho, arquivo_nome, "Atualização do rascunho"):
+                st.success("✅ Rascunho salvo no GitHub!")
+            else:
+                st.error("❌ Erro ao salvar o rascunho.")
 
-        with col_bot2:
-            if st.button("💾 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
-                dados_para_formulario = {
-                    "nome": st.session_state.get("nome", ""),
-                    "cargo": st.session_state.get("cargo", ""),
-                    "departamento": st.session_state.get("departamento", ""),
-                    "escolaridade": st.session_state.get("escolaridade", ""),
-                    "setor": st.session_state.get("setor", ""),
-                    "chefe": st.session_state.get("chefe", ""),
-                    "empresa": st.session_state.get("empresa", ""),
-                    "devolucao": st.session_state.get("devolucao", ""),
-                    "cursos": st.session_state.get("cursos", ""),
-                    "objetivo": st.session_state.get("objetivo", ""),
-                    "atividades": edit_ativ.to_dict("records"),
-                    "dificuldades": edit_dif.to_dict("records"),
-                    "sugestoes": edit_sug.to_dict("records"),
-                    **respostas_disc,
-                    "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-                }
-                arquivo_formulario = f"formulario_{st.session_state.get('nome', 'anonimo').lower().replace(' ', '_')}.json"
-                if salvar(dados_para_formulario, arquivo_formulario, mensagem="Envio para Formulário"):
-                    st.success("📤 Dados enviados para o formulário!")
-                    # Atualiza a sessão para refletir os dados enviados
-                    for chave, valor in dados_para_formulario.items():
-                        try:
-                            # Streamlit aceita strings, números, listas, dicionários simples
-                            st.session_state[chave] = valor
-                        except Exception as e:
-                            # Ignora campos problemáticos (como DataFrames diretamente)
-                            print(f"Ignorado na sessão {chave}: {e}")
+    with col_bot2:
+        if st.button("📤 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
+            payload_formulario = {
+                "nome": nome,
+                "cargo": cargo,
+                "departamento": depto,
+                "escolaridade": escolaridade,
+                "setor": setor,
+                "chefe": chefe,
+                "empresa": empresa,
+                "devolucao": devolucao,
+                "cursos": cursos,
+                "objetivo": objetivo,
+                "atividades": edit_ativ.to_dict("records"),
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
+            arquivo_formulario = f"formulario_{nome.lower().replace(' ','_')}.json"
+            if salvar(payload_formulario, arquivo_formulario, "Envio para Formulário"):
+                st.success("📤 Dados enviados para o formulário!")
+                
+                # Atualiza sessão para refletir os dados enviados
+                for chave, valor in payload_formulario.items():
+                    try:
+                        st.session_state[chave] = valor
+                    except Exception as e:
+                        print(f"Ignorado na sessão {chave}: {e}")
