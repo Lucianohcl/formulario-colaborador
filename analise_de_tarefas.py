@@ -2411,16 +2411,24 @@ if nome_usuario:
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], 
+            respostas_disc[chave] = st.radio(
+                f"{i}. {pergunta}", 
+                ["A", "B", "C", "D"], 
                 index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
-                horizontal=True, key=f"radio_{i}")
+                horizontal=True, 
+                key=f"radio_{i}"
+            )
 
         # 6. BOTÃO SALVAR
         st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
             payload = {
-                "nome": nome, "cargo": cargo, "departamento": depto,
-                "setor": setor, "chefe": chefe, "empresa": empresa,
+                "nome": nome, 
+                "cargo": cargo, 
+                "departamento": depto,
+                "setor": setor, 
+                "chefe": chefe, 
+                "empresa": empresa,
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
@@ -2429,9 +2437,8 @@ if nome_usuario:
             }
             if salvar(payload, arquivo_nome):
                 st.success("✅ Rascunho salvo com sucesso no servidor!")
+                st.rerun() # Atualiza a tela após salvar
             else:
                 st.error("❌ Falha ao salvar. Verifique sua conexão.")
-
-# Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
 
 
