@@ -1026,7 +1026,7 @@ if st.query_params.get("page") == "formulario":
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
     # Entrada do nome do colaborador
-    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
    
     # ===========================
     # COPIAR RASCUNHO PARA O FORMULÁRIO
@@ -1058,7 +1058,7 @@ if st.query_params.get("page") == "formulario":
     with st.form("form_colaborador"):
         # Dados de Identificação
         col1, col2 = st.columns(2)
-        nome = col1.text_input("Nome", key="nome", value=ident.get("Nome", ""))
+        nome = col1.text_input("Nome", value=ident.get("Nome", ""), key="nome_form")
         setor = col2.text_input("Setor", value=ident.get("Setor", ""))
         cargo = col1.text_input("Cargo", value=ident.get("Cargo", ""))
         chefe = col2.text_input("Chefe imediato", value=ident.get("Chefe", ""))
