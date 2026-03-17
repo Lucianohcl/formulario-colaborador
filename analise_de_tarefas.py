@@ -1207,33 +1207,33 @@ if st.query_params.get("page") == "formulario":
 
         
 
-        
+    # -------------------------------------------------
+    # VALIDAÇÕES E PROCESSAMENTO
+    # -------------------------------------------------
+    if enviar:
+
+        # Inicializa pendencias para evitar NameError
+        pendencias = {}
+
+        # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
+        nome_limpo = nome.strip().replace(" ", "_")
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        dados_dir = os.path.join(base_dir, "dados")
+
+        if not os.path.exists(dados_dir):
+            os.makedirs(dados_dir, exist_ok=True)
+
+        arquivo_esperado = f"{nome_limpo}.json"
+
+        # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
+        if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
+            st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+            st.session_state["confirmado"] = False
+            st.stop()
+
+        # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES 
           
-        # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO
-        # -------------------------------------------------
-        if enviar:
-
-                # Inicializa pendencias para evitar NameError
-                pendencias = {}
-
-                # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
-                nome_limpo = nome.strip().replace(" ", "_")
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-
-                if not os.path.exists(dados_dir):
-                    os.makedirs(dados_dir, exist_ok=True)
-
-                arquivo_esperado = f"{nome_limpo}.json"
-
-                # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
-                if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-                    st.session_state["confirmado"] = False
-                    st.stop()
-
-                # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES
+       
 
                 # -------------------------------------------------
                 # 2. IDENTIFICAÇÃO
