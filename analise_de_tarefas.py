@@ -2385,60 +2385,59 @@ if nome_usuario:
         use_container_width=True
     )
 
-        # 3. TABELA DIFICULDADES
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
-        edit_dif = st.data_editor(df_dif_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="dif_ed")
 
-        # 4. TABELA SUGESTÕES
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria")
-        df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
-        edit_sug = st.data_editor(df_sug_padrao, column_config={
-            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-        }, hide_index=True, use_container_width=True, key="sug_ed")
+    # 3. TABELA DIFICULDADES
+    st.markdown("---")
+    st.subheader("⚠️ Dificuldades e Bloqueios")
+    df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
+    edit_dif = st.data_editor(df_dif_padrao, column_config={
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+        "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+    }, hide_index=True, use_container_width=True, key="dif_ed")
 
-        # 5. QUESTIONÁRIO DISC
-        st.markdown("---")
-        st.subheader("📊 Questionário")
-        respostas_disc = {}
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(
-                f"{i}. {pergunta}", 
-                ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
-                horizontal=True, 
-                key=f"radio_{i}"
-            )
+    # 4. TABELA SUGESTÕES
+    st.markdown("---")
+    st.subheader("💡 Sugestões de Melhoria")
+    df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
+    edit_sug = st.data_editor(df_sug_padrao, column_config={
+        "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+    }, hide_index=True, use_container_width=True, key="sug_ed")
 
-        # 6. BOTÃO SALVAR
-        st.markdown("---")
-        if st.button("💾 Salvar Rascunho"):
-            payload = {
-                "nome": nome, 
-                "cargo": cargo, 
-                "departamento": depto,
-                "setor": setor, 
-                "chefe": chefe, 
-                "empresa": empresa,
-                "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
-            if salvar(payload, arquivo_nome):
-                st.success("✅ Rascunho salvo com sucesso no servidor!")
-                st.rerun() # Atualiza a tela após salvar
-            else:
-                st.error("❌ Falha ao salvar. Verifique sua conexão.")
+    # 5. QUESTIONÁRIO DISC
+    st.markdown("---")
+    st.subheader("📊 Questionário")
+    respostas_disc = {}
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        chave = f"disc_{i}"
+        respostas_disc[chave] = st.radio(
+            f"{i}. {pergunta}", 
+            ["A", "B", "C", "D"], 
+            index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+            horizontal=True, 
+            key=f"radio_{i}"
+        )
 
-
+    # 6. BOTÃO SALVAR
+    st.markdown("---")
+    if st.button("💾 Salvar Rascunho"):
+        payload = {
+            "nome": nome, 
+            "cargo": cargo, 
+            "departamento": depto,
+            "setor": setor, 
+            "chefe": chefe, 
+            "empresa": empresa,
+            "atividades": edit_ativ.to_dict("records"),
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+            **respostas_disc,
+            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        }
+        if salvar(payload, arquivo_nome):
+            st.success("✅ Rascunho salvo com sucesso no servidor!")
+            st.rerun()
+        else:
+            st.error("❌ Falha ao salvar. Verifique sua conexão.")  
