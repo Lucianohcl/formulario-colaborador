@@ -2157,7 +2157,7 @@ if nome_usuario:
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
             })).reset_index(drop=True),
-            key="form_atividades_alta",
+            key="editor_v2_alta",  # Alterado para garantir unicidade
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2179,7 +2179,7 @@ if nome_usuario:
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
             })).reset_index(drop=True),
-            key="form_atividades_normal",
+            key="editor_v2_normal",  # Alterado para garantir unicidade
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2201,7 +2201,7 @@ if nome_usuario:
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
             })).reset_index(drop=True),
-            key="form_atividades_baixa",
+            key="editor_v2_baixa",  # Alterado para garantir unicidade
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
