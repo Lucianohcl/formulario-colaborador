@@ -1979,19 +1979,17 @@ import pandas as pd
 import json
 import base64
 import requests
+from datetime import datetime
 
 # ================================
-# CONFIG GITHUB
+# 1. CONFIGURAÇÕES E LISTAS
 # ================================
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
 REPO = "formulario-colaborador"
 
-# ================================
-# LISTAS E PERGUNTAS (SEU CONTEÚDO ORIGINAL)
-# ================================
-lista_frequencia = ["DVD","D","S","Q","M","T","A"]
-lista_horas = [f"{i} h" for i in range(0, 13)]
+lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
 perguntas_disc = [
@@ -2000,17 +1998,29 @@ perguntas_disc = [
     "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
     "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
     "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
     "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
     "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
     "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
     "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
     "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
     "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado"
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
 # ================================
-# FUNÇÕES GITHUB (CORRIGIDAS PARA O CLOUD)
+# 2. FUNÇÕES DE COMUNICAÇÃO
 # ================================
 def carregar(arquivo):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
@@ -2019,71 +2029,52 @@ def carregar(arquivo):
         r = requests.get(url, headers=headers)
         if r.status_code == 200:
             data = r.json()
-            conteudo = base64.b64decode(data["content"]).decode()
+            conteudo = base64.b64decode(data["content"]).decode('utf-8')
             return json.loads(conteudo), data["sha"]
     except:
         pass
     return {}, None
 
-def salvar(dados, arquivo, mensagem="Atualização de rascunho"):
+def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
-    headers = {"Authorization": f"token {TOKEN}", "Accept": "application/vnd.github+json"}
-    
-    # Busca o SHA para garantir que só sobrescreve o arquivo específico do usuário
-    _, sha_atual = carregar(arquivo)
-    
-    conteudo_bytes = json.dumps(dados, indent=4, ensure_ascii=False).encode()
-    conteudo_b64 = base64.b64encode(conteudo_bytes).decode()
-    
+    headers = {"Authorization": f"token {TOKEN}"}
+    _, sha = carregar(arquivo)
+    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
     payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
-    if sha_atual:
-        payload["sha"] = sha_atual # Garante a atualização sem erro 422
-        
+    if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code in [200, 201]
 
 # ================================
-# INTERFACE STREAMLIT (SEU CÓDIGO ORIGINAL)
+# 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
-st.warning("⚠️ **ATENÇÃO**: Utilize seu NOME COMPLETO para acessar o rascunho.")
+st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
+st.title("🚀 Analise de Tarefas e Perfil")
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-primeira_vez = st.checkbox("É a primeira vez? Clique aqui para cadastrar")
+primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
-    
-    # Busca os dados no GitHub
-    dados, sha_atual = carregar(arquivo_nome)
+    dados, _ = carregar(arquivo_nome)
 
     if primeira_vez:
         if dados:
-            st.warning("Este nome já está cadastrado. Desmarque 'Primeira vez' para continuar.")
+            st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
         else:
-            if st.button("✅ Cadastrar Nome"):
-                # Criamos um arquivo com um conteúdo básico para o Git não rejeitar
-                payload_inicial = {"status": "iniciado", "nome": nome_usuario}
-                if salvar(payload_inicial, arquivo_nome, "Cadastro inicial"):
-                    st.success("Nome cadastrado com sucesso!")
-                    # FORÇAMOS O RECARREGAMENTO PARA O FORMULÁRIO APARECER
-                    st.cache_data.clear() 
-                    st.rerun() 
+            if st.button("✅ Criar meu Rascunho"):
+                if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
+                    st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
     else:
-        # Se não carregou dados, o formulário não abre. 
-        # Esta é a barreira que está impedindo você de ver o form.
         if not dados:
-            st.error("Nome não encontrado. Se você acabou de cadastrar, aguarde 2 segundos e tente digitar o nome novamente.")
+            st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
             st.stop()
-        
-        # --- SE CHEGOU AQUI, O FORMULÁRIO APARECE ---
-        st.success(f"📋 Formulário Liberado: {nome_usuario}")
 
-        # --- SEUS CAMPOS (DADOS DE IDENTIFICAÇÃO) ---
-        st.subheader("👤 Dados de Identificação")
-        # ... resto do seu código de inputs ...
+        # --- INÍCIO DO FORMULÁRIO ---
+        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # --- CAMPOS DE IDENTIFICAÇÃO ---
+        # 1. IDENTIFICAÇÃO
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
@@ -2095,34 +2086,61 @@ if nome_usuario:
             chefe = st.text_input("Chefe", dados.get("chefe", ""))
             empresa = st.text_input("Empresa", dados.get("empresa", ""))
 
-        # --- TABELA DE ATIVIDADES ---
+        # 2. TABELA ATIVIDADES
+        st.markdown("---")
         st.subheader("🔹 Atividades Executadas")
-        df_ativ = pd.DataFrame(dados.get("atividades", [{"Atividade":"","Frequência":"","Horas":""} for _ in range(5)]))
-        edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", use_container_width=True)
+        df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
+        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="ativ_ed")
 
-        # --- QUESTIONÁRIO DISC ---
-        st.subheader("🧠 Questionário DISC")
+        # 3. TABELA DIFICULDADES
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
+        edit_dif = st.data_editor(df_dif_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="dif_ed")
+
+        # 4. TABELA SUGESTÕES
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria")
+        df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
+        edit_sug = st.data_editor(df_sug_padrao, column_config={
+            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+        }, hide_index=True, use_container_width=True, key="sug_ed")
+
+        # 5. QUESTIONÁRIO DISC
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
-            valor_salvo = dados.get(f"disc_{i}")
-            respostas_disc[f"disc_{i}"] = st.radio(f"{i}. {pergunta}", ["A","B","C","D"], 
-                                                index=["A","B","C","D"].index(valor_salvo) if valor_salvo in ["A","B","C","D"] else None,
-                                                horizontal=True, key=f"q_{i}")
+            chave = f"disc_{i}"
+            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], 
+                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+                horizontal=True, key=f"radio_{i}")
 
-        # --- BOTÃO SALVAR ---
+        # 6. BOTÃO SALVAR
+        st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
             payload = {
-                "nome": nome,
-                "cargo": cargo,
-                "departamento": depto,
-                "setor": setor,
-                "chefe": chefe,
-                "empresa": empresa,
+                "nome": nome, "cargo": cargo, "departamento": depto,
+                "setor": setor, "chefe": chefe, "empresa": empresa,
                 "atividades": edit_ativ.to_dict("records"),
-                **respostas_disc
+                "dificuldades": edit_dif.to_dict("records"),
+                "sugestoes": edit_sug.to_dict("records"),
+                **respostas_disc,
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
             if salvar(payload, arquivo_nome):
-                st.success("Rascunho atualizado com sucesso no GitHub!")
+                st.success("✅ Rascunho salvo com sucesso no servidor!")
             else:
-                st.error("Erro ao salvar no GitHub.")
+                st.error("❌ Falha ao salvar. Verifique sua conexão.")
 
+# Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
