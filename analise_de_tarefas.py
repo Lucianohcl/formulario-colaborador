@@ -809,26 +809,28 @@ if st.query_params.get("page") == "formulario":
         st.session_state["nome_usuario"] = ""
     nome_usuario = st.session_state["nome_usuario"]
 
-    # --- BOTÃO DE CRIAR RASCUNHO (isolado no formulário) ---
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 Criar Rascunho"):
-            payload = {
-                "nome": "",
-                "cargo": "",
-                "departamento": "",
-                "setor": "",
-                "chefe": "",
-                "empresa": "",
-                "cursos": "",
-                "objetivo": "",
-                "atividades": [],
-                "dificuldades": [],
-                "sugestoes": [],
-                # DISC pode ser adicionado se necessário
-            }
-            st.session_state["rascunho"] = payload
-            st.success("✅ Rascunho criado dentro do formulário!")
+    # --- BOTÃO DE CRIAR RASCUNHO (aparece só se ainda não houver rascunho) ---
+    if "rascunho" not in st.session_state:
+        col1, _ = st.columns(2)
+        with col1:
+            if st.button("💾 Criar Rascunho"):
+                payload = {
+                    "nome": "",
+                    "cargo": "",
+                    "departamento": "",
+                    "setor": "",
+                    "chefe": "",
+                    "empresa": "",
+                    "cursos": "",
+                    "objetivo": "",
+                    "atividades": [],
+                    "dificuldades": [],
+                    "sugestoes": [],
+                }
+                st.session_state["rascunho"] = payload
+                st.success("✅ Rascunho criado dentro do formulário!")
+    else:
+        st.info("📝 Rascunho já criado. Os campos abaixo já estão preenchidos.")
     
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
