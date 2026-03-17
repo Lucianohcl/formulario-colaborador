@@ -1206,171 +1206,164 @@ if st.query_params.get("page") == "formulario":
         
 
         
-
-    # -------------------------------------------------
-    # VALIDAÇÕES E PROCESSAMENTO
-    # -------------------------------------------------
-    if enviar:
-
-        # Inicializa pendencias para evitar NameError
-        pendencias = {}
-
-        # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
-        nome_limpo = nome.strip().replace(" ", "_")
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        dados_dir = os.path.join(base_dir, "dados")
-
-        if not os.path.exists(dados_dir):
-            os.makedirs(dados_dir, exist_ok=True)
-
-        arquivo_esperado = f"{nome_limpo}.json"
-
-        # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
-        if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
-            st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-            st.session_state["confirmado"] = False
-            st.stop()
-
-        # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES 
-          
-       
-
                 # -------------------------------------------------
-                # 2. IDENTIFICAÇÃO
+                # VALIDAÇÕES E PROCESSAMENTO
                 # -------------------------------------------------
-                campos_ident = {
-                    "Nome": nome,
-                    "Setor": setor,
-                    "Cargo": cargo,
-                    "Chefe": chefe,
-                    "Departamento": departamento,
-                    "Empresa": empresa,
-                    "Escolaridade": escolaridade,
-                    "Devolução preenchida em": devolucao
-                }
+                if enviar:
 
-                for campo, valor in campos_ident.items():
-                    if not valor:
-                        pendencias.setdefault("Identificação", []).append(campo)                
+                    # Inicializa pendencias para evitar NameError
+                    pendencias = {}
 
-                # -------------------------------------------------
-                # 3. Cursos e Trabalho/Objetivo
-                # -------------------------------------------------
-                if not cursos:
-                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
-                if not objetivo:
-                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
+                    # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
+                    nome_limpo = nome.strip().replace(" ", "_")
+                    base_dir = os.path.dirname(os.path.abspath(__file__))
+                    dados_dir = os.path.join(base_dir, "dados")
 
-                # -------------------------------------------------
-                # 4. ATIVIDADES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                atividades_limpas = []
-                atividade_valida = False
-                for i, row in edit_ativ.iterrows():
-                        # Verifica se a linha tem qualquer conteúdo
-                        tem_algo = any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Atividade Descrita"]: faltantes.append("Descrição")
-                                if not row["Frequência"]: faltantes.append("Frequência")
-                                if row["Horas"] in ["", None]: faltantes.append("Horas")
-                                if row["Minutos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        atividade_valida = True
-                                        atividades_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Atividades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+                    if not os.path.exists(dados_dir):
+                        os.makedirs(dados_dir, exist_ok=True)
 
-                if not atividade_valida:
-                        pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
+                    arquivo_esperado = f"{nome_limpo}.json"
 
-                # -------------------------------------------------
-                # 5. DIFICULDADES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                dificuldades_limpas = []
-                dificuldade_valida = False
-                for i, row in edit_dif.iterrows():
-                        tem_algo = any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"], row["Horas Perdidas"], row["Minutos Perdidos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Dificuldade"]: faltantes.append("Descrição")
-                                if not row["Setor/Parceiro Envolvido"]: faltantes.append("Setor/Parceiro")
-                                if not row["Frequência"]: faltantes.append("Frequência")
-                                if row["Horas Perdidas"] in ["", None]: faltantes.append("Horas")
-                                if row["Minutos Perdidos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        dificuldade_valida = True
-                                        dificuldades_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-                if not dificuldade_valida:
-                        pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
-
-                # -------------------------------------------------
-                # 6. SUGESTÕES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                sugestoes_limpas = []
-                sugestao_valida = False
-                for i, row in edit_sug.iterrows():
-                        tem_algo = any([row["Sugestão de Melhoria"], row["Impacto Esperado"], row["Frequência do Impacto"], row["Redução Horas"], row["Redução Minutos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Sugestão de Melhoria"]: faltantes.append("Descrição")
-                                if not row["Impacto Esperado"]: faltantes.append("Impacto Esperado")
-                                if not row["Frequência do Impacto"]: faltantes.append("Frequência")
-                                if row["Redução Horas"] in ["", None]: faltantes.append("Horas")
-                                if row["Redução Minutos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        sugestao_valida = True
-                                        sugestoes_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-                if not sugestao_valida:
-                        pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
-
-                # -------------------------------------------------
-                # 7. DISC
-                # -------------------------------------------------
-                disc_faltando = []
-                for i in range(1, 25):
-                        if not st.session_state.get(f"disc_{i}"):
-                                disc_faltando.append(f"Questão {i}")
-                if disc_faltando:
-                        pendencias["DISC"] = [", ".join(disc_faltando)]
-
-                # -------------------------------------------------
-                # RESULTADO DAS VALIDAÇÕES
-                # -------------------------------------------------
-                if pendencias:
-                        st.error("⚠️ O formulário possui pendências. Confira abaixo:")
-                        for secao, itens in pendencias.items():
-                                st.write(f"**{secao}**:")
-                                for item in itens:
-                                        st.write(f"- {item}")
+                    # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
+                    if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
+                        st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
                         st.session_state["confirmado"] = False
                         st.stop()
 
-                
-                # -------------------------------------------------
-                # CONFIRMAÇÃO EM DOIS CLIQUES
-                # -------------------------------------------------
-                if not st.session_state.get("confirmado", False):
+                    # -------------------------------------------------
+                    # 2. IDENTIFICAÇÃO
+                    # -------------------------------------------------
+                    campos_ident = {
+                        "Nome": nome,
+                        "Setor": setor,
+                        "Cargo": cargo,
+                        "Chefe": chefe,
+                        "Departamento": departamento,
+                        "Empresa": empresa,
+                        "Escolaridade": escolaridade,
+                        "Devolução preenchida em": devolucao
+                    }
+
+                    for campo, valor in campos_ident.items():
+                        if not valor:
+                            pendencias.setdefault("Identificação", []).append(campo)
+
+                    # -------------------------------------------------
+                    # 3. Cursos e Trabalho/Objetivo
+                    # -------------------------------------------------
+                    if not cursos:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
+                    if not objetivo:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
+
+                    # -------------------------------------------------
+                    # 4. ATIVIDADES (Mínimo 1 linha completa)
+                    # -------------------------------------------------
+                    atividades_limpas = []
+                    atividade_valida = False
+                    for i, row in edit_ativ.iterrows():
+                        tem_algo = any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]])
+                        
+                        if tem_algo:
+                            faltantes = []
+                            if not row["Atividade Descrita"]: faltantes.append("Descrição")
+                            if not row["Frequência"]: faltantes.append("Frequência")
+                            if row["Horas"] in ["", None]: faltantes.append("Horas")
+                            if row["Minutos"] in ["", None]: faltantes.append("Minutos")
+                            
+                            if not faltantes:
+                                atividade_valida = True
+                                atividades_limpas.append(row.to_dict())
+                            else:
+                                pendencias.setdefault("Atividades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                    if not atividade_valida:
+                        pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
+
+                    # -------------------------------------------------
+                    # 5. DIFICULDADES (Mínimo 1 linha completa)
+                    # -------------------------------------------------
+                    dificuldades_limpas = []
+                    dificuldade_valida = False
+                    for i, row in edit_dif.iterrows():
+                        tem_algo = any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"], row["Horas Perdidas"], row["Minutos Perdidos"]])
+                        
+                        if tem_algo:
+                            faltantes = []
+                            if not row["Dificuldade"]: faltantes.append("Descrição")
+                            if not row["Setor/Parceiro Envolvido"]: faltantes.append("Setor/Parceiro")
+                            if not row["Frequência"]: faltantes.append("Frequência")
+                            if row["Horas Perdidas"] in ["", None]: faltantes.append("Horas")
+                            if row["Minutos Perdidos"] in ["", None]: faltantes.append("Minutos")
+                            
+                            if not faltantes:
+                                dificuldade_valida = True
+                                dificuldades_limpas.append(row.to_dict())
+                            else:
+                                pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                    if not dificuldade_valida:
+                        pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
+
+                    # -------------------------------------------------
+                    # 6. SUGESTÕES (Mínimo 1 linha completa)
+                    # -------------------------------------------------
+                    sugestoes_limpas = []
+                    sugestao_valida = False
+                    for i, row in edit_sug.iterrows():
+                        tem_algo = any([row["Sugestão de Melhoria"], row["Impacto Esperado"], row["Frequência do Impacto"], row["Redução Horas"], row["Redução Minutos"]])
+                        
+                        if tem_algo:
+                            faltantes = []
+                            if not row["Sugestão de Melhoria"]: faltantes.append("Descrição")
+                            if not row["Impacto Esperado"]: faltantes.append("Impacto Esperado")
+                            if not row["Frequência do Impacto"]: faltantes.append("Frequência")
+                            if row["Redução Horas"] in ["", None]: faltantes.append("Horas")
+                            if row["Redução Minutos"] in ["", None]: faltantes.append("Minutos")
+                            
+                            if not faltantes:
+                                sugestao_valida = True
+                                sugestoes_limpas.append(row.to_dict())
+                            else:
+                                pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                    if not sugestao_valida:
+                        pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
+
+                    # -------------------------------------------------
+                    # 7. DISC
+                    # -------------------------------------------------
+                    disc_faltando = []
+                    for i in range(1, 25):
+                        if not st.session_state.get(f"disc_{i}"):
+                            disc_faltando.append(f"Questão {i}")
+                    if disc_faltando:
+                        pendencias["DISC"] = [", ".join(disc_faltando)]
+
+                    # -------------------------------------------------
+                    # RESULTADO DAS VALIDAÇÕES
+                    # -------------------------------------------------
+                    if pendencias:
+                        st.error("⚠️ O formulário possui pendências. Confira abaixo:")
+                        for secao, itens in pendencias.items():
+                            st.write(f"**{secao}**:")
+                            for item in itens:
+                                st.write(f"- {item}")
+                        st.session_state["confirmado"] = False
+                        st.stop()
+
+                    # -------------------------------------------------
+                    # CONFIRMAÇÃO EM DOIS CLIQUES
+                    # -------------------------------------------------
+                    if not st.session_state.get("confirmado", False):
                         st.warning("⚠️ Tudo certo! Revise suas respostas. O envio é único. Clique em ENVIAR novamente.")
                         st.session_state["confirmado"] = True
                         st.stop()
 
-                # -------------------------------------------------
-                # ENVIO FINAL (Salvar JSON)
-                # -------------------------------------------------
-                dados = {
+                    # -------------------------------------------------
+                    # ENVIO FINAL (Salvar JSON)
+                    # -------------------------------------------------
+                    dados = {
                         "nome": nome,
                         "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
                         "setor": setor,
@@ -1386,14 +1379,14 @@ if st.query_params.get("page") == "formulario":
                         "dificuldades": dificuldades_limpas,
                         "sugestoes": sugestoes_limpas,
                         "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-                }
+                    }
 
-                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-                with open(caminho, "w", encoding="utf-8") as f:
+                    caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                    with open(caminho, "w", encoding="utf-8") as f:
                         json.dump(dados, f, ensure_ascii=False, indent=4)
 
-                st.success("✅ Formulário enviado com sucesso!")
-                st.session_state["confirmado"] = False
+                    st.success("✅ Formulário enviado com sucesso!")
+                    st.session_state["confirmado"] = False
 
 
                 
