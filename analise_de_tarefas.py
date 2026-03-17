@@ -249,6 +249,13 @@ def score_disc(disc):
     calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
     return round((calculo/total)*100,2)
 
+def carregar_dados(nome_arquivo):
+    caminho = os.path.join(dados_dir, nome_arquivo)
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            return json.load(f), None
+    return {}, None
+
 
 # ============================================================
 # DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
@@ -805,7 +812,7 @@ if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     # 1. CARREGAR TUDO DO GITHUB
     # A função carregar_dados já deve buscar o rascunho_nome.json
-    dados = carregar_dados(arquivo_nome) 
+    dados, _ = carregar_dados(arquivo_nome) if 'carregar_dados' in globals() else ({}, None)
 
     # 2. IDENTIFICAÇÃO (Puxando do JSON)
     nome_c = st.text_input("Nome", value=dados.get("nome", ""))
