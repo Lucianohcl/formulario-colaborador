@@ -845,13 +845,10 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-    # Inicializa nome_usuario para evitar NameError
     if "nome_usuario" not in st.session_state:
         st.session_state["nome_usuario"] = ""
-
     nome_usuario = st.session_state["nome_usuario"]
 
-    # Carrega rascunho se existir
     if nome_usuario and "rascunho_carregado" not in st.session_state:
         nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
         dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
@@ -863,56 +860,54 @@ if st.query_params.get("page") == "formulario":
     formulario = st.session_state.get("formulario", {})
 
     # -------------------------
-    # Inputs do formulário
+    # BLOCO DE FORMULÁRIO COM st.form
     # -------------------------
-    col1, col2 = st.columns(2)
-    nome = col1.text_input("Nome do colaborador", value=formulario.get("nome", ""))
-    setor = col2.text_input("Setor", value=formulario.get("setor", ""))
-    cargo = col1.text_input("Cargo", value=formulario.get("cargo", ""))
-    chefe = col2.text_input("Chefe imediato", value=formulario.get("chefe", ""))
-    departamento = col1.text_input("Departamento", value=formulario.get("departamento", ""))
-    empresa = col2.text_input("Empresa / Unidade", value=formulario.get("empresa", ""))
-    escolaridade = col1.text_input("Escolaridade", value=formulario.get("escolaridade", ""))
-    devolucao = col2.text_input("Devolver preenchido em", value=formulario.get("devolucao", ""))
+    with st.form("form_colaborador"):
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador", value=formulario.get("nome", ""))
+        setor = col2.text_input("Setor", value=formulario.get("setor", ""))
+        cargo = col1.text_input("Cargo", value=formulario.get("cargo", ""))
+        chefe = col2.text_input("Chefe imediato", value=formulario.get("chefe", ""))
+        departamento = col1.text_input("Departamento", value=formulario.get("departamento", ""))
+        empresa = col2.text_input("Empresa / Unidade", value=formulario.get("empresa", ""))
+        escolaridade = col1.text_input("Escolaridade", value=formulario.get("escolaridade", ""))
+        devolucao = col2.text_input("Devolver preenchido em", value=formulario.get("devolucao", ""))
 
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=formulario.get("cursos", ""))
-    objetivo = st.text_area("Trabalho e principal objetivo", value=formulario.get("objetivo", ""))
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=formulario.get("cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", value=formulario.get("objetivo", ""))
 
-    # DataFrames: atividades, dificuldades, sugestões
-    edit_ativ = st.data_editor(
-        pd.DataFrame(formulario.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""}]*20)),
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
-
-    edit_dif = st.data_editor(
-        pd.DataFrame(formulario.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""}]*20)),
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
-
-    edit_sug = st.data_editor(
-        pd.DataFrame(formulario.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""}]*20)),
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
-
-    # Questionário DISC
-    perguntas_disc = [...]  # sua lista de perguntas
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        st.radio(
-            label=f"{i}. {pergunta}",
-            options=["A", "B", "C", "D"],
-            key=f"disc_{i}",
-            horizontal=True,
-            index=None
+        edit_ativ = st.data_editor(
+            pd.DataFrame(formulario.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""}]*20)),
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
         )
-        # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-          
+
+        edit_dif = st.data_editor(
+            pd.DataFrame(formulario.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""}]*20)),
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        edit_sug = st.data_editor(
+            pd.DataFrame(formulario.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""}]*20)),
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        perguntas_disc = [...]  # sua lista de perguntas
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}",
+                options=["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                horizontal=True
+            )
+
+        # BOTÃO DE ENVIO FINAL - agora dentro do form
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")          
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
