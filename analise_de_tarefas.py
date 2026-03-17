@@ -2158,15 +2158,16 @@ if nome_usuario:
             idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
             respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"disc_ed_{i}")
 
-    # -------------------------------------------------
-    # BOTÕES DE SALVAR RASCUNHO E ENVIAR FORMULÁRIO
-    # -------------------------------------------------
+    # -------------------------------
+    # BOTÕES DE RASCUNHO E ENVIO
+    # -------------------------------
     st.markdown("---")
     col_bot1, col_bot2 = st.columns(2)
 
+    # Botão de salvar rascunho local (mantém na sessão)
     with col_bot1:
         if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
-            payload_rascunho = {
+            st.session_state["rascunho"] = {
                 "nome": nome,
                 "cargo": cargo,
                 "departamento": depto,
@@ -2181,39 +2182,15 @@ if nome_usuario:
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload_rascunho, arquivo_nome, "Atualização do rascunho"):
-                st.success("✅ Rascunho salvo no GitHub!")
-            else:
-                st.error("❌ Erro ao salvar o rascunho.")
+            st.success("✅ Rascunho salvo localmente!")
 
+    # Botão de enviar rascunho para formulário (copia para formulário)
     with col_bot2:
         if st.button("📤 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
-            payload_formulario = {
-                "nome": nome,
-                "cargo": cargo,
-                "departamento": depto,
-                "escolaridade": escolaridade,
-                "setor": setor,
-                "chefe": chefe,
-                "empresa": empresa,
-                "devolucao": devolucao,
-                "cursos": cursos,
-                "objetivo": objetivo,
-                "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
-            arquivo_formulario = f"formulario_{nome.lower().replace(' ','_')}.json"
-            if salvar(payload_formulario, arquivo_formulario, "Envio para Formulário"):
-                st.success("📤 Dados enviados para o formulário!")
-                
-                # Atualiza sessão para refletir os dados enviados
-                for chave, valor in payload_formulario.items():
-                    try:
-                        st.session_state[chave] = valor
-                    except Exception as e:
-                        print(f"Ignorado na sessão {chave}: {e}")
+            # Transferência simples do rascunho
+            st.session_state["formulario"] = st.session_state.get("rascunho", {})
+            st.success("✅ Rascunho transferido para o formulário!")
+
+    # Agora, em qualquer lugar do formulário você acessa:
+    # st.session_state["formulario"]
