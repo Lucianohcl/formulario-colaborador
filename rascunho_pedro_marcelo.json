@@ -2,13 +2,9 @@
     "nome": "Pedro Marcelo",
     "cargo": "FRFR",
     "departamento": "RFVF",
-    "escolaridade": "WWWW",
     "setor": "F3R3GR",
     "chefe": "FR3G",
     "empresa": "WWW",
-    "devolucao": "WWWWW",
-    "cursos": "WWWWW",
-    "objetivo": "WWWW",
     "atividades": [
         {
             "Atividade Descrita": "WWWW",
@@ -439,5 +435,5 @@
     "disc_22": "A",
     "disc_23": "A",
     "disc_24": "A",
-    "ultima_atualizacao": "17/03/2026 05:22"
+    "ultima_atualizacao": "17/03/2026 13:46"
 }
