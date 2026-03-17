@@ -1069,80 +1069,32 @@ if st.query_params.get("page") == "formulario":
             **⚠️ DETALHE:**
             * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
             * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
-            """)        
+            """) 
+  
+        # ===========================
+        # 5. QUESTIONÁRIO DISC  👈 AQUI
+        # ===========================
+        st.markdown("---")
+        st.subheader("📊 Questionário")
+
+        respostas_disc = {}
+
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            chave = f"disc_{i}"
+
+            respostas_disc[chave] = st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                horizontal=True,
+                key=f"form_disc_radio_{i}"  # chave única
+            )
+
+        # 🔻 BOTÃO TEM QUE VIR DEPOIS
+        enviar = st.form_submit_button("Enviar Formulário")       
         
-        # ===========================
-        # Tabela de Alta Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Alta Complexidade")
-        atividades_alta = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="atividades_alta",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ... (Tabelas Normal e Baixa seguem o mesmo recuo) ...
-
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }),
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor"
-        )
-
-        # --- SEÇÃO DE SUGESTÕES ---
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria e Impacto")
-        edit_sug = st.data_editor(
-            pd.DataFrame({
-                "Sugestão de Melhoria": [""] * 20,
-                "Impacto Esperado": [""] * 20,
-                "Redução Horas": [""] * 20,
-                "Redução Minutos": [""] * 20,
-                "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
-                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
-                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="sug_editor"
-        )
-
         
 
-        enviar = st.form_submit_button("Enviar Formulário")
-
+        
     # --- FINAL DO BLOCO 'WITH' ---
     if enviar:
         pendencias = {}
