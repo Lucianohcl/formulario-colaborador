@@ -2078,14 +2078,22 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 st.info("📝 Gerar Rascunho")
+
+# Inicializa a flag de exibição do rascunho
+if "exibir_rascunho" not in st.session_state:
+    st.session_state["exibir_rascunho"] = True
+
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
-if nome_usuario:
+if nome_usuario and st.session_state.get("exibir_rascunho", True):
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados, _ = carregar(arquivo_nome)
 
+    # -------------------
+    # CADASTRO / PRIMEIRA VEZ
+    # -------------------
     if primeira_vez:
         if dados:
             st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
@@ -2098,10 +2106,12 @@ if nome_usuario:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
             st.stop()
 
-        # --- INÍCIO DO FORMULÁRIO ---
+        # -------------------
+        # FORMULÁRIO DE RASCUNHO
+        # -------------------
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # --- CAMPOS DE IDENTIFICAÇÃO (VERSÃO COMPLETA) ---
+        # --- Dados de Identificação ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
@@ -2118,52 +2128,70 @@ if nome_usuario:
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
 
-        # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
-        # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
-
-        # 2. TABELA ATIVIDADES
+        # --- Atividades ---
         st.markdown("---")
         st.subheader("🔹 Atividades Executadas")
         df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="ativ_ed")
+        edit_ativ = st.data_editor(
+            df_ativ_padrao,
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            },
+            hide_index=True,
+            use_container_width=True,
+            key="ativ_ed"
+        )
 
-        # 3. TABELA DIFICULDADES
+        # --- Dificuldades ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
-        edit_dif = st.data_editor(df_dif_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="dif_ed")
+        edit_dif = st.data_editor(
+            df_dif_padrao,
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+            },
+            hide_index=True,
+            use_container_width=True,
+            key="dif_ed"
+        )
 
-        # 4. TABELA SUGESTÕES
+        # --- Sugestões ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
         df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
-        edit_sug = st.data_editor(df_sug_padrao, column_config={
-            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-        }, hide_index=True, use_container_width=True, key="sug_ed")
+        edit_sug = st.data_editor(
+            df_sug_padrao,
+            column_config={
+                "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+            },
+            hide_index=True,
+            use_container_width=True,
+            key="sug_ed"
+        )
 
-        # 5. QUESTIONÁRIO DISC
+        # --- Questionário DISC ---
         st.markdown("---")
         st.subheader("📊 Questionário")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
-                horizontal=True, key=f"radio_{i}")
+            respostas_disc[chave] = st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else 0,
+                horizontal=True,
+                key=f"radio_{i}"
+            )
 
-        # 6. BOTÃO SALVAR E ALIMENTAR
+        # --- Botão Salvar e Alimentar Formulário ---
         if st.button("💾 Salvar e Alimentar Formulário"):
-            # 12 espaços de recuo na linha abaixo:
             payload = {
                 "nome": nome,
                 "cargo": cargo,
@@ -2179,15 +2207,12 @@ if nome_usuario:
                 **respostas_disc,
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            
-            # Alimenta o formulário
+
+            # Alimenta o formulário final
             st.session_state["formulario"] = payload
             salvar(payload, arquivo_nome)
-            
+
             # TRAVA: Esconde o rascunho após o envio
             st.session_state["exibir_rascunho"] = False
-            
-            st.success("✅ Alimentado! Saindo do modo rascunho...")
-            st.rerun()
 
-
+            st.success("✅ Alimentado! O rascunho foi concluído e não será mais exibido.")
