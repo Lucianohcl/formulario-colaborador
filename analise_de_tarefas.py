@@ -1996,6 +1996,13 @@ import base64
 import requests
 from datetime import datetime
 
+import streamlit as st
+import pandas as pd
+import json
+import base64
+import requests
+from datetime import datetime
+
 # ================================
 # 1. CONFIGURAÇÕES E LISTAS
 # ================================
@@ -2035,7 +2042,7 @@ perguntas_disc = [
 ]
 
 # ================================
-# 2. FUNÇÕES DE COMUNICAÇÃO
+# 2. FUNÇÕES DE COMUNICAÇÃO COM GITHUB
 # ================================
 def carregar(arquivo):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
@@ -2046,8 +2053,7 @@ def carregar(arquivo):
             data = r.json()
             conteudo = base64.b64decode(data["content"]).decode('utf-8')
             return json.loads(conteudo), data["sha"]
-    except:
-        pass
+    except: pass
     return {}, None
 
 def salvar(dados, arquivo, mensagem="Atualização"):
@@ -2061,162 +2067,136 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     return r.status_code in [200, 201]
 
 # ================================
-# 3. INTERFACE STREAMLIT
+# 3. INTERFACE DO FORMULÁRIO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.title("📝 Gerar Rascunho")
 
-# --- Nome do colaborador ---
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
-
-# --- Caixa de cadastro ---
-primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)", key="primeira_vez_checkbox")
+st.title("📄 Gerar Rascunho")
+nome_usuario = st.text_input("Digite seu nome completo", key="input_nome")
+primeira_vez = st.checkbox("Ainda não fui cadastrado", key="chk_primeira")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
-    dados_rascunho, _ = carregar(arquivo_nome)
 
     if primeira_vez:
-        if dados_rascunho:
-            st.warning("⚠️ Já existe cadastro.")
-        elif st.button("✅ Criar Rascunho", key=f"btn_criar_{nome_limpo}"):
-            if salvar({"nome": nome_usuario}, arquivo_nome, "Criação do rascunho"):
-                st.success("✅ Rascunho criado!")
+        if st.button("✅ Criar Rascunho", key=f"btn_criar_{nome_limpo}"):
+            if salvar({"nome": nome_usuario}, arquivo_nome, "Novo rascunho"):
+                st.success("✅ Rascunho criado! Preencha os dados abaixo.")
     else:
-        if dados_rascunho:
-            st.success(f"✅ Bem-vindo, {nome_usuario}!")
-            if st.button("➡️ Ir para o Formulário", key=f"btn_form_{nome_limpo}"):
-                st.session_state["nome_usuario"] = nome_usuario
-                st.session_state["rascunho_carregado"] = False
-                st.experimental_rerun = False  # evitamos experimental_rerun
-                st.session_state["ir_para_formulario"] = True
+        # Carrega rascunho existente
+        if not st.session_state.get("rascunho_carregado"):
+            dados_rascunho, _ = carregar(arquivo_nome)
+            if dados_rascunho:
+                for chave, valor in dados_rascunho.items():
+                    try:
+                        st.session_state[chave] = valor
+                    except Exception as e:
+                        print(f"Ignorado {chave}: {e}")
+                st.session_state["rascunho_carregado"] = True
 
-# ================================
-# 4. FORMULÁRIO
-# ================================
-if st.session_state.get("ir_para_formulario") or st.session_state.get("nome_usuario"):
-    nome_usuario = st.session_state.get("nome_usuario")
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
+        st.success(f"✅ Rascunho carregado: {nome_usuario}")
 
-    st.header(f"📋 Formulário de {nome_usuario}")
+        # --- DADOS DE IDENTIFICAÇÃO ---
+        st.subheader("👤 Dados de Identificação")
+        col1, col2 = st.columns(2)
+        with col1:
+            nome = st.text_input("Nome", st.session_state.get("nome", nome_usuario))
+            cargo = st.text_input("Cargo", st.session_state.get("cargo", ""))
+            depto = st.text_input("Departamento", st.session_state.get("departamento", ""))
+            escolaridade = st.text_input("Escolaridade", st.session_state.get("escolaridade", ""))
+        with col2:
+            setor = st.text_input("Setor", st.session_state.get("setor", ""))
+            chefe = st.text_input("Chefe imediato", st.session_state.get("chefe", ""))
+            empresa = st.text_input("Empresa", st.session_state.get("empresa", ""))
+            devolucao = st.text_input("Devolver em", st.session_state.get("devolucao", ""))
 
-    # Carrega rascunho se ainda não carregado
-    if not st.session_state.get("rascunho_carregado"):
-        dados_rascunho, _ = carregar(arquivo_nome)
-        if dados_rascunho:
-            for chave, valor in dados_rascunho.items():
-                try:
-                    st.session_state[chave] = valor
-                except Exception as e:
-                    print(f"Ignorado {chave}: {e}")
-            st.session_state["rascunho_carregado"] = True
+        cursos = st.text_area("Cursos", st.session_state.get("cursos", ""))
+        objetivo = st.text_area("Objetivo", st.session_state.get("objetivo", ""))
 
-    # --- Dados de Identificação ---
-    st.subheader("👤 Dados de Identificação")
-    col1, col2 = st.columns(2)
-    with col1:
-        nome = st.text_input("Nome", st.session_state.get("nome", nome_usuario), key=f"nome_{nome_limpo}")
-        cargo = st.text_input("Cargo", st.session_state.get("cargo", ""), key=f"cargo_{nome_limpo}")
-        depto = st.text_input("Departamento", st.session_state.get("departamento", ""), key=f"depto_{nome_limpo}")
-        escolaridade = st.text_input("Escolaridade", st.session_state.get("escolaridade", ""), key=f"escolaridade_{nome_limpo}")
-    with col2:
-        setor = st.text_input("Setor", st.session_state.get("setor", ""), key=f"setor_{nome_limpo}")
-        chefe = st.text_input("Chefe imediato", st.session_state.get("chefe", ""), key=f"chefe_{nome_limpo}")
-        empresa = st.text_input("Empresa", st.session_state.get("empresa", ""), key=f"empresa_{nome_limpo}")
-        devolucao = st.text_input("Devolver em", st.session_state.get("devolucao", ""), key=f"devolucao_{nome_limpo}")
+        # --- ATIVIDADES ---
+        st.markdown("---")
+        st.subheader("🔹 Atividades Executadas")
+        df_ativ = pd.DataFrame(st.session_state.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
+        edit_ativ = st.data_editor(df_ativ, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="ativ_ed")
 
-    cursos = st.text_area("Cursos", st.session_state.get("cursos", ""), key=f"cursos_{nome_limpo}")
-    objetivo = st.text_area("Objetivo", st.session_state.get("objetivo", ""), key=f"objetivo_{nome_limpo}")
+        # --- DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        df_dif = pd.DataFrame(st.session_state.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(20)]))
+        edit_dif = st.data_editor(df_dif, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="dif_ed")
 
-    # --- Atividades ---
-    st.markdown("---")
-    st.subheader("🔹 Atividades Executadas")
-    df_ativ = pd.DataFrame(st.session_state.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-    edit_ativ = st.data_editor(df_ativ, column_config={
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-        "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key=f"ativ_ed_{nome_limpo}")
+        # --- SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria e Impacto")
+        df_sug = pd.DataFrame(st.session_state.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(20)]))
+        edit_sug = st.data_editor(df_sug, column_config={
+            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+        }, hide_index=True, use_container_width=True, key="sug_ed")
 
-    # --- Dificuldades ---
-    st.markdown("---")
-    st.subheader("⚠️ Dificuldades e Bloqueios")
-    df_dif = pd.DataFrame(st.session_state.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(20)]))
-    edit_dif = st.data_editor(df_dif, column_config={
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-        "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-    }, hide_index=True, use_container_width=True, key=f"dif_editor_{nome_limpo}")
+        # --- QUESTIONÁRIO DISC ---
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        respostas_disc = {}
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            chave = f"disc_{i}"
+            valor_salvo = st.session_state.get(chave)
+            idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
+            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"disc_ed_{i}")
 
-    # --- Sugestões ---
-    st.markdown("---")
-    st.subheader("💡 Sugestões de Melhoria e Impacto")
-    df_sug = pd.DataFrame(st.session_state.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(20)]))
-    edit_sug = st.data_editor(df_sug, column_config={
-        "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-        "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-    }, hide_index=True, use_container_width=True, key=f"sug_editor_{nome_limpo}")
+        # --- BOTÕES ---
+        st.markdown("---")
+        col_bot1, col_bot2 = st.columns(2)
 
-    # --- Questionário DISC ---
-    st.markdown("---")
-    st.subheader("📊 Questionário DISC")
-    respostas_disc = {}
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        chave = f"disc_{i}"
-        valor_salvo = st.session_state.get(chave)
-        idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else 0
-        respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, horizontal=True, key=f"r_{i}_{nome_limpo}")
+        with col_bot1:
+            if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
+                payload = {
+                    "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
+                    "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
+                    "cursos": cursos, "objetivo": objetivo,
+                    "atividades": edit_ativ.to_dict("records"),
+                    "dificuldades": edit_dif.to_dict("records"),
+                    "sugestoes": edit_sug.to_dict("records"),
+                    **respostas_disc,
+                    "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+                }
+                if salvar(payload, arquivo_nome, "Atualização do rascunho"):
+                    st.success("✅ Rascunho salvo no GitHub!")
+                else:
+                    st.error("❌ Erro ao salvar o rascunho.")
 
-    # --- Botões ---
-    st.markdown("---")
-    col_bot1, col_bot2 = st.columns(2)
-    with col_bot1:
-        if st.button("💾 Salvar Rascunho", key=f"btn_salvar_{nome_limpo}"):
-            payload = {
-                "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
-                "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
-                "cursos": cursos, "objetivo": objetivo,
-                "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
-            if salvar(payload, arquivo_nome, "Atualização do rascunho"):
-                st.success("✅ Rascunho salvo no GitHub!")
-            else:
-                st.error("❌ Erro ao salvar o rascunho.")
-
-   with col_bot2:
-        if st.button("💾 Enviar para Formulário"):
-            # 1️⃣ Pega todos os dados
-            dados_para_formulario = {
-                "nome": st.session_state.get("nome", ""),
-                "cargo": st.session_state.get("cargo", ""),
-                "departamento": st.session_state.get("departamento", ""),
-                "escolaridade": st.session_state.get("escolaridade", ""),
-                "setor": st.session_state.get("setor", ""),
-                "chefe": st.session_state.get("chefe", ""),
-                "empresa": st.session_state.get("empresa", ""),
-                "devolucao": st.session_state.get("devolucao", ""),
-                "cursos": st.session_state.get("cursos", ""),
-                "objetivo": st.session_state.get("objetivo", ""),
-                "atividades": edit_ativ.to_dict("records"),
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
-
-            # 2️⃣ Salva no GitHub
-            arquivo_formulario = f"formulario_{st.session_state.get('nome', 'anonimo').lower().replace(' ', '_')}.json"
-            if salvar(dados_para_formulario, arquivo_formulario, mensagem="Envio para Formulário"):
-                st.success("📤 Dados enviados para o formulário!")
-
-                # 3️⃣ Atualiza a sessão
-                for chave, valor in dados_para_formulario.items():
-                    st.session_state[chave] = valor
-                
-                # 4️⃣ Força a atualização da página para refletir os dados no formulário
-                st.rerun()
+        with col_bot2:
+            if st.button("💾 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
+                dados_para_formulario = {
+                    "nome": st.session_state.get("nome", ""),
+                    "cargo": st.session_state.get("cargo", ""),
+                    "departamento": st.session_state.get("departamento", ""),
+                    "escolaridade": st.session_state.get("escolaridade", ""),
+                    "setor": st.session_state.get("setor", ""),
+                    "chefe": st.session_state.get("chefe", ""),
+                    "empresa": st.session_state.get("empresa", ""),
+                    "devolucao": st.session_state.get("devolucao", ""),
+                    "cursos": st.session_state.get("cursos", ""),
+                    "objetivo": st.session_state.get("objetivo", ""),
+                    "atividades": edit_ativ.to_dict("records"),
+                    "dificuldades": edit_dif.to_dict("records"),
+                    "sugestoes": edit_sug.to_dict("records"),
+                    **respostas_disc,
+                    "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+                }
+                arquivo_formulario = f"formulario_{st.session_state.get('nome', 'anonimo').lower().replace(' ', '_')}.json"
+                if salvar(dados_para_formulario, arquivo_formulario, mensagem="Envio para Formulário"):
+                    st.success("📤 Dados enviados para o formulário!")
+                    # Atualiza a sessão para refletir os dados enviados
+                    for chave, valor in dados_para_formulario.items():
+                        st.session_state[chave] = valor
