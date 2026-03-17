@@ -1139,19 +1139,7 @@ if st.query_params.get("page") == "formulario":
             key="sug_editor"
         )
 
-        # 5. QUESTIONÁRIO DISC (Alinhado com os de cima)
-        st.markdown("---")
-        st.subheader("📊 Questionário")
-        respostas_disc = {}
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(
-                f"{i}. {pergunta}", 
-                ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
-                horizontal=True, 
-                key=f"radio_{i}"
-            )
+        
 
         enviar = st.form_submit_button("Enviar Formulário")
 
