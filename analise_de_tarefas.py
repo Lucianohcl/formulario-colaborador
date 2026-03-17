@@ -65,6 +65,22 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+# ============================================================
+# INICIALIZAÇÃO DE VARIÁVEIS GLOBAIS (EVITA NAMEERROR)
+# ============================================================
+if "nome_usuario" not in st.session_state:
+    st.session_state["nome_usuario"] = ""
+
+# Criamos uma variável local apontando para o session_state
+# Isso garante que 'nome_usuario' SEMPRE exista para a linha 808
+nome_usuario = st.session_state["nome_usuario"]
+
+# Agora definimos o nome_limpo com uma trava de segurança
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+else:
+    nome_limpo = "usuario_desconhecido"
+
 # DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
 dados_dir = "dados"
 if not os.path.exists(dados_dir):
