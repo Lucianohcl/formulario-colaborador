@@ -2059,26 +2059,18 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# Inicialização de segurança para evitar o erro de NameError
 nome_usuario = ""
 params = st.query_params
 
-# Lógica para alternar entre Títulos e Telas
 if params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     nome_sessao = st.session_state.get("nome", "")
     nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**", value=nome_sessao)
-else:
-    st.title("📄 Gerar rascunho")
-    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+    
+    if nome_usuario:
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        arquivo_nome = f"rascunho_{nome_limpo}.json"
 
-# Só processa se o nome_usuario não estiver vazio
-if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
-
-    # --- TELA 1: FORMULÁRIO (Onde o rascunho aparece preenchido) ---
-    if params.get("page") == "formulario":
         if "rascunho_carregado" not in st.session_state:
             dados, sucesso = carregar(arquivo_nome)
             if sucesso:
@@ -2086,17 +2078,21 @@ if nome_usuario:
                 st.session_state["rascunho_carregado"] = True
                 st.rerun()
 
-        # Listas para os Data Editors
+        # Listas padronizadas
         lista_horas = [f"{i} h" for i in range(25)]
         lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
         lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 
-        # SEU CÓDIGO PERFEITO CONTINUA DAQUI (Exemplo de campo):
         st.subheader("👤 Dados de Identificação")
         nome_campo = st.text_input("Nome do colaborador", value=st.session_state.get("nome", nome_usuario))
 
-    # --- TELA 2: ENTRADA/CADASTRO ---
-    else:
+else:
+    st.title("📄 Gerar rascunho")
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+
+    if nome_usuario:
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        arquivo_nome = f"rascunho_{nome_limpo}.json"
         primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
         dados_existentes, _ = carregar(arquivo_nome)
 
@@ -2106,10 +2102,11 @@ if nome_usuario:
             else:
                 if st.button("✅ Criar meu Rascunho"):
                     if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                        st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+                        st.success("Rascunho criado! Desmarque a caixa para entrar.")
         else:
             if not dados_existentes:
                 st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
+                st.stop()
             else:
                 st.success(f"✅ Bem-vindo, {nome_usuario}!")
                 if st.button("➡️ Ir para o Formulário Completo"):
