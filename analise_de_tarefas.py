@@ -2139,10 +2139,12 @@ if nome_usuario:
             payload = {
                 "nome": nome,
                 "cargo": cargo,
-                "departamento": departamento,  # ✅ corrigido
+                "departamento": departamento,
                 "setor": setor,
                 "chefe": chefe,
                 "empresa": empresa,
+                "cursos": cursos,       # <- valor atualizado do usuário
+                "objetivo": objetivo,   # <- valor atualizado do usuário
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
