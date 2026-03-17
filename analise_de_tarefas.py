@@ -1207,18 +1207,7 @@ if st.query_params.get("page") == "formulario":
 
         
 
-        st.markdown("---")
-        st.subheader("📊 Questionário")
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(
-                label=f"{i}. {pergunta}", 
-                options=["A", "B", "C", "D"], 
-                key=f"disc_{i}", 
-                horizontal=True, 
-                index=None
-            )
-        # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        
           
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
