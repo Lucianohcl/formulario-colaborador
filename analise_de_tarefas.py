@@ -2190,20 +2190,33 @@ if st.session_state.get("ir_para_formulario") or st.session_state.get("nome_usua
             else:
                 st.error("❌ Erro ao salvar o rascunho.")
 
-    with col_bot2:
-        if st.button("📤 Enviar para Formulário", key=f"btn_enviar_{nome_limpo}"):
-            payload = {
-                "nome": nome, "cargo": cargo, "departamento": depto, "escolaridade": escolaridade,
-                "setor": setor, "chefe": chefe, "empresa": empresa, "devolucao": devolucao,
-                "cursos": cursos, "objetivo": objetivo,
+   with col_bot2:
+        if st.button("💾 Enviar para Formulário"):
+            # 1️⃣ Pega todos os dados
+            dados_para_formulario = {
+                "nome": st.session_state.get("nome", ""),
+                "cargo": st.session_state.get("cargo", ""),
+                "departamento": st.session_state.get("departamento", ""),
+                "escolaridade": st.session_state.get("escolaridade", ""),
+                "setor": st.session_state.get("setor", ""),
+                "chefe": st.session_state.get("chefe", ""),
+                "empresa": st.session_state.get("empresa", ""),
+                "devolucao": st.session_state.get("devolucao", ""),
+                "cursos": st.session_state.get("cursos", ""),
+                "objetivo": st.session_state.get("objetivo", ""),
                 "atividades": edit_ativ.to_dict("records"),
-                "dificuldades": edit_dif.to_dict("records"),
-                "sugestoes": edit_sug.to_dict("records"),
                 **respostas_disc,
-                "enviado_para_formulario": True,
-                "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M")
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
-            if salvar(payload, f"formulario_{nome_limpo}.json", "Envio para formulário"):
+
+            # 2️⃣ Salva no GitHub
+            arquivo_formulario = f"formulario_{st.session_state.get('nome', 'anonimo').lower().replace(' ', '_')}.json"
+            if salvar(dados_para_formulario, arquivo_formulario, mensagem="Envio para Formulário"):
                 st.success("📤 Dados enviados para o formulário!")
-            else:
-                st.error("❌ Erro ao enviar para o formulário.")
+
+                # 3️⃣ Atualiza a sessão
+                for chave, valor in dados_para_formulario.items():
+                    st.session_state[chave] = valor
+                
+                # 4️⃣ Força a atualização da página para refletir os dados no formulário
+                st.rerun()
