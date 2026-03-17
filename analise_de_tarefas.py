@@ -804,7 +804,15 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
-    if "rascunho_carregado" not in st.session_state and nome_usuario:
+    # Inicializa nome_usuario para evitar NameError
+    if "nome_usuario" not in st.session_state:
+        st.session_state["nome_usuario"] = ""
+
+    # Pega o valor atual (input ou sessão)
+    nome_usuario = st.session_state["nome_usuario"]
+
+    # Só tenta carregar se já tiver nome
+    if nome_usuario and "rascunho_carregado" not in st.session_state:
         nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
         dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
         if sucesso:
