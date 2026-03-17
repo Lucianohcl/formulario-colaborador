@@ -1071,29 +1071,30 @@ if st.query_params.get("page") == "formulario":
             * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
             """) 
   
-        # ===========================
-        # 5. QUESTIONÁRIO DISC
-        # ===========================
-        st.markdown("---")
-        st.subheader("📊 Questionário")
-
-        respostas_disc = {}
-
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-
-            respostas_disc[chave] = st.radio(
-                f"{i}. {pergunta}",
-                ["A", "B", "C", "D"],
-                horizontal=True,
-                key=f"form_disc_radio_{i}",
-                index=None  # 🔥 ESSA LINHA É O AJUSTE CRÍTICO
-            )
+        
         
         
 
         
     # --- FINAL DO BLOCO 'WITH' ---
+
+# ===========================
+# QUESTIONÁRIO DISC (FORA DO FORM)
+# ===========================
+st.markdown("---")
+st.subheader("📊 Questionário")
+
+respostas_disc = {}
+
+for i, pergunta in enumerate(perguntas_disc, 1):
+    respostas_disc[f"disc_{i}"] = st.radio(
+        f"{i}. {pergunta}",
+        ["A", "B", "C", "D"],
+        horizontal=True,
+        key=f"disc_radio_{i}"
+    )
+
+
     if enviar:
         pendencias = {}
         # ... aqui entra sua lógica de salvar JSON e validações ...
