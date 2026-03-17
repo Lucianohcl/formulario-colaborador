@@ -803,7 +803,16 @@ perguntas_disc = [
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-    
+
+    # 1. INJEÇÃO MINIMALISTA (Carrega o rascunho para a memória uma única vez)
+    if "rascunho_carregado" not in st.session_state:
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
+        if sucesso:
+            st.session_state.update(dados)
+            st.session_state["rascunho_carregado"] = True
+            st.rerun()    
+
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
@@ -2049,23 +2058,57 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.title("🚀 Analise de Tarefas e Perfil")
 
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
+# Pega o parâmetro da URL uma vez
+params = st.query_params
 
-if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
-    dados, _ = carregar(arquivo_nome)
+# 1. TELA DE FORMULÁRIO (Se a URL tiver ?page=formulario)
+if params.get("page") == "formulario":
+    st.title("📋 Formulário Completo do Colaborador")
+    nome_usuario = st.text_input("Confirme seu **NOME COMPLETO**")
 
-    if primeira_vez:
-        if dados:
-            st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
+    if nome_usuario:
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        
+        # INJEÇÃO: Carrega o rascunho para a memória
+        if "rascunho_carregado" not in st.session_state:
+            dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
+            if sucesso:
+                st.session_state.update(dados)
+                st.session_state["rascunho_carregado"] = True
+                st.rerun()
+
+        # Seus campos puxando do rascunho
+        nome_campo = st.text_input("Nome do colaborador", value=st.session_state.get("nome", nome_usuario))
+
+# 2. TELA DE ACESSO/CADASTRO (Página Inicial)
+else:
+    st.title("📄 Gerar rascunho")
+    nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
+
+    if nome_usuario:
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        arquivo_nome = f"rascunho_{nome_limpo}.json"
+        primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
+        
+        dados, _ = carregar(arquivo_nome)
+
+        if primeira_vez:
+            if dados:
+                st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
+            else:
+                if st.button("✅ Criar meu Rascunho"):
+                    if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
+                        st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
         else:
-            if st.button("✅ Criar meu Rascunho"):
-                if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                    st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+            if not dados:
+                st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
+                st.stop()
+            else:
+                st.success(f"✅ Bem-vindo, {nome_usuario}!")
+                if st.button("➡️ Ir para o Formulário Completo"):
+                    st.query_params["page"] = "formulario"
+                    st.rerun()
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
