@@ -872,6 +872,8 @@ if st.query_params.get("page") == "formulario":
             # st.error("⚠️ ACESSO NEGADO: Você precisa marcar seu rascunho como 'CONCLUÍDO' na página anterior antes de acessar este formulário.")
             # st.info("Volte ao rascunho, marque o checkbox de conclusão e salve.")
             # st.stop() # Interrompe a execução do restante da página
+            pass
+
 
     # 2. SEÇÃO DE IDENTIFICAÇÃO (Puxando do Session State)
     st.subheader("👤 Dados de Identificação")
