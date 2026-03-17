@@ -2074,17 +2074,25 @@ if nome_usuario:
         # --- INÍCIO DO FORMULÁRIO ---
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # 1. IDENTIFICAÇÃO
+        # --- CAMPOS DE IDENTIFICAÇÃO (VERSÃO COMPLETA) ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
-            nome = st.text_input("Nome", dados.get("nome", nome_usuario))
+            nome = st.text_input("Nome do colaborador", dados.get("nome", nome_usuario))
             cargo = st.text_input("Cargo", dados.get("cargo", ""))
-            depto = st.text_input("Departamento", dados.get("departamento", ""))
+            departamento = st.text_input("Departamento", dados.get("departamento", ""))
+            escolaridade = st.text_input("Escolaridade", dados.get("escolaridade", ""))
         with col2:
             setor = st.text_input("Setor", dados.get("setor", ""))
-            chefe = st.text_input("Chefe", dados.get("chefe", ""))
-            empresa = st.text_input("Empresa", dados.get("empresa", ""))
+            chefe = st.text_input("Chefe imediato", dados.get("chefe", ""))
+            empresa = st.text_input("Empresa / Unidade", dados.get("empresa", ""))
+            devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao", ""))
+        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
+        objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
+
+        # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
+        # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
         # 2. TABELA ATIVIDADES
         st.markdown("---")
