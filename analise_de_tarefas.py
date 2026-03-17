@@ -805,11 +805,11 @@ if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
     if "rascunho_carregado" not in st.session_state and nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
-    if sucesso:
-        st.session_state.update(dados)
-    st.session_state["rascunho_carregado"] = True    
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+        dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
+        if sucesso:
+            st.session_state.update(dados)
+        st.session_state["rascunho_carregado"] = True   
 
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
