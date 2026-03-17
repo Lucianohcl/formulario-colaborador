@@ -1139,69 +1139,69 @@ if st.query_params.get("page") == "formulario":
         use_container_width=True
     )
 
-        # --- SEÇÃO DE DIFICULDADES ---
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        
-        edit_dif = st.data_editor(
-                pd.DataFrame({
-                        "Dificuldade": [""] * 20,
-                        "Setor/Parceiro Envolvido": [""] * 20,
-                        "Frequência": [""] * 20,
-                        "Horas Perdidas": [""] * 20,
-                        "Minutos Perdidos": [""] * 20
-                }),
-                column_config={
-                        "Frequência": st.column_config.SelectboxColumn(
-                                "Frequência", 
-                                options=lista_frequencia
-                        ),
-                        "Horas Perdidas": st.column_config.SelectboxColumn(
-                                "Horas Perdidas", 
-                                options=lista_horas
-                        ),
-                        "Minutos Perdidos": st.column_config.SelectboxColumn(
-                                "Minutos Perdidos", 
-                                options=lista_minutos
-                        ),
-                },
-                hide_index=True,
-                num_rows="fixed",
-                use_container_width=True,
-                key="dif_editor"
-        )
+    # --- SEÇÃO DE DIFICULDADES ---
+    st.markdown("---")
+    st.subheader("⚠️ Dificuldades e Bloqueios")
 
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
-        edit_sug = st.data_editor(
-            pd.DataFrame({
-                "Sugestão de Melhoria": [""] * 20,
-                "Impacto Esperado": [""] * 20,
-                "Redução Horas": [""] * 20,
-                "Redução Minutos": [""] * 20,
-                "Frequência do Impacto": [""] * 20
-            }).reset_index(drop=True),
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="sug_editor"
-        )
+    edit_dif = st.data_editor(
+        pd.DataFrame({
+            "Dificuldade": [""] * 20,
+            "Setor/Parceiro Envolvido": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas Perdidas": [""] * 20,
+            "Minutos Perdidos": [""] * 20
+        }),
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn(
+                "Frequência", 
+                options=lista_frequencia
+            ),
+            "Horas Perdidas": st.column_config.SelectboxColumn(
+                "Horas Perdidas", 
+                options=lista_horas
+            ),
+            "Minutos Perdidos": st.column_config.SelectboxColumn(
+                "Minutos Perdidos", 
+                options=lista_minutos
+            ),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True,
+        key="dif_editor"
+    )
+
+    # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
+    st.markdown("---")
+    st.subheader("💡 Sugestões de Melhoria e Impacto")
+
+    edit_sug = st.data_editor(
+        pd.DataFrame({
+            "Sugestão de Melhoria": [""] * 20,
+            "Impacto Esperado": [""] * 20,
+            "Redução Horas": [""] * 20,
+            "Redução Minutos": [""] * 20,
+            "Frequência do Impacto": [""] * 20
+        }).reset_index(drop=True),
+        column_config={
+            "Redução Horas": st.column_config.SelectboxColumn(
+                "Redução Horas", 
+                options=lista_horas
+            ),
+            "Redução Minutos": st.column_config.SelectboxColumn(
+                "Redução Minutos", 
+                options=lista_minutos
+            ),
+            "Frequência do Impacto": st.column_config.SelectboxColumn(
+                "Frequência do Impacto", 
+                options=lista_frequencia
+            ),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True,
+        key="sug_editor"
+    )       
 
         
 
