@@ -845,23 +845,25 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
 
+    # Inicializa nome_usuario
     if "nome_usuario" not in st.session_state:
         st.session_state["nome_usuario"] = ""
+
     nome_usuario = st.session_state["nome_usuario"]
 
+    # Carrega rascunho se existir e ainda não carregado
     if nome_usuario and "rascunho_carregado" not in st.session_state:
         nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
         dados, sucesso = carregar(f"rascunho_{nome_limpo}.json")
         if sucesso:
             st.session_state["rascunho"] = dados
-            st.session_state["formulario"] = dados
+            st.session_state["formulario"] = dados  # TRANSFERÊNCIA SIMPLES
         st.session_state["rascunho_carregado"] = True
 
+    # Pega os dados do formulário (ou vazio)
     formulario = st.session_state.get("formulario", {})
 
-    # -------------------------
-    # BLOCO DE FORMULÁRIO COM st.form
-    # -------------------------
+    # --- FORMULÁRIO ---
     with st.form("form_colaborador"):
         col1, col2 = st.columns(2)
         nome = col1.text_input("Nome do colaborador", value=formulario.get("nome", ""))
@@ -876,6 +878,7 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=formulario.get("cursos", ""))
         objetivo = st.text_area("Trabalho e principal objetivo", value=formulario.get("objetivo", ""))
 
+        # DataFrames
         edit_ativ = st.data_editor(
             pd.DataFrame(formulario.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""}]*20)),
             hide_index=True,
@@ -897,17 +900,20 @@ if st.query_params.get("page") == "formulario":
             use_container_width=True
         )
 
-        perguntas_disc = [...]  # sua lista de perguntas
+        # Questionário DISC
+        perguntas_disc = [...]  # lista de perguntas
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}",
                 options=["A", "B", "C", "D"],
                 key=f"disc_{i}",
-                horizontal=True
+                horizontal=True,
+                index=None
             )
 
-        # BOTÃO DE ENVIO FINAL - agora dentro do form
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")          
+        # Botão enviar
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+          
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
