@@ -2103,7 +2103,7 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.title("🚀 Analise de Tarefas e Perfil")
+st.info("📝 Gerar Rascunho")
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
@@ -2146,15 +2146,71 @@ if nome_usuario:
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
 
-        # --- TABELAS DE ATIVIDADES ---
-        st.markdown("---")
-        st.subheader("🔹 Atividades Executadas")
-        df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="ativ_ed")
+        # ===========================
+        # Tabela de Alta Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Alta Complexidade")
+        atividades_alta = st.data_editor(
+            pd.DataFrame(dados.get("atividades_alta", {
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })).reset_index(drop=True),
+            key="form_atividades_alta",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        # ===========================
+        # Tabela de Nível Normal
+        # ===========================
+        st.subheader("🔹 Atividades de Nível Normal")
+        atividades_normal = st.data_editor(
+            pd.DataFrame(dados.get("atividades_normal", {
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })).reset_index(drop=True),
+            key="form_atividades_normal",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        # ===========================
+        # Tabela de Baixa Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Baixa Complexidade")
+        atividades_baixa = st.data_editor(
+            pd.DataFrame(dados.get("atividades_baixa", {
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })).reset_index(drop=True),
+            key="form_atividades_baixa",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )        
 
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
