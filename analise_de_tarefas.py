@@ -214,6 +214,222 @@ def gerar_pdf(form):
         elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
         elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
         elementos.append(Spacer(1, 6))
+# ============================================================
+# IMPORTS
+# ============================================================
+
+import streamlit as st
+import pandas as pd
+import json
+import os
+from datetime import datetime
+from statistics import mean
+
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from datetime import datetime
+import pytz
+import time
+from zoneinfo import ZoneInfo
+import plotly.express as px
+# ============================================================
+
+# CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
+
+# ============================================================
+
+st.set_page_config(
+
+    page_title="Sistema de Análise de Tarefas",
+
+    page_icon="📊",
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
+)
+
+
+
+# Inicialização centralizada
+
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
+if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
+if "formularios" not in st.session_state: st.session_state["formularios"] = []
+
+
+
+# Leitura da URL (Prioridade total para permitir acesso ao formulário)
+
+query_params = st.query_params
+
+if "page" in query_params:
+
+    st.session_state.pagina = query_params["page"]
+
+st.markdown("""
+    <style>
+    /* Oculta a coluna de índice do data_editor */
+    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+dados_dir = "dados"
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
+
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
+from docx import Document
+from fpdf import FPDF
+import io
+
+def gerar_word(form):
+    doc = Document()
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
+    
+    # 1. Informações Gerais
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+    
+    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for chave, colunas in secoes.items():
+        if chave in form and isinstance(form[chave], list):
+            doc.add_heading(f"📋 {chave}", level=1)
+            # Filtra apenas itens que tenham conteúdo real
+            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                table = doc.add_table(rows=1, cols=len(colunas))
+                table.style = 'Table Grid'
+                # Cabeçalho
+                for i, col in enumerate(colunas):
+                    table.rows[0].cells[i].text = col
+                # Linhas
+                for item in dados:
+                    row = table.add_row().cells
+                    for i, col in enumerate(colunas):
+                        row[i].text = str(item.get(col, ''))
+            else:
+                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+
+    # 3. Avaliação DISC
+    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
+        doc.add_paragraph(f"Resposta: {valor_resposta}")
+        doc.add_paragraph("-" * 20)
+    
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+def gerar_pdf(form):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Título
+    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Informações Gerais
+    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
+    
+    elementos.append(Spacer(1, 12))
+
+    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for titulo, colunas in secoes.items():
+        if titulo in form and isinstance(form[titulo], list):
+            elementos.append(Paragraph(titulo, styles['Heading2']))
+            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                data = [colunas] # Cabeçalho
+                for item in dados:
+                    data.append([str(item.get(c, '')) for c in colunas])
+                
+                tabela = Table(data, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                    ('FONTSIZE', (0,0), (-1,-1), 8)
+                ]))
+                elementos.append(tabela)
+            else:
+                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+            elementos.append(Spacer(1, 12))
+
+    # DISC
+    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
+        elementos.append(Spacer(1, 6))
 
     doc.build(elementos)
     buffer.seek(0)
@@ -803,36 +1019,7 @@ perguntas_disc = [
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-
     
-    # Inicializa sem criar widget visível
-    if "nome_usuario" not in st.session_state:
-        st.session_state["nome_usuario"] = ""
-
-    # Atualiza diretamente com o valor do rascunho
-    st.session_state["nome_usuario"] = "Pedro Marcelo"  # exemplo
-    nome_usuario = st.session_state["nome_usuario"]
-
-    # --- BOTÃO DE CRIAR RASCUNHO ---
-    if "rascunho" not in st.session_state:
-        col1, _ = st.columns(2)
-        with col1:
-            if st.button("💾 Criar Rascunho"):
-                payload = {
-                    "nome": "",
-                    "cargo": "",
-                    "departamento": "",
-                    "setor": "",
-                    "chefe": "",
-                    "empresa": "",
-                    "cursos": "",
-                    "objetivo": "",
-                    "atividades": [],
-                    "dificuldades": [],
-                    "sugestoes": [],
-                }
-                st.session_state["rascunho"] = payload
-                st.success("✅ Rascunho criado dentro do formulário!")
     # Listas padronizadas (devem vir antes do form)
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
@@ -977,7 +1164,7 @@ if st.query_params.get("page") == "formulario":
         
 
         st.markdown("---")
-        st.subheader("📊 Questionário")
+        st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
@@ -2078,28 +2265,16 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.info("📝 Gerar Rascunho")
+st.title("🚀 Analise de Tarefas e Perfil")
 
-# Inicializa a flag de exibição do rascunho
-if "exibir_rascunho" not in st.session_state:
-    st.session_state["exibir_rascunho"] = True
-
-# Inicializa rascunho invisível sem criar widget
-if "nome_usuario" not in st.session_state:
-    st.session_state["nome_usuario"] = valor_do_rascunho  # pegue o nome do arquivo JSON ou do payload
-
-nome_usuario = st.session_state["nome_usuario"]
-
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
-if nome_usuario and st.session_state.get("exibir_rascunho", True):
+if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados, _ = carregar(arquivo_nome)
 
-    # -------------------
-    # CADASTRO / PRIMEIRA VEZ
-    # -------------------
     if primeira_vez:
         if dados:
             st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
@@ -2112,12 +2287,10 @@ if nome_usuario and st.session_state.get("exibir_rascunho", True):
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
             st.stop()
 
-        # -------------------
-        # FORMULÁRIO DE RASCUNHO
-        # -------------------
+        # --- INÍCIO DO FORMULÁRIO ---
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # --- Dados de Identificação ---
+        # --- CAMPOS DE IDENTIFICAÇÃO (VERSÃO COMPLETA) ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
@@ -2134,91 +2307,66 @@ if nome_usuario and st.session_state.get("exibir_rascunho", True):
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
 
-        # --- Atividades ---
+        # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
+        # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
+
+        # 2. TABELA ATIVIDADES
         st.markdown("---")
         st.subheader("🔹 Atividades Executadas")
         df_ativ_padrao = pd.DataFrame(dados.get("atividades", [{"Atividade Descrita": "", "Frequência": "", "Horas": "", "Minutos": ""} for _ in range(20)]))
-        edit_ativ = st.data_editor(
-            df_ativ_padrao,
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-            },
-            hide_index=True,
-            use_container_width=True,
-            key="ativ_ed"
-        )
+        edit_ativ = st.data_editor(df_ativ_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="ativ_ed")
 
-        # --- Dificuldades ---
+        # 3. TABELA DIFICULDADES
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
         df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
-        edit_dif = st.data_editor(
-            df_dif_padrao,
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-            },
-            hide_index=True,
-            use_container_width=True,
-            key="dif_ed"
-        )
+        edit_dif = st.data_editor(df_dif_padrao, column_config={
+            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }, hide_index=True, use_container_width=True, key="dif_ed")
 
-        # --- Sugestões ---
+        # 4. TABELA SUGESTÕES
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria")
         df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
-        edit_sug = st.data_editor(
-            df_sug_padrao,
-            column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-                "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-            },
-            hide_index=True,
-            use_container_width=True,
-            key="sug_ed"
-        )
+        edit_sug = st.data_editor(df_sug_padrao, column_config={
+            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+        }, hide_index=True, use_container_width=True, key="sug_ed")
 
-        # --- Questionário DISC ---
+        # 5. QUESTIONÁRIO DISC
         st.markdown("---")
-        st.subheader("📊 Questionário")
+        st.subheader("📊 Questionário DISC")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(
-                f"{i}. {pergunta}",
-                ["A", "B", "C", "D"],
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else 0,
-                horizontal=True,
-                key=f"radio_{i}"
-            )
+            respostas_disc[chave] = st.radio(f"{i}. {pergunta}", ["A", "B", "C", "D"], 
+                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+                horizontal=True, key=f"radio_{i}")
 
-        # --- Botão Salvar e Alimentar Formulário ---
-        if st.button("💾 Salvar e Alimentar Formulário"):
+        # 6. BOTÃO SALVAR
+        st.markdown("---")
+        if st.button("💾 Salvar Rascunho"):
             payload = {
-                "nome": nome,
-                "cargo": cargo,
-                "departamento": departamento,
-                "setor": setor,
-                "chefe": chefe,
-                "empresa": empresa,
-                "cursos": cursos,
-                "objetivo": objetivo,
+                "nome": nome, "cargo": cargo, "departamento": depto,
+                "setor": setor, "chefe": chefe, "empresa": empresa,
                 "atividades": edit_ativ.to_dict("records"),
                 "dificuldades": edit_dif.to_dict("records"),
                 "sugestoes": edit_sug.to_dict("records"),
                 **respostas_disc,
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
             }
+            if salvar(payload, arquivo_nome):
+                st.success("✅ Rascunho salvo com sucesso no servidor!")
+            else:
+                st.error("❌ Falha ao salvar. Verifique sua conexão.")
 
-            # Alimenta o formulário final
-            st.session_state["formulario"] = payload
-            salvar(payload, arquivo_nome)
+# Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
 
-            # TRAVA: Esconde o rascunho após o envio
-            st.session_state["exibir_rascunho"] = False
 
-            st.success("✅ Alimentado! O rascunho foi concluído e não será mais exibido.")
