@@ -2151,3 +2151,5 @@ if nome_usuario:
                 st.error("❌ Falha ao salvar. Verifique sua conexão.")
 
 # Rodar: st.rerun() no final do cadastro ajuda a atualizar a tela.
+
+
