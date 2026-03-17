@@ -810,9 +810,19 @@ perguntas_disc = [
 # --- FORMULÁRIO ---
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
-    # 1. CARREGAR TUDO DO GITHUB
-    # A função carregar_dados já deve buscar o rascunho_nome.json
-    dados, _ = carregar_dados(arquivo_nome) if 'carregar_dados' in globals() else ({}, None)
+
+    # 1. CARREGAR DADOS DE FORMA SEGURA
+    dados = {}
+    
+    # Primeiro checamos se o nome do arquivo existe na memória
+    if 'arquivo_nome' in locals() or 'arquivo_nome' in globals():
+        # Se existir, tentamos carregar usando a função
+        if 'carregar_dados' in globals():
+            dados, _ = carregar_dados(arquivo_nome)
+    
+    # Se 'dados' continuar vazio, garantimos que seja um dicionário para não quebrar abaixo
+    if not dados:
+        dados = {}
 
     # 2. IDENTIFICAÇÃO (Puxando do JSON)
     nome_c = st.text_input("Nome", value=dados.get("nome", ""))
