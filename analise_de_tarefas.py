@@ -2379,30 +2379,32 @@ if nome_usuario:
     # 6. BOTÃO SALVAR
     st.markdown("---")
     if st.button("💾 Salvar Rascunho"):
+        # Importamos aqui para garantir que funcione no clique
         from datetime import datetime
-        
-        # Função interna para converter com segurança e evitar o AttributeError
-        def converter_para_lista(df_ou_dict):
-            if isinstance(df_ou_dict, pd.DataFrame):
-                return df_ou_dict.to_dict("records")
-            return [] # Retorna lista vazia se não for um DataFrame válido
+        import pandas as pd
+
+        # Função de segurança para converter tabelas sem travar o app
+        def preparar_tabela(dados):
+            if isinstance(dados, pd.DataFrame):
+                return dados.to_dict("records")
+            return [] # Retorna vazio se não for um DataFrame
 
         payload = {
             "nome": nome, 
             "cargo": cargo, 
-            "departamento": departamento,
+            "departamento": depto, # Verifique se a variável é 'depto' ou 'departamento'
             "setor": setor, 
             "chefe": chefe, 
             "empresa": empresa,
-            "atividades": converter_para_lista(edit_ativ),
-            "dificuldades": converter_para_lista(edit_dif),
-            "sugestoes": converter_para_lista(edit_sug),
+            "atividades": preparar_tabela(edit_ativ),
+            "dificuldades": preparar_tabela(edit_dif),
+            "sugestoes": preparar_tabela(edit_sug),
             **respostas_disc,
             "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
         }
 
         if salvar(payload, arquivo_nome):
             st.success("✅ Rascunho salvo com sucesso no servidor!")
-            st.rerun()
+            st.rerun()  # O rerun aqui é excelente para limpar o estado visual
         else:
             st.error("❌ Falha ao salvar. Verifique sua conexão.")
