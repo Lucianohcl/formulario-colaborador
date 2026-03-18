@@ -2365,14 +2365,12 @@ if nome_usuario:
             # Garante que seja DataFrame mesmo se estiver vazio
             import pandas as pd
 
-            edit_ativ_df = pd.DataFrame(edit_ativ) if not isinstance(edit_ativ, pd.DataFrame) else edit_ativ
-            edit_dif_df = pd.DataFrame(edit_dif) if not isinstance(edit_dif, pd.DataFrame) else edit_dif
-            edit_sug_df = pd.DataFrame(edit_sug) if not isinstance(edit_sug, pd.DataFrame) else edit_sug
+            
 
             # Filtra apenas linhas com conteúdo
-            ativ_final = edit_ativ_df[edit_ativ_df["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
-            dif_final = edit_dif_df[edit_dif_df["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
-            sug_final = edit_sug_df[edit_sug_df["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
+            ativ_final = edit_ativ[edit_ativ["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
+            dif_final = edit_dif[edit_dif["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
+            sug_final = edit_sug[edit_sug["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
 
             payload = {
                 "nome": nome, 
