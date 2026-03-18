@@ -2297,109 +2297,65 @@ import json
 import pandas as pd
 from datetime import datetime
 
-# ==========================================
-# 1. CONFIGURAÇÕES INICIAIS
-# ==========================================
-st.set_page_config(page_title="Formulário com De-Para", layout="wide")
-st.title("📋 Formulário de Tarefas (Sistema De-Para)")
+# 1. Configuração de Página
+st.set_page_config(page_title="Formulário Inteligente", layout="wide")
+st.title("📋 Sistema de Rascunho Automático")
 
-# Inicializa o estado de dados se ele não existir
-if "dados_importados" not in st.session_state:
-    st.session_state["dados_importados"] = {}
+# Inicializa o estado da sessão para evitar erros de "campo vazio"
+if "dados_sessao" not in st.session_state:
+    st.session_state["dados_sessao"] = {}
 
-# ==========================================
-# 2. ENTRADA DE NOME E BOTÃO DE-PARA
-# ==========================================
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**:", key="input_nome_usuario")
+# 2. Entrada do Nome (A Chave do Rascunho)
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**:", key="input_usuario")
 
+# --- O BOTÃO ENCAPSULADO ---
 if nome_usuario:
     nome_limpo = nome_usuario.strip().replace(' ', '_')
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
+    arquivo_json = f"rascunho_{nome_limpo}.json"
 
-    # O BOTÃO MÁGICO (O "DE")
-    if st.button("🔄 Aplicar Rascunho no Formulário", key="btn_carregar_rascunho"):
-        if os.path.exists(arquivo_nome):
-            try:
-                with open(arquivo_nome, "r", encoding="utf-8") as f:
-                    # Carrega o JSON para o Session State
-                    st.session_state["dados_importados"] = json.load(f)
-                st.success(f"✅ Rascunho de {nome_usuario} carregado!")
-                st.rerun() # O "PARA": Força o formulário a ler os novos dados
-            except Exception as e:
-                st.error(f"Erro ao ler rascunho: {e}")
+    # Tudo acontece aqui dentro quando clicado
+    if st.button("🔄 Carregar e Aplicar Rascunho", key="btn_unico"):
+        if os.path.exists(arquivo_json):
+            with open(arquivo_json, "r", encoding="utf-8") as f:
+                # O ENCAPSULAMENTO: Transere o arquivo direto para a memória da tela
+                st.session_state["dados_sessao"] = json.load(f)
+            st.success(f"✨ Sucesso! Os dados de {nome_usuario} foram aplicados.")
+            st.rerun() 
         else:
-            st.warning(f"⚠️ Nenhum arquivo encontrado para: {arquivo_nome}")
+            st.error(f"❌ Não encontrei rascunho para '{nome_usuario}'.")
 
-# Atalho para os dados (se estiver vazio, retorna dicionário vazio)
-dados = st.session_state["dados_importados"]
+# Atalho para os campos lerem a memória
+dados = st.session_state["dados_sessao"]
 
-# ==========================================
-# 3. FORMULÁRIO (PREENCHIMENTO AUTOMÁTICO)
-# ==========================================
-st.subheader("👤 Identificação")
+# 3. O Formulário (Os campos recebem o "Para" automaticamente)
+st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    # O 'value' busca direto do dicionário carregado pelo botão
     nome = st.text_input("Nome", value=dados.get("nome", ""), key="f_nome")
     setor = st.text_input("Setor", value=dados.get("setor", ""), key="f_setor")
     cargo = st.text_input("Cargo", value=dados.get("cargo", ""), key="f_cargo")
 
 with col2:
     depto = st.text_input("Departamento", value=dados.get("depto", ""), key="f_depto")
-    empresa = st.text_input("Empresa", value=dados.get("empresa", ""), key="f_empresa")
     chefe = st.text_input("Chefe", value=dados.get("chefe", ""), key="f_chefe")
 
-st.markdown("---")
-st.subheader("📊 DISC")
-respostas_disc = {}
-opcoes_disc = ["", "A", "B", "C", "D"]
-
-# Gera 24 campos DISC automaticamente preenchidos
-cols_disc = st.columns(4)
-for i in range(1, 25):
-    with cols_disc[(i-1) % 4]:
-        chave_disc = f"disc_{i}"
-        val_disc = dados.get("disc", {}).get(chave_disc, "")
-        idx = opcoes_disc.index(val_disc) if val_disc in opcoes_disc else 0
-        respostas_disc[chave_disc] = st.selectbox(f"Q{i}", opcoes_disc, index=idx, key=f"sel_{chave_disc}")
-
-# ==========================================
-# 4. TABELA DE ATIVIDADES
-# ==========================================
-st.markdown("---")
+# 4. Tabela de Atividades
 st.subheader("📝 Atividades")
 ativ_pre = dados.get("atividades", [])
-df_ativ = pd.DataFrame(ativ_pre) if ativ_pre else pd.DataFrame(columns=["Atividade", "Horas"])
+df_ativ = pd.DataFrame(ativ_pre) if ativ_pre else pd.DataFrame([{"Atividade": "", "Horas": ""}] * 3)
+edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", use_container_width=True, key="tab_ativ")
 
-# Garante que a tabela tenha colunas se vier vazia
-if df_ativ.empty:
-    df_ativ = pd.DataFrame([{"Atividade": "", "Horas": ""}] * 3)
-
-edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", use_container_width=True, key="editor_tabela")
-
-# ==========================================
-# 5. BOTÃO SALVAR (GERA O JSON)
-# ==========================================
-st.markdown("---")
-if st.button("💾 Salvar Alterações", key="btn_salvar_geral"):
+# 5. Salvar (Para criar o próximo rascunho)
+if st.button("💾 Salvar Alterações", key="btn_salvar"):
     if not nome:
-        st.error("Preencha o nome antes de salvar!")
+        st.warning("Preencha o nome no formulário antes de salvar.")
     else:
-        novo_payload = {
-            "nome": nome,
-            "setor": setor,
-            "cargo": cargo,
-            "depto": depto,
-            "empresa": empresa,
-            "chefe": chefe,
-            "disc": respostas_disc,
-            "atividades": edit_ativ.to_dict("records"),
-            "data_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        payload = {
+            "nome": nome, "setor": setor, "cargo": cargo,
+            "depto": depto, "chefe": chefe,
+            "atividades": edit_ativ.to_dict("records")
         }
-        
-        nome_arquivo_final = f"rascunho_{nome.strip().replace(' ', '_')}.json"
-        with open(nome_arquivo_final, "w", encoding="utf-8") as f:
-            json.dump(novo_payload, f, ensure_ascii=False, indent=4)
-        
-        st.success(f"✅ Rascunho salvo como: {nome_arquivo_final}")
+        with open(f"rascunho_{nome.strip().replace(' ', '_')}.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=4)
+        st.success("✅ Rascunho salvo/atualizado!")
