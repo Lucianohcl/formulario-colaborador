@@ -1049,25 +1049,75 @@ def carregar(arquivo_nome):
 # ==============================
 st.title("📋 Formulário Completo do Colaborador")
 
+import streamlit as st
+import os, json
+import pandas as pd
+
 # ==============================
-# ENTRADA DO NOME DO COLABORADOR
+# NOME DO USUÁRIO
 # ==============================
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
 
-
 # ==============================
-# BOTÃO: CARREGAR RASCUNHO
+# BOTÃO DE CARREGAR RASCUNHO
 # ==============================
 if nome_usuario:
     arquivo_nome = f"rascunho_{nome_usuario.strip().replace(' ', '_')}.json"
     if st.button("📥 Carregar meu rascunho"):
-        dados, ok = carregar(arquivo_nome)
-        if ok:
-            st.session_state["dados_importados"] = dados
+        if os.path.exists(arquivo_nome):
+            with open(arquivo_nome, "r", encoding="utf-8") as f:
+                st.session_state["dados_importados"] = json.load(f)
             st.success("Rascunho carregado com sucesso!")
         else:
             st.warning("Nenhum rascunho encontrado.")
 
+dados = st.session_state.get("dados_importados", {})
+
+# ==============================
+# IDENTIFICAÇÃO
+# ==============================
+nome = st.text_input("Nome completo", value=dados.get("nome", ""))
+setor = st.text_input("Setor", value=dados.get("setor", ""))
+cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+chefe = st.text_input("Chefe", value=dados.get("chefe", ""))
+departamento = st.text_input("Departamento", value=dados.get("departamento", ""))
+empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
+escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
+devolucao = st.text_input("Devolução", value=dados.get("devolucao", ""))
+cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados.get("cursos_obrigatorios_ou_diferenciais", ""))
+objetivo = st.text_area("Trabalho e principal objetivo", value=dados.get("trabalho_e_principal_objetivo", ""))
+
+# ==============================
+# DISC 24 PERGUNTAS
+# ==============================
+for i in range(1, 25):
+    key_name = f"disc_{i}"
+    st.session_state[key_name] = dados.get("disc", {}).get(key_name, "")
+    st.selectbox(f"DISC Pergunta {i}", ["", "A", "B", "C", "D"],
+                 index=["", "A", "B", "C", "D"].index(st.session_state.get(key_name, "")),
+                 key=key_name)
+
+# ==============================
+# FUNÇÃO PARA PREENCHER TABELAS
+# ==============================
+def preencher_tabela(nome_tabela, colunas):
+    items = dados.get(nome_tabela, [])
+    if not items:
+        df = pd.DataFrame([{c: "" for c in colunas}])
+    else:
+        df = pd.DataFrame(items)
+        for c in colunas:
+            if c not in df.columns:
+                df[c] = ""
+        df = df[colunas]
+    return st.data_editor(df, num_rows="dynamic", key=nome_tabela)
+
+# ==============================
+# ATIVIDADES, DIFICULDADES, SUGESTÕES
+# ==============================
+ativ_final = preencher_tabela("atividades", ["Atividade Descrita", "Tipo", "Horas", "Minutos"])
+dif_final  = preencher_tabela("dificuldades", ["Dificuldade", "Detalhes"])
+sug_final  = preencher_tabela("sugestoes", ["Sugestão de Melhoria", "Responsável", "Prazo"])
 # ==============================
 # DADOS IMPORTADOS
 # ==============================
