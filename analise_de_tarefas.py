@@ -1054,6 +1054,7 @@ st.title("📋 Formulário Completo do Colaborador")
 # ==============================
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
 
+
 # ==============================
 # BOTÃO: CARREGAR RASCUNHO
 # ==============================
