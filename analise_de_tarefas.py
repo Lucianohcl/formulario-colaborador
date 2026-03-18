@@ -1024,412 +1024,1206 @@ from datetime import datetime
 import pytz
 
 import streamlit as st
-import json
-import os
+# ============================================================
+# IMPORTS
+# ============================================================
 
 import streamlit as st
 import pandas as pd
 import json
 import os
+from datetime import datetime
+from statistics import mean
+
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
 from datetime import datetime
 import pytz
+import time
+from zoneinfo import ZoneInfo
+import plotly.express as px
+# ============================================================
+
+# CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
+
+# ============================================================
+
+st.set_page_config(
+
+    page_title="Sistema de Análise de Tarefas",
+
+    page_icon="📊",
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
+)
+
+
+
+# Inicialização centralizada
+
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
+if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
+if "formularios" not in st.session_state: st.session_state["formularios"] = []
+
+
+
+# Leitura da URL (Prioridade total para permitir acesso ao formulário)
+
+query_params = st.query_params
+
+if "page" in query_params:
+
+    st.session_state.pagina = query_params["page"]
+
+st.markdown("""
+    <style>
+    /* Oculta a coluna de índice do data_editor */
+    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+dados_dir = "dados"
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
+
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
+from docx import Document
+from fpdf import FPDF
+import io
+
+def gerar_word(form):
+    doc = Document()
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
+    
+    # 1. Informações Gerais
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+    
+    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for chave, colunas in secoes.items():
+        if chave in form and isinstance(form[chave], list):
+            doc.add_heading(f"📋 {chave}", level=1)
+            # Filtra apenas itens que tenham conteúdo real
+            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                table = doc.add_table(rows=1, cols=len(colunas))
+                table.style = 'Table Grid'
+                # Cabeçalho
+                for i, col in enumerate(colunas):
+                    table.rows[0].cells[i].text = col
+                # Linhas
+                for item in dados:
+                    row = table.add_row().cells
+                    for i, col in enumerate(colunas):
+                        row[i].text = str(item.get(col, ''))
+            else:
+                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+
+    # 3. Avaliação DISC
+    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
+        doc.add_paragraph(f"Resposta: {valor_resposta}")
+        doc.add_paragraph("-" * 20)
+    
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+def gerar_pdf(form):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Título
+    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Informações Gerais
+    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
+    
+    elementos.append(Spacer(1, 12))
+
+    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for titulo, colunas in secoes.items():
+        if titulo in form and isinstance(form[titulo], list):
+            elementos.append(Paragraph(titulo, styles['Heading2']))
+            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                data = [colunas] # Cabeçalho
+                for item in dados:
+                    data.append([str(item.get(c, '')) for c in colunas])
+                
+                tabela = Table(data, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                    ('FONTSIZE', (0,0), (-1,-1), 8)
+                ]))
+                elementos.append(tabela)
+            else:
+                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+            elementos.append(Spacer(1, 12))
+
+    # DISC
+    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
+        elementos.append(Spacer(1, 6))
+# ============================================================
+# IMPORTS
+# ============================================================
 
 import streamlit as st
+import pandas as pd
+import json
+import os
+from datetime import datetime
+from statistics import mean
+
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from datetime import datetime
+import pytz
+import time
+from zoneinfo import ZoneInfo
+import plotly.express as px
+# ============================================================
+
+# CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
+
+# ============================================================
+
+st.set_page_config(
+
+    page_title="Sistema de Análise de Tarefas",
+
+    page_icon="📊",
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
+)
+
+
+
+# Inicialização centralizada
+
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
+if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
+if "formularios" not in st.session_state: st.session_state["formularios"] = []
+
+
+
+# Leitura da URL (Prioridade total para permitir acesso ao formulário)
+
+query_params = st.query_params
+
+if "page" in query_params:
+
+    st.session_state.pagina = query_params["page"]
+
+st.markdown("""
+    <style>
+    /* Oculta a coluna de índice do data_editor */
+    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+dados_dir = "dados"
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
+
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
+from docx import Document
+from fpdf import FPDF
+import io
+
+def gerar_word(form):
+    doc = Document()
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
+    
+    # 1. Informações Gerais
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+    
+    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for chave, colunas in secoes.items():
+        if chave in form and isinstance(form[chave], list):
+            doc.add_heading(f"📋 {chave}", level=1)
+            # Filtra apenas itens que tenham conteúdo real
+            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                table = doc.add_table(rows=1, cols=len(colunas))
+                table.style = 'Table Grid'
+                # Cabeçalho
+                for i, col in enumerate(colunas):
+                    table.rows[0].cells[i].text = col
+                # Linhas
+                for item in dados:
+                    row = table.add_row().cells
+                    for i, col in enumerate(colunas):
+                        row[i].text = str(item.get(col, ''))
+            else:
+                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+
+    # 3. Avaliação DISC
+    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
+        doc.add_paragraph(f"Resposta: {valor_resposta}")
+        doc.add_paragraph("-" * 20)
+    
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+def gerar_pdf(form):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Título
+    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Informações Gerais
+    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
+    
+    elementos.append(Spacer(1, 12))
+
+    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for titulo, colunas in secoes.items():
+        if titulo in form and isinstance(form[titulo], list):
+            elementos.append(Paragraph(titulo, styles['Heading2']))
+            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                data = [colunas] # Cabeçalho
+                for item in dados:
+                    data.append([str(item.get(c, '')) for c in colunas])
+                
+                tabela = Table(data, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                    ('FONTSIZE', (0,0), (-1,-1), 8)
+                ]))
+                elementos.append(tabela)
+            else:
+                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+            elementos.append(Spacer(1, 12))
+
+    # DISC
+    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
+        elementos.append(Spacer(1, 6))
+
+    doc.build(elementos)
+    buffer.seek(0)
+    return buffer
+
+# ============================================================
+# CALCULAR DISC PERCENTUAL E DOMINANTE
+# ============================================================
+
+def calcular_disc(respostas_disc):
+    contagem = {"D":0, "I":0, "S":0, "C":0}
+    for r in respostas_disc.values():
+        if r in contagem:
+            contagem[r] += 1
+    total = sum(contagem.values())
+    if total > 0:
+        percentuais = {k: round(v/total*100,1) for k,v in contagem.items()}
+        dominante = max(percentuais, key=percentuais.get)
+    else:
+        percentuais = contagem
+        dominante = None
+    return percentuais, dominante
+
+# ============================================================
+# SCORE DISC PONDERADO
+# ============================================================
+
+def score_disc(disc):
+    pesos = {"D":1.0,"I":0.9,"S":0.85,"C":0.95}
+    total = sum(disc.values())
+    if total == 0:
+        return 0
+    calculo = sum(disc[k]*pesos.get(k,1) for k in disc)
+    return round((calculo/total)*100,2)
+
+
+# ============================================================
+# DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
+# ============================================================
+import streamlit as st
+import pandas as pd
 import os
 import json
-import pandas as pd
-from datetime import datetime
+import sys
 
-# ==============================
-# CONFIGURAÇÃO INICIAL
-# ==============================
-st.set_page_config(page_title="Formulário Colaborador", layout="wide")
-st.title("📋 Formulário Completo do Colaborador")
+import os
+import sys
+import json
+import streamlit as st
 
-# ==============================
-# 1. IDENTIFICAÇÃO DO USUÁRIO
-# ==============================
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO** para buscar rascunhos:", key="nome_usuario_input")
+# --- DEFINIÇÃO DE CAMINHO À PROVA DE ERROS ---
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Inicializa o estado dos dados se não existir
-if "dados_importados" not in st.session_state:
-    st.session_state["dados_importados"] = {}
+# Definimos o diretório de dados como absoluto
+dados_dir = os.path.join(base_dir, "dados")
 
-# ==============================
-# BLOCO DE CARREGAMENTO SEGURO
-# ==============================
-if nome_usuario:
-    # 1. Padroniza o nome do arquivo para busca
-    nome_limpo = nome_usuario.strip().replace(' ', '_')
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
-    
-    if st.button("📥 Carregar meu rascunho"):
-        if os.path.exists(arquivo_nome):
-            try:
-                with open(arquivo_nome, "r", encoding="utf-8") as f:
-                    # 2. Carrega para o session_state
-                    st.session_state["dados_importados"] = json.load(f)
+# Criamos a pasta 'dados' se ela não existir
+os.makedirs(dados_dir, exist_ok=True)
+
+# --- FUNÇÃO DE CARREGAMENTO DINÂMICO ---
+def carregar_todos_formularios():
+    """
+    Lê todos os arquivos .json da pasta 'dados' individualmente.
+    """
+    lista_formularios = []
+    # Usamos a variável global dados_dir definida acima
+    if os.path.exists(dados_dir):
+        for nome_arquivo in os.listdir(dados_dir):
+            if nome_arquivo.endswith(".json"):
+                caminho_completo = os.path.join(dados_dir, nome_arquivo)
+                try:
+                    with open(caminho_completo, "r", encoding="utf-8") as f:
+                        dados = json.load(f)
+                        if isinstance(dados, dict):
+                            lista_formularios.append(dados)
+                except Exception:
+                    continue
+    return lista_formularios
+
+# --- CARREGAMENTO INICIAL ---
+# Agora chamamos a função que criamos para ler os arquivos individuais
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = carregar_todos_formularios()
+# ============================================================
+# LOGIN (Com Bypass para o Formulário)
+# ============================================================
+# Só bloqueia o acesso se NÃO estiver logado E NÃO for a página de formulário
+if not st.session_state.logged_in and st.session_state.pagina != "formulario":
+    st.title("🔐 Acesso")
+    usuario = st.text_input("Usuário")
+    senha = st.text_input("Senha", type="password")
+
+    if st.button("Entrar", key="login_button"):
+        if (usuario == "admin" and senha == "admin123") or (usuario == "Luciano" and senha == "123"):
+            st.session_state.logged_in = True
+            st.session_state.user_nome = usuario
+            st.session_state.is_admin = True
+            
+            # ATUALIZAÇÃO: Definimos a variável que o painel de exportação espera
+            if usuario == "Luciano":
+                st.session_state["usuario_logado"] = "Luciano 123"
+            else:
+                st.session_state["usuario_logado"] = usuario
                 
-                st.success(f"✅ Rascunho de '{nome_usuario}' carregado com sucesso!")
-                
-                # 3. O 'pulo do gato': força o Streamlit a atualizar os campos
-                st.rerun() 
-            except Exception as e:
-                st.error(f"❌ Erro ao ler o arquivo: {e}")
+            st.rerun()
         else:
-            st.warning(f"⚠️ Nenhum rascunho encontrado para '{nome_usuario}'.")
-            st.info(f"Procurando por: {arquivo_nome}")
-
-# 4. Esta linha garante que os inputs abaixo sempre tenham de onde ler
-dados = st.session_state.get("dados_importados", {})
-
-
-# ==============================
-# 2. CAMPOS DE IDENTIFICAÇÃO (Automação via 'value')
-# ==============================
-st.subheader("👤 Informações Gerais")
-col1, col2 = st.columns(2)
-
-with col1:
-    nome = st.text_input("Nome completo", value=dados.get("nome", ""))
-    setor = st.text_input("Setor", value=dados.get("setor", ""))
-    cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
-    chefe = st.text_input("Chefe imediato", value=dados.get("chefe", ""))
-
-with col2:
-    departamento = st.text_input("Departamento", value=dados.get("departamento", ""))
-    empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
-    escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
-    devolucao = st.text_input("Data de Devolução", value=dados.get("devolucao", ""))
-
-cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados.get("cursos_obrigatorios_ou_diferenciais", ""))
-objetivo = st.text_area("Trabalho e principal objetivo", value=dados.get("trabalho_e_principal_objetivo", ""))
-
-# ==============================
-# 3. QUESTIONÁRIO DISC (Automação via 'index')
-# ==============================
-st.markdown("---")
-st.subheader("📊 Questionário DISC")
-respostas_disc = {}
-opcoes_disc = ["", "A", "B", "C", "D"]
-
-# Organizado em colunas para não ficar uma lista infinita
-cols_disc = st.columns(4)
-for i in range(1, 25):
-    with cols_disc[(i-1) % 4]:
-        key_json = f"disc_{i}"
-        valor_rascunho = dados.get("disc", {}).get(key_json, "")
-        
-        # Garante que o índice exista na lista de opções
-        idx_disc = opcoes_disc.index(valor_rascunho) if valor_rascunho in opcoes_disc else 0
-        
-        respostas_disc[key_json] = st.selectbox(
-            f"Pergunta {i}", 
-            opcoes_disc, 
-            index=idx_disc, 
-            key=f"widget_disc_{i}"
-        )
-
-# ==============================
-# 4. TABELAS DINÂMICAS (Automação via DataFrame)
-# ==============================
-st.markdown("---")
-st.subheader("📝 Atividades, Dificuldades e Sugestões")
-
-def preencher_tabela(nome_chave, colunas):
-    items = dados.get(nome_chave, [])
-    # Converte para lista se vier formato estranho
-    if isinstance(items, dict):
-        items = list(items.values())
+            st.error("Usuário ou senha incorretos")
     
-    df = pd.DataFrame(items) if items else pd.DataFrame(columns=colunas)
-    
-    # Garante colunas corretas
-    for c in colunas:
-        if c not in df.columns:
-            df[c] = ""
-    
-    # Garante no mínimo 3 linhas vazias para preenchimento
-    if len(df) < 3:
-        vazios = pd.DataFrame([{c: "" for c in colunas} for _ in range(3 - len(df))])
-        df = pd.concat([df, vazios], ignore_index=True)
+    st.stop()
+
+# ============================================================
+# SIDEBAR
+# ============================================================
+
+st.sidebar.title("📌 Menu de Navegação")
+
+btn_home = st.sidebar.button("🏠 Home")
+btn_analise = st.sidebar.button("📊 Análise Inteligente")
+btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
+btn_disc = st.sidebar.button("🧠 Perfil DISC")
+btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
+btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
+btn_produtividade = st.sidebar.button("🚀 Produtividade")
+
+
+st.sidebar.markdown("---")
+
+btn_logout = st.sidebar.button("🚪 Logout")
+
+pagina_anterior = st.session_state.pagina
+
+if btn_home:
+    st.session_state.pagina = "home"
+elif btn_analise:
+    st.session_state.pagina = "analise"
+elif btn_comparar:
+    st.session_state.pagina = "comparar"
+elif btn_disc:
+    st.session_state.pagina = "disc"
+elif btn_parecer:
+    st.session_state.pagina = "parecer"
+elif btn_visualizar:
+    st.session_state.pagina = "visualizar"
+# O elif abaixo verifica a URL sem precisar de botão
+elif st.session_state.pagina == "formulario":
+    pass # Este comando é obrigatório para não dar erro de sintaxe
+elif btn_logout:
+    st.session_state.logged_in = False
+    st.session_state.pagina = "home"
+
+if pagina_anterior != st.session_state.pagina:
+    st.rerun()
+
+# ============================================================
+# PÁGINA PERFIL DISC (VERSÃO SINCRO)
+# ============================================================
+
+if st.session_state.pagina == "disc":
+    import plotly.express as px
+    import pandas as pd
+
+    st.title("🧠 Análise de Perfil DISC")
+
+    # 1. FORÇAR LEITURA DIRETA (IGUAL AO VISUALIZAR REGISTROS)
+    # Isso garante que não dependemos de um session_state que pode estar vazio
+    lista_fresca = carregar_todos_formularios()
+
+    if not lista_fresca:
+        st.warning("Nenhum formulário encontrado na pasta de dados.")
+        if st.button("♻️ Tentar recarregar dados"):
+            st.rerun()
+        st.stop()
+
+    # 2. MAPEAMENTO SEGURO
+    opcoes_colaboradores = {
+        f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
+        for f in lista_fresca
+    }
+
+    colaborador_chave = st.selectbox(
+        "Escolha o colaborador",
+        options=list(opcoes_colaboradores.keys())
+    )
+
+    # 3. RECUPERAÇÃO DO FORMULÁRIO
+    formulario_sel = opcoes_colaboradores.get(colaborador_chave)
+
+    # ============================================================
+    # BOTÃO GERAR ANÁLISE
+    # ============================================================
+
+    if formulario_sel and st.button("🔎 Gerar análise DISC"):
+        # A partir daqui o seu processamento continua normal
+        form = formulario_sel
         
-    return st.data_editor(df, num_rows="dynamic", key=f"editor_{nome_chave}", use_container_width=True)
+        mapa_disc = {
+            "A": "D",
+            "B": "I",
+            "C": "S",
+            "D": "C"
+        }
+        
 
-st.write("**Atividades Realizadas**")
-edit_ativ = preencher_tabela("atividades", ["Atividade Descrita", "Tipo", "Horas", "Minutos"])
+        # Extraímos as respostas garantindo que o dicionário 'disc' existe no JSON
+        respostas_raw = form.get("disc", {})
+        respostas_disc = {}
 
-st.write("**Dificuldades Encontradas**")
-edit_dif = preencher_tabela("dificuldades", ["Dificuldade", "Detalhes"])
+        for k, v in respostas_raw.items():
+            if v in mapa_disc:
+                respostas_disc[k] = mapa_disc[v]
 
-st.write("**Sugestões de Melhoria**")
-edit_sug = preencher_tabela("sugestoes", ["Sugestão de Melhoria", "Responsável", "Prazo"])
+        # ============================================================
+        # PAINEL DISC DO COLABORADOR (AJUSTADO)
+        # ============================================================
 
-# ==============================
-# 5. SALVAMENTO (Payload Seguro)
-# ==============================
-st.markdown("---")
-if st.button("💾 Salvar Rascunho Final"):
-    if not nome:
-        st.error("❌ Por favor, preencha o campo 'Nome completo' antes de salvar.")
-    else:
-        # Filtra linhas onde a coluna principal está vazia
-        ativ_f = edit_ativ[edit_ativ["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
-        dif_f = edit_dif[edit_dif["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
-        sug_f = edit_sug[edit_sug["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
+        # 1️⃣ Função ajustada de cálculo de score
+        def score_disc(percentuais):
+            """
+            Calcula a intensidade do perfil dominante considerando a diferença
+            entre ele e o segundo maior perfil.
+            Retorna um valor de 0 a 100, refletindo a certeza relativa.
+            """
+            if not percentuais:
+                return 0
+            
+            valores = sorted(percentuais.values(), reverse=True)
+            dominante_val = valores[0]
+            segundo_val = valores[1] if len(valores) > 1 else 0
+            
+            diff = dominante_val - segundo_val
+            score_normalizado = round((diff / dominante_val) * 100, 1) if dominante_val > 0 else 0
+            score_normalizado = max(0, min(score_normalizado, 100))
+            
+            return score_normalizado
 
-        payload = {
-            "nome": nome,
-            "setor": setor,
-            "cargo": cargo,
-            "chefe": chefe,
-            "departamento": departamento,
-            "empresa": empresa,
-            "escolaridade": escolaridade,
-            "devolucao": devolucao,
-            "cursos_obrigatorios_ou_diferenciais": cursos,
-            "trabalho_e_principal_objetivo": objetivo,
-            "atividades": ativ_f,
-            "dificuldades": dif_f,
-            "sugestoes": sug_f,
-            "disc": respostas_disc,
-            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        # 2️⃣ Cálculos
+        percentuais, dominante = calcular_disc(respostas_disc)
+        score = score_disc(percentuais)
+
+        st.markdown("## 🔹 Painel DISC do Colaborador")
+
+        # 3️⃣ Gráfico e Métricas lado a lado
+        col_graf, col_met = st.columns([2,1])
+
+        with col_graf:
+            fig = px.bar(
+                x=list(percentuais.keys()),
+                y=list(percentuais.values()),
+                labels={'x':'Tipo','y':'Percentual (%)'},
+                text=list(percentuais.values()),
+                color=list(percentuais.keys()),
+                color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+            )
+            fig.update_layout(
+                yaxis_range=[0,100], 
+                height=350, 
+                margin=dict(l=20, r=20, t=30, b=20), 
+                template="plotly_white",
+                showlegend=False
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
+        with col_met:
+            st.metric("Perfil Dominante", dominante)
+            st.metric("Intensidade (Score)", f"{score}%")
+            
+            # Interpretação rápida do nível de intensidade
+            def interpretar_valor(p):
+                try:
+                    v = float(str(p).replace('%',''))
+                    if v > 85: return "🎯 **Muito Alta**"
+                    if v > 60: return "✅ **Alta**"
+                    if v > 30: return "⚖️ **Moderada**"
+                    return "⚠️ **Baixa**"
+                except:
+                    return ""
+            
+            st.write(interpretar_valor(score))
+
+            st.caption("ℹ️ Score indica a intensidade relativa do perfil dominante em relação aos outros perfis. Quanto maior a diferença, maior a certeza do perfil.")
+
+
+            st.markdown("---")
+
+            
+
+        # 2. INTERPRETAÇÃO DETALHADA (Substitui a Base de Conhecimento e o Parecer)
+        textos_disc = {
+            "D": {"nome": "Dominante", "estilo": "Resultados e Assertividade", "desc": "Decidido e direto. Busca desafios e rapidez.", "cor": "red", "tarefas": "Tomada de decisão, Gestão de crises, Metas."},
+            "I": {"nome": "Influente", "estilo": "Pessoas e Comunicação", "desc": "Entusiasmado e otimista. Busca conexão social.", "cor": "orange", "tarefas": "Apresentações, Networking, Motivação."},
+            "S": {"nome": "Estável", "estilo": "Colaboração e Persistência", "desc": "Paciente e leal. Busca harmonia e segurança.", "cor": "green", "tarefas": "Apoio operacional, Suporte, Processos."},
+            "C": {"nome": "Conformidade", "estilo": "Precisão e Qualidade", "desc": "Analítico e detalhista. Busca lógica e regras.", "cor": "blue", "tarefas": "Auditoria, Análise de dados, Padronização."}
         }
 
-        nome_arq = f"rascunho_{nome.strip().replace(' ', '_')}.json"
-        try:
-            with open(nome_arq, "w", encoding="utf-8") as f:
-                json.dump(payload, f, ensure_ascii=False, indent=4)
-            st.success(f"✅ Rascunho de '{nome}' salvo com sucesso!")
-        except Exception as e:
-            st.error(f"❌ Erro ao salvar: {e}")
+        info = textos_disc.get(dominante, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""})
 
-# ==============================
-# FORMULÁRIO
-# ==============================
-with st.form("form_colaborador"):
+        st.markdown(f"### Análise do Perfil: :{info['cor']}[{info['nome']}]")
+        st.write(f"**Foco Principal:** {info['estilo']}")
+        
+        col_desc, col_tar = st.columns(2)
+        with col_desc:
+            st.info(info['desc'])
+        with col_tar:
+            st.warning(f"**Tarefas Sugeridas:**\n{info['tarefas']}")
 
-    # -----------------------------
-    # IDENTIFICAÇÃO
-    # -----------------------------
-    col1, col2 = st.columns(2)
-    nome = col1.text_input("Nome", value=ident.get("Nome", ""))
-    setor = col2.text_input("Setor", value=ident.get("Setor", ""))
-    cargo = col1.text_input("Cargo", value=ident.get("Cargo", ""))
-    chefe = col2.text_input("Chefe imediato", value=ident.get("Chefe", ""))
-    departamento = col1.text_input("Departamento", value=ident.get("Departamento", ""))
-    empresa = col2.text_input("Empresa / Unidade", value=ident.get("Empresa", ""))
-    escolaridade = col1.text_input("Escolaridade", value=ident.get("Escolaridade", ""))
-    devolucao = col2.text_input("Devolver preenchido em", value=ident.get("Devolução preenchida em", ""))
+        # 3. LEGENDA DETALHADA (Final da página)
+        with st.expander("🔍 Legenda Geral DISC - Detalhada", expanded=False):
+            textos_disc = {
+                "D": {
+                    "nome": "Dominante",
+                    "estilo": "Resultados e Assertividade",
+                    "desc": "Decidido e direto. Busca desafios, rapidez e liderança.",
+                    "cargos": "Gerente, Líder de Projeto, Coordenador",
+                    "tarefas_mais": "Tomada de decisão, Gestão de crises, Definir metas",
+                    "tarefas_menos": "Atendimento de rotina, Processos detalhados, Documentação"
+                },
+                "I": {
+                    "nome": "Influente",
+                    "estilo": "Pessoas e Comunicação",
+                    "desc": "Entusiasmado, sociável e persuasivo. Busca conexão e motivação do grupo.",
+                    "cargos": "Marketing, Vendas, Comunicação, Treinamento",
+                    "tarefas_mais": "Apresentações, Networking, Reuniões de equipe, Motivação",
+                    "tarefas_menos": "Tarefas repetitivas, Processos rígidos, Detalhes técnicos"
+                },
+                "S": {
+                    "nome": "Estável",
+                    "estilo": "Colaboração e Persistência",
+                    "desc": "Paciente, leal e confiável. Busca harmonia e segurança.",
+                    "cargos": "Suporte, Administrativo, RH, Atendimento ao Cliente",
+                    "tarefas_mais": "Suporte operacional, Atendimento, Organizar processos",
+                    "tarefas_menos": "Mudanças constantes, Pressão por resultados rápidos, Competição intensa"
+                },
+                "C": {
+                    "nome": "Conformidade",
+                    "estilo": "Precisão e Qualidade",
+                    "desc": "Analítico, detalhista e criterioso. Busca lógica, regras e perfeição.",
+                    "cargos": "Auditoria, Contabilidade, TI, Qualidade",
+                    "tarefas_mais": "Análise de dados, Relatórios, Controle de qualidade, Padronização",
+                    "tarefas_menos": "Decisões rápidas sem dados, Interações sociais constantes, Ambiguidade"
+                }
+            }
 
-    cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_importados.get("Cursos", ""))
-    objetivo = st.text_area("Trabalho e principal objetivo", value=dados_importados.get("Objetivo", ""))
+            for key, info in textos_disc.items():
+                st.markdown(f"### **{key} - {info['nome']}**")
+                st.write(f"**Estilo de trabalho:** {info['estilo']}")
+                st.write(f"**Descrição:** {info['desc']}")
+                st.write(f"**Cargos mais compatíveis:** {info['cargos']}")
+                st.write(f"**Atividades que combinam mais:** {info['tarefas_mais']}")
+                st.write(f"**Atividades que combinam menos:** {info['tarefas_menos']}")
+                st.markdown("---")
 
-    # -----------------------------
-    # LEGENDA E INSTRUÇÕES
-    # -----------------------------
-    st.markdown("---")
-    col_inst1, col_inst2, col_inst3 = st.columns(3)
-    with col_inst1:
-        st.info("""
-        **📋 LEGENDA DE FREQUÊNCIA:**
-        * **DVD**: Diário Várias Vezes
-        * **D**: Diário | **S**: Semanal
-        * **Q**: Quinzenal | **M**: Mensal
-        * **T**: Trimestral | **A**: Anual
-        """)
-    with col_inst2:
-        st.warning("""
-        **⏱️ COMO REGISTRAR O TEMPO:**
-        * **Horas e Minutos**: Selecione o valor em cada coluna.
-        * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-        * **Não se aplica?**: Selecione **0 h** e **0 min**.
-        """)
-    with col_inst3:
-        st.error("""
-        **⚠️ DETALHE:**
-        * A numeração lateral é nativa do sistema.
-        * Ignore-a e preencha normalmente; isso não afeta os dados.
-        """)
+        
+                
+        # ============================================================
+        # COMPATIBILIDADE CARGO × PERFIL DISC (APENAS MENSAGEM)
+        # ============================================================
 
-    # -----------------------------
-    # ATIVIDADES
-    # -----------------------------
-    st.subheader("🔹 Atividades de Alta Complexidade")
-    edit_ativ_alta = st.data_editor(
-        atividades_alta if not atividades_alta.empty else pd.DataFrame({
-            "Atividade Descrita":[""]*20,
-            "Frequência":[""]*20,
-            "Horas":[""]*20,
-            "Minutos":[""]*20
-        }),
-        key="edit_ativ_alta",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed"
-    )
+        st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
 
-    st.subheader("🔹 Atividades de Nível Normal")
-    edit_ativ_normal = st.data_editor(
-        atividades_normal if not atividades_normal.empty else pd.DataFrame({
-            "Atividade Descrita":[""]*20,
-            "Frequência":[""]*20,
-            "Horas":[""]*20,
-            "Minutos":[""]*20
-        }),
-        key="edit_ativ_normal",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed"
-    )
+        cargo_atual = str(form.get("cargo", "")).lower()
 
-    st.subheader("🔹 Atividades de Baixa Complexidade")
-    edit_ativ_baixa = st.data_editor(
-        atividades_baixa if not atividades_baixa.empty else pd.DataFrame({
-            "Atividade Descrita":[""]*20,
-            "Frequência":[""]*20,
-            "Horas":[""]*20,
-            "Minutos":[""]*20
-        }),
-        key="edit_ativ_baixa",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed"
-    )
+        # Mapeamento de cargos por perfil dominante
+        compatibilidade = {
+            "D": ["gerente", "diretor", "coordenador", "lider", "gestor"],
+            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação"],
+            "S": ["rh", "suporte", "atendimento", "administrativo", "operacional"],
+            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista"]
+        }
 
-    # -----------------------------
-    # DIFICULDADES
-    # -----------------------------
-    st.markdown("---")
-    st.subheader("⚠️ Dificuldades e Bloqueios")
-    edit_dif = st.data_editor(
-        dificuldades_df if not dificuldades_df.empty else pd.DataFrame({
-            "Dificuldade":[""]*20,
-            "Setor/Parceiro Envolvido":[""]*20,
-            "Frequência":[""]*20,
-            "Horas Perdidas":[""]*20,
-            "Minutos Perdidos":[""]*20
-        }),
-        key="edit_dif",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-            "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed"
-    )
+        cargos_compatíveis = compatibilidade.get(dominante, [])
+        match = any(c in cargo_atual for c in cargos_compatíveis)
 
-    # -----------------------------
-    # SUGESTÕES
-    # -----------------------------
-    st.markdown("---")
-    st.subheader("💡 Sugestões de Melhoria e Impacto")
-    edit_sug = st.data_editor(
-        sugestoes_df if not sugestoes_df.empty else pd.DataFrame({
-            "Sugestão de Melhoria":[""]*20,
-            "Impacto Esperado":[""]*20,
-            "Redução Horas":[""]*20,
-            "Redução Minutos":[""]*20,
-            "Frequência do Impacto":[""]*20
-        }),
-        key="edit_sug",
-        column_config={
-            "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
-            "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
-            "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
-        },
-        hide_index=True,
-        num_rows="fixed"
-    )
+        # Exibição simplificada em métricas
+        colA, colB = st.columns(2)
+        colA.metric("Cargo Atual", form.get("cargo","N/A").title())
+        colB.metric("Perfil Dominante", dominante if dominante else "N/A")
 
-    # -----------------------------
-    # QUESTIONÁRIO DISC
-    # -----------------------------
-    st.markdown("---")
-    st.subheader("📊 Questionário DISC")
+        # Mensagem direta sem gráfico
+        if match:
+            st.success(f"**Alta aderência:** O perfil **{dominante}** possui características naturais que favorecem o desempenho em cargos de **{cargo_atual.title()}**.")
+        else:
+            st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
 
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        # Pega a resposta do rascunho, se houver
-        valor_rascunho = st.session_state.get("dados_importados", {}).get("disc", {}).get(f"disc_{i}", None)
+        # ============================================================
+        # PERFIL DISC EXIGIDO PELAS ATIVIDADES
+        # ============================================================
+
+        st.markdown("### 🔹 Perfil DISC Exigido pelas Atividades")
+
+        atividades_lista = [
+            a.get("Atividade Descrita","")
+            for a in form.get("atividades",[])
+        ]
+
+        atividades_texto = " ".join(atividades_lista).lower()
+
+        compatibilidade_ativ = {
+
+            "D": [
+                "decisão","meta","resultado","liderar","negociar",
+                "estratégia","direcionar","definir","priorizar"
+            ],
+
+            "I": [
+                "apresentar","convencer","comunicar","clientes",
+                "reunião","relacionamento","treinamento"
+            ],
+
+            "S": [
+                "suporte","atender","organizar","rotina",
+                "apoio","assistir","acompanhar","colaborar"
+            ],
+
+            "C": [
+                "analisar","dados","relatório","planilha",
+                "controle","auditar","conferir","classificar",
+                "registrar","custos","informações","base",
+                "indicadores","verificar","validar"
+            ]
+
+        }
+
+        scores = {}
+
+        for perfil, palavras in compatibilidade_ativ.items():
+
+            pontos = sum(
+                atividades_texto.count(p) for p in palavras
+            )
+
+            scores[perfil] = pontos
+
+        perfil_exigido = max(scores, key=scores.get)
+
+        # ============================================================
+        # MÉTRICAS
+        # ============================================================
+
+        colA, colB, colC = st.columns(3)
+
+        colA.metric("Perfil do Colaborador", dominante if dominante else "N/A")
+        colB.metric("Perfil Exigido pelas Atividades", perfil_exigido)
+
+        total_pontos = sum(scores.values())
+
+        if total_pontos > 0:
+            compat_percent = int((scores.get(dominante,0) / total_pontos) * 100)
+        else:
+            compat_percent = 0
+
+        colC.metric("Compatibilidade", f"{compat_percent}%")
+
+        # ============================================================
+        # MENSAGEM PRINCIPAL
+        # ============================================================
+
+        if perfil_exigido == dominante:
+
+            st.success(
+                f"Alta aderência: As atividades indicam um perfil **{perfil_exigido}**, compatível com o perfil do colaborador."
+            )
+
+        else:
+
+            st.warning(
+                f"As atividades indicam um perfil **{perfil_exigido}**, enquanto o colaborador apresenta perfil **{dominante}**."
+            )
+
+        # ============================================================
+        # ATIVIDADES QUE EXIGEM ADAPTAÇÃO
+        # ============================================================
+
+        atividades_compativeis = compatibilidade_ativ.get(perfil_exigido, [])
+
+        atividades_desvio = []
+
+        for ativ in atividades_lista:
+
+            texto = str(ativ).lower()
+
+            if not any(p in texto for p in atividades_compativeis):
+                atividades_desvio.append(ativ)
+
+
+        ranking_atividades = []
+
+        for ativ in atividades_lista:
+
+            texto = str(ativ).lower()
+
+            if not texto.strip():
+                continue
+
+            score = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
+
+            ranking_atividades.append((score, ativ))
+
+
+        ranking_atividades.sort(key=lambda x: x[0])
+
+
+        if ranking_atividades:
+
+            st.markdown("#### ⚠ Lista das principais dificuldades de adaptação")
+
+            limite = min(3, len(ranking_atividades))
+
+            for score, atividade in ranking_atividades[:limite]:
+                st.write("•", atividade)
+
+
+import streamlit as st
+import pandas as pd
+import os
+import json
+import sys
+
+# ============================================================
+# CONFIGURAÇÃO DE DIRETÓRIO E CARREGAMENTO
+# ============================================================
+
+# Define o diretório base e a pasta de dados
+base_dir = os.path.dirname(os.path.abspath(__file__))
+dados_dir = os.path.join(base_dir, "dados")
+os.makedirs(dados_dir, exist_ok=True)
+
+# Função para carregar todos os JSONs da pasta 'dados'
+def carregar_todos_formularios():
+    lista_formularios = []
+    if os.path.exists(dados_dir):
+        for nome_arquivo in os.listdir(dados_dir):
+            if nome_arquivo.endswith(".json"):
+                caminho_completo = os.path.join(dados_dir, nome_arquivo)
+                try:
+                    with open(caminho_completo, "r", encoding="utf-8") as f:
+                        dados = json.load(f)
+                        if isinstance(dados, dict):
+                            lista_formularios.append(dados)
+                except Exception:
+                    continue
+    return lista_formularios
+
+# Inicializa o estado da sessão com os dados carregados
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = carregar_todos_formularios()
+
+# --- BLOCO DE CSS PARA OCULTAÇÃO ---
+if st.query_params.get("page") == "formulario":
+    st.markdown("""
+    <style>
+        [data-testid="stSidebar"] {display: none !important;}
+        #MainMenu, footer, header {visibility: hidden !important;}
+    </style>
+    """, unsafe_allow_html=True)
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+
+# --- FORMULÁRIO ---
+if st.query_params.get("page") == "formulario":
+    st.title("📋 Formulário Completo do Colaborador")
     
-        st.radio(
-            label=f"{i}. {pergunta}",
-            options=["A", "B", "C", "D"],
-            key=f"disc_{i}",
-            horizontal=True,
-            index=None if valor_rascunho is None else ["A","B","C","D"].index(valor_rascunho)
+    # Listas padronizadas (devem vir antes do form)
+    lista_horas = [f"{i} h" for i in range(25)]
+    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    
+    # ÚNICO BLOCO DO FORMULÁRIO
+    with st.form("form_colaborador"):
+        # Dados de Identificação
+        col1, col2 = st.columns(2)
+        nome = col1.text_input("Nome do colaborador")
+        setor = col2.text_input("Setor")
+        cargo = col1.text_input("Cargo")
+        chefe = col2.text_input("Chefe imediato")
+        departamento = col1.text_input("Departamento")
+        empresa = col2.text_input("Empresa / Unidade")
+        escolaridade = col1.text_input("Escolaridade")
+        devolucao = col2.text_input("Devolver preenchido em")
+        
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
+        
+        # --- SEÇÃO DE INSTRUÇÕES ---
+        st.markdown("---")
+        col_inst1, col_inst2, col_inst3 = st.columns(3)
+        
+        with col_inst1:
+            st.info("""
+            **📋 LEGENDA DE FREQUÊNCIA:**
+            * **DVD**: Diário Várias Vezes
+            * **D**: Diário | **S**: Semanal
+            * **Q**: Quinzenal | **M**: Mensal
+            * **T**: Trimestral | **A**: Anual
+            """)
+
+        with col_inst2:
+            st.warning("""
+            **⏱️ COMO REGISTRAR O TEMPO:**
+            * **Horas e Minutos**: Selecione o valor em cada coluna.
+            * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
+            * **Não se aplica?**: Selecione **0 h** e **0 min**.
+            """)
+            
+        with col_inst3:
+            st.error("""
+            **⚠️ DETALHE:**
+            * A numeração lateral (nones) é nativa do sistema.
+            * Ignore-a e preencha normalmente; isso não afeta os dados.
+            """)        
+        
+        # ===========================
+        # Tabela de Alta Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Alta Complexidade")
+        atividades_alta = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }).reset_index(drop=True),
+            key="form_atividades_alta",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
         )
 
-    # -----------------------------
-    # BOTÃO DE ENVIO
-    # -----------------------------
-    enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        # ===========================
+        # Tabela de Nível Normal
+        # ===========================
+        st.subheader("🔹 Atividades de Nível Normal")
+        atividades_normal = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }).reset_index(drop=True),
+            key="form_atividades_normal",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
 
-    # -----------------------------
-    # VALIDAÇÕES E PROCESSAMENTO
-    # -----------------------------
-    if enviar:
-        fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-        data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+        # ===========================
+        # Tabela de Baixa Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Baixa Complexidade")
+        atividades_baixa = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }).reset_index(drop=True),
+            key="form_atividades_baixa",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
 
-        campos_obrigatorios = [nome,setor,cargo,chefe,departamento,empresa,cursos,objetivo]
+        # --- SEÇÃO DE DIFICULDADES ---
+        st.markdown("---")
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        
+        edit_dif = st.data_editor(
+            pd.DataFrame({
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas Perdidas": [""] * 20,
+                "Minutos Perdidos": [""] * 20
+            }),
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="dif_editor"
+        )
 
-        if any(not str(campo).strip() for campo in campos_obrigatorios):
-            st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-        elif any(st.session_state.get(f"disc_{i}") is None for i in range(1,25)):
-            st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-        else:
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            dados_dir = os.path.join(base_dir, "dados")
-            os.makedirs(dados_dir, exist_ok=True)
+        # --- SEÇÃO DE SUGESTÕES ---
+        st.markdown("---")
+        st.subheader("💡 Sugestões de Melhoria e Impacto")
+        
+        edit_sug = st.data_editor(
+            pd.DataFrame({
+                "Sugestão de Melhoria": [""] * 20,
+                "Impacto Esperado": [""] * 20,
+                "Redução Horas": [""] * 20,
+                "Redução Minutos": [""] * 20,
+                "Frequência do Impacto": [""] * 20
+            }).reset_index(drop=True),
+            column_config={
+                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="sug_editor"
+        )
 
-            nome_limpo = nome.strip().replace(" ","_")
-            arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+        # --- QUESTIONÁRIO DISC ---
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None
+            )
 
-            if arquivos_existentes:
-                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-            else:
-                if not st.session_state.get("confirmado", False):
-                    st.warning("⚠️ Revise o formulário. Clique novamente para confirmar o envio.")
-                    st.session_state["confirmado"] = True
-                else:
-                    st.success("✅ Formulário enviado com sucesso!")
-                    dados = {
-                        "nome": nome,
-                        "data_envio": data_hoje,
-                        "setor": setor,
-                        "cargo": cargo,
-                        "chefe": chefe,
-                        "departamento": departamento,
-                        "empresa": empresa,
-                        "escolaridade": escolaridade,
-                        "devolucao": devolucao,
-                        "cursos_obrigatorios_ou_diferenciais": cursos,
-                        "trabalho_e_principal_objetivo": objetivo,
-                        "atividades_alta": edit_ativ_alta.to_dict(),
-                        "atividades_normal": edit_ativ_normal.to_dict(),
-                        "atividades_baixa": edit_ativ_baixa.to_dict(),
-                        "dificuldades": edit_dif.to_dict(),
-                        "sugestoes": edit_sug.to_dict(),
-                        "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1,25)}
-                    }
-                    caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-                    with open(caminho, "w", encoding="utf-8") as f:
-                        json.dump(dados, f, ensure_ascii=False, indent=4)
-                    st.session_state["confirmado"] = False
+        # BOTÃO DO FORMULÁRIO
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+       
+    
+
 
                 
 
@@ -2323,11 +3117,9 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
     _, sha = carregar(arquivo)
-    conteudo_json = json.dumps(dados, indent=4, ensure_ascii=False)
-    conteudo_b64 = base64.b64encode(conteudo_json.encode('utf-8')).decode('utf-8')
+    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
     payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
-    if sha: 
-        payload["sha"] = sha
+    if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code in [200, 201]
 
@@ -2345,6 +3137,27 @@ if nome_usuario:
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados, _ = carregar(arquivo_nome)
 
+    # ===========================
+    # Carregar dados do rascunho (se existir)
+    # ===========================
+    if dados:
+        ident = dados.get("Identificacao", {})
+
+        nome = ident.get("Nome", "")
+        setor = ident.get("Setor", "")
+        cargo = ident.get("Cargo", "")
+        chefe = ident.get("Chefe", "")
+        departamento = ident.get("Departamento", "")
+        empresa = ident.get("Empresa", "")
+        escolaridade = ident.get("Escolaridade", "")
+        devolucao = ident.get("Devolução preenchida em", "")
+
+        cursos = dados.get("Cursos", "")
+        objetivo = dados.get("Objetivo", "")
+        atividades_alta = pd.DataFrame(dados.get("Atividades", {}).get("Alta", []))
+        atividades_normal = pd.DataFrame(dados.get("Atividades", {}).get("Normal", []))
+        atividades_baixa = pd.DataFrame(dados.get("Atividades", {}).get("Baixa", []))
+    
     if primeira_vez:
         if dados:
             st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
@@ -2352,7 +3165,6 @@ if nome_usuario:
             if st.button("✅ Criar meu Rascunho"):
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
                     st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    st.rerun()
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
@@ -2361,7 +3173,7 @@ if nome_usuario:
         # --- INÍCIO DO FORMULÁRIO ---
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # --- CAMPOS DE IDENTIFICAÇÃO ---
+        # --- CAMPOS DE IDENTIFICAÇÃO (VERSÃO COMPLETA) ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
@@ -2378,135 +3190,237 @@ if nome_usuario:
         cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
 
-        # ===========================
-        # Tabela de Alta Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Alta Complexidade")
-        atividades_alta = st.data_editor(
-            pd.DataFrame(dados.get("atividades_alta", {
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            })).reset_index(drop=True),
-            key="editor_v2_alta",  # Alterado para garantir unicidade
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
+        # Lembre-se de adicionar 'escolaridade', 'devolucao', 'cursos' e 'objetivo' 
+        # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
+
+        
+    # ===========================
+    # Tabela de Alta Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Alta Complexidade")
+    atividades_alta = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_alta",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Nível Normal
+    # ===========================
+    st.subheader("🔹 Atividades de Nível Normal")
+    atividades_normal = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_normal",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # ===========================
+    # Tabela de Baixa Complexidade
+    # ===========================
+    st.subheader("🔹 Atividades de Baixa Complexidade")
+    atividades_baixa = st.data_editor(
+        pd.DataFrame({
+            "Atividade Descrita": [""] * 20,
+            "Frequência": [""] * 20,
+            "Horas": [""] * 20,
+            "Minutos": [""] * 20
+        }).reset_index(drop=True),
+        key="form_atividades_baixa",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
+
+    # 3. TABELA DIFICULDADES
+    st.markdown("---")
+    st.subheader("⚠️ Dificuldades e Bloqueios")
+    df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
+    edit_dif = st.data_editor(df_dif_padrao, column_config={
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+        "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+    }, hide_index=True, use_container_width=True, key="dif_ed")
+
+    # 4. TABELA SUGESTÕES
+    st.markdown("---")
+    st.subheader("💡 Sugestões de Melhoria")
+    df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
+    edit_sug = st.data_editor(df_sug_padrao, column_config={
+        "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+    }, hide_index=True, use_container_width=True, key="sug_ed")
+
+    # 5. QUESTIONÁRIO DISC
+    st.markdown("---")
+    st.subheader("📊 Questionário")
+    respostas_disc = {}
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        chave = f"disc_{i}"
+        respostas_disc[chave] = st.radio(
+            f"{i}. {pergunta}", 
+            ["A", "B", "C", "D"], 
+            index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+            horizontal=True, 
+            key=f"radio_{i}"
         )
 
-        # ===========================
-        # Tabela de Nível Normal
-        # ===========================
-        st.subheader("🔹 Atividades de Nível Normal")
-        atividades_normal = st.data_editor(
-            pd.DataFrame(dados.get("atividades_normal", {
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            })).reset_index(drop=True),
-            key="editor_v2_normal",  # Alterado para garantir unicidade
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
+    # 6. BOTÃO SALVAR
+    st.markdown("---")
+    if st.button("💾 Salvar Rascunho"):
+        payload = {
+            "nome": nome, 
+            "cargo": cargo, 
+            "departamento": depto,
+            "setor": setor, 
+            "chefe": chefe, 
+            "empresa": empresa,
+            "atividades": edit_ativ.to_dict("records"),
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+            **respostas_disc,
+            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        }
+        if salvar(payload, arquivo_nome):
+            st.success("✅ Rascunho salvo com sucesso no servidor!")
+            st.rerun()
+        else:
+            st.error("❌ Falha ao salvar. Verifique sua conexão.")  
 
-        # ===========================
-        # Tabela de Baixa Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Baixa Complexidade")
-        atividades_baixa = st.data_editor(
-            pd.DataFrame(dados.get("atividades_baixa", {
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            })).reset_index(drop=True),
-            key="editor_v2_baixa",  # Alterado para garantir unicidade
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )        
 
-        st.markdown("---")
-        st.subheader("⚠️ Dificuldades e Bloqueios")
-        df_dif_padrao = pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)]))
-        edit_dif = st.data_editor(df_dif_padrao, column_config={
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }, hide_index=True, use_container_width=True, key="dif_ed")
+import streamlit as st
+import os
+import json
+import pandas as pd
+from datetime import datetime
 
-        st.markdown("---")
-        st.subheader("💡 Sugestões de Melhoria")
-        df_sug_padrao = pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)]))
-        edit_sug = st.data_editor(df_sug_padrao, column_config={
-            "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-            "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
-        }, hide_index=True, use_container_width=True, key="sug_ed")
+# ==============================
+# 1. CONFIGURAÇÕES E TOPO
+# ==============================
+st.set_page_config(page_title="Formulário Colaborador", layout="wide")
+st.title("📋 Formulário Completo do Colaborador")
 
-        # --- QUESTIONÁRIO DISC ---
-        st.markdown("---")
-        st.subheader("📊 Questionário DISC")
-        respostas_disc = {}
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-            respostas_disc[chave] = st.radio(
-                f"{i}. {pergunta}", 
-                ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
-                horizontal=True, 
-                key=f"radio_{i}"
-            )
+# Entrada do nome para busca de rascunho
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**:", key="nome_usuario_input")
 
-        # --- BOTÃO SALVAR ---
-        st.markdown("---")
-        if st.button("💾 Salvar Rascunho"):
-            # 1. Converte tudo para lista primeiro (dentro do clique do botão)
-            lista_alta = edit_ativ_alta.to_dict("records") if isinstance(edit_ativ_alta, pd.DataFrame) else (edit_ativ_alta or [])
-            lista_norm = edit_ativ_normal.to_dict("records") if isinstance(edit_ativ_normal, pd.DataFrame) else (edit_ativ_normal or [])
-            lista_baix = edit_ativ_baixa.to_dict("records") if isinstance(edit_ativ_baixa, pd.DataFrame) else (edit_ativ_baixa or [])
-            lista_dif  = edit_dif.to_dict("records") if isinstance(edit_dif, pd.DataFrame) else (edit_dif or [])
-            lista_sug  = edit_sug.to_dict("records") if isinstance(edit_sug, pd.DataFrame) else (edit_sug or [])
+# --- BLOCO DE ACIONAMENTO (O "Gatilho") ---
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().replace(' ', '_')
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
 
-            # 2. Filtro simples que não quebra (12 espaços de recuo)
-            ativ_final = [r for r in lista_alta + lista_norm + lista_baix if str(r.get("Atividade Descrita", "")).strip()]
-            dif_final  = [r for r in lista_dif if str(r.get("Dificuldade", "")).strip()]
-            sug_final  = [r for r in lista_sug if str(r.get("Sugestão de Melhoria", "")).strip()]
+    if st.button("🔄 Aplicar Rascunho no Formulário"):
+        # Chama a função que está lá no final do script
+        if acionar_de_para(arquivo_nome):
+            st.rerun()
 
-            # 3. Montagem do Payload (12 espaços de recuo)
-            payload = {
-                "nome": nome, 
-                "cargo": cargo, 
-                "departamento": departamento,
-                "setor": setor, 
-                "chefe": chefe, 
-                "empresa": empresa,
-                "atividades": ativ_final,
-                "dificuldades": dif_final,
-                "sugestoes": sug_final,
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
+# A ponte que alimenta todos os campos abaixo
+dados = st.session_state.get("dados_importados", {})
 
-            if salvar(payload, arquivo_nome):
-                st.success("✅ Rascunho salvo com sucesso no servidor!")
-            else:
-                st.error("❌ Falha ao salvar. Verifique sua conexão.")
+# ==============================
+# 2. CAMPOS DO FORMULÁRIO
+# ==============================
+st.subheader("👤 Identificação")
+col1, col2 = st.columns(2)
+
+with col1:
+    nome = st.text_input("Nome completo", value=dados.get("nome", ""))
+    setor = st.text_input("Setor", value=dados.get("setor", ""))
+    cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+    chefe = st.text_input("Chefe", value=dados.get("chefe", ""))
+
+with col2:
+    departamento = st.text_input("Departamento", value=dados.get("departamento", ""))
+    empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
+    escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
+    devolucao = st.text_input("Devolução", value=dados.get("devolucao", ""))
+
+cursos = st.text_area("Cursos", value=dados.get("cursos_obrigatorios_ou_diferenciais", ""))
+objetivo = st.text_area("Objetivo", value=dados.get("trabalho_e_principal_objetivo", ""))
+
+# --- DISC ---
+st.markdown("---")
+st.subheader("📊 DISC")
+respostas_disc = {}
+for i in range(1, 25):
+    key_json = f"disc_{i}"
+    val_anterior = dados.get("disc", {}).get(key_json, "")
+    opcoes = ["", "A", "B", "C", "D"]
+    idx = opcoes.index(val_anterior) if val_anterior in opcoes else 0
+    respostas_disc[key_json] = st.selectbox(f"Q{i}", opcoes, index=idx, key=f"w_disc_{i}")
+
+# --- TABELAS ---
+st.markdown("---")
+def criar_tabela(nome_chave, colunas):
+    items = dados.get(nome_chave, [])
+    df = pd.DataFrame(items) if items else pd.DataFrame(columns=colunas)
+    for c in colunas:
+        if c not in df.columns: df[c] = ""
+    if len(df) < 3:
+        df = pd.concat([df, pd.DataFrame([{c: "" for c in colunas} for _ in range(3-len(df))])], ignore_index=True)
+    return st.data_editor(df, num_rows="dynamic", key=f"ed_{nome_chave}")
+
+st.write("**Atividades**")
+edit_ativ = criar_tabela("atividades", ["Atividade Descrita", "Tipo", "Horas", "Minutos"])
+
+# ==============================
+# 3. BOTÃO SALVAR FINAL
+# ==============================
+st.markdown("---")
+if st.button("💾 Salvar Alterações"):
+    if not nome:
+        st.error("Preencha o nome.")
+    else:
+        # Limpa vazios antes de salvar
+        ativ_f = edit_ativ[edit_ativ["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
+        payload = {
+            "nome": nome, "setor": setor, "cargo": cargo, "chefe": chefe,
+            "departamento": departamento, "empresa": empresa,
+            "escolaridade": escolaridade, "devolucao": devolucao,
+            "cursos_obrigatorios_ou_diferenciais": cursos,
+            "trabalho_e_principal_objetivo": objetivo,
+            "atividades": ativ_f, "disc": respostas_disc
+        }
+        with open(f"rascunho_{nome.strip().replace(' ', '_')}.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=4)
+        st.success("✅ Salvo!")
+
+# ==========================================================
+# FUNÇÃO DE-PARA (A ÚLTIMA LINHA DO SCRIPT)
+# ==========================================================
+def acionar_de_para(caminho):
+    if os.path.exists(caminho):
+        with open(caminho, "r", encoding="utf-8") as f:
+            st.session_state["dados_importados"] = json.load(f)
+        st.success("✨ Dados do rascunho aplicados com sucesso!")
+        return True
+    st.error("❌ Arquivo não encontrado.")
+    return False
