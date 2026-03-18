@@ -1194,36 +1194,27 @@ if st.query_params.get("page") == "formulario":
             )
 
         
-
-        
-
         # -------------------------------------------------
         # VALIDAÇÕES E PROCESSAMENTO
-        # ------------------------   -------------------------
+        # -------------------------------------------------
         
-        # O botão deve ser definido antes para capturar o clique
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
         if enviar:
-
-                # 1. GERA A DATA E HORA DE BRASÍLIA
+                # 1. GERA A DATA E HORA
                 fuso_brasilia = pytz.timezone('America/Sao_Paulo')
                 data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-                # Criamos uma lista com todos os campos que NÃO podem estar vazios
-                # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
-                campos_obrigatorios = [
-                        nome, setor, cargo, chefe, departamento, empresa,
-                        cursos, objetivo
-                ]
+                
+                campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
-                # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
-                # O strip() remove espaços vazios para garantir que haja texto real
+                # Validações Iniciais
                 if any(not str(campo).strip() for campo in campos_obrigatorios):
                         st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-
-                # 2. VALIDAÇÃO DO DISC
+                        st.session_state["confirmado"] = False # Reseta se houver erro
+                
                 elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
                         st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+                        st.session_state["confirmado"] = False
 
                 else:
                         import os
@@ -1233,28 +1224,29 @@ if st.query_params.get("page") == "formulario":
                         dados_dir = os.path.join(base_dir, "dados")
                         os.makedirs(dados_dir, exist_ok=True)
 
-                        # 3. EVITAR DUPLICIDADE
                         nome_limpo = nome.strip().replace(" ", "_")
-                        arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
+                        arquivo_path = os.path.join(dados_dir, f"{nome_limpo}.json")
 
-                        if arquivos_existentes:
-                                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-
+                        if os.path.exists(arquivo_path) and not st.session_state.get("confirmado", False):
+                                st.error(f"⚠️ Já existe um formulário para '{nome}'.")
                         else:
-
-                                # 4. CONFIRMAÇÃO
+                                # 4. LÓGICA DE CONFIRMAÇÃO
                                 if not st.session_state.get("confirmado", False):
-
-                                        st.warning(
-                                                "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
-                                        )
-
+                                        st.warning("⚠️ Revise o formulário. Clique novamente para confirmar.")
                                         st.session_state["confirmado"] = True
-
                                 else:
-                                        # Processamento final após o segundo clique
-                                        st.success("✅ Formulário enviado com sucesso!")
-                                        st.session_state["confirmado"] = False
+                                        # PROCESSO DE SALVAMENTO (PUSH)
+                                        try:
+                                                # Aqui você salvaria os dados das tabelas atividades_alta, etc.
+                                                st.success("✅ Formulário enviado com sucesso!")
+                                                st.session_state["confirmado"] = False
+                                                # Limpa o cache para evitar erro de ID duplicado no próximo uso
+                                                st.rerun() 
+                                        except Exception as e:
+                                                st.error(f"Erro ao salvar: {e}")       
+        
+
+        
     
 
 
