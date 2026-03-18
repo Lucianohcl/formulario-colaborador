@@ -1232,6 +1232,7 @@ if st.query_params.get("page") == "formulario":
             if not chefe.strip(): erros.append("Chefe imediato")
             if not departamento.strip(): erros.append("Departamento")
             if not empresa.strip(): erros.append("Empresa / Unidade")
+            if not devolucao: erros.append("Devolver preenchido em") # <--- A LINHA NOVA AQUI
             
             # Validação de Escolaridade (Selectbox)
             if not escolaridade or escolaridade == "Escolha...": 
