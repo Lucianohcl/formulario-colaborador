@@ -2301,7 +2301,7 @@ if nome_usuario:
 
         # 2. O Botão que "injeta" o rascunho no formulário
         st.markdown("---")
-        if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO OFICIAL COM SEU RASCUNHO", type="primary", use_container_width=True):
+        
             if dados:
                 st.session_state["dados_oficiais"] = dados.copy()
                 st.success("✅ Formulário Povoado! Prossiga com o preenchimento abaixo.")
