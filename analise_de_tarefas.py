@@ -1198,72 +1198,89 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
         # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO COMPLETO (VERSÃO ANTI-KEYERROR)
         # -------------------------------------------------
-        if enviar:
-            import os
-            import json
-            import pytz
-            from datetime import datetime
-            import pandas as pd
+        # VALIDAÇÕES E PROCESSO DE ENVIO (REVISÃO + ENVIO)
+        # -------------------------------------------------
+        
+        # 1. PEGAR DADOS DAS TABELAS (Sem risco de KeyError)
+        def processar_tabela(key_name, col_principal):
+            df = st.session_state.get(key_name, pd.DataFrame())
+            if df.empty or col_principal not in df.columns:
+                return []
+            # Filtra apenas linhas onde a coluna principal foi preenchida
+            return [row.to_dict() for _, row in df.iterrows() if str(row[col_principal]).strip()]
 
-            # 1. PREPARAÇÃO
-            nome_limpo = nome.strip().replace(" ", "_")
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            dados_dir = os.path.join(base_dir, "dados")
-            os.makedirs(dados_dir, exist_ok=True)
-            
-            arquivo_esperado = f"{nome_limpo}.json"
-            pendencias = {}
+        ativ_alta = processar_tabela("atividades_alta", "Atividade Descrita")
+        ativ_norm = processar_tabela("atividades_normal", "Atividade Descrita")
+        ativ_baix = processar_tabela("atividades_baixa", "Atividade Descrita")
+        difs = processar_tabela("df_dificuldades", "Dificuldade")
+        sugs = processar_tabela("df_sugestoes", "Sugestão de Melhoria")
 
-            # 2. FUNÇÃO AUXILIAR BLINDADA
-            def validar_tabela(key_name, nome_exibicao, col_principal):
-                # Se a tabela não existir no session_state, cria um DataFrame vazio para não travar
-                df = st.session_state.get(key_name, pd.DataFrame(columns=[col_principal]))
-                
-                linhas_validas = []
-                # Verifica se o DF tem a coluna antes de iterar
-                if col_principal in df.columns:
-                    for i, row in df.iterrows():
-                        if str(row[col_principal]).strip():
-                            # Se preencheu a principal, checa se deixou o resto vazio
-                            if any(str(val).strip() in ["None", "", "Escolha..."] for val in row.values):
-                                pendencias.setdefault(nome_exibicao, []).append(f"Linha {i+1} incompleta")
-                            else:
-                                linhas_validas.append(row.to_dict())
-                return linhas_validas
+        # 2. MAPEAMENTO DE PENDÊNCIAS (Atualiza em tempo real)
+        pendencias = []
+        
+        # Identificação
+        if not nome.strip(): pendencias.append("Nome")
+        if not setor.strip(): pendencias.append("Setor")
+        if not cargo.strip(): pendencias.append("Cargo")
+        # Adicione outros campos de identificação aqui...
 
-            # 3. VALIDAÇÃO DE IDENTIFICAÇÃO
-            campos_ident = {"Nome": nome, "Setor": setor, "Cargo": cargo} # adicione os outros aqui
-            for campo, valor in campos_ident.items():
-                if not str(valor).strip():
-                    pendencias.setdefault("Identificação", []).append(campo)
+        # Conteúdo das tabelas (Exige pelo menos uma linha em qualquer lugar)
+        if not (ativ_alta or ativ_norm or ativ_baix or difs or sugs):
+            pendencias.append("Preencher ao menos uma Atividade, Dificuldade ou Sugestão")
 
-            # 4. PROCESSANDO AS TABELAS SEM RISCO DE KEYERROR
-            ativ_alta = validar_tabela("atividades_alta", "Alta Complexidade", "Atividade Descrita")
-            ativ_norm = validar_tabela("atividades_normal", "Nível Normal", "Atividade Descrita")
-            ativ_baix = validar_tabela("atividades_baixa", "Baixa Complexidade", "Atividade Descrita")
-            difs = validar_tabela("df_dificuldades", "Dificuldades", "Dificuldade")
-            sugs = validar_tabela("df_sugestoes", "Sugestões", "Sugestão de Melhoria")
+        # DISC
+        questoes_faltando = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
+        if questoes_faltando:
+            pendencias.append(f"Questões do DISC: {questoes_faltando}")
 
-            # 5. VALIDAÇÃO DO DISC (Segura contra None)
-            respostas_disc = {}
-            for i in range(1, 25):
-                resp = st.session_state.get(f"radio_{i}")
-                if resp is None:
-                    pendencias.setdefault("DISC", []).append(f"Questão {i}")
-                else:
-                    respostas_disc[f"p{i}"] = resp
+        # -------------------------------------------------
+        # BOTÃO DINÂMICO (REVISAR OU ENVIAR)
+        # -------------------------------------------------
+        
+        if pendencias:
+            st.warning(f"### ⚠️ Pendências para envio:\n* " + "\n* ".join(pendencias))
+            st.button("Validar e Enviar", disabled=True, help="Preencha todos os campos para habilitar")
+        
+        else:
+            # Se não há pendências, habilita o processo de dois cliques
+            if "confirmar_envio" not in st.session_state:
+                st.session_state.confirmar_envio = False
 
-            # --- CHECAGEM FINAL ---
-            if pendencias:
-                st.error("### ❌ Pendências encontradas:")
-                for cat, itens in pendencias.items():
-                    st.write(f"**{cat}:** {', '.join(itens)}")
+            if not st.session_state.confirmar_envio:
+                if st.button("🚀 Revisar e Finalizar", use_container_width=True):
+                    st.session_state.confirmar_envio = True
+                    st.rerun()
             else:
-                # Se chegou aqui, salva! (Use o seu código de salvamento anterior)
-                st.success("Tudo certo! Salvando...")
-                # ... (resto do seu código de salvar)
+                st.success("✅ **Tudo pronto!** Revise suas respostas acima. Se estiver correto, clique no botão abaixo para transmitir os dados.")
+                
+                col_btn1, col_btn2 = st.columns(2)
+                with col_btn1:
+                    if st.button("⬅️ Voltar e Corrigir", use_container_width=True):
+                        st.session_state.confirmar_envio = False
+                        st.rerun()
+                
+                with col_btn2:
+                    if st.button("📤 CONFIRMAR ENVIO AGORA", type="primary", use_container_width=True):
+                        # LÓGICA DE SALVAMENTO FINAL
+                        fuso_br = pytz.timezone('America/Sao_Paulo')
+                        data_envio = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
+
+                        dados_finais = {
+                            "data_envio": data_envio,
+                            "identificacao": {"nome": nome, "setor": setor, "cargo": cargo},
+                            "tabelas": {"alta": ativ_alta, "normal": ativ_norm, "baixa": ativ_baix, "dificuldades": difs, "sugestoes": sugs},
+                            "disc": {f"p{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                        }
+
+                        # Chama sua função de salvar no GitHub
+                        nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
+                        if salvar(dados_finais, nome_arquivo, f"Envio: {nome}"):
+                            st.balloons()
+                            st.success("✨ Enviado com sucesso! Seus dados foram computados.")
+                            st.session_state.confirmar_envio = False # Reseta para o próximo
+                        else:
+                            st.error("Erro ao salvar no servidor. Tente novamente.")
                     
                         
                   
