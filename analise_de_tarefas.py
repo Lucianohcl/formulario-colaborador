@@ -1034,107 +1034,175 @@ import os
 from datetime import datetime
 import pytz
 
-# ==============================
-# FUNÇÃO DE CARREGAMENTO DO RASCUNHO
-# ==============================
-def carregar(arquivo_nome):
-    if os.path.exists(arquivo_nome):
-        with open(arquivo_nome, "r", encoding="utf-8") as f:
-            dados = json.load(f)
-        return dados, True
-    return {}, False
+import streamlit as st
+import os
+import json
+import pandas as pd
+from datetime import datetime
 
 # ==============================
-# TÍTULO DA PÁGINA
+# CONFIGURAÇÃO INICIAL
 # ==============================
+st.set_page_config(page_title="Formulário Colaborador", layout="wide")
 st.title("📋 Formulário Completo do Colaborador")
 
-import streamlit as st
-import os, json
-import pandas as pd
+# ==============================
+# 1. IDENTIFICAÇÃO DO USUÁRIO
+# ==============================
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO** para buscar rascunhos:", key="nome_usuario_input")
+
+# Inicializa o estado dos dados se não existir
+if "dados_importados" not in st.session_state:
+    st.session_state["dados_importados"] = {}
 
 # ==============================
-# NOME DO USUÁRIO
-# ==============================
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
-
-# ==============================
-# BOTÃO DE CARREGAR RASCUNHO
+# BLOCO DE CARREGAMENTO SEGURO
 # ==============================
 if nome_usuario:
-    arquivo_nome = f"rascunho_{nome_usuario.strip().replace(' ', '_')}.json"
+    # 1. Padroniza o nome do arquivo para busca
+    nome_limpo = nome_usuario.strip().replace(' ', '_')
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+    
     if st.button("📥 Carregar meu rascunho"):
         if os.path.exists(arquivo_nome):
-            with open(arquivo_nome, "r", encoding="utf-8") as f:
-                st.session_state["dados_importados"] = json.load(f)
-            st.success("Rascunho carregado com sucesso!")
+            try:
+                with open(arquivo_nome, "r", encoding="utf-8") as f:
+                    # 2. Carrega para o session_state
+                    st.session_state["dados_importados"] = json.load(f)
+                
+                st.success(f"✅ Rascunho de '{nome_usuario}' carregado com sucesso!")
+                
+                # 3. O 'pulo do gato': força o Streamlit a atualizar os campos
+                st.rerun() 
+            except Exception as e:
+                st.error(f"❌ Erro ao ler o arquivo: {e}")
         else:
-            st.warning("Nenhum rascunho encontrado.")
+            st.warning(f"⚠️ Nenhum rascunho encontrado para '{nome_usuario}'.")
+            st.info(f"Procurando por: {arquivo_nome}")
 
+# 4. Esta linha garante que os inputs abaixo sempre tenham de onde ler
 dados = st.session_state.get("dados_importados", {})
 
+
 # ==============================
-# IDENTIFICAÇÃO
+# 2. CAMPOS DE IDENTIFICAÇÃO (Automação via 'value')
 # ==============================
-nome = st.text_input("Nome completo", value=dados.get("nome", ""))
-setor = st.text_input("Setor", value=dados.get("setor", ""))
-cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
-chefe = st.text_input("Chefe", value=dados.get("chefe", ""))
-departamento = st.text_input("Departamento", value=dados.get("departamento", ""))
-empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
-escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
-devolucao = st.text_input("Devolução", value=dados.get("devolucao", ""))
+st.subheader("👤 Informações Gerais")
+col1, col2 = st.columns(2)
+
+with col1:
+    nome = st.text_input("Nome completo", value=dados.get("nome", ""))
+    setor = st.text_input("Setor", value=dados.get("setor", ""))
+    cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+    chefe = st.text_input("Chefe imediato", value=dados.get("chefe", ""))
+
+with col2:
+    departamento = st.text_input("Departamento", value=dados.get("departamento", ""))
+    empresa = st.text_input("Empresa", value=dados.get("empresa", ""))
+    escolaridade = st.text_input("Escolaridade", value=dados.get("escolaridade", ""))
+    devolucao = st.text_input("Data de Devolução", value=dados.get("devolucao", ""))
+
 cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados.get("cursos_obrigatorios_ou_diferenciais", ""))
 objetivo = st.text_area("Trabalho e principal objetivo", value=dados.get("trabalho_e_principal_objetivo", ""))
 
 # ==============================
-# DISC 24 PERGUNTAS
+# 3. QUESTIONÁRIO DISC (Automação via 'index')
 # ==============================
+st.markdown("---")
+st.subheader("📊 Questionário DISC")
+respostas_disc = {}
+opcoes_disc = ["", "A", "B", "C", "D"]
+
+# Organizado em colunas para não ficar uma lista infinita
+cols_disc = st.columns(4)
 for i in range(1, 25):
-    key_name = f"disc_{i}"
-    st.session_state[key_name] = dados.get("disc", {}).get(key_name, "")
-    st.selectbox(f"DISC Pergunta {i}", ["", "A", "B", "C", "D"],
-                 index=["", "A", "B", "C", "D"].index(st.session_state.get(key_name, "")),
-                 key=key_name)
+    with cols_disc[(i-1) % 4]:
+        key_json = f"disc_{i}"
+        valor_rascunho = dados.get("disc", {}).get(key_json, "")
+        
+        # Garante que o índice exista na lista de opções
+        idx_disc = opcoes_disc.index(valor_rascunho) if valor_rascunho in opcoes_disc else 0
+        
+        respostas_disc[key_json] = st.selectbox(
+            f"Pergunta {i}", 
+            opcoes_disc, 
+            index=idx_disc, 
+            key=f"widget_disc_{i}"
+        )
 
 # ==============================
-# FUNÇÃO PARA PREENCHER TABELAS
+# 4. TABELAS DINÂMICAS (Automação via DataFrame)
 # ==============================
-def preencher_tabela(nome_tabela, colunas):
-    items = dados.get(nome_tabela, [])
-    if not items:
-        df = pd.DataFrame([{c: "" for c in colunas}])
+st.markdown("---")
+st.subheader("📝 Atividades, Dificuldades e Sugestões")
+
+def preencher_tabela(nome_chave, colunas):
+    items = dados.get(nome_chave, [])
+    # Converte para lista se vier formato estranho
+    if isinstance(items, dict):
+        items = list(items.values())
+    
+    df = pd.DataFrame(items) if items else pd.DataFrame(columns=colunas)
+    
+    # Garante colunas corretas
+    for c in colunas:
+        if c not in df.columns:
+            df[c] = ""
+    
+    # Garante no mínimo 3 linhas vazias para preenchimento
+    if len(df) < 3:
+        vazios = pd.DataFrame([{c: "" for c in colunas} for _ in range(3 - len(df))])
+        df = pd.concat([df, vazios], ignore_index=True)
+        
+    return st.data_editor(df, num_rows="dynamic", key=f"editor_{nome_chave}", use_container_width=True)
+
+st.write("**Atividades Realizadas**")
+edit_ativ = preencher_tabela("atividades", ["Atividade Descrita", "Tipo", "Horas", "Minutos"])
+
+st.write("**Dificuldades Encontradas**")
+edit_dif = preencher_tabela("dificuldades", ["Dificuldade", "Detalhes"])
+
+st.write("**Sugestões de Melhoria**")
+edit_sug = preencher_tabela("sugestoes", ["Sugestão de Melhoria", "Responsável", "Prazo"])
+
+# ==============================
+# 5. SALVAMENTO (Payload Seguro)
+# ==============================
+st.markdown("---")
+if st.button("💾 Salvar Rascunho Final"):
+    if not nome:
+        st.error("❌ Por favor, preencha o campo 'Nome completo' antes de salvar.")
     else:
-        df = pd.DataFrame(items)
-        for c in colunas:
-            if c not in df.columns:
-                df[c] = ""
-        df = df[colunas]
-    return st.data_editor(df, num_rows="dynamic", key=nome_tabela)
+        # Filtra linhas onde a coluna principal está vazia
+        ativ_f = edit_ativ[edit_ativ["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
+        dif_f = edit_dif[edit_dif["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
+        sug_f = edit_sug[edit_sug["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
 
-# ==============================
-# ATIVIDADES, DIFICULDADES, SUGESTÕES
-# ==============================
-ativ_final = preencher_tabela("atividades", ["Atividade Descrita", "Tipo", "Horas", "Minutos"])
-dif_final  = preencher_tabela("dificuldades", ["Dificuldade", "Detalhes"])
-sug_final  = preencher_tabela("sugestoes", ["Sugestão de Melhoria", "Responsável", "Prazo"])
-# ==============================
-# DADOS IMPORTADOS
-# ==============================
-dados_importados = st.session_state.get("dados_importados", {})
-ident = dados_importados.get("Identificacao", {})
+        payload = {
+            "nome": nome,
+            "setor": setor,
+            "cargo": cargo,
+            "chefe": chefe,
+            "departamento": departamento,
+            "empresa": empresa,
+            "escolaridade": escolaridade,
+            "devolucao": devolucao,
+            "cursos_obrigatorios_ou_diferenciais": cursos,
+            "trabalho_e_principal_objetivo": objetivo,
+            "atividades": ativ_f,
+            "dificuldades": dif_f,
+            "sugestoes": sug_f,
+            "disc": respostas_disc,
+            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        }
 
-atividades_alta = pd.DataFrame(dados_importados.get("Atividades", {}).get("Alta", []))
-atividades_normal = pd.DataFrame(dados_importados.get("Atividades", {}).get("Normal", []))
-atividades_baixa = pd.DataFrame(dados_importados.get("Atividades", {}).get("Baixa", []))
-
-dificuldades_df = pd.DataFrame(dados_importados.get("Dificuldades", []))
-sugestoes_df = pd.DataFrame(dados_importados.get("Sugestoes", []))
-
-# Listas padronizadas
-lista_horas = [f"{i} h" for i in range(25)]
-lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-lista_frequencia = ["DVD","D","S","Q","M","T","A"]
+        nome_arq = f"rascunho_{nome.strip().replace(' ', '_')}.json"
+        try:
+            with open(nome_arq, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=4)
+            st.success(f"✅ Rascunho de '{nome}' salvo com sucesso!")
+        except Exception as e:
+            st.error(f"❌ Erro ao salvar: {e}")
 
 # ==============================
 # FORMULÁRIO
