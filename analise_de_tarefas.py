@@ -2169,16 +2169,23 @@ if nome_usuario:
 
         
     # ===========================
+    # Inicializa DataFrames no session_state se não existirem
+    # ===========================
+    for key in ["form_atividades_alta","form_atividades_normal","form_atividades_baixa"]:
+        if key not in st.session_state:
+            st.session_state[key] = pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })
+
+    # ===========================
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
     atividades_alta = st.data_editor(
-        pd.DataFrame({
-            "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
-        }).reset_index(drop=True),
+        st.session_state["form_atividades_alta"],
         key="form_atividades_alta",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -2195,12 +2202,7 @@ if nome_usuario:
     # ===========================
     st.subheader("🔹 Atividades de Nível Normal")
     atividades_normal = st.data_editor(
-        pd.DataFrame({
-            "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
-        }).reset_index(drop=True),
+        st.session_state["form_atividades_normal"],
         key="form_atividades_normal",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
@@ -2217,12 +2219,7 @@ if nome_usuario:
     # ===========================
     st.subheader("🔹 Atividades de Baixa Complexidade")
     atividades_baixa = st.data_editor(
-        pd.DataFrame({
-            "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
-        }).reset_index(drop=True),
+        st.session_state["form_atividades_baixa"],
         key="form_atividades_baixa",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
