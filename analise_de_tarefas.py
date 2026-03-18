@@ -1193,10 +1193,87 @@ if st.query_params.get("page") == "formulario":
                 index=None
             )
 
+        
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-       
-    
+          
+        # -------------------------------------------------
+        # VALIDAÇÕES E PROCESSAMENTO
+        # -------------------------------------------------
+        if enviar:
+            import os
+            import json
+            import pytz
+            from datetime import datetime
+
+            # 1. GERA A DATA E HORA DE BRASÍLIA
+            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
+            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+            
+            # Lista de campos obrigatórios
+            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
+
+            # --- VALIDAÇÕES ---
+
+            # 1. VALIDAÇÃO DE CAMPOS TEXTUAIS
+            if any(not str(campo).strip() for campo in campos_obrigatorios):
+                st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação!")
+
+            # 2. VALIDAÇÃO DO DISC (Verifica se todos os 24 foram respondidos)
+            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
+
+            # 3. VALIDAÇÃO DAS TABELAS (Verifica se houve preenchimento)
+            # Nota: Usamos os nomes 'df_alta', 'df_normal' e 'df_baixa' conforme as travas anteriores
+            elif (st.session_state["df_alta"]["Atividade Descrita"].str.strip().eq("").all() and 
+                  st.session_state["df_normal"]["Atividade Descrita"].str.strip().eq("").all() and
+                  st.session_state["df_baixa"]["Atividade Descrita"].str.strip().eq("").all()):
+                st.error("⚠️ Erro: Descreva pelo menos uma atividade em uma das tabelas de complexidade!")
+
+            else:
+                # 4. PREPARAÇÃO DE DIRETÓRIO
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
+                os.makedirs(dados_dir, exist_ok=True)
+
+                nome_limpo = nome.strip().replace(" ", "_")
+                arquivo_path = os.path.join(dados_dir, f"{nome_limpo}.json")
+
+                # 5. VERIFICA DUPLICIDADE
+                if os.path.exists(arquivo_path):
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                else:
+                    # 6. MONTAGEM DO DICIONÁRIO FINAL
+                    dados_finais = {
+                        "data_envio": data_hoje,
+                        "identificacao": {
+                            "nome": nome,
+                            "setor": setor,
+                            "cargo": cargo,
+                            "chefe": chefe,
+                            "departamento": departamento,
+                            "empresa": empresa
+                        },
+                        "perfil": {
+                            "cursos": cursos,
+                            "objetivo": objetivo
+                        },
+                        "tabelas_atividades": {
+                            "alta_complexidade": st.session_state["df_alta"].to_dict(orient="records"),
+                            "nivel_normal": st.session_state["df_normal"].to_dict(orient="records"),
+                            "baixa_complexidade": st.session_state["df_baixa"].to_dict(orient="records")
+                        },
+                        "disc": {f"pergunta_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+                    }
+
+                    # 7. SALVAMENTO EM JSON
+                    with open(arquivo_path, "w", encoding="utf-8") as f:
+                        json.dump(dados_finais, f, ensure_ascii=False, indent=4)
+                    
+                    st.success("✅ Formulário enviado e salvo com sucesso!")
+                    
+                        
+                  
 
 
                 
@@ -2305,7 +2382,7 @@ if nome_usuario:
         payload = {
             "nome": nome, 
             "cargo": cargo, 
-            "departamento": depto,
+            "departamento": departamento,
             "setor": setor, 
             "chefe": chefe, 
             "empresa": empresa,
