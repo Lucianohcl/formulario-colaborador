@@ -2168,7 +2168,7 @@ if nome_usuario:
         # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
         
-        # ===========================
+    # ===========================
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
@@ -2180,9 +2180,10 @@ if nome_usuario:
             "Minutos": [""] * 20
         })
 
+    # Passa uma cópia do DataFrame puro
     atividades_alta = st.data_editor(
         st.session_state["form_atividades_alta"].copy(),
-        key="form_atividades_alta",
+        key="form_atividades_alta_editor",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2192,6 +2193,9 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
+
+    # Atualiza o session_state com o que o usuário editou
+    st.session_state["form_atividades_alta"] = atividades_alta.copy()
 
     # ===========================
     # Tabela de Nível Normal
