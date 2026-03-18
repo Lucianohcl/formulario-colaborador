@@ -1183,7 +1183,7 @@ if st.query_params.get("page") == "formulario":
 
         # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
-        st.subheader("📊 Questionário DISC")
+        st.subheader("📊 Questionário")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
@@ -2172,14 +2172,17 @@ if nome_usuario:
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
-    atividades_alta = st.data_editor(
-        pd.DataFrame({
+    if "form_atividades_alta" not in st.session_state:
+        st.session_state["form_atividades_alta"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [""] * 20,
             "Horas": [""] * 20,
             "Minutos": [""] * 20
-        }).reset_index(drop=True),
-        key="form_atividades_alta",
+        })
+
+    atividades_alta = st.data_editor(
+        st.session_state["form_atividades_alta"],
+        key="form_atividades_alta_editor",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2194,14 +2197,17 @@ if nome_usuario:
     # Tabela de Nível Normal
     # ===========================
     st.subheader("🔹 Atividades de Nível Normal")
-    atividades_normal = st.data_editor(
-        pd.DataFrame({
+    if "form_atividades_normal" not in st.session_state:
+        st.session_state["form_atividades_normal"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [""] * 20,
             "Horas": [""] * 20,
             "Minutos": [""] * 20
-        }).reset_index(drop=True),
-        key="form_atividades_normal",
+        })
+
+    atividades_normal = st.data_editor(
+        st.session_state["form_atividades_normal"],
+        key="form_atividades_normal_editor",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2216,14 +2222,17 @@ if nome_usuario:
     # Tabela de Baixa Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Baixa Complexidade")
-    atividades_baixa = st.data_editor(
-        pd.DataFrame({
+    if "form_atividades_baixa" not in st.session_state:
+        st.session_state["form_atividades_baixa"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [""] * 20,
             "Horas": [""] * 20,
             "Minutos": [""] * 20
-        }).reset_index(drop=True),
-        key="form_atividades_baixa",
+        })
+
+    atividades_baixa = st.data_editor(
+        st.session_state["form_atividades_baixa"],
+        key="form_atividades_baixa_editor",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
