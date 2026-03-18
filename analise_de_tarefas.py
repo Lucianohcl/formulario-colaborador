@@ -2293,65 +2293,56 @@ if nome_usuario:
         # SE CHEGOU AQUI, MOSTRA O FORMULÁRIO
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
+        # === INÍCIO DO AJUSTE PARA POVOAMENTO IMEDIATO ===
         
-        # --- CAMPOS DE IDENTIFICAÇÃO COM POVOAMENTO ---
-        st.subheader("👤 Dados de Identificação")
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            # O value=dados.get(...) é o que preenche o campo sozinho!
-            nome_f = st.text_input("Nome do colaborador", value=dados.get("nome", nome_usuario))
-            cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
-            
-        with col2:
-            depto = st.text_input("Departamento", value=dados.get("departamento", ""))
-            unidade = st.text_input("Unidade/Filial", value=dados.get("unidade", ""))
+        # 1. Cria o espaço na memória se não existir
+        if "dados_oficiais" not in st.session_state:
+            st.session_state["dados_oficiais"] = {}
 
-        # --- BOTÃO PARA SALVAR O QUE FOI DIGITADO ---
-        if st.button("💾 Salvar Rascunho Atual"):
-            # Montamos o dicionário com o que está na tela agora
-            rascunho_para_salvar = {
-                "nome": nome_f,
-                "cargo": cargo,
-                "departamento": depto,
-                "unidade": unidade,
-                "status": "em_andamento"
-            }
-            # Chama a função de salvar que já criamos antes
-            if salvar(rascunho_para_salvar, arquivo_nome):
-                st.success("✅ Rascunho atualizado no GitHub!")
-                # Não precisa de rerun aqui, o dado já está lá
-       
+        # 2. O Botão que "injeta" o rascunho no formulário
+        st.markdown("---")
+        if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO OFICIAL COM SEU RASCUNHO", type="primary", use_container_width=True):
+            if dados:
+                st.session_state["dados_oficiais"] = dados.copy()
+                st.success("✅ Formulário Povoado! Prossiga com o preenchimento abaixo.")
+                st.rerun() # Faz a tela atualizar e preencher os campos na hora
+            else:
+                st.error("❌ Nenhum rascunho encontrado para transferir.")
+
+        # 3. Define a 'fonte' que os campos abaixo vão usar
+        fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else dados
+        
+        # === FIM DO AJUSTE ===
+
+        
+            
 
         
         # --- DADOS DE IDENTIFICAÇÃO ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
-            # O parâmetro 'value' agora busca no rascunho ou usa o digitado
-            nome = st.text_input("Nome do colaborador", dados.get("nome", nome_usuario))
-            cargo = st.text_input("Cargo", dados.get("cargo", ""))
-            departamento = st.text_input("Departamento", dados.get("departamento", ""))
-            escolaridade = st.text_input("Escolaridade", dados.get("escolaridade", ""))
+            # O parâmetro 'value' agora busca na 'fonte' (que pode ser o rascunho ou a memória do botão)
+            nome_f = st.text_input("Nome do colaborador", fonte.get("nome", nome_usuario), key="f_nome")
+            cargo_f = st.text_input("Cargo", fonte.get("cargo", ""), key="f_cargo")
+            depto_f = st.text_input("Departamento", fonte.get("departamento", ""), key="f_depto")
+            esc_f = st.text_input("Escolaridade", fonte.get("escolaridade", ""), key="f_esc")
         with col2:
-            setor = st.text_input("Setor", dados.get("setor", ""))
-            chefe = st.text_input("Chefe imediato", dados.get("chefe", ""))
-            empresa = st.text_input("Empresa / Unidade", dados.get("empresa", ""))
-            devolucao = st.text_input("Devolver preenchido em", dados.get("devolucao", ""))
+            setor_f = st.text_input("Setor", fonte.get("setor", ""), key="f_setor")
+            chefe_f = st.text_input("Chefe imediato", fonte.get("chefe", ""), key="f_chefe")
+            unidade_f = st.text_input("Empresa / Unidade", fonte.get("empresa", ""), key="f_unidade")
+            dev_f = st.text_input("Devolver preenchido em", fonte.get("devolucao", ""), key="f_dev")
         
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais", dados.get("cursos", ""))
-        objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
+        cursos_f = st.text_area("Cursos obrigatórios ou diferenciais", fonte.get("cursos", ""), key="f_cursos")
+        obj_f = st.text_area("Trabalho e principal objetivo", fonte.get("objetivo", ""), key="f_obj")
 
         # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
-        # Ajustada para forçar o carregamento se os dados existirem no rascunho
+        # Agora ela olha para a 'fonte' para saber se preenche a tabela automaticamente
         def init_df(chave, colunas_vazias):
             if chave not in st.session_state:
-                # Se o rascunho contiver dados para esta tabela, carrega-os
-                if dados.get(chave):
-                    st.session_state[chave] = pd.DataFrame(dados.get(chave))
+                if fonte.get(chave):
+                    st.session_state[chave] = pd.DataFrame(fonte.get(chave))
                 else:
-                    # Senão, cria a tabela vazia
                     st.session_state[chave] = pd.DataFrame(colunas_vazias)
 
         # 1. Atividades Alta
@@ -2399,14 +2390,13 @@ if nome_usuario:
             "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
         }, hide_index=True, use_container_width=True)
 
-        # 6. DISC
+        # 6. DISC (Agora também puxando da fonte)
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
-            # O rascunho povoa o radio button buscando pela chave disc_1, disc_2, etc.
-            res_anterior = dados.get(chave)
+            res_anterior = fonte.get(chave)
             respostas_disc[chave] = st.radio(
                 f"{i}. {pergunta}", ["A", "B", "C", "D"], 
                 index=["A", "B", "C", "D"].index(res_anterior) if res_anterior in ["A", "B", "C", "D"] else None,
@@ -2414,85 +2404,58 @@ if nome_usuario:
             )
 
         # ============================================================
-        # 7. NOVO BOTÃO: ENVIAR PARA O BANCO OFICIAL
+        # 7. BOTÕES FINAIS (RASCUNHO E ENVIO)
         # ============================================================
         st.markdown("---")
-        if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-            if not nome or nome.strip() == "":
-                st.error("❌ O campo 'Nome' é obrigatório para o envio oficial.")
-            else:
-                with st.spinner("Salvando permanentemente no Banco de Dados..."):
-                    try:
-                        def limpar_df(df):
-                            if df is None or df.empty:
-                                return []
-                            col_ref = df.columns[0]
-                            return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
+        col_btn1, col_btn2 = st.columns(2)
+        
+        # Preparamos o dicionário com tudo o que está na tela no momento
+        dados_atuais = {
+            "nome": nome_f,
+            "cargo": cargo_f,
+            "departamento": depto_f,
+            "escolaridade": esc_f,
+            "setor": setor_f,
+            "chefe": chefe_f,
+            "empresa": unidade_f,
+            "devolucao": dev_f,
+            "cursos": cursos_f,
+            "objetivo": obj_f,
+            "atividades_alta": atividades_alta_editadas.to_dict('records'),
+            "atividades_normal": atividades_normal_editadas.to_dict('records'),
+            "atividades_baixa": atividades_baixa_editadas.to_dict('records'),
+            "dificuldades": edit_dif.to_dict('records'),
+            "sugestoes": edit_sug.to_dict('records'),
+            "status": "em_andamento"
+        }
+        # Incluímos as respostas do DISC (capturadas no loop anterior)
+        dados_atuais.update(respostas_disc)
 
-                        # Payload idêntico ao carregamento para garantir povoamento futuro se necessário
-                        dados_oficiais = {
-                            "nome": nome, "cargo": cargo, "departamento": departamento,
-                            "setor": setor, "chefe": chefe, "empresa": empresa,
-                            "escolaridade": escolaridade, "devolucao": devolucao,
-                            "cursos": cursos, "objetivo": objetivo,
-                            "atividades_alta": limpar_df(atividades_alta_editadas),
-                            "atividades_normal": limpar_df(atividades_normal_editadas),
-                            "atividades_baixa": limpar_df(atividades_baixa_editadas),
-                            "dificuldades": limpar_df(edit_dif),
-                            "sugestoes": limpar_df(edit_sug),
-                            "disc": respostas_disc,
-                            "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                            "status": "Oficial"
-                        }
-                        # Inclui chaves DISC na raiz para simplificar get()
-                        dados_oficiais.update(respostas_disc)
+        with col_btn1:
+            if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
+                # arquivo_nome foi definido lá no topo do script
+                if salvar(dados_atuais, arquivo_nome):
+                    # Sincroniza a memória da sessão com o que foi salvo
+                    st.session_state["dados_oficiais"] = dados_atuais
+                    st.success("✅ Rascunho salvo com sucesso no GitHub!")
 
-                        nome_limpo_arquivo = nome.strip().lower().replace(" ", "_")
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        caminho_final = f"dados/envio_{nome_limpo_arquivo}_{timestamp}.json"
+        with col_btn2:
+            if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
+                # Muda status para finalizado e define nome do arquivo oficial
+                dados_atuais["status"] = "finalizado"
+                arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                
+                if salvar(dados_atuais, arquivo_oficial):
+                    st.balloons() 
+                    st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
+                    st.info("Obrigado! Suas respostas foram registradas. Você já pode fechar esta aba.")
+                    
+                    # Bloqueia novas edições após envio
+                    st.session_state["logado"] = False
+                    
+                    # Interrompe a execução aqui para manter as mensagens na tela
+                    st.stop()   
 
-                        if salvar(dados_oficiais, caminho_final, f"Envio Oficial: {nome}"):
-                            st.success(f"✅ FINALIZADO! O formulário de {nome} foi salvo com sucesso.")
-                            st.session_state["ultimo_envio"] = dados_oficiais
-                        else:
-                            st.error("❌ Erro ao gravar no GitHub.")
-                    except Exception as e:
-                        st.error(f"❌ Erro crítico: {str(e)}")   
+        
 
-        # ============================================================
-        # 8. BOTÃO SALVAR RASCUNHO (SINCRO COM GITHUB)
-        # ================================
-        st.markdown("---")
-        if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-            if not nome or nome.strip() == "":
-                st.error("❌ Erro: O campo 'Nome' é obrigatório.")
-            else:
-                try:
-                    payload = {
-                        "nome": nome, "cargo": cargo, "departamento": departamento,
-                        "setor": setor, "chefe": chefe, "empresa": empresa,
-                        "escolaridade": escolaridade, "devolucao": devolucao,
-                        "cursos": cursos, "objetivo": objetivo,
-                        "status_formulario": "rascunho",
-                        "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                    }
-                    payload.update(respostas_disc)
-
-                    def limpar_df(df):
-                        col_ref = df.columns[0]
-                        return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
-
-                    payload["atividades_alta"] = limpar_df(atividades_alta_editadas)
-                    payload["atividades_normal"] = limpar_df(atividades_normal_editadas)
-                    payload["atividades_baixa"] = limpar_df(atividades_baixa_editadas)
-                    payload["dificuldades"] = limpar_df(edit_dif)
-                    payload["sugestoes"] = limpar_df(edit_sug)
-
-                    if salvar(payload, arquivo_nome, f"Backup: {nome}"):
-                        st.success(f"✅ Rascunho de {nome} sincronizado no GitHub!")
-                    else:
-                        st.error("❌ Falha na comunicação com GitHub.")
-                except Exception as e:
-                    st.error(f"❌ Erro: {str(e)}")
-
-               
+        
