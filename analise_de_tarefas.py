@@ -1197,33 +1197,48 @@ if st.query_params.get("page") == "formulario":
         
           
         # -------------------------------------------------
-        # BLOCO FINAL DE VALIDAÇÃO E ENVIO (COM DIAGNÓSTICO)
+        # BLOCO FINAL DE VALIDAÇÃO E ENVIO (VERSÃO CORRIGIDA)
         # -------------------------------------------------
         btn_enviar = st.form_submit_button("VALIDAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True)
 
         if btn_enviar:
             import json
             import pytz
+            import pandas as pd
             from datetime import datetime
-            import pandas as pd # Garante que o pandas esteja disponível
 
-            # 1. COLETA SEGURA DE TABELAS
-            def extrair_tabela(key, col_ref):
-                df_temp = st.session_state.get(key, pd.DataFrame())
-                if df_temp.empty or col_ref not in df_temp.columns:
+            # 1. COLETA DE TABELAS (Lógica que aceita DF direto ou Session State)
+            def extrair_dados_tabela(nome_df, col_ref):
+                # Tenta pegar o objeto da memória
+                df = st.session_state.get(nome_df)
+                
+                # Se for o dicionário de edição do Streamlit, precisamos do DF original
+                if isinstance(df, dict):
+                    # Tenta buscar pelo nome da variável global se o state falhar
+                    df = globals().get(nome_df, pd.DataFrame())
+                
+                if df is None or not isinstance(df, pd.DataFrame) or df.empty:
                     return []
-                return [r.to_dict() for _, r in df_temp.iterrows() if str(r.get(col_ref, "")).strip()]
+                
+                # Limpa e converte
+                res = []
+                for _, row in df.iterrows():
+                    val = str(row.get(col_ref, "")).strip()
+                    if val and val.lower() != "nan":
+                        res.append(row.to_dict())
+                return res
 
-            dados_alta = extrair_tabela("atividades_alta", "Atividade Descrita")
-            dados_norm = extrair_tabela("atividades_normal", "Atividade Descrita")
-            dados_baix = extrair_tabela("atividades_baixa", "Atividade Descrita")
-            dados_difs = extrair_tabela("df_dificuldades", "Dificuldade")
-            dados_sugs = extrair_tabela("df_sugestoes", "Sugestão de Melhoria")
+            # Mapeamento exato das suas chaves de tabela
+            dados_alta = extrair_dados_tabela("atividades_alta", "Atividade Descrita")
+            dados_norm = extrair_dados_tabela("atividades_normal", "Atividade Descrita")
+            dados_baix = extrair_dados_tabela("atividades_baixa", "Atividade Descrita")
+            dados_difs = extrair_dados_tabela("df_dificuldades", "Dificuldade")
+            dados_sugs = extrair_dados_tabela("df_sugestoes", "Sugestão de Melhoria")
 
             # 2. VERIFICAÇÃO DE PENDÊNCIAS
             erros = []
             
-            # --- VALIDAÇÃO OBRIGATÓRIA ---
+            # Identificação
             if not nome.strip(): erros.append("Nome do Colaborador")
             if not setor.strip(): erros.append("Setor")
             if not cargo.strip(): erros.append("Cargo")
@@ -1231,61 +1246,63 @@ if st.query_params.get("page") == "formulario":
             if not departamento.strip(): erros.append("Departamento")
             if not empresa.strip(): erros.append("Empresa / Unidade")
             if not devolucao: erros.append("Devolver preenchido em")
-            
-            if not escolaridade or escolaridade == "Escolha...": 
-                erros.append("Escolaridade")
-            
+            if not escolaridade or escolaridade == "Escolha...": erros.append("Escolaridade")
             if not cursos.strip(): erros.append("Cursos obrigatórios ou diferenciais")
             if not objetivo.strip(): erros.append("Trabalho e principal objetivo")
             
+            # Tabelas
             if not any([dados_alta, dados_norm, dados_baix, dados_difs, dados_sugs]):
-                erros.append("Preencha pelo menos uma linha em Atividades, Dificuldades ou Sugestões")
+                erros.append("Preencha ao menos uma linha nas tabelas de Atividades ou Dificuldades.")
 
-            faltando_disc = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
-            if faltando_disc:
-                erros.append(f"Questões do DISC: {faltando_disc}")
+            # DISC (Captura direta)
+            respostas_disc_final = {}
+            questoes_vazias = []
+            for i in range(1, 25):
+                # Tentamos pegar a chave definida no st.radio(key=...)
+                v = st.session_state.get(f"radio_{i}")
+                if v is None:
+                    questoes_vazias.append(i)
+                else:
+                    respostas_disc_final[f"p{i}"] = v
 
-            # 3. LÓGICA DE DECISÃO COM DIAGNÓSTICO
+            if questoes_vazias:
+                erros.append(f"Responda o DISC: faltam questões {questoes_vazias}")
+
+            # 3. ENVIO
             if erros:
-                st.error("### ❌ Erro ao enviar! Faltam estes itens:")
+                st.error("### ❌ Erro ao enviar!")
                 for e in erros:
                     st.write(f"⚠️ {e}")
+                st.info("💡 Dica: Se preencheu as tabelas e o erro persiste, clique em uma área vazia da tela antes de enviar.")
             else:
-                # Se entrou aqui, a validação passou!
-                st.info("🔄 Validação concluída. Iniciando comunicação com o servidor...")
-                
+                st.info("🔄 Validado com sucesso! Transmitindo...")
                 try:
                     fuso_br = pytz.timezone('America/Sao_Paulo')
-                    data_final = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
+                    agora = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
 
-                    payload = {
-                        "data_envio": data_final,
+                    json_final = {
+                        "data_envio": agora,
                         "identificacao": {
                             "nome": nome, "setor": setor, "cargo": cargo,
                             "chefe": chefe, "departamento": departamento, 
                             "empresa": empresa, "devolucao": str(devolucao),
                             "escolaridade": escolaridade
                         },
-                        "atividades": {
+                        "tabelas": {
                             "alta": dados_alta, "normal": dados_norm, "baixa": dados_baix,
                             "dificuldades": dados_difs, "sugestoes": dados_sugs
                         },
                         "perfil": {"cursos": cursos, "objetivo": objetivo},
-                        "disc": {f"p{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                        "disc": respostas_disc_final
                     }
 
-                    nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
-                    
-                    # TENTA SALVAR NO GITHUB
-                    if salvar(payload, nome_arquivo, f"Formulário Final: {nome}"):
+                    if salvar(json_final, f"final_{nome.strip().lower()}.json", f"Envio: {nome}"):
                         st.balloons()
-                        st.success(f"✅ SUCESSO! O formulário de {nome} foi enviado.")
-                        st.info("Você já pode fechar esta página.")
+                        st.success("✅ FORMULÁRIO ENVIADO COM SUCESSO!")
                     else:
-                        st.error("❌ A validação passou, mas a função 'salvar' retornou Erro (GitHub/Token).")
-                
+                        st.error("❌ Ocorreu um erro ao salvar no GitHub. Verifique sua conexão.")
                 except Exception as ex:
-                    st.error(f"❌ Erro crítico no processamento: {ex}")
+                    st.error(f"❌ Erro técnico: {ex}")
                     
                         
                   
