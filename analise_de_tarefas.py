@@ -2441,20 +2441,23 @@ if nome_usuario:
 
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-                # Muda status para finalizado e define nome do arquivo oficial
+                # Prepara os dados finais
                 dados_atuais["status"] = "finalizado"
                 arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
                 
                 if salvar(dados_atuais, arquivo_oficial):
+                    # 1. Efeito visual de sucesso
                     st.balloons() 
+                    
+                    # 2. Atualiza a 'fonte' na memória para garantir que a tela continue cheia
+                    st.session_state["dados_oficiais"] = dados_atuais
+                    
+                    # 3. Mensagens de confirmação sem travar a tela
                     st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
-                    st.info("Obrigado! Suas respostas foram registradas. Você já pode fechar esta aba.")
+                    st.info(f"Os dados oficiais de {nome_f} estão visíveis abaixo e salvos no GitHub.")
                     
-                    # Bloqueia novas edições após envio
-                    st.session_state["logado"] = False
-                    
-                    # Interrompe a execução aqui para manter as mensagens na tela
-                    st.stop()   
+                    # IMPORTANTE: Removi o st.stop() e o logado = False 
+                    # para que você VEJA os dados na tela agora.   
 
         
 
