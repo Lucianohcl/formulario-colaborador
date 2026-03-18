@@ -2257,9 +2257,14 @@ st.info("📝 Gerar Rascunho")
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
+# Inicializamos 'dados' como vazio para evitar erros caso não haja rascunho
+dados = {}
+
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
+    
+    # Tenta carregar os dados do rascunho
     dados, _ = carregar(arquivo_nome)
 
     if primeira_vez:
@@ -2269,6 +2274,7 @@ if nome_usuario:
             if st.button("✅ Criar meu Rascunho"):
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
                     st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+                    st.rerun() # Recarrega para processar a mudança
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
@@ -2280,6 +2286,7 @@ if nome_usuario:
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
         with col1:
+            # O parâmetro 'value' agora busca no rascunho ou usa o digitado
             nome = st.text_input("Nome do colaborador", dados.get("nome", nome_usuario))
             cargo = st.text_input("Cargo", dados.get("cargo", ""))
             departamento = st.text_input("Departamento", dados.get("departamento", ""))
@@ -2294,11 +2301,14 @@ if nome_usuario:
         objetivo = st.text_area("Trabalho e principal objetivo", dados.get("objetivo", ""))
 
         # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
+        # Ajustada para forçar o carregamento se os dados existirem no rascunho
         def init_df(chave, colunas_vazias):
             if chave not in st.session_state:
+                # Se o rascunho contiver dados para esta tabela, carrega-os
                 if dados.get(chave):
                     st.session_state[chave] = pd.DataFrame(dados.get(chave))
                 else:
+                    # Senão, cria a tabela vazia
                     st.session_state[chave] = pd.DataFrame(colunas_vazias)
 
         # 1. Atividades Alta
@@ -2352,9 +2362,11 @@ if nome_usuario:
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave = f"disc_{i}"
+            # O rascunho povoa o radio button buscando pela chave disc_1, disc_2, etc.
+            res_anterior = dados.get(chave)
             respostas_disc[chave] = st.radio(
                 f"{i}. {pergunta}", ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(dados.get(chave)) if dados.get(chave) in ["A", "B", "C", "D"] else None,
+                index=["A", "B", "C", "D"].index(res_anterior) if res_anterior in ["A", "B", "C", "D"] else None,
                 horizontal=True, key=f"radio_{i}"
             )
 
@@ -2368,24 +2380,18 @@ if nome_usuario:
             else:
                 with st.spinner("Salvando permanentemente no Banco de Dados..."):
                     try:
-                        # Função para garantir que não enviamos linhas vazias das tabelas
                         def limpar_df(df):
                             if df is None or df.empty:
                                 return []
                             col_ref = df.columns[0]
                             return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
 
+                        # Payload idêntico ao carregamento para garantir povoamento futuro se necessário
                         dados_oficiais = {
-                            "nome": nome, 
-                            "cargo": cargo, 
-                            "departamento": departamento,
-                            "setor": setor, 
-                            "chefe": chefe, 
-                            "empresa": empresa,
-                            "escolaridade": escolaridade, 
-                            "devolucao": devolucao,
-                            "cursos": cursos,
-                            "objetivo": objetivo,
+                            "nome": nome, "cargo": cargo, "departamento": departamento,
+                            "setor": setor, "chefe": chefe, "empresa": empresa,
+                            "escolaridade": escolaridade, "devolucao": devolucao,
+                            "cursos": cursos, "objetivo": objetivo,
                             "atividades_alta": limpar_df(atividades_alta_editadas),
                             "atividades_normal": limpar_df(atividades_normal_editadas),
                             "atividades_baixa": limpar_df(atividades_baixa_editadas),
@@ -2395,35 +2401,30 @@ if nome_usuario:
                             "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                             "status": "Oficial"
                         }
+                        # Inclui chaves DISC na raiz para simplificar get()
+                        dados_oficiais.update(respostas_disc)
 
-                        # Define o caminho na pasta 'dados'
                         nome_limpo_arquivo = nome.strip().lower().replace(" ", "_")
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         caminho_final = f"dados/envio_{nome_limpo_arquivo}_{timestamp}.json"
 
-                        # Chamada da função de salvamento no GitHub
                         if salvar(dados_oficiais, caminho_final, f"Envio Oficial: {nome}"):
-                            
                             st.success(f"✅ FINALIZADO! O formulário de {nome} foi salvo com sucesso.")
-                            
-                            # Mantém uma cópia na sessão para evitar que "suma" da tela após o refresh
                             st.session_state["ultimo_envio"] = dados_oficiais
                         else:
-                            st.error("❌ Erro ao gravar no GitHub. Verifique se a pasta 'dados' existe no repositório.")
-
+                            st.error("❌ Erro ao gravar no GitHub.")
                     except Exception as e:
-                        st.error(f"❌ Erro crítico no processamento: {str(e)}")   
+                        st.error(f"❌ Erro crítico: {str(e)}")   
 
         # ============================================================
-        # 8. BOTÃO SALVAR AJUSTADO (SINCRO COM GITHUB)
-        # ============================================================
+        # 8. BOTÃO SALVAR RASCUNHO (SINCRO COM GITHUB)
+        # ================================
         st.markdown("---")
-        if st.button("💾 Salvar Rascunho Permanente", use_container_width=True, type="primary"):
+        if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
             if not nome or nome.strip() == "":
                 st.error("❌ Erro: O campo 'Nome' é obrigatório.")
             else:
                 try:
-                    # Monta o Payload para salvar no GitHub
                     payload = {
                         "nome": nome, "cargo": cargo, "departamento": departamento,
                         "setor": setor, "chefe": chefe, "empresa": empresa,
@@ -2432,11 +2433,8 @@ if nome_usuario:
                         "status_formulario": "rascunho",
                         "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
                     }
-                    
-                    # Inclui DISC
                     payload.update(respostas_disc)
 
-                    # Funçao para limpar linhas vazias antes de salvar
                     def limpar_df(df):
                         col_ref = df.columns[0]
                         return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
@@ -2449,12 +2447,9 @@ if nome_usuario:
 
                     if salvar(payload, arquivo_nome, f"Backup: {nome}"):
                         st.success(f"✅ Rascunho de {nome} sincronizado no GitHub!")
-                       
                     else:
                         st.error("❌ Falha na comunicação com GitHub.")
                 except Exception as e:
                     st.error(f"❌ Erro: {str(e)}")
-
-# Rodar este script e dar o Push.
 
                
