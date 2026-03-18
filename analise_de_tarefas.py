@@ -2379,6 +2379,14 @@ if nome_usuario:
     # 6. BOTÃO SALVAR
     st.markdown("---")
     if st.button("💾 Salvar Rascunho"):
+        from datetime import datetime
+        
+        # Função interna para converter com segurança e evitar o AttributeError
+        def converter_para_lista(df_ou_dict):
+            if isinstance(df_ou_dict, pd.DataFrame):
+                return df_ou_dict.to_dict("records")
+            return [] # Retorna lista vazia se não for um DataFrame válido
+
         payload = {
             "nome": nome, 
             "cargo": cargo, 
@@ -2386,15 +2394,15 @@ if nome_usuario:
             "setor": setor, 
             "chefe": chefe, 
             "empresa": empresa,
-            "atividades": edit_ativ.to_dict("records"),
-            "dificuldades": edit_dif.to_dict("records"),
-            "sugestoes": edit_sug.to_dict("records"),
+            "atividades": converter_para_lista(edit_ativ),
+            "dificuldades": converter_para_lista(edit_dif),
+            "sugestoes": converter_para_lista(edit_sug),
             **respostas_disc,
             "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
         }
+
         if salvar(payload, arquivo_nome):
             st.success("✅ Rascunho salvo com sucesso no servidor!")
             st.rerun()
         else:
-            st.error("❌ Falha ao salvar. Verifique sua conexão.")  
- 
+            st.error("❌ Falha ao salvar. Verifique sua conexão.")
