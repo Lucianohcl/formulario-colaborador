@@ -2264,17 +2264,28 @@ if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     
+    # --- O PULO DO GATO: RESETAR A VARIÁVEL ---
+    dados = {} 
+    
     # Tenta carregar os dados do rascunho
-    dados, _ = carregar(arquivo_nome)
+    dados_carregados, _ = carregar(arquivo_nome)
+    
+    # Se carregou algo com conteúdo real, atribuímos à variável dados
+    if dados_carregados and isinstance(dados_carregados, dict) and len(dados_carregados) > 0:
+        dados = dados_carregados
 
     if primeira_vez:
+        # Só barra se o arquivo realmente existir (tiver dados dentro)
         if dados:
-            st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
+            st.warning(f"⚠️ O usuário '{nome_usuario}' já possui um rascunho. Desmarque a opção acima para entrar.")
+            st.stop() # Para o script aqui para não mostrar o formulário embaixo
         else:
             if st.button("✅ Criar meu Rascunho"):
+                # Criamos um rascunho básico para "reservar" o nome no GitHub
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                    st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    st.rerun() # Recarrega para processar a mudança
+                    st.success("✅ Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
+                    # O rerun é necessário para o Streamlit ler que o arquivo agora existe
+                    st.rerun()
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
