@@ -1023,6 +1023,17 @@ import os
 from datetime import datetime
 import pytz
 
+import streamlit as st
+import json
+import os
+
+import streamlit as st
+import pandas as pd
+import json
+import os
+from datetime import datetime
+import pytz
+
 # ==============================
 # FUNÇÃO DE CARREGAMENTO DO RASCUNHO
 # ==============================
@@ -1034,12 +1045,17 @@ def carregar(arquivo_nome):
     return {}, False
 
 # ==============================
+# TÍTULO DA PÁGINA
+# ==============================
+st.title("📋 Formulário Completo do Colaborador")
+
+# ==============================
 # ENTRADA DO NOME DO COLABORADOR
 # ==============================
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="nome_usuario_input")
 
 # ==============================
-# BOTÃO: COPIAR RASCUNHO PARA O FORMULÁRIO
+# BOTÃO: CARREGAR RASCUNHO
 # ==============================
 if nome_usuario:
     arquivo_nome = f"rascunho_{nome_usuario.strip().replace(' ', '_')}.json"
@@ -1052,7 +1068,7 @@ if nome_usuario:
             st.warning("Nenhum rascunho encontrado.")
 
 # ==============================
-# DADOS IMPORTADOS (ou vazio se nada carregado)
+# DADOS IMPORTADOS
 # ==============================
 dados_importados = st.session_state.get("dados_importados", {})
 ident = dados_importados.get("Identificacao", {})
@@ -1064,18 +1080,21 @@ atividades_baixa = pd.DataFrame(dados_importados.get("Atividades", {}).get("Baix
 dificuldades_df = pd.DataFrame(dados_importados.get("Dificuldades", []))
 sugestoes_df = pd.DataFrame(dados_importados.get("Sugestoes", []))
 
+# Listas padronizadas
 lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 lista_frequencia = ["DVD","D","S","Q","M","T","A"]
 
 # ==============================
-# FORMULÁRIO COMPLETO
+# FORMULÁRIO
 # ==============================
 with st.form("form_colaborador"):
 
-    # Dados de Identificação
+    # -----------------------------
+    # IDENTIFICAÇÃO
+    # -----------------------------
     col1, col2 = st.columns(2)
-    nome = col1.text_input("Nome", key="nome_form", value=ident.get("Nome", ""))
+    nome = col1.text_input("Nome", value=ident.get("Nome", ""))
     setor = col2.text_input("Setor", value=ident.get("Setor", ""))
     cargo = col1.text_input("Cargo", value=ident.get("Cargo", ""))
     chefe = col2.text_input("Chefe imediato", value=ident.get("Chefe", ""))
@@ -1083,11 +1102,13 @@ with st.form("form_colaborador"):
     empresa = col2.text_input("Empresa / Unidade", value=ident.get("Empresa", ""))
     escolaridade = col1.text_input("Escolaridade", value=ident.get("Escolaridade", ""))
     devolucao = col2.text_input("Devolver preenchido em", value=ident.get("Devolução preenchida em", ""))
-    
+
     cursos = st.text_area("Cursos obrigatórios ou diferenciais", value=dados_importados.get("Cursos", ""))
     objetivo = st.text_area("Trabalho e principal objetivo", value=dados_importados.get("Objetivo", ""))
 
-    # --- SEÇÃO DE INSTRUÇÕES ---
+    # -----------------------------
+    # LEGENDA E INSTRUÇÕES
+    # -----------------------------
     st.markdown("---")
     col_inst1, col_inst2, col_inst3 = st.columns(3)
     with col_inst1:
@@ -1112,162 +1133,154 @@ with st.form("form_colaborador"):
         * Ignore-a e preencha normalmente; isso não afeta os dados.
         """)
 
-    # ===========================
-    # TABELAS DE ATIVIDADES
-    # ===========================
+    # -----------------------------
+    # ATIVIDADES
+    # -----------------------------
     st.subheader("🔹 Atividades de Alta Complexidade")
     edit_ativ_alta = st.data_editor(
         atividades_alta if not atividades_alta.empty else pd.DataFrame({
-            "Atividade Descrita": [""]*20,
-            "Frequência": [""]*20,
-            "Horas": [""]*20,
-            "Minutos": [""]*20
+            "Atividade Descrita":[""]*20,
+            "Frequência":[""]*20,
+            "Horas":[""]*20,
+            "Minutos":[""]*20
         }),
-        key="form_atividades_alta",
+        key="edit_ativ_alta",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
             "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
+        num_rows="fixed"
     )
 
     st.subheader("🔹 Atividades de Nível Normal")
     edit_ativ_normal = st.data_editor(
         atividades_normal if not atividades_normal.empty else pd.DataFrame({
-            "Atividade Descrita": [""]*20,
-            "Frequência": [""]*20,
-            "Horas": [""]*20,
-            "Minutos": [""]*20
+            "Atividade Descrita":[""]*20,
+            "Frequência":[""]*20,
+            "Horas":[""]*20,
+            "Minutos":[""]*20
         }),
-        key="form_atividades_normal",
+        key="edit_ativ_normal",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
             "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
+        num_rows="fixed"
     )
 
     st.subheader("🔹 Atividades de Baixa Complexidade")
     edit_ativ_baixa = st.data_editor(
         atividades_baixa if not atividades_baixa.empty else pd.DataFrame({
-            "Atividade Descrita": [""]*20,
-            "Frequência": [""]*20,
-            "Horas": [""]*20,
-            "Minutos": [""]*20
+            "Atividade Descrita":[""]*20,
+            "Frequência":[""]*20,
+            "Horas":[""]*20,
+            "Minutos":[""]*20
         }),
-        key="form_atividades_baixa",
+        key="edit_ativ_baixa",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
             "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
+        num_rows="fixed"
     )
 
-    # ===========================
+    # -----------------------------
     # DIFICULDADES
-    # ===========================
+    # -----------------------------
     st.markdown("---")
     st.subheader("⚠️ Dificuldades e Bloqueios")
     edit_dif = st.data_editor(
         dificuldades_df if not dificuldades_df.empty else pd.DataFrame({
-            "Dificuldade": [""]*20,
-            "Setor/Parceiro Envolvido": [""]*20,
-            "Frequência": [""]*20,
-            "Horas Perdidas": [""]*20,
-            "Minutos Perdidos": [""]*20
+            "Dificuldade":[""]*20,
+            "Setor/Parceiro Envolvido":[""]*20,
+            "Frequência":[""]*20,
+            "Horas Perdidas":[""]*20,
+            "Minutos Perdidos":[""]*20
         }),
+        key="edit_dif",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
             "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True,
-        key="dif_editor"
+        num_rows="fixed"
     )
 
-    # ===========================
+    # -----------------------------
     # SUGESTÕES
-    # ===========================
+    # -----------------------------
     st.markdown("---")
     st.subheader("💡 Sugestões de Melhoria e Impacto")
     edit_sug = st.data_editor(
         sugestoes_df if not sugestoes_df.empty else pd.DataFrame({
-            "Sugestão de Melhoria": [""]*20,
-            "Impacto Esperado": [""]*20,
-            "Redução Horas": [""]*20,
-            "Redução Minutos": [""]*20,
-            "Frequência do Impacto": [""]*20
+            "Sugestão de Melhoria":[""]*20,
+            "Impacto Esperado":[""]*20,
+            "Redução Horas":[""]*20,
+            "Redução Minutos":[""]*20,
+            "Frequência do Impacto":[""]*20
         }),
+        key="edit_sug",
         column_config={
             "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
             "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
             "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
         },
         hide_index=True,
-        num_rows="fixed",
-        use_container_width=True,
-        key="sug_editor"
+        num_rows="fixed"
     )
 
-    # ===========================
+    # -----------------------------
     # QUESTIONÁRIO DISC
-    # ===========================
+    # -----------------------------
     st.markdown("---")
     st.subheader("📊 Questionário DISC")
-    perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]  # substitua com suas perguntas reais
+    perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]
     for i, pergunta in enumerate(perguntas_disc, 1):
         st.radio(
             label=f"{i}. {pergunta}",
-            options=["A", "B", "C", "D"],
+            options=["A","B","C","D"],
             key=f"disc_{i}",
             horizontal=True
         )
 
-    # ===========================
-    # BOTÃO ENVIAR
-    # ===========================
+    # -----------------------------
+    # BOTÃO DE ENVIO
+    # -----------------------------
     enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
 
-    # -------------------------------------------------
+    # -----------------------------
     # VALIDAÇÕES E PROCESSAMENTO
-    # -------------------------------------------------
+    # -----------------------------
     if enviar:
         fuso_brasilia = pytz.timezone('America/Sao_Paulo')
         data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
 
-        campos_obrigatorios = [
-            nome, setor, cargo, chefe, departamento, empresa,
-            cursos, objetivo
-        ]
+        campos_obrigatorios = [nome,setor,cargo,chefe,departamento,empresa,cursos,objetivo]
 
         if any(not str(campo).strip() for campo in campos_obrigatorios):
             st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-        elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
+        elif any(st.session_state.get(f"disc_{i}") is None for i in range(1,25)):
             st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
         else:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             dados_dir = os.path.join(base_dir, "dados")
             os.makedirs(dados_dir, exist_ok=True)
 
-            nome_limpo = nome.strip().replace(" ", "_")
+            nome_limpo = nome.strip().replace(" ","_")
             arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
 
             if arquivos_existentes:
                 st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
             else:
                 if not st.session_state.get("confirmado", False):
-                    st.warning("⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio.")
+                    st.warning("⚠️ Revise o formulário. Clique novamente para confirmar o envio.")
                     st.session_state["confirmado"] = True
                 else:
                     st.success("✅ Formulário enviado com sucesso!")
@@ -1283,23 +1296,17 @@ with st.form("form_colaborador"):
                         "devolucao": devolucao,
                         "cursos_obrigatorios_ou_diferenciais": cursos,
                         "trabalho_e_principal_objetivo": objetivo,
-                        "atividades": {
-                            "Alta": edit_ativ_alta.to_dict(),
-                            "Normal": edit_ativ_normal.to_dict(),
-                            "Baixa": edit_ativ_baixa.to_dict()
-                        },
+                        "atividades_alta": edit_ativ_alta.to_dict(),
+                        "atividades_normal": edit_ativ_normal.to_dict(),
+                        "atividades_baixa": edit_ativ_baixa.to_dict(),
                         "dificuldades": edit_dif.to_dict(),
                         "sugestoes": edit_sug.to_dict(),
-                        "disc": {
-                            f"disc_{i}": st.session_state.get(f"disc_{i}")
-                            for i in range(1, 25)
-                        }
+                        "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1,25)}
                     }
                     caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
                     with open(caminho, "w", encoding="utf-8") as f:
                         json.dump(dados, f, ensure_ascii=False, indent=4)
-                    st.session_state["confirmado"] = False    
-
+                    st.session_state["confirmado"] = False
 
                 
 
