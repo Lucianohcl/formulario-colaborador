@@ -2297,38 +2297,42 @@ import json
 import pandas as pd
 from datetime import datetime
 
-# 1. Configuração de Página
-st.set_page_config(page_title="Formulário Inteligente", layout="wide")
-st.title("📋 Sistema de Rascunho Automático")
+# 1. Configurações de Página e Estilo
+st.set_page_config(page_title="Formulário Task Pro", layout="wide")
+st.title("📋 Sistema Inteligente de Rascunhos")
 
-# Inicializa o estado da sessão para evitar erros de "campo vazio"
+# Inicializa a ponte de dados se não existir
 if "dados_sessao" not in st.session_state:
     st.session_state["dados_sessao"] = {}
 
-# 2. Entrada do Nome (A Chave do Rascunho)
+# 2. Área de Comando (Onde a mágica acontece)
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**:", key="input_usuario")
 
-# --- O BOTÃO ENCAPSULADO ---
 if nome_usuario:
     nome_limpo = nome_usuario.strip().replace(' ', '_')
     arquivo_json = f"rascunho_{nome_limpo}.json"
 
-    # Tudo acontece aqui dentro quando clicado
-    if st.button("🔄 Carregar e Aplicar Rascunho", key="btn_unico"):
+    # BOTÃO ENCAPSULADO (DE-PARA)
+    if st.button("🔄 Aplicar Rascunho no Formulário", key="btn_unico_depara"):
         if os.path.exists(arquivo_json):
-            with open(arquivo_json, "r", encoding="utf-8") as f:
-                # O ENCAPSULAMENTO: Transere o arquivo direto para a memória da tela
-                st.session_state["dados_sessao"] = json.load(f)
-            st.success(f"✨ Sucesso! Os dados de {nome_usuario} foram aplicados.")
-            st.rerun() 
+            try:
+                with open(arquivo_json, "r", encoding="utf-8") as f:
+                    conteudo = json.load(f)
+                    # Limpa a sessão antiga e injeta a nova (O DE-PARA REAL)
+                    st.session_state["dados_sessao"] = conteudo
+                st.success(f"✨ Dados de {nome_usuario} carregados com sucesso!")
+                st.rerun() 
+            except Exception as e:
+                st.error(f"Erro ao ler o rascunho: {e}")
         else:
-            st.error(f"❌ Não encontrei rascunho para '{nome_usuario}'.")
+            st.warning(f"⚠️ Rascunho '{arquivo_json}' não encontrado.")
 
-# Atalho para os campos lerem a memória
+# Atalho para os campos (Sempre lê da sessão)
 dados = st.session_state["dados_sessao"]
 
-# 3. O Formulário (Os campos recebem o "Para" automaticamente)
+# 3. Campos de Identificação
 st.markdown("---")
+st.subheader("👤 Identificação")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -2338,24 +2342,49 @@ with col1:
 
 with col2:
     depto = st.text_input("Departamento", value=dados.get("depto", ""), key="f_depto")
+    empresa = st.text_input("Empresa", value=dados.get("empresa", ""), key="f_empresa")
     chefe = st.text_input("Chefe", value=dados.get("chefe", ""), key="f_chefe")
 
-# 4. Tabela de Atividades
+# 4. Questionário DISC (Integrado)
+st.markdown("---")
+st.subheader("📊 Questionário DISC")
+respostas_disc = {}
+opcoes_disc = ["", "A", "B", "C", "D"]
+cols_disc = st.columns(4)
+
+for i in range(1, 25):
+    with cols_disc[(i-1) % 4]:
+        chave_disc = f"disc_{i}"
+        val_anterior = dados.get("disc", {}).get(chave_disc, "")
+        idx = opcoes_disc.index(val_anterior) if val_anterior in opcoes_disc else 0
+        respostas_disc[chave_disc] = st.selectbox(f"Q{i}", opcoes_disc, index=idx, key=f"sel_{chave_disc}")
+
+# 5. Tabela de Atividades (Dinâmica)
+st.markdown("---")
 st.subheader("📝 Atividades")
 ativ_pre = dados.get("atividades", [])
-df_ativ = pd.DataFrame(ativ_pre) if ativ_pre else pd.DataFrame([{"Atividade": "", "Horas": ""}] * 3)
+
+# Se não houver dados, inicia com estrutura vazia para não dar erro de coluna
+if not ativ_pre:
+    df_ativ = pd.DataFrame([{"Atividade": "", "Tipo": "", "Horas": ""}] * 3)
+else:
+    df_ativ = pd.DataFrame(ativ_pre)
+
 edit_ativ = st.data_editor(df_ativ, num_rows="dynamic", use_container_width=True, key="tab_ativ")
 
-# 5. Salvar (Para criar o próximo rascunho)
-if st.button("💾 Salvar Alterações", key="btn_salvar"):
+# 6. Botão Salvar (Cria o arquivo para o próximo DE-PARA)
+st.markdown("---")
+if st.button("💾 Salvar/Atualizar Rascunho", key="btn_salvar_geral"):
     if not nome:
-        st.warning("Preencha o nome no formulário antes de salvar.")
+        st.error("Preencha o nome no formulário!")
     else:
         payload = {
             "nome": nome, "setor": setor, "cargo": cargo,
-            "depto": depto, "chefe": chefe,
-            "atividades": edit_ativ.to_dict("records")
+            "depto": depto, "empresa": empresa, "chefe": chefe,
+            "disc": respostas_disc,
+            "atividades": edit_ativ.to_dict("records"),
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M")
         }
         with open(f"rascunho_{nome.strip().replace(' ', '_')}.json", "w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=4)
-        st.success("✅ Rascunho salvo/atualizado!")
+        st.success("✅ Rascunho salvo com sucesso!")
