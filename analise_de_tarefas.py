@@ -1193,16 +1193,9 @@ if st.query_params.get("page") == "formulario":
                 index=None
             )
 
-        
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-          
-        
-
        
-        
-
-        
     
 
 
@@ -2296,5 +2289,3 @@ if nome_usuario:
             st.rerun()
         else:
             st.error("❌ Falha ao salvar. Verifique sua conexão.")  
-
-
