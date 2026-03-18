@@ -2172,17 +2172,21 @@ if nome_usuario:
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
-    if "form_atividades_alta" not in st.session_state:
+    
+    # GARANTIA 1: Verifica se a chave existe E se é um DataFrame. 
+    # Se por algum erro do Streamlit ela virar um dicionário, o 'isinstance' detecta e reseta para DataFrame.
+    if "form_atividades_alta" not in st.session_state or not isinstance(st.session_state["form_atividades_alta"], pd.DataFrame):
         st.session_state["form_atividades_alta"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
+            "Frequência": [None] * 20,
+            "Horas": [0] * 20,
+            "Minutos": [0] * 20
         })
 
+    # GARANTIA 2: Usamos uma KEY nova ("v100") para forçar o Streamlit a limpar qualquer cache antigo desse widget.
     atividades_alta = st.data_editor(
         st.session_state["form_atividades_alta"],
-        key="editor_alta_final",
+        key="editor_alta_v100", 
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2192,23 +2196,25 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
+    # GARANTIA 3: Atualizamos o estado explicitamente com o retorno do widget (que é sempre um DataFrame).
     st.session_state["form_atividades_alta"] = atividades_alta
 
     # ===========================
     # Tabela de Nível Normal
     # ===========================
     st.subheader("🔹 Atividades de Nível Normal")
-    if "form_atividades_normal" not in st.session_state:
+    
+    if "form_atividades_normal" not in st.session_state or not isinstance(st.session_state["form_atividades_normal"], pd.DataFrame):
         st.session_state["form_atividades_normal"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
+            "Frequência": [None] * 20,
+            "Horas": [0] * 20,
+            "Minutos": [0] * 20
         })
 
     atividades_normal = st.data_editor(
         st.session_state["form_atividades_normal"],
-        key="editor_normal_final",
+        key="editor_normal_v100",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2224,17 +2230,18 @@ if nome_usuario:
     # Tabela de Baixa Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Baixa Complexidade")
-    if "form_atividades_baixa" not in st.session_state:
+    
+    if "form_atividades_baixa" not in st.session_state or not isinstance(st.session_state["form_atividades_baixa"], pd.DataFrame):
         st.session_state["form_atividades_baixa"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
-            "Frequência": [""] * 20,
-            "Horas": [""] * 20,
-            "Minutos": [""] * 20
+            "Frequência": [None] * 20,
+            "Horas": [0] * 20,
+            "Minutos": [0] * 20
         })
 
     atividades_baixa = st.data_editor(
         st.session_state["form_atividades_baixa"],
-        key="editor_baixa_final",
+        key="editor_baixa_v100",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
