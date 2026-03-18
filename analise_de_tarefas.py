@@ -2375,21 +2375,20 @@ if nome_usuario:
                             col_ref = df.columns[0]
                             return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
 
-                        # Montagem do Payload Oficial
-                        # Aqui capturamos o estado ATUAL dos widgets da tela
                         dados_oficiais = {
-                            "identificacao": {
-                                "Nome": nome, "Cargo": cargo, "Departamento": departamento,
-                                "Setor": setor, "Chefe": chefe, "Empresa": empresa,
-                                "Escolaridade": escolaridade, "Devolucao": devolucao
-                            },
+                            "nome": nome, 
+                            "cargo": cargo, 
+                            "departamento": departamento,
+                            "setor": setor, 
+                            "chefe": chefe, 
+                            "empresa": empresa,
+                            "escolaridade": escolaridade, 
+                            "devolucao": devolucao,
                             "cursos": cursos,
                             "objetivo": objetivo,
-                            "atividades": {
-                                "alta": limpar_df(atividades_alta_editadas),
-                                "normal": limpar_df(atividades_normal_editadas),
-                                "baixa": limpar_df(atividades_baixa_editadas)
-                            },
+                            "atividades_alta": limpar_df(atividades_alta_editadas),
+                            "atividades_normal": limpar_df(atividades_normal_editadas),
+                            "atividades_baixa": limpar_df(atividades_baixa_editadas),
                             "dificuldades": limpar_df(edit_dif),
                             "sugestoes": limpar_df(edit_sug),
                             "disc": respostas_disc,
