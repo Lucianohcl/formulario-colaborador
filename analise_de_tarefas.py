@@ -2292,7 +2292,36 @@ if nome_usuario:
 
         # SE CHEGOU AQUI, MOSTRA O FORMULÁRIO
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
+
         
+        # --- CAMPOS DE IDENTIFICAÇÃO COM POVOAMENTO ---
+        st.subheader("👤 Dados de Identificação")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # O value=dados.get(...) é o que preenche o campo sozinho!
+            nome_f = st.text_input("Nome do colaborador", value=dados.get("nome", nome_usuario))
+            cargo = st.text_input("Cargo", value=dados.get("cargo", ""))
+            
+        with col2:
+            depto = st.text_input("Departamento", value=dados.get("departamento", ""))
+            unidade = st.text_input("Unidade/Filial", value=dados.get("unidade", ""))
+
+        # --- BOTÃO PARA SALVAR O QUE FOI DIGITADO ---
+        if st.button("💾 Salvar Rascunho Atual"):
+            # Montamos o dicionário com o que está na tela agora
+            rascunho_para_salvar = {
+                "nome": nome_f,
+                "cargo": cargo,
+                "departamento": depto,
+                "unidade": unidade,
+                "status": "em_andamento"
+            }
+            # Chama a função de salvar que já criamos antes
+            if salvar(rascunho_para_salvar, arquivo_nome):
+                st.success("✅ Rascunho atualizado no GitHub!")
+                # Não precisa de rerun aqui, o dado já está lá
        
 
         
