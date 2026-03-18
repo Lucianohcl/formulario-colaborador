@@ -2368,19 +2368,31 @@ if nome_usuario:
             
 
 
-            # ==============================
-            # TRANSFORMA LISTAS EM DATAFRAMES (com segurança)
-            # ==============================
-            edit_ativ_df = pd.DataFrame(st.session_state.get("edit_ativ", []))
-            edit_dif_df  = pd.DataFrame(st.session_state.get("edit_dif", []))
-            edit_sug_df  = pd.DataFrame(st.session_state.get("edit_sug", []))
+        # ==============================
+        # ALTERNATIVA DIRETA E SEGURA
+        # ==============================
+        
+        # 1. Função simples para limpar qualquer lista de dicionários
+        def filtrar_vazios(lista_dados, campo_chave):
+            if not lista_dados:
+                return []
+            # Converte para lista caso venha como DataFrame e filtra
+            if isinstance(lista_dados, pd.DataFrame):
+                lista_dados = lista_dados.to_dict("records")
+            
+            return [
+                linha for linha in lista_dados 
+                if str(linha.get(campo_chave, "")).strip() != ""
+            ]
 
-            # ==============================
-            # FILTRA APENAS LINHAS COM CONTEÚDO
-            # ==============================
-            ativ_final = edit_ativ_df[edit_ativ_df["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
-            dif_final  = edit_dif_df[edit_dif_df["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
-            sug_final  = edit_sug_df[edit_sug_df["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
+        # 2. Captura direto das variáveis que o st.data_editor criou
+        # Use o nome das variáveis que você definiu nos widgets!
+        ativ_alta_final   = filtrar_vazios(edit_ativ_alta, "Atividade Descrita")
+        ativ_normal_final = filtrar_vazios(edit_ativ_normal, "Atividade Descrita")
+        ativ_baixa_final  = filtrar_vazios(edit_ativ_baixa, "Atividade Descrita")
+        
+        dif_final = filtrar_vazios(edit_dif, "Dificuldade")
+        sug_final = filtrar_vazios(edit_sug, "Sugestão de Melhoria")
             
             
 
