@@ -1226,10 +1226,21 @@ if st.query_params.get("page") == "formulario":
             # 2. VERIFICAÇÃO DE PENDÊNCIAS
             erros = []
             
-            # Identificação (Verifica se as variáveis existem e não estão vazias)
-            if not nome.strip(): erros.append("Campo 'Nome' é obrigatório.")
-            if not setor.strip(): erros.append("Campo 'Setor' é obrigatório.")
-            if not cargo.strip(): erros.append("Campo 'Cargo' é obrigatório.")
+            # --- VALIDAÇÃO DE TODOS OS CAMPOS OBRIGATÓRIOS ---
+            if not nome.strip(): erros.append("Nome do Colaborador")
+            if not setor.strip(): erros.append("Setor")
+            if not cargo.strip(): erros.append("Cargo")
+            if not chefe.strip(): erros.append("Chefe imediato")
+            if not departamento.strip(): erros.append("Departamento")
+            if not empresa.strip(): erros.append("Empresa / Unidade")
+            
+            # Validação de Escolaridade (Selectbox)
+            if not escolaridade or escolaridade == "Escolha...": 
+                erros.append("Escolaridade")
+            
+            # Validação de Textos Longos (Garantindo que não sejam apenas espaços)
+            if not cursos.strip(): erros.append("Cursos obrigatórios ou diferenciais")
+            if not objetivo.strip(): erros.append("Trabalho e principal objetivo")
             
             # Validação de Conteúdo Mínimo
             if not any([dados_alta, dados_norm, dados_baix, dados_difs, dados_sugs]):
