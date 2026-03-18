@@ -2256,61 +2256,44 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# Inicializa as travas de memória
+# Inicializa as variáveis de controle se não existirem
 if "logado" not in st.session_state:
     st.session_state["logado"] = False
 if "dados_oficiais" not in st.session_state:
     st.session_state["dados_oficiais"] = {}
 
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-
-# Se o usuário acabou de criar o rascunho, forçamos 'primeira_vez' a ser Falso
-primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)") if not st.session_state["logado"] else False
-
-dados = {}
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="input_nome_principal")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     
-    # 1. Tenta carregar do GitHub
-    dados_carregados, _ = carregar(arquivo_nome)
+    # Busca os dados do GitHub
+    dados_git, _ = carregar(arquivo_nome)
     
-    # 2. Validação Real
-    if isinstance(dados_carregados, dict) and "nome" in dados_carregados:
-        dados = dados_carregados
-
-    if primeira_vez and not st.session_state["logado"]:
-        if dados:
-            st.warning(f"⚠️ O usuário '{nome_usuario}' já existe. Desmarque a caixa para entrar.")
-            st.stop() 
-        else:
-            if st.button("✅ Criar meu Rascunho"):
-                if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                    st.session_state["logado"] = True
-                    st.rerun()
+    # Se achou rascunho, mostra o botão de povoar
+    if dados_git and "nome" in dados_git:
+        st.success(f"📋 Rascunho de {nome_usuario} localizado!")
+        
+        if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO", type="primary", use_container_width=True):
+            st.session_state["dados_oficiais"] = dados_git.copy()
+            st.session_state["logado"] = True # Marca como logado para liberar a visualização
+            st.rerun() 
     else:
-        # Se não achou rascunho e não acabou de logar
-        if not dados and not st.session_state["logado"]:
-            st.error("❌ Nome não encontrado. Marque 'É minha primeira vez' para cadastrar.")
-            st.stop()
+        # Se não achou e não é primeira vez, avisa
+        if not st.session_state["logado"]:
+            st.info("ℹ️ Nenhum rascunho encontrado. Se for sua primeira vez, use a opção de cadastro.")
 
-        # SE CHEGOU AQUI, MOSTRA O AVISO E O BOTÃO DE POVOAR
-        st.success(f"📋 Rascunho de {nome_usuario} localizado no servidor!")
+    # --- A REGRA DE OURO DA 'FONTE' ---
+    # Prioriza o que está na memória da sessão (pós-clique)
+    if st.session_state["dados_oficiais"]:
+        fonte = st.session_state["dados_oficiais"]
+    else:
+        fonte = dados_git if dados_git else {}
 
-        # === O BOTÃO QUE FAZ APARECER TUDO NA TELA ===
-        st.markdown("---")
-        if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO OFICIAL COM SEU RASCUNHO", type="primary", use_container_width=True):
-            if dados:
-                # Injeta os dados do GitHub na memória da sessão
-                st.session_state["dados_oficiais"] = dados.copy()
-                st.rerun() # <--- ESSA LINHA FAZ OS DADOS APARECEREM NA HORA
-            else:
-                st.error("❌ Nenhum rascunho encontrado para transferir.")
-
-        # Define a 'fonte' prioritária para os campos de identificação e tabelas
-        # Se clicou no botão, usa o session_state. Se não, usa o que veio do GitHub.
-        fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else {}
+    
+            
+      
         
         
         
@@ -2337,11 +2320,17 @@ if nome_usuario:
 
         # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
         # Agora ela olha para a 'fonte' para saber se preenche a tabela automaticamente
+        # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
         def init_df(chave, colunas_vazias):
-            if chave not in st.session_state:
-                if fonte.get(chave):
-                    st.session_state[chave] = pd.DataFrame(fonte.get(chave))
-                else:
+            # Se clicamos no botão de povoar, os dados oficiais estarão na fonte
+            # Se a tabela na memória estiver diferente da fonte, atualizamos
+            dados_da_fonte = fonte.get(chave)
+            
+            if chave not in st.session_state or dados_da_fonte is not None:
+                # Se os dados da fonte existem e são diferentes do que está na tela, sobrescreve
+                if dados_da_fonte:
+                    st.session_state[chave] = pd.DataFrame(dados_da_fonte)
+                elif chave not in st.session_state:
                     st.session_state[chave] = pd.DataFrame(colunas_vazias)
 
         # 1. Atividades Alta
