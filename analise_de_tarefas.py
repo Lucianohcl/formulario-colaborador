@@ -1197,23 +1197,21 @@ if st.query_params.get("page") == "formulario":
         
           
         # =================================================
-        # BOTÃO DE ENVIO (DENTRO DO FORM)
+        # BOTÃO DE ENVIO (CONFIGURADO PARA A PASTA DADOS)
         # =================================================
 
-        # --- DEFINIÇÃO DA FUNÇÃO (AJUSTADA COM SEUS SECRETS) ---
         def salvar(dados, nome_arquivo, mensagem):
             try:
                 import requests
                 import base64
                 import json
                 
-                # Usando as chaves exatas que você cadastrou
                 token = st.secrets["DB_TOKEN"]
                 username = st.secrets["DB_USERNAME"]
-                
-                # Monta o repositório lucianohcl/formulario-colaborador
                 repo = f"{username}/formulario-colaborador"
-                url = f"https://api.github.com/repos/{repo}/contents/{nome_arquivo}"
+                
+                # AQUI ESTÁ O AJUSTE: salvando na pasta 'dados'
+                url = f"https://api.github.com/repos/{repo}/contents/dados/{nome_arquivo}"
                 
                 conteudo = json.dumps(dados, indent=4, ensure_ascii=False)
                 encoded = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
@@ -1223,7 +1221,7 @@ if st.query_params.get("page") == "formulario":
                     "Accept": "application/vnd.github.v3+json"
                 }
                 
-                # Verifica se o arquivo já existe para atualização (SHA)
+                # Verifica se o arquivo já existe para pegar o SHA
                 res = requests.get(url, headers=headers)
                 sha = res.json().get("sha") if res.status_code == 200 else None
                 
@@ -1237,11 +1235,12 @@ if st.query_params.get("page") == "formulario":
                 st.error(f"Erro técnico ao salvar: {e}")
                 return False
 
+        # --- BOTÃO DE ENVIO ---
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
+
         
 
-        # --- ABAIXO DA FUNÇÃO SEGUE O SEU BOTÃO ---
         
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
 
         if enviar:
             import os
