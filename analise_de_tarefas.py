@@ -2268,30 +2268,46 @@ if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     
-    # Busca os dados do GitHub
-    dados_git, _ = carregar(arquivo_nome)
+    # 1. Checkbox para novo cadastro
+    novo_cadastro = st.checkbox("🌟 Primeira vez? Marque aqui para abrir um rascunho em branco.", key="check_novo")
     
-    # Se achou rascunho, mostra o botão de povoar
-    if dados_git and "nome" in dados_git:
-        st.success(f"📋 Rascunho de {nome_usuario} localizado!")
-        
-        if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO", type="primary", use_container_width=True):
-            st.session_state["dados_oficiais"] = dados_git.copy()
-            st.session_state["logado"] = True # Marca como logado para liberar a visualização
-            st.rerun() 
+    # Lógica de carregamento
+    dados_git = {}
+    
+    if novo_cadastro:
+        # Se é novo, liberamos o acesso e garantimos que a memória oficial esteja limpa
+        st.session_state["logado"] = True
+        if "reset_feito" not in st.session_state or st.session_state.reset_feito != nome_limpo:
+            st.session_state["dados_oficiais"] = {}
+            st.session_state["reset_feito"] = nome_limpo # Evita loop de reset
     else:
-        # Se não achou e não é primeira vez, avisa
-        if not st.session_state["logado"]:
-            st.info("ℹ️ Nenhum rascunho encontrado. Se for sua primeira vez, use a opção de cadastro.")
+        # Só tenta carregar do GitHub se NÃO for novo cadastro
+        dados_git, _ = carregar(arquivo_nome)
+        
+        if dados_git and "nome" in dados_git and not st.session_state["logado"]:
+            st.success(f"📋 Rascunho de {nome_usuario} localizado!")
+            if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO", type="primary", use_container_width=True):
+                st.session_state["dados_oficiais"] = dados_git.copy()
+                st.session_state["logado"] = True
+                st.rerun()
+        elif not dados_git and not st.session_state["logado"]:
+            st.info("ℹ️ Nenhum rascunho encontrado. Marque a caixa acima para iniciar um novo.")
 
-    # --- A REGRA DE OURO DA 'FONTE' ---
-    # Prioriza o que está na memória da sessão (pós-clique)
-    if st.session_state["dados_oficiais"]:
+    # --- DEFINIÇÃO DA FONTE (A REGRA DE OURO) ---
+    # Prioridade 1: Memória da sessão (pós-clique no botão ou edição atual)
+    # Prioridade 2: Dados vindos do GitHub (se existirem)
+    # Prioridade 3: Vazio (novo cadastro)
+    if st.session_state.get("dados_oficiais"):
         fonte = st.session_state["dados_oficiais"]
     else:
         fonte = dados_git if dados_git else {}
 
-    
+    # --- SÓ MOSTRA O FORMULÁRIO SE ESTIVER LOGADO ---
+    if st.session_state.get("logado"):
+        
+        # Função essencial para o botão de ENVIAR funcionar (limpa as tabelas)
+        def limpar_df(df_ou_editor):
+            return pd.DataFrame(df_ou_editor).to_dict('records')    
             
       
         
@@ -2391,13 +2407,18 @@ if nome_usuario:
                 horizontal=True, key=f"radio_{i}"
             )
 
+
+        
+
         # ============================================================
         # 7. BOTÕES FINAIS (RASCUNHO E ENVIO)
         # ============================================================
         st.markdown("---")
         col_btn1, col_btn2 = st.columns(2)
         
-        # Preparamos o dicionário com tudo o que está na tela no momento
+        # USAMOS A FUNÇÃO DE LIMPEZA PARA EVITAR ERROS NO JSON
+        # Certifique-se de que a função 'limpar_df' foi definida logo acima do 'if logado'
+        
         dados_atuais = {
             "nome": nome_f,
             "cargo": cargo_f,
@@ -2409,40 +2430,35 @@ if nome_usuario:
             "devolucao": dev_f,
             "cursos": cursos_f,
             "objetivo": obj_f,
-            "atividades_alta": atividades_alta_editadas.to_dict('records'),
-            "atividades_normal": atividades_normal_editadas.to_dict('records'),
-            "atividades_baixa": atividades_baixa_editadas.to_dict('records'),
-            "dificuldades": edit_dif.to_dict('records'),
-            "sugestoes": edit_sug.to_dict('records'),
+            "atividades_alta": limpar_df(atividades_alta_editadas),
+            "atividades_normal": limpar_df(atividades_normal_editadas),
+            "atividades_baixa": limpar_df(atividades_baixa_editadas),
+            "dificuldades": limpar_df(edit_dif),
+            "sugestoes": limpar_df(edit_sug),
             "status": "em_andamento"
         }
-        # Incluímos as respostas do DISC (capturadas no loop anterior)
+        
+        # Incluímos as respostas do DISC
         dados_atuais.update(respostas_disc)
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-                # arquivo_nome foi definido lá no topo do script
                 if salvar(dados_atuais, arquivo_nome):
-                    # Sincroniza a memória da sessão com o que foi salvo
                     st.session_state["dados_oficiais"] = dados_atuais
                     st.success("✅ Rascunho salvo com sucesso no GitHub!")
 
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-                # Prepara os dados finais
-                dados_atuais["status"] = "finalizado"
-                arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
-                
-                if salvar(dados_atuais, arquivo_oficial):
-                    # 1. Efeito visual de sucesso
-                    st.balloons() 
+                # Validação simples para não enviar vazio
+                if not nome_f or nome_f.strip() == "":
+                    st.error("⚠️ Por favor, preencha o nome antes de enviar.")
+                else:
+                    dados_atuais["status"] = "finalizado"
+                    arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
                     
-                    # 2. Atualiza a 'fonte' na memória para garantir que a tela continue cheia
-                    st.session_state["dados_oficiais"] = dados_atuais
-                    
-                    # 3. Mensagens de confirmação sem travar a tela
-                    st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
-                    st.info(f"Os dados oficiais de {nome_f} estão visíveis abaixo e salvos no GitHub.")
-                    
-                    # IMPORTANTE: Removi o st.stop() e o logado = False 
-                    # para que você VEJA os dados na tela agora.   
+                    if salvar(dados_atuais, arquivo_oficial):
+                        st.balloons() 
+                        # Atualiza a memória para manter os dados na tela
+                        st.session_state["dados_oficiais"] = dados_atuais
+                        st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
+                        st.info(f"Os dados oficiais de {nome_f} estão salvos no GitHub.")
