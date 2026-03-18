@@ -1201,16 +1201,16 @@ if st.query_params.get("page") == "formulario":
         # =================================================
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
 
-        # O 'if' vem logo abaixo, com o mesmo recuo:
         if enviar:
             import os
             import json
             from datetime import datetime
-            from zoneinfo import ZoneInfo
+            try: from zoneinfo import ZoneInfo
+            except: import pytz as ZoneInfo
 
             pendencias = {}
             
-            # 1. IDENTIFICAÇÃO (Sua lógica exata)
+            # 1. IDENTIFICAÇÃO
             campos_ident = {
                 "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
                 "Departamento": departamento, "Empresa": empresa,
@@ -1226,61 +1226,35 @@ if st.query_params.get("page") == "formulario":
             if not objetivo:
                 pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
-            # 3. VALIDAÇÃO DAS 5 TABELAS (Repetindo seu padrão para cada uma)
-            atividades_finais = []
-            tabelas_validas = False
+            # 3. VALIDAÇÃO DAS 5 TABELAS (RIGOR TOTAL: LINHA CHEIA)
+            
+            def linha_cheia(row, colunas):
+                # Retorna True apenas se TODAS as colunas daquela linha estiverem preenchidas
+                return all(str(row.get(c, "")).strip() not in ["", "None", "nan"] for c in colunas)
 
-            # --- Tabela Alta ---
-            for i, row in atividades_alta.iterrows():
-                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
-                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
-                        atividades_finais.append({"tipo": "Alta", **row.to_dict()})
-                        tabelas_validas = True
-                    else:
-                        pendencias.setdefault("Atividades Alta", []).append(f"Linha {i+1} incompleta")
-
-            # --- Tabela Normal ---
-            for i, row in atividades_normal.iterrows():
-                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
-                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
-                        atividades_finais.append({"tipo": "Normal", **row.to_dict()})
-                        tabelas_validas = True
-                    else:
-                        pendencias.setdefault("Atividades Normal", []).append(f"Linha {i+1} incompleta")
-
-            # --- Tabela Baixa ---
-            for i, row in atividades_baixa.iterrows():
-                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
-                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
-                        atividades_finais.append({"tipo": "Baixa", **row.to_dict()})
-                        tabelas_validas = True
-                    else:
-                        pendencias.setdefault("Atividades Baixa", []).append(f"Linha {i+1} incompleta")
-
+            # --- Tabelas de Atividades ---
+            cols_ativ = ["Atividade Descrita", "Frequência", "Horas", "Minutos"]
+            
+            at_alta = [r.to_dict() for _, r in atividades_alta.iterrows() if linha_cheia(r, cols_ativ)]
+            at_norm = [r.to_dict() for _, r in atividades_normal.iterrows() if linha_cheia(r, cols_ativ)]
+            at_baix = [r.to_dict() for _, r in atividades_baixa.iterrows() if linha_cheia(r, cols_ativ)]
+            
             # --- Tabela Dificuldades ---
-            dificuldades_finais = []
-            for i, row in edit_dif.iterrows():
-                if any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"]]):
-                    if all([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"]]):
-                        dificuldades_finais.append(row.to_dict())
-                        tabelas_validas = True
-                    else:
-                        pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta")
-
+            cols_dif = ["Dificuldade", "Setor/Parceiro Envolvido", "Frequência", "Horas Perdidas", "Minutos Perdidos"]
+            difs = [r.to_dict() for _, r in edit_dif.iterrows() if linha_cheia(r, cols_dif)]
+            
             # --- Tabela Sugestões ---
-            sugestoes_finais = []
-            for i, row in edit_sug.iterrows():
-                if any([row["Sugestão de Melhoria"], row["Impacto Esperado"]]):
-                    if all([row["Sugestão de Melhoria"], row["Impacto Esperado"]]):
-                        sugestoes_finais.append(row.to_dict())
-                        tabelas_validas = True
-                    else:
-                        pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta")
+            cols_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência do Impacto", "Redução Horas", "Redução Minutos"]
+            sugs = [r.to_dict() for _, r in edit_sug.iterrows() if linha_cheia(r, cols_sug)]
 
-            if not tabelas_validas:
-                pendencias.setdefault("Tabelas", []).append("Preencha pelo menos uma linha completa em qualquer tabela.")
+            # Verificação de obrigatoriedade (mínimo 1 linha completa em cada)
+            if not at_alta: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Alta Complexidade")
+            if not at_norm: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Nível Normal")
+            if not at_baix: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Baixa Complexidade")
+            if not difs:    pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Dificuldades")
+            if not sugs:    pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Sugestões")
 
-            # 4. DISC (Sua lógica exata)
+            # 4. DISC
             disc_faltando = []
             for i in range(1, 25):
                 if not st.session_state.get(f"disc_{i}"):
@@ -1288,7 +1262,7 @@ if st.query_params.get("page") == "formulario":
             if disc_faltando:
                 pendencias["DISC"] = [", ".join(disc_faltando)]
 
-            # 5. RESULTADO DAS VALIDAÇÕES E CONFIRMAÇÃO (Dois cliques)
+            # 5. PROCESSAMENTO DE ERROS
             if pendencias:
                 st.error("⚠️ O formulário possui pendências:")
                 for secao, itens in pendencias.items():
@@ -1296,25 +1270,31 @@ if st.query_params.get("page") == "formulario":
                 st.session_state["confirmado"] = False
                 st.stop()
 
+            # 6. CONFIRMAÇÃO (Dois cliques)
             if not st.session_state.get("confirmado", False):
-                st.warning("⚠️ Tudo certo! Clique em ENVIAR novamente para confirmar o envio único.")
+                st.warning("⚠️ Tudo certo! Clique em ENVIAR novamente para confirmar.")
                 st.session_state["confirmado"] = True
                 st.stop()
 
-            # 6. ENVIO FINAL
+            # 7. ENVIO FINAL (Salvando as listas validadas)
             dados = {
                 "identificacao": campos_ident,
-                "cursos": cursos, "objetivo": objetivo,
-                "atividades": atividades_finais,
-                "dificuldades": dificuldades_finais,
-                "sugestoes": sugestoes_finais,
+                "cursos": cursos,
+                "objetivo": objetivo,
+                "atividades": {
+                    "alta": at_alta,
+                    "normal": at_norm,
+                    "baixa": at_baix
+                },
+                "dificuldades": difs,
+                "sugestoes": sugs,
                 "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)},
                 "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
             }
 
             if salvar(dados, f"{nome.strip().replace(' ', '_')}.json", f"Envio: {nome}"):
                 st.success("✅ Formulário enviado com sucesso!")
-                st.balloons()
+                
                 st.session_state["confirmado"] = False
             else:
                 st.error("❌ Erro ao enviar para o GitHub.")
