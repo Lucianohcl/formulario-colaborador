@@ -1244,11 +1244,14 @@ with st.form("form_colaborador"):
     st.subheader("📊 Questionário DISC")
     perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]
     for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_rascunho = st.session_state.get("dados_importados", {}).get("disc", {}).get(f"disc_{i}", None)
+
         st.radio(
             label=f"{i}. {pergunta}",
-            options=["A","B","C","D"],
+            options=["A", "B", "C", "D"],
             key=f"disc_{i}",
-            horizontal=True
+            horizontal=True,
+            index=None if valor_rascunho is None else ["A","B","C","D"].index(valor_rascunho)
         )
 
     # -----------------------------
@@ -2358,7 +2361,7 @@ if nome_usuario:
         st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
             # Limpeza simples: remove linhas onde a descrição está vazia
-            ativ_final = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict("records")
+            ativ_final = edit_ativ[edit_ativ.get("Atividade Descrita", pd.Series()) != ""].to_dict("records")
             dif_final = edit_dif[edit_dif["Dificuldade"] != ""].to_dict("records")
             sug_final = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict("records")
 
