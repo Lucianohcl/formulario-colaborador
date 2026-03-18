@@ -1239,12 +1239,16 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
 
         
-
+        
         
 
+        # =================================================
+        # PROCESSAMENTO DO BOTÃO ENVIAR
+        # =================================================
         if enviar:
             import os
             import json
+            import pandas as pd
             from datetime import datetime
             try: from zoneinfo import ZoneInfo
             except: import pytz as ZoneInfo
@@ -1268,14 +1272,11 @@ if st.query_params.get("page") == "formulario":
                 pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
             # 3. VALIDAÇÃO DAS 5 TABELAS (RIGOR TOTAL: LINHA CHEIA)
-            
             def linha_cheia(row, colunas):
-                # Retorna True apenas se TODAS as colunas daquela linha estiverem preenchidas
                 return all(str(row.get(c, "")).strip() not in ["", "None", "nan"] for c in colunas)
 
             # --- Tabelas de Atividades ---
             cols_ativ = ["Atividade Descrita", "Frequência", "Horas", "Minutos"]
-            
             at_alta = [r.to_dict() for _, r in atividades_alta.iterrows() if linha_cheia(r, cols_ativ)]
             at_norm = [r.to_dict() for _, r in atividades_normal.iterrows() if linha_cheia(r, cols_ativ)]
             at_baix = [r.to_dict() for _, r in atividades_baixa.iterrows() if linha_cheia(r, cols_ativ)]
@@ -1317,8 +1318,8 @@ if st.query_params.get("page") == "formulario":
                 st.session_state["confirmado"] = True
                 st.stop()
 
-            # 7. ENVIO FINAL (Salvando as listas validadas)
-            dados = {
+            # 7. ENVIO FINAL (Salvando via API GitHub na pasta 'dados')
+            dados_finais = {
                 "identificacao": campos_ident,
                 "cursos": cursos,
                 "objetivo": objetivo,
@@ -1333,12 +1334,18 @@ if st.query_params.get("page") == "formulario":
                 "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
             }
 
-            if salvar(dados, f"{nome.strip().replace(' ', '_')}.json", f"Envio: {nome}"):
-                st.success("✅ Formulário enviado com sucesso!")
-                
+            # Nome do arquivo sanitizado
+            nome_limpo = nome.strip().replace(' ', '_')
+            arquivo_nome = f"{nome_limpo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+            if salvar(dados_finais, arquivo_nome, f"Envio: {nome}"):
+                st.success("✅ Formulário enviado e salvo com sucesso no Banco de Dados!")
+                st.balloons()
                 st.session_state["confirmado"] = False
+                # Recarrega a lista para que apareça no botão 'Visualizar'
+                st.session_state["formularios"] = carregar_todos_formularios()
             else:
-                st.error("❌ Erro ao enviar para o GitHub.")
+                st.error("❌ Erro ao enviar para o GitHub. Verifique os Secrets do Streamlit.")
                     
                         
                   
