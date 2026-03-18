@@ -2181,8 +2181,8 @@ if nome_usuario:
         })
 
     atividades_alta = st.data_editor(
-        st.session_state["form_atividades_alta"],
-        key="form_atividades_alta_editor",
+        st.session_state["form_atividades_alta"].copy(),
+        key="form_atividades_alta",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2206,8 +2206,8 @@ if nome_usuario:
         })
 
     atividades_normal = st.data_editor(
-        st.session_state["form_atividades_normal"],
-        key="form_atividades_normal_editor",
+        st.session_state["form_atividades_normal"].copy(),
+        key="form_atividades_normal",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2231,21 +2231,8 @@ if nome_usuario:
         })
 
     atividades_baixa = st.data_editor(
-        st.session_state["form_atividades_baixa"],
-        key="form_atividades_baixa_editor",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
-
-    atividades_baixa = st.data_editor(
-        st.session_state["form_atividades_baixa"],
-        key="form_atividades_baixa_editor",
+        st.session_state["form_atividades_baixa"].copy(),
+        key="form_atividades_baixa",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
