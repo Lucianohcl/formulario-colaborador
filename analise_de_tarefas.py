@@ -2206,17 +2206,19 @@ if nome_usuario:
     # ===========================
     st.subheader("🔹 Atividades de Nível Normal")
     
-    if "form_atividades_normal" not in st.session_state or not isinstance(st.session_state["form_atividades_normal"], pd.DataFrame):
-        st.session_state["form_atividades_normal"] = pd.DataFrame({
+    # GARANTIA 1: Inicializa e valida se é um DataFrame
+    if "df_normal" not in st.session_state or not isinstance(st.session_state["df_normal"], pd.DataFrame):
+        st.session_state["df_normal"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [None] * 20,
             "Horas": [0] * 20,
             "Minutos": [0] * 20
         })
 
-    atividades_normal = st.data_editor(
-        st.session_state["form_atividades_normal"],
-        key="editor_normal_v100",
+    # GARANTIA 2: Key ÚNICA (v100) para limpar o cache de erro anterior
+    atividades_normal_editadas = st.data_editor(
+        st.session_state["df_normal"],
+        key="editor_normal_v100", 
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2226,24 +2228,29 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
-    st.session_state["form_atividades_normal"] = atividades_normal
+    
+    # GARANTIA 3: Salva apenas se o retorno for válido
+    if isinstance(atividades_normal_editadas, pd.DataFrame):
+        st.session_state["df_normal"] = atividades_normal_editadas
 
     # ===========================
     # Tabela de Baixa Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Baixa Complexidade")
     
-    if "form_atividades_baixa" not in st.session_state or not isinstance(st.session_state["form_atividades_baixa"], pd.DataFrame):
-        st.session_state["form_atividades_baixa"] = pd.DataFrame({
+    # GARANTIA 1: Inicializa e valida se é um DataFrame
+    if "df_baixa" not in st.session_state or not isinstance(st.session_state["df_baixa"], pd.DataFrame):
+        st.session_state["df_baixa"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [None] * 20,
             "Horas": [0] * 20,
             "Minutos": [0] * 20
         })
 
-    atividades_baixa = st.data_editor(
-        st.session_state["form_atividades_baixa"],
-        key="editor_baixa_v100",
+    # GARANTIA 2: Key ÚNICA (v100)
+    atividades_baixa_editadas = st.data_editor(
+        st.session_state["df_baixa"],
+        key="editor_baixa_v100", 
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2253,7 +2260,10 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
-    st.session_state["form_atividades_baixa"] = atividades_baixa
+
+    # GARANTIA 3: Salva apenas se o retorno for válido
+    if isinstance(atividades_baixa_editadas, pd.DataFrame):
+        st.session_state["df_baixa"] = atividades_baixa_editadas
 
     # 3. TABELA DIFICULDADES
     st.markdown("---")
