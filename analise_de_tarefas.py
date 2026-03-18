@@ -2448,7 +2448,6 @@ if nome_usuario:
                 st.success(f"🚀 Dados de {nome} sincronizados!")
                 st.rerun()
 
-            except subprocess.CalledProcessError as e:
-                st.error("⚠️ Conflito no Git. Tente salvar novamente em instantes.")
+            
             except Exception as e:
                 st.error(f"❌ Erro: {str(e)}")
