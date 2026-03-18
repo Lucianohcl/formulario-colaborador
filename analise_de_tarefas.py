@@ -1196,6 +1196,12 @@ if st.query_params.get("page") == "formulario":
         
         
           
+        # =================================================
+        # BOTÃO DE ENVIO (PRECISA ESTAR DENTRO DO FORM)
+        # =================================================
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
+
+        # O 'if' vem logo abaixo, com o mesmo recuo:
         if enviar:
             import os
             import json
