@@ -2256,9 +2256,11 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# Criamos uma trava de memória para evitar o loop de "Já cadastrado"
+# Inicializa as travas de memória
 if "logado" not in st.session_state:
     st.session_state["logado"] = False
+if "dados_oficiais" not in st.session_state:
+    st.session_state["dados_oficiais"] = {}
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
 
@@ -2285,7 +2287,7 @@ if nome_usuario:
         else:
             if st.button("✅ Criar meu Rascunho"):
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                    st.session_state["logado"] = True # Ativa a trava de sucesso
+                    st.session_state["logado"] = True
                     st.rerun()
     else:
         # Se não achou rascunho e não acabou de logar
@@ -2293,30 +2295,24 @@ if nome_usuario:
             st.error("❌ Nome não encontrado. Marque 'É minha primeira vez' para cadastrar.")
             st.stop()
 
-        # SE CHEGOU AQUI, MOSTRA O FORMULÁRIO
-        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
+        # SE CHEGOU AQUI, MOSTRA O AVISO E O BOTÃO DE POVOAR
+        st.success(f"📋 Rascunho de {nome_usuario} localizado no servidor!")
 
-        # === INÍCIO DO AJUSTE PARA POVOAMENTO IMEDIATO ===
-        
-        # 1. Cria o espaço na memória se não existir
-        if "dados_oficiais" not in st.session_state:
-            st.session_state["dados_oficiais"] = {}
-
-        # 2. O Botão que "injeta" o rascunho no formulário
+        # === O BOTÃO QUE FAZ APARECER TUDO NA TELA ===
         st.markdown("---")
         if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO OFICIAL COM SEU RASCUNHO", type="primary", use_container_width=True):
             if dados:
+                # Injeta os dados do GitHub na memória da sessão
                 st.session_state["dados_oficiais"] = dados.copy()
-                st.success("✅ Formulário Povoado! Prossiga com o preenchimento abaixo.")
-                st.rerun() # Faz a tela atualizar e preencher os campos na hora
+                st.rerun() # <--- ESSA LINHA FAZ OS DADOS APARECEREM NA HORA
             else:
                 st.error("❌ Nenhum rascunho encontrado para transferir.")
 
-        # 3. Define a 'fonte' que os campos abaixo vão usar
-        fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else dados
+        # Define a 'fonte' prioritária para os campos de identificação e tabelas
+        # Se clicou no botão, usa o session_state. Se não, usa o que veio do GitHub.
+        fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else {}
         
-        # === FIM DO AJUSTE ===
-
+        
         
             
 
