@@ -1197,9 +1197,9 @@ if st.query_params.get("page") == "formulario":
         
           
         # -------------------------------------------------
-        # BLOCO FINAL: VALIDAÇÃO E ENVIO COMPLETO
+        # BLOCO FINAL: AJUSTADO PARA SUAS VARIÁVEIS
         # -------------------------------------------------
-        btn_enviar = st.form_submit_button("🚀 VALIDAR E ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
+        btn_enviar = st.form_submit_button("🚀 VALIDAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True)
 
         if btn_enviar:
             import json
@@ -1207,91 +1207,70 @@ if st.query_params.get("page") == "formulario":
             import pandas as pd
             from datetime import datetime
 
-            erros = []
-
-            # 1. COLETA E VALIDAÇÃO DAS TABELAS (Garantindo que pegue os dados)
-            def coletar_tabela(key, col_ref):
-                df = st.session_state.get(key)
-                # Se for dicionário de edição, tenta pegar o DF original da memória
-                if isinstance(df, dict):
-                    df = globals().get(key, pd.DataFrame())
-                if df is None or not isinstance(df, pd.DataFrame) or df.empty:
+            # 1. FUNÇÃO PARA LIMPAR AS SUAS TABELAS
+            def limpar_tabela(df, col_referencia):
+                if df is None or not isinstance(df, pd.DataFrame):
                     return []
-                # Filtra apenas linhas preenchidas
-                return [r.to_dict() for _, r in df.iterrows() if str(r.get(col_ref, "")).strip() and str(r.get(col_ref, "")).lower() != "nan"]
+                # Remove linhas onde a coluna principal está vazia
+                df_filtrado = df[df[col_referencia].str.strip() != ""]
+                return df_filtrado.to_dict('records')
 
-            dados_alta = coletar_tabela("atividades_alta", "Atividade Descrita")
-            dados_norm = coletar_tabela("atividades_normal", "Atividade Descrita")
-            dados_baix = coletar_tabela("atividades_baixa", "Atividade Descrita")
-            dados_difs = coletar_tabela("df_dificuldades", "Dificuldade")
-            dados_sugs = coletar_tabela("df_sugestoes", "Sugestão de Melhoria")
+            # Captura direta das variáveis que você criou no st.data_editor
+            dados_alta = limpar_tabela(atividades_alta, "Atividade Descrita")
+            dados_norm = limpar_tabela(atividades_normal, "Atividade Descrita")
+            dados_baix = limpar_tabela(atividades_baixa, "Atividade Descrita")
+            dados_difs = limpar_tabela(edit_dif, "Dificuldade")
+            dados_sugs = limpar_tabela(edit_sug, "Sugestão de Melhoria")
 
-            # 2. VALIDAÇÃO DE CAMPOS OBRIGATÓRIOS
-            if not nome.strip(): erros.append("Nome do Colaborador")
-            if not setor.strip(): erros.append("Setor")
+            # 2. VALIDAÇÃO
+            erros = []
+            if not nome.strip(): erros.append("Nome")
             if not cargo.strip(): erros.append("Cargo")
-            if not chefe.strip(): erros.append("Chefe imediato")
-            if not empresa.strip(): erros.append("Empresa / Unidade")
-            if not devolucao: erros.append("Data de Devolução")
-            if not escolaridade or escolaridade == "Escolha...": erros.append("Escolaridade")
-            if not cursos.strip(): erros.append("Cursos")
-            if not objetivo.strip(): erros.append("Objetivo")
             
-            # Validação de conteúdo das tabelas
-            if not any([dados_alta, dados_norm, dados_baix, dados_difs, dados_sugs]):
-                erros.append("Preencha ao menos uma linha nas tabelas (Atividades ou Dificuldades)")
-
-            # 3. VALIDAÇÃO DO DISC (OBRIGATÓRIO)
+            # Validação do DISC (Garantindo as 24)
             respostas_disc = {}
-            faltando_disc = []
             for i in range(1, 25):
-                # Tenta buscar pelas duas chaves possíveis (radio_i ou disc_i)
-                valor = st.session_state.get(f"radio_{i}") or st.session_state.get(f"disc_{i}")
-                if not valor:
-                    faltando_disc.append(str(i))
-                else:
-                    respostas_disc[f"p{i}"] = valor
+                v = st.session_state.get(f"radio_{i}")
+                if v: respostas_disc[f"p{i}"] = v
+            
+            if len(respostas_disc) < 24:
+                erros.append(f"Responda todas as 24 questões do DISC (faltam {24 - len(respostas_disc)})")
 
-            if faltando_disc:
-                erros.append(f"Questões do DISC não respondidas: {', '.join(faltando_disc)}")
-
-            # 4. PROCESSAMENTO FINAL
+            # 3. ENVIO SE NÃO HOUVER ERROS
             if erros:
-                st.error("### ❌ Erro ao enviar! Verifique os itens:")
+                st.error("### ❌ Não foi possível enviar")
                 for e in erros:
                     st.write(f"⚠️ {e}")
-                st.info("💡 Dica: Se você preencheu tudo e o erro persiste, clique em qualquer parte branca da tela antes de apertar o botão.")
             else:
-                st.info("🔄 Validado! Transmitindo dados...")
                 try:
                     fuso = pytz.timezone('America/Sao_Paulo')
                     agora = datetime.now(fuso).strftime('%d/%m/%Y %H:%M:%S')
 
-                    json_final = {
+                    payload = {
                         "data_envio": agora,
-                        "identificacao": {
-                            "nome": nome, "setor": setor, "cargo": cargo, "chefe": chefe,
-                            "empresa": empresa, "devolucao": str(devolucao), "escolaridade": escolaridade
+                        "colaborador": {
+                            "nome": nome, "setor": setor, "cargo": cargo, "chefe": chefe
                         },
-                        "perfil": {"cursos": cursos, "objetivo": objetivo},
-                        "tabelas": {
-                            "alta": dados_alta, "normal": dados_norm, "baixa": dados_baix,
-                            "dificuldades": dados_difs, "sugestoes": dados_sugs
+                        "tabelas_atividades": {
+                            "alta": dados_alta,
+                            "normal": dados_norm,
+                            "baixa": dados_baix
                         },
-                        "disc": respostas_disc
+                        "dificuldades": dados_difs,
+                        "sugestoes": dados_sugs,
+                        "disc": respostas_disc,
+                        "perfil": {"cursos": cursos, "objetivo": objetivo}
                     }
 
-                    # Chamada da função de salvar no GitHub
-                    sucesso = salvar(json_final, f"final_{nome.strip().lower().replace(' ', '_')}.json", f"Envio: {nome}")
-                    
-                    if sucesso:
-                        st.balloons()
-                        st.success(f"✅ EXCELENTE, {nome}! Seu formulário foi entregue com sucesso.")
-                        st.write("Pode fechar esta aba.")
+                    # Chama a sua função salvar
+                    if salvar(payload, f"envio_{nome.strip().lower()}.json", f"Final: {nome}"):
+                        
+                        st.success("✨ FORMULÁRIO ENVIADO COM SUCESSO!")
                     else:
-                        st.error("❌ Ocorreu um erro na comunicação com o GitHub. Tente clicar no botão novamente.")
-                except Exception as ex:
-                    st.error(f"❌ Erro crítico: {ex}")
+                        st.error("❌ Erro ao salvar no GitHub. Verifique o Token/Repositório.")
+                
+                except Exception as e:
+                    st.error(f"Erro técnico: {e}")
                     
                         
                   
