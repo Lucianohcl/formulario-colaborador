@@ -1213,7 +1213,7 @@ if st.query_params.get("page") == "formulario":
                 
                 # Monta o repositório lucianohcl/formulario-colaborador
                 repo = f"{username}/formulario-colaborador"
-                url = f"https://api.github.com/repos/{repo}/contents/envios/{nome_arquivo}"
+                url = f"https://api.github.com/repos/{repo}/contents/{nome_arquivo}"
                 
                 conteudo = json.dumps(dados, indent=4, ensure_ascii=False)
                 encoded = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
