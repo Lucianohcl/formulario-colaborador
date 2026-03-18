@@ -1242,10 +1242,11 @@ with st.form("form_colaborador"):
     # -----------------------------
     st.markdown("---")
     st.subheader("📊 Questionário DISC")
-    perguntas_disc = [f"Pergunta {i}" for i in range(1, 25)]
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_rascunho = st.session_state.get("dados_importados", {}).get("disc", {}).get(f"disc_{i}", None)
 
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        # Pega a resposta do rascunho, se houver
+        valor_rascunho = st.session_state.get("dados_importados", {}).get("disc", {}).get(f"disc_{i}", None)
+    
         st.radio(
             label=f"{i}. {pergunta}",
             options=["A", "B", "C", "D"],
@@ -2361,7 +2362,7 @@ if nome_usuario:
         st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
             # Limpeza simples: remove linhas onde a descrição está vazia
-            ativ_final = edit_ativ[edit_ativ.get("Atividade Descrita", pd.Series()) != ""].to_dict("records")
+            ativ_final = edit_ativ[edit_ativ["Atividade Descrita"] != ""].to_dict("records")
             dif_final = edit_dif[edit_dif["Dificuldade"] != ""].to_dict("records")
             sug_final = edit_sug[edit_sug["Sugestão de Melhoria"] != ""].to_dict("records")
 
@@ -2389,3 +2390,4 @@ if nome_usuario:
                 st.error("❌ Falha ao salvar. Verifique sua conexão e permissões do Token.")
 
 # Nota: Usei st.rerun() apenas no fluxo de cadastro inicial para atualizar a tela.
+
