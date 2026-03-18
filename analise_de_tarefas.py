@@ -2367,10 +2367,14 @@ if nome_usuario:
 
             
 
-            # Filtra apenas linhas com conteúdo usando os DataFrames
-            ativ_final = edit_ativ_df[edit_ativ_df["Atividade Descrita"].str.strip() != ""].to_dict("records")
-            dif_final = edit_dif_df[edit_dif_df["Dificuldade"].str.strip() != ""].to_dict("records")
-            sug_final = edit_sug_df[edit_sug_df["Sugestão de Melhoria"].str.strip() != ""].to_dict("records")
+
+            edit_ativ_df = pd.DataFrame(edit_ativ) if not isinstance(edit_ativ, pd.DataFrame) else edit_ativ
+            edit_dif_df = pd.DataFrame(edit_dif) if not isinstance(edit_dif, pd.DataFrame) else edit_dif
+            edit_sug_df = pd.DataFrame(edit_sug) if not isinstance(edit_sug, pd.DataFrame) else edit_sug
+
+            ativ_final = edit_ativ_df[edit_ativ_df["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
+            dif_final = edit_dif_df[edit_dif_df["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
+            sug_final = edit_sug_df[edit_sug_df["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
             
             
 
