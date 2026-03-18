@@ -1197,23 +1197,21 @@ if st.query_params.get("page") == "formulario":
         
           
         # -------------------------------------------------
-        # BLOCO FINAL DE VALIDAÇÃO E ENVIO (DENTRO DO FORM)
+        # BLOCO FINAL DE VALIDAÇÃO E ENVIO (COM DIAGNÓSTICO)
         # -------------------------------------------------
-        
-        # O botão de submissão TEM que ser o st.form_submit_button dentro de um with st.form
         btn_enviar = st.form_submit_button("VALIDAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True)
 
         if btn_enviar:
             import json
             import pytz
             from datetime import datetime
+            import pandas as pd # Garante que o pandas esteja disponível
 
-            # 1. COLETA SEGURA DE TABELAS (Evita KeyError e limpa linhas vazias)
+            # 1. COLETA SEGURA DE TABELAS
             def extrair_tabela(key, col_ref):
                 df_temp = st.session_state.get(key, pd.DataFrame())
                 if df_temp.empty or col_ref not in df_temp.columns:
                     return []
-                # Retorna apenas linhas onde a coluna principal não está em branco
                 return [r.to_dict() for _, r in df_temp.iterrows() if str(r.get(col_ref, "")).strip()]
 
             dados_alta = extrair_tabela("atividades_alta", "Atividade Descrita")
@@ -1225,76 +1223,69 @@ if st.query_params.get("page") == "formulario":
             # 2. VERIFICAÇÃO DE PENDÊNCIAS
             erros = []
             
-            # --- VALIDAÇÃO DE TODOS OS CAMPOS OBRIGATÓRIOS ---
+            # --- VALIDAÇÃO OBRIGATÓRIA ---
             if not nome.strip(): erros.append("Nome do Colaborador")
             if not setor.strip(): erros.append("Setor")
             if not cargo.strip(): erros.append("Cargo")
             if not chefe.strip(): erros.append("Chefe imediato")
             if not departamento.strip(): erros.append("Departamento")
             if not empresa.strip(): erros.append("Empresa / Unidade")
-            if not devolucao: erros.append("Devolver preenchido em") # <--- A LINHA NOVA AQUI
+            if not devolucao: erros.append("Devolver preenchido em")
             
-            # Validação de Escolaridade (Selectbox)
             if not escolaridade or escolaridade == "Escolha...": 
                 erros.append("Escolaridade")
             
-            # Validação de Textos Longos (Garantindo que não sejam apenas espaços)
             if not cursos.strip(): erros.append("Cursos obrigatórios ou diferenciais")
             if not objetivo.strip(): erros.append("Trabalho e principal objetivo")
             
-            # Validação de Conteúdo Mínimo
             if not any([dados_alta, dados_norm, dados_baix, dados_difs, dados_sugs]):
-                erros.append("Preencha pelo menos uma linha em qualquer uma das tabelas.")
+                erros.append("Preencha pelo menos uma linha em Atividades, Dificuldades ou Sugestões")
 
-            # Validação DISC
             faltando_disc = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
             if faltando_disc:
-                erros.append(f"Responda as questões do DISC: {faltando_disc}")
+                erros.append(f"Questões do DISC: {faltando_disc}")
 
-            # 3. LÓGICA DE DECISÃO
+            # 3. LÓGICA DE DECISÃO COM DIAGNÓSTICO
             if erros:
-                # Mostra todos os erros de uma vez para o usuário corrigir
-                st.error("### ❌ Erro ao enviar! Verifique os itens abaixo:")
+                st.error("### ❌ Erro ao enviar! Faltam estes itens:")
                 for e in erros:
                     st.write(f"⚠️ {e}")
             else:
-                # TUDO CERTO -> PROCESSAR ENVIO
-                fuso_br = pytz.timezone('America/Sao_Paulo')
-                data_final = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
-
-                payload = {
-                    "data_envio": data_final,
-                    "identificacao": {
-                        "nome": nome, 
-                        "setor": setor, 
-                        "cargo": cargo,
-                        "chefe": chefe,
-                        "departamento": departamento,
-                        "empresa": empresa
-                    },
-                    "atividades": {
-                        "alta": dados_alta,
-                        "normal": dados_norm,
-                        "baixa": dados_baix,
-                        "dificuldades": dados_difs,
-                        "sugestoes": dados_sugs
-                    },
-                    "disc": {f"pergunta_{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
-                }
-
-                # Nome do arquivo sanitizado
-                nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
+                # Se entrou aqui, a validação passou!
+                st.info("🔄 Validação concluída. Iniciando comunicação com o servidor...")
                 
-                # Chamada da sua função de salvar no GitHub
                 try:
+                    fuso_br = pytz.timezone('America/Sao_Paulo')
+                    data_final = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
+
+                    payload = {
+                        "data_envio": data_final,
+                        "identificacao": {
+                            "nome": nome, "setor": setor, "cargo": cargo,
+                            "chefe": chefe, "departamento": departamento, 
+                            "empresa": empresa, "devolucao": str(devolucao),
+                            "escolaridade": escolaridade
+                        },
+                        "atividades": {
+                            "alta": dados_alta, "normal": dados_norm, "baixa": dados_baix,
+                            "dificuldades": dados_difs, "sugestoes": dados_sugs
+                        },
+                        "perfil": {"cursos": cursos, "objetivo": objetivo},
+                        "disc": {f"p{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                    }
+
+                    nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
+                    
+                    # TENTA SALVAR NO GITHUB
                     if salvar(payload, nome_arquivo, f"Formulário Final: {nome}"):
-                       
-                        st.success(f"✨ Sucesso! O formulário de {nome} foi transmitido corretamente.")
-                        # Opcional: st.info("Você pode fechar esta aba agora.")
+                        st.balloons()
+                        st.success(f"✅ SUCESSO! O formulário de {nome} foi enviado.")
+                        st.info("Você já pode fechar esta página.")
                     else:
-                        st.error("Erro na comunicação com o banco de dados (GitHub). Tente clicar novamente.")
-                except Exception as e:
-                    st.error(f"Ocorreu um erro inesperado: {e}")
+                        st.error("❌ A validação passou, mas a função 'salvar' retornou Erro (GitHub/Token).")
+                
+                except Exception as ex:
+                    st.error(f"❌ Erro crítico no processamento: {ex}")
                     
                         
                   
