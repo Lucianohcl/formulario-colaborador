@@ -2426,28 +2426,6 @@ if nome_usuario:
                 else:
                     payload[chave] = []
 
-            # 4. COMANDOS GIT PARA SUBIR (ADD, COMMIT, PULL REBASE, PUSH)
-            import subprocess
-            import json
-
-            try:
-                # Salva o arquivo no disco para o Git detectar
-                with open(arquivo_nome, 'w', encoding='utf-8') as f:
-                    json.dump(payload, f, ensure_ascii=False, indent=4)
-
-                # Sequência Git Blindada
-                subprocess.run(["git", "add", "."], check=True)
-                subprocess.run(["git", "commit", "-m", f"Sincronização: {nome}"], check=True)
-                
-                # Pull Rebase resolve o conflito de "rejected"
-                subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
-                
-                # Push para o GitHub
-                subprocess.run(["git", "push", "origin", "main"], check=True)
-                
-                st.success(f"🚀 Dados de {nome} sincronizados!")
-                st.rerun()
-
-            
+                        
             except Exception as e:
                 st.error(f"❌ Erro: {str(e)}")
