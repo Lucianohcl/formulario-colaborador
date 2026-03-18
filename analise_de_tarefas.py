@@ -1198,72 +1198,108 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
         # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO
+        # VALIDAÇÕES E PROCESSAMENTO COMPLETO
         # -------------------------------------------------
         if enviar:
+            import os
             import json
             import pytz
             from datetime import datetime
 
-            # 1. GERA A DATA E HORA DE BRASÍLIA
-            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
+            # 1. PREPARAÇÃO DE DIRETÓRIO E DUPLICIDADE
+            nome_limpo = nome.strip().replace(" ", "_")
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            dados_dir = os.path.join(base_dir, "dados")
+            os.makedirs(dados_dir, exist_ok=True)
             
-            # Lista de campos obrigatórios de texto
-            campos_txt = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
+            arquivo_esperado = f"{nome_limpo}.json"
+            pendencias = {}
 
-            # --- VALIDAÇÕES ---
+            # Verificação de duplicidade imediata
+            if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
+                st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                st.stop()
 
-            # 1. VALIDAÇÃO DE CAMPOS TEXTUAIS
-            if any(not str(campo).strip() for campo in campos_txt):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação!")
+            # 2. VALIDAÇÃO: IDENTIFICAÇÃO
+            campos_ident = {
+                "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
+                "Departamento": departamento, "Empresa": empresa,
+                "Escolaridade": escolaridade, "Devolução": devolucao
+            }
+            for campo, valor in campos_ident.items():
+                if not str(valor).strip():
+                    pendencias.setdefault("Identificação", []).append(campo)
 
-            # 2. VALIDAÇÃO DAS TABELAS (Verifica se houve preenchimento em QUALQUER uma das 5)
-            # Usamos .iloc[:, 0] para pegar a primeira coluna de cada tabela de forma segura
-            elif (
-                st.session_state["atividades_alta"].iloc[:, 0].str.strip().eq("").all() and 
-                st.session_state["atividades_normal"].iloc[:, 0].str.strip().eq("").all() and 
-                st.session_state["atividades_baixa"].iloc[:, 0].str.strip().eq("").all() and
-                st.session_state["df_dificuldades"].iloc[:, 0].str.strip().eq("").all() and
-                st.session_state["df_sugestoes"].iloc[:, 0].str.strip().eq("").all()
-            ):
-                st.error("❌ Erro: Preencha pelo menos uma atividade, dificuldade ou sugestão antes de salvar.")
+            # 3. VALIDAÇÃO: CURSOS E OBJETIVO
+            if not cursos.strip():
+                pendencias.setdefault("Perfil", []).append("Cursos")
+            if not objetivo.strip():
+                pendencias.setdefault("Perfil", []).append("Objetivo Principal")
 
-            # 3. VALIDAÇÃO DO DISC (Verifica se todos os 24 foram respondidos)
-            elif any(st.session_state.get(f"radio_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do questionário DISC!")
+            # 4. FUNÇÃO AUXILIAR PARA VALIDAR TABELAS (Evita repetição de código)
+            def validar_tabela(df, nome_tabela, col_principal):
+                linhas_validas = []
+                for i, row in df.iterrows():
+                    # Verifica se a célula principal da linha está preenchida
+                    if str(row[col_principal]).strip():
+                        # Verifica se as outras colunas daquela linha também estão (Frequência, Horas, etc)
+                        if any(val in [None, "", "Escolha..."] for val in row.values):
+                            pendencias.setdefault(nome_tabela, []).append(f"Linha {i+1} incompleta")
+                        else:
+                            linhas_validas.append(row.to_dict())
+                return linhas_validas
 
+            # Validando as 5 Tabelas
+            ativ_alta = validar_tabela(st.session_state["atividades_alta"], "Atividades Alta Complexidade", "Atividade Descrita")
+            ativ_norm = validar_tabela(st.session_state["atividades_normal"], "Atividades Nível Normal", "Atividade Descrita")
+            ativ_baix = validar_tabela(st.session_state["atividades_baixa"], "Atividades Baixa Complexidade", "Atividade Descrita")
+            difs = validar_tabela(st.session_state["df_dificuldades"], "Dificuldades e Bloqueios", "Dificuldade")
+            sugs = validar_tabela(st.session_state["df_sugestoes"], "Sugestões de Melhoria", "Sugestão de Melhoria")
+
+            # Regra: Pelo menos uma atividade/dificuldade/sugestão deve existir no total
+            if not (ativ_alta or ativ_norm or ativ_baix or difs or sugs):
+                pendencias.setdefault("Conteúdo", []).append("Preencha pelo menos uma linha completa em qualquer tabela.")
+
+            # 5. VALIDAÇÃO: DISC (Verifica as 24 perguntas)
+            respostas_disc = {}
+            for i in range(1, 25):
+                resp = st.session_state.get(f"radio_{i}")
+                if resp is None:
+                    pendencias.setdefault("Questionário DISC", []).append(f"Pergunta {i}")
+                else:
+                    respostas_disc[f"p{i}"] = resp
+
+            # --- VERIFICAÇÃO FINAL DE PENDÊNCIAS ---
+            if pendencias:
+                st.error("### ❌ Não foi possível enviar. Corrija as seguintes pendências:")
+                for categoria, itens in pendencias.items():
+                    st.markdown(f"**{categoria}:** {', '.join(itens)}")
             else:
-                # --- PROCESSAMENTO E MONTAGEM DO ARQUIVO ---
-                nome_limpo = nome.strip().replace(" ", "_").lower()
-                arquivo_final = f"final_{nome_limpo}.json"
+                # 6. SALVAMENTO (Se tudo estiver OK)
+                fuso_br = pytz.timezone('America/Sao_Paulo')
+                data_envio = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
 
-                # MONTAGEM DO DICIONÁRIO (Alinhado com o seu session_state)
                 dados_finais = {
-                    "data_envio": data_hoje,
-                    "identificacao": {
-                        "nome": nome, "setor": setor, "cargo": cargo,
-                        "chefe": chefe, "departamento": departamento, "empresa": empresa
+                    "metadata": {"data_envio": data_envio, "status": "Finalizado"},
+                    "identificacao": campos_ident,
+                    "perfil": {"cursos": cursos, "objetivo": objetivo},
+                    "tabelas": {
+                        "alta": ativ_alta, "normal": ativ_norm, "baixa": ativ_baix,
+                        "dificuldades": difs, "sugestoes": sugs
                     },
-                    "perfil": { "cursos": cursos, "objetivo": objetivo },
-                    "tabelas_atividades": {
-                        "alta": st.session_state["atividades_alta"].to_dict(orient="records"),
-                        "normal": st.session_state["atividades_normal"].to_dict(orient="records"),
-                        "baixa": st.session_state["atividades_baixa"].to_dict(orient="records")
-                    },
-                    "outras_tabelas": {
-                        "dificuldades": st.session_state["df_dificuldades"].to_dict(orient="records"),
-                        "sugestoes": st.session_state["df_sugestoes"].to_dict(orient="records")
-                    },
-                    "disc": {f"pergunta_{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                    "disc": respostas_disc
                 }
 
-                # 4. SALVAMENTO VIA GITHUB API (Persistência para Streamlit Cloud)
-                if salvar(dados_finais, arquivo_final, f"Envio final: {nome}"):
+                # Salvamento Local e via GitHub
+                caminho_json = os.path.join(dados_dir, arquivo_esperado)
+                with open(caminho_json, "w", encoding="utf-8") as f:
+                    json.dump(dados_finais, f, ensure_ascii=False, indent=4)
+
+                if salvar(dados_finais, arquivo_esperado, f"Envio: {nome}"):
                     st.success(f"✅ Formulário de {nome} enviado com sucesso!")
-                   
+                    
                 else:
-                    st.error("❌ Erro ao salvar no servidor. Verifique sua conexão ou as configurações do GitHub.")
+                    st.warning("⚠️ Salvo localmente, mas houve um erro ao sincronizar com o GitHub.")
                     
                         
                   
