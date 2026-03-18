@@ -1340,7 +1340,7 @@ if st.query_params.get("page") == "formulario":
 
             if salvar(dados_finais, arquivo_nome, f"Envio: {nome}"):
                 st.success("✅ Formulário enviado e salvo com sucesso no Banco de Dados!")
-                st.balloons()
+                
                 st.session_state["confirmado"] = False
                 # Recarrega a lista para que apareça no botão 'Visualizar'
                 st.session_state["formularios"] = carregar_todos_formularios()
@@ -2400,3 +2400,56 @@ if nome_usuario:
                     st.error(f"❌ Erro: {str(e)}")
 
 # Rodar este script e dar o Push.
+
+        # ============================================================
+        # 8. NOVO BOTÃO: ENVIAR PARA O BANCO OFICIAL
+        # ============================================================
+        st.markdown("---")
+        if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
+            # Validação básica de segurança
+            if not nome or nome.strip() == "":
+                st.error("❌ O campo 'Nome' é obrigatório para o envio oficial.")
+            else:
+                with st.spinner("Oficializando envio..."):
+                    try:
+                        # 1. Montamos o mesmo dicionário de dados (Payload)
+                        def limpar_df(df):
+                            col_ref = df.columns[0]
+                            return df[df[col_ref].astype(str).str.strip() != ""].to_dict("records")
+
+                        dados_oficiais = {
+                            "identificacao": {
+                                "Nome": nome, "Cargo": cargo, "Departamento": departamento,
+                                "Setor": setor, "Chefe": chefe, "Empresa": empresa,
+                                "Escolaridade": escolaridade, "Devolucao": devolucao
+                            },
+                            "cursos": cursos,
+                            "objetivo": objetivo,
+                            "atividades": {
+                                "alta": limpar_df(atividades_alta_editadas),
+                                "normal": limpar_df(atividades_normal_editadas),
+                                "baixa": limpar_df(atividades_baixa_editadas)
+                            },
+                            "dificuldades": limpar_df(edit_dif),
+                            "sugestoes": limpar_df(edit_sug),
+                            "disc": respostas_disc,
+                            "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                            "origem": "Rascunho Oficializado"
+                        }
+
+                        # 2. Definimos o caminho oficial (PASTA DADOS)
+                        # Nome do arquivo sem o prefixo 'rascunho_'
+                        nome_final = f"dados/envio_{nome_limpo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+
+                        # 3. Salvamos no GitHub
+                        if salvar(dados_oficiais, nome_final, f"Envio Oficial: {nome}"):
+                            st.balloons()
+                            st.success("✅ FORMULÁRIO ENVIADO COM SUCESSO! Agora ele aparece na sua Análise de Dados.")
+                            
+                            # Opcional: Você pode deletar o rascunho após o envio oficial para não poluir
+                            # Se quiser fazer isso, avise que te passo o código de deletar!
+                        else:
+                            st.error("❌ Falha ao enviar para a pasta oficial do GitHub.")
+
+                    except Exception as e:
+                        st.error(f"❌ Erro técnico: {str(e)}")                
