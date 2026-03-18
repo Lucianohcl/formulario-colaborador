@@ -2379,32 +2379,36 @@ if nome_usuario:
     # 6. BOTÃO SALVAR
     st.markdown("---")
     if st.button("💾 Salvar Rascunho"):
-        # Importamos aqui para garantir que funcione no clique
         from datetime import datetime
         import pandas as pd
 
-        # Função de segurança para converter tabelas sem travar o app
-        def preparar_tabela(dados):
+        # Função interna de segurança: extrai os dados direto do Session State
+        def extrair_dados(chave):
+            dados = st.session_state.get(chave)
             if isinstance(dados, pd.DataFrame):
                 return dados.to_dict("records")
-            return [] # Retorna vazio se não for um DataFrame
+            # Se o editor retornar o dicionário de mudanças do Streamlit
+            elif isinstance(dados, dict) and "edited_rows" in dados:
+                return [] # Ou sua lógica para processar mudanças manuais
+            return []
 
+        # Montagem do Payload usando as chaves seguras que criamos antes
         payload = {
             "nome": nome, 
             "cargo": cargo, 
-            "departamento": depto, # Verifique se a variável é 'depto' ou 'departamento'
+            "departamento": departamento, 
             "setor": setor, 
             "chefe": chefe, 
             "empresa": empresa,
-            "atividades": preparar_tabela(edit_ativ),
-            "dificuldades": preparar_tabela(edit_dif),
-            "sugestoes": preparar_tabela(edit_sug),
+            "atividades": extrair_dados("df_alta"),   # Use o nome da chave do session_state
+            "dificuldades": extrair_dados("df_normal"), 
+            "sugestoes": extrair_dados("df_baixa"),
             **respostas_disc,
             "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
         }
 
         if salvar(payload, arquivo_nome):
-            st.success("✅ Rascunho salvo com sucesso no servidor!")
-            st.rerun()  # O rerun aqui é excelente para limpar o estado visual
+            st.success("✅ Rascunho salvo com sucesso!")
+            st.rerun() # Limpa o estado e atualiza a tela
         else:
             st.error("❌ Falha ao salvar. Verifique sua conexão.")
