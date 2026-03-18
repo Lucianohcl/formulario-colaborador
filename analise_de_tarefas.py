@@ -2318,7 +2318,7 @@ if nome_usuario:
 
                     if salvar(payload, arquivo_nome, f"Backup: {nome}"):
                         st.success(f"✅ Rascunho de {nome} sincronizado no GitHub!")
-                        st.balloons()
+                       
                     else:
                         st.error("❌ Falha na comunicação com GitHub.")
                 except Exception as e:
