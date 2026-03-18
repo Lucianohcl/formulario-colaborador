@@ -2119,7 +2119,7 @@ dados, _ = carregar(arquivo_nome)
 if primeira_vez:
     if dados:
         st.warning("⚠️ Usuário já cadastrado. Desmarque a opção acima para entrar.")
-        return
+        
     if st.button("✅ Criar meu Rascunho"):
         if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
             st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
