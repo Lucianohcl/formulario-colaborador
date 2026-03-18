@@ -1225,7 +1225,7 @@ if st.query_params.get("page") == "formulario":
                 res = requests.get(url, headers=headers)
                 sha = res.json().get("sha") if res.status_code == 200 else None
                 
-                payload = {"message": mensagem, "content": encoded}
+                payload = {"message": mensagem, "content": encoded, "branch": "main"}
                 if sha: 
                     payload["sha"] = sha
                     
@@ -1234,7 +1234,11 @@ if st.query_params.get("page") == "formulario":
                     st.error(f"GitHub negou a gravação: {final_res.status_code} - {final_res.text}")
                 return final_res.status_code in [200, 201]
 
-        # --- BOTÃO DE ENVIO ---
+            except Exception as e:
+                st.error(f"Erro técnico ao salvar: {e}")
+                return False
+
+        # --- BOTÃO DE ENVIO (ALINHADO FORA DA FUNÇÃO) ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
 
         
