@@ -1194,8 +1194,7 @@ if st.query_params.get("page") == "formulario":
             )
 
         
-        # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        
           
         # -------------------------------------------------
         # BLOCO FINAL DE VALIDAÇÃO E ENVIO (DENTRO DO FORM)
