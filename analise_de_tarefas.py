@@ -1197,25 +1197,33 @@ if st.query_params.get("page") == "formulario":
         
           
         # =================================================
-        # BOTÃO DE ENVIO (PRECISA ESTAR DENTRO DO FORM)
+        # BOTÃO DE ENVIO (DENTRO DO FORM)
         # =================================================
 
-        # --- DEFINIÇÃO DA FUNÇÃO (COLE EXATAMENTE AQUI) ---
+        # --- DEFINIÇÃO DA FUNÇÃO (AJUSTADA COM SEUS SECRETS) ---
         def salvar(dados, nome_arquivo, mensagem):
             try:
                 import requests
                 import base64
                 import json
                 
-                token = st.secrets["GITHUB_TOKEN"]
-                repo = "SEU_USUARIO/SEU_REPOSITORIO"  # <--- AJUSTE O NOME DO SEU REPO AQUI
+                # Usando as chaves exatas que você cadastrou
+                token = st.secrets["DB_TOKEN"]
+                username = st.secrets["DB_USERNAME"]
+                
+                # Monta o repositório lucianohcl/formulario-colaborador
+                repo = f"{username}/formulario-colaborador"
                 url = f"https://api.github.com/repos/{repo}/contents/envios/{nome_arquivo}"
                 
                 conteudo = json.dumps(dados, indent=4, ensure_ascii=False)
                 encoded = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
                 
-                headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
+                headers = {
+                    "Authorization": f"token {token}", 
+                    "Accept": "application/vnd.github.v3+json"
+                }
                 
+                # Verifica se o arquivo já existe para atualização (SHA)
                 res = requests.get(url, headers=headers)
                 sha = res.json().get("sha") if res.status_code == 200 else None
                 
@@ -1228,6 +1236,8 @@ if st.query_params.get("page") == "formulario":
             except Exception as e:
                 st.error(f"Erro técnico ao salvar: {e}")
                 return False
+
+        
 
         # --- ABAIXO DA FUNÇÃO SEGUE O SEU BOTÃO ---
         
