@@ -2276,7 +2276,7 @@ if st.button("💾 Salvar Rascunho"):
     # Salva no GitHub
     if salvar(payload, arquivo_nome):
         st.success("✅ Rascunho salvo com sucesso no servidor!")
-        return  # Interrompe o fluxo para evitar múltiplas execuções
+        st.stop()  # Interrompe o fluxo, substitui experimental_rerun()
     else:
         st.error("❌ Falha ao salvar. Verifique sua conexão.")
-        return
+        st.stop()
