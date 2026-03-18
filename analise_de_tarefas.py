@@ -2376,39 +2376,77 @@ if nome_usuario:
             key=f"radio_{i}"
         )
 
-    # 6. BOTÃO SALVAR
+    # ============================================================
+    # 6. BLOCO DE SALVAMENTO E PERSISTÊNCIA (BLINDADO)
+    # ============================================================
     st.markdown("---")
-    if st.button("💾 Salvar Rascunho"):
-        from datetime import datetime
-        import pandas as pd
 
-        # Função interna de segurança: extrai os dados direto do Session State
-        def extrair_dados(chave):
-            dados = st.session_state.get(chave)
-            if isinstance(dados, pd.DataFrame):
-                return dados.to_dict("records")
-            # Se o editor retornar o dicionário de mudanças do Streamlit
-            elif isinstance(dados, dict) and "edited_rows" in dados:
-                return [] # Ou sua lógica para processar mudanças manuais
-            return []
-
-        # Montagem do Payload usando as chaves seguras que criamos antes
-        payload = {
-            "nome": nome, 
-            "cargo": cargo, 
-            "departamento": departamento, 
-            "setor": setor, 
-            "chefe": chefe, 
-            "empresa": empresa,
-            "atividades": extrair_dados("df_alta"),   # Use o nome da chave do session_state
-            "dificuldades": extrair_dados("df_normal"), 
-            "sugestoes": extrair_dados("df_baixa"),
-            **respostas_disc,
-            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-        }
-
-        if salvar(payload, arquivo_nome):
-            st.success("✅ Rascunho salvo com sucesso!")
-            st.rerun() # Limpa o estado e atualiza a tela
+    if st.button("💾 Salvar Rascunho Permanente", use_container_width=True, type="primary"):
+        
+        # 1. Validação de Segurança Pré-Voo
+        if not nome or nome.strip() == "":
+            st.error("❌ Erro: O campo 'Nome' é obrigatório para persistência.")
         else:
-            st.error("❌ Falha ao salvar. Verifique sua conexão.")
+            # 2. Coleta de Dados de Identificação
+            payload = {
+                "nome": nome,
+                "cargo": cargo,
+                "departamento": departamento,
+                "setor": setor,
+                "chefe": chefe,
+                "empresa": empresa,
+                "escolaridade": escolaridade,
+                "devolucao": devolucao,
+                "cursos": cursos,
+                "objetivo": objetivo,
+                "status_formulario": "rascunho",
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            }
+
+            # 3. Processamento Seguro das Tabelas
+            tabelas_finais = {
+                "atividades_alta": atividades_alta_editadas,
+                "atividades_normal": atividades_normal_editadas,
+                "atividades_baixa": atividades_baixa_editadas,
+                "dificuldades": edit_dif,
+                "sugestoes": edit_sug
+            }
+
+            for chave, df_editado in tabelas_finais.items():
+                # Garantia: Se o editor retornar None ou Erro, tratamos como lista vazia
+                if isinstance(df_editado, pd.DataFrame):
+                    # Filtro de Persistência: Remove linhas sem conteúdo real
+                    col_ref = df_editado.columns[0]
+                    df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
+                    payload[chave] = df_valido.to_dict("records")
+                else:
+                    payload[chave] = []
+
+            # 4. Consolidação do Questionário DISC
+            # Busca as respostas no session_state para garantir que pegamos o valor atualizado
+            respostas_atuais = {k: v for k, v in st.session_state.items() if k.startswith("disc_")}
+            payload.update(respostas_atuais)
+
+            # 5. Execução do Upload com Tratamento de Exceção
+            with st.spinner("🚀 Sincronizando com o servidor seguro..."):
+                try:
+                    # 'arquivo_nome' gerado no início do script
+                    sucesso = salvar(payload, arquivo_nome, mensagem=f"Persistência Blindada: {nome}")
+
+                    if sucesso:
+                        st.toast("Dados sincronizados com sucesso!", icon="✅")
+                        st.success(f"✅ Rascunho de **{nome}** gravado permanentemente.")
+                        
+                        # Limpa caches de edição para evitar que o Streamlit recupere dados antigos
+                        st.session_state["ultimo_save"] = payload
+                        
+                        # O rerun força a interface a renderizar os dados limpos do servidor
+                        st.rerun()
+                    else:
+                        st.error("❌ Falha de Persistência: O GitHub rejeitou a gravação. Tente novamente em 5 segundos.")
+                except Exception as e:
+                    st.error(f"❌ Erro Crítico de Sistema: {str(e)}")
+
+    # Rodapé de Auditoria
+    if "ultima_atualizacao" in dados:
+        st.caption(f"🕒 Última versão persistida encontrada: {dados.get('ultima_atualizacao')}")
