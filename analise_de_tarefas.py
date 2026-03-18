@@ -2293,23 +2293,22 @@ if nome_usuario:
         # SE CHEGOU AQUI, MOSTRA O FORMULÁRIO
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
-        # === INÍCIO DO AJUSTE PARA POVOAMENTO IMEDIATO ===
+        # === INÍCIO DO AJUSTE PARA POVOAMENTO AUTOMÁTICO ===
         
-        # 1. Cria o espaço na memória se não existir
+        # 1. Garante que a memória da sessão exista
         if "dados_oficiais" not in st.session_state:
             st.session_state["dados_oficiais"] = {}
 
-        # 2. O Botão que "injeta" o rascunho no formulário
-        st.markdown("---")
-        
-            if dados:
-                st.session_state["dados_oficiais"] = dados.copy()
-                st.success("✅ Formulário Povoado! Prossiga com o preenchimento abaixo.")
-                st.rerun() # Faz a tela atualizar e preencher os campos na hora
-            else:
-                st.error("❌ Nenhum rascunho encontrado para transferir.")
+        # 2. Carregamento Automático (Alinhado corretamente para evitar o erro)
+        if dados and not st.session_state["dados_oficiais"]:
+            # Se achou rascunho no GitHub e a tela ainda está vazia, preenche agora!
+            st.session_state["dados_oficiais"] = dados.copy()
+            st.success(f"✅ Dados de {nome_usuario} recuperados com sucesso!")
+            st.rerun() 
+        elif not dados:
+            st.info("ℹ️ Iniciando formulário novo.")
 
-        # 3. Define a 'fonte' que os campos abaixo vão usar
+        # 3. Define a 'fonte' que os campos abaixo (Parte 2) vão usar
         fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else dados
         
         # === FIM DO AJUSTE ===
