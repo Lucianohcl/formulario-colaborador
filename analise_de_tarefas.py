@@ -2180,10 +2180,9 @@ if nome_usuario:
             "Minutos": [""] * 20
         })
 
-    # Passa uma cópia do DataFrame puro
     atividades_alta = st.data_editor(
-        st.session_state["form_atividades_alta"].copy(),
-        key="form_atividades_alta_editor",
+        st.session_state["form_atividades_alta"],
+        key="editor_alta_final",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2193,9 +2192,7 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
-
-    # Atualiza o session_state com o que o usuário editou
-    st.session_state["form_atividades_alta"] = atividades_alta.copy()
+    st.session_state["form_atividades_alta"] = atividades_alta
 
     # ===========================
     # Tabela de Nível Normal
@@ -2210,8 +2207,8 @@ if nome_usuario:
         })
 
     atividades_normal = st.data_editor(
-        st.session_state["form_atividades_normal"].copy(),
-        key="form_atividades_normal",
+        st.session_state["form_atividades_normal"],
+        key="editor_normal_final",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2221,6 +2218,7 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
+    st.session_state["form_atividades_normal"] = atividades_normal
 
     # ===========================
     # Tabela de Baixa Complexidade
@@ -2235,8 +2233,8 @@ if nome_usuario:
         })
 
     atividades_baixa = st.data_editor(
-        st.session_state["form_atividades_baixa"].copy(),
-        key="form_atividades_baixa",
+        st.session_state["form_atividades_baixa"],
+        key="editor_baixa_final",
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2246,6 +2244,7 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
+    st.session_state["form_atividades_baixa"] = atividades_baixa
 
     # 3. TABELA DIFICULDADES
     st.markdown("---")
