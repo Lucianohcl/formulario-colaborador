@@ -2298,13 +2298,7 @@ if nome_usuario:
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
 
-    else:
-        if not dados:
-            st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
-            st.stop()
-
-        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
-
+        
         # --- DADOS DE IDENTIFICAÇÃO ---
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
