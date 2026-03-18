@@ -1201,7 +1201,6 @@ if st.query_params.get("page") == "formulario":
         # VALIDAÇÕES E PROCESSAMENTO
         # -------------------------------------------------
         if enviar:
-            import os
             import json
             import pytz
             from datetime import datetime
@@ -1210,70 +1209,61 @@ if st.query_params.get("page") == "formulario":
             fuso_brasilia = pytz.timezone('America/Sao_Paulo')
             data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
             
-            # Lista de campos obrigatórios
-            campos_obrigatorios = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
+            # Lista de campos obrigatórios de texto
+            campos_txt = [nome, setor, cargo, chefe, departamento, empresa, cursos, objetivo]
 
             # --- VALIDAÇÕES ---
 
             # 1. VALIDAÇÃO DE CAMPOS TEXTUAIS
-            if any(not str(campo).strip() for campo in campos_obrigatorios):
+            if any(not str(campo).strip() for campo in campos_txt):
                 st.error("⚠️ Erro: Preencha todos os campos obrigatórios de identificação!")
 
-            # 2. VALIDAÇÃO DO DISC (Verifica se todos os 24 foram respondidos)
-            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-
-            # 3. VALIDAÇÃO DAS TABELAS (Verifica se houve preenchimento)
+            # 2. VALIDAÇÃO DAS TABELAS (Verifica se houve preenchimento em QUALQUER uma das 5)
+            # Usamos .iloc[:, 0] para pegar a primeira coluna de cada tabela de forma segura
             elif (
-                st.session_state["atividades_alta"]["Atividade Descrita"].str.strip().eq("").all() and 
-                st.session_state["atividades_normal"]["Atividade Descrita"].str.strip().eq("").all() and 
-                st.session_state["atividades_baixa"]["Atividade Descrita"].str.strip().eq("").all() and
-                st.session_state["dificuldades"]["Dificuldade"].str.strip().eq("").all() and
-                st.session_state["sugestoes"]["Sugestão de Melhoria"].str.strip().eq("").all()
+                st.session_state["atividades_alta"].iloc[:, 0].str.strip().eq("").all() and 
+                st.session_state["atividades_normal"].iloc[:, 0].str.strip().eq("").all() and 
+                st.session_state["atividades_baixa"].iloc[:, 0].str.strip().eq("").all() and
+                st.session_state["df_dificuldades"].iloc[:, 0].str.strip().eq("").all() and
+                st.session_state["df_sugestoes"].iloc[:, 0].str.strip().eq("").all()
             ):
                 st.error("❌ Erro: Preencha pelo menos uma atividade, dificuldade ou sugestão antes de salvar.")
 
+            # 3. VALIDAÇÃO DO DISC (Verifica se todos os 24 foram respondidos)
+            elif any(st.session_state.get(f"radio_{i}") is None for i in range(1, 25)):
+                st.error("⚠️ Erro: Responda todas as perguntas do questionário DISC!")
+
             else:
-                # 4. PREPARAÇÃO DE DIRETÓRIO
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
+                # --- PROCESSAMENTO E MONTAGEM DO ARQUIVO ---
+                nome_limpo = nome.strip().replace(" ", "_").lower()
+                arquivo_final = f"final_{nome_limpo}.json"
 
-                nome_limpo = nome.strip().replace(" ", "_")
-                arquivo_path = os.path.join(dados_dir, f"{nome_limpo}.json")
+                # MONTAGEM DO DICIONÁRIO (Alinhado com o seu session_state)
+                dados_finais = {
+                    "data_envio": data_hoje,
+                    "identificacao": {
+                        "nome": nome, "setor": setor, "cargo": cargo,
+                        "chefe": chefe, "departamento": departamento, "empresa": empresa
+                    },
+                    "perfil": { "cursos": cursos, "objetivo": objetivo },
+                    "tabelas_atividades": {
+                        "alta": st.session_state["atividades_alta"].to_dict(orient="records"),
+                        "normal": st.session_state["atividades_normal"].to_dict(orient="records"),
+                        "baixa": st.session_state["atividades_baixa"].to_dict(orient="records")
+                    },
+                    "outras_tabelas": {
+                        "dificuldades": st.session_state["df_dificuldades"].to_dict(orient="records"),
+                        "sugestoes": st.session_state["df_sugestoes"].to_dict(orient="records")
+                    },
+                    "disc": {f"pergunta_{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                }
 
-                # 5. VERIFICA DUPLICIDADE
-                if os.path.exists(arquivo_path):
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                # 4. SALVAMENTO VIA GITHUB API (Persistência para Streamlit Cloud)
+                if salvar(dados_finais, arquivo_final, f"Envio final: {nome}"):
+                    st.success(f"✅ Formulário de {nome} enviado com sucesso!")
+                   
                 else:
-                    # 6. MONTAGEM DO DICIONÁRIO FINAL
-                    dados_finais = {
-                        "data_envio": data_hoje,
-                        "identificacao": {
-                            "nome": nome,
-                            "setor": setor,
-                            "cargo": cargo,
-                            "chefe": chefe,
-                            "departamento": departamento,
-                            "empresa": empresa
-                        },
-                        "perfil": {
-                            "cursos": cursos,
-                            "objetivo": objetivo
-                        },
-                        "tabelas_atividades": {
-                            "alta_complexidade": st.session_state["df_alta"].to_dict(orient="records"),
-                            "nivel_normal": st.session_state["df_normal"].to_dict(orient="records"),
-                            "baixa_complexidade": st.session_state["df_baixa"].to_dict(orient="records")
-                        },
-                        "disc": {f"pergunta_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-                    }
-
-                    # 7. SALVAMENTO EM JSON
-                    with open(arquivo_path, "w", encoding="utf-8") as f:
-                        json.dump(dados_finais, f, ensure_ascii=False, indent=4)
-                    
-                    st.success("✅ Formulário enviado e salvo com sucesso!")
+                    st.error("❌ Erro ao salvar no servidor. Verifique sua conexão ou as configurações do GitHub.")
                     
                         
                   
