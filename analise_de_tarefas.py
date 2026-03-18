@@ -1198,17 +1198,15 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
         # -------------------------------------------------
-        # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSO DE ENVIO (REVISÃO + ENVIO)
+        # VALIDAÇÕES E PROCESSO DE ENVIO (FORA DO st.form)
         # -------------------------------------------------
         
-        # 1. PEGAR DADOS DAS TABELAS (Sem risco de KeyError)
+        # 1. PEGAR DADOS DAS TABELAS (Blindado contra KeyError)
         def processar_tabela(key_name, col_principal):
             df = st.session_state.get(key_name, pd.DataFrame())
             if df.empty or col_principal not in df.columns:
                 return []
-            # Filtra apenas linhas onde a coluna principal foi preenchida
-            return [row.to_dict() for _, row in df.iterrows() if str(row[col_principal]).strip()]
+            return [row.to_dict() for _, row in df.iterrows() if str(row.get(col_principal, "")).strip()]
 
         ativ_alta = processar_tabela("atividades_alta", "Atividade Descrita")
         ativ_norm = processar_tabela("atividades_normal", "Atividade Descrita")
@@ -1216,71 +1214,74 @@ if st.query_params.get("page") == "formulario":
         difs = processar_tabela("df_dificuldades", "Dificuldade")
         sugs = processar_tabela("df_sugestoes", "Sugestão de Melhoria")
 
-        # 2. MAPEAMENTO DE PENDÊNCIAS (Atualiza em tempo real)
+        # 2. MAPEAMENTO DE PENDÊNCIAS (Atualiza a cada interação)
         pendencias = []
-        
-        # Identificação
         if not nome.strip(): pendencias.append("Nome")
         if not setor.strip(): pendencias.append("Setor")
         if not cargo.strip(): pendencias.append("Cargo")
-        # Adicione outros campos de identificação aqui...
+        
+        # Verifica se ao menos uma linha foi preenchida em qualquer tabela
+        if not any([ativ_alta, ativ_norm, ativ_baix, difs, sugs]):
+            pendencias.append("Preencher ao menos uma linha em Atividades, Dificuldades ou Sugestões")
 
-        # Conteúdo das tabelas (Exige pelo menos uma linha em qualquer lugar)
-        if not (ativ_alta or ativ_norm or ativ_baix or difs or sugs):
-            pendencias.append("Preencher ao menos uma Atividade, Dificuldade ou Sugestão")
-
-        # DISC
+        # Verifica o DISC
         questoes_faltando = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
         if questoes_faltando:
-            pendencias.append(f"Questões do DISC: {questoes_faltando}")
+            pendencias.append(f"Responder questões do DISC: {questoes_faltando}")
 
-        # -------------------------------------------------
-        # BOTÃO DINÂMICO (REVISAR OU ENVIAR)
-        # -------------------------------------------------
-        
+        st.divider()
+
+        # 3. LÓGICA DO BOTÃO DINÂMICO
         if pendencias:
-            st.warning(f"### ⚠️ Pendências para envio:\n* " + "\n* ".join(pendencias))
-            st.button("Validar e Enviar", disabled=True, help="Preencha todos os campos para habilitar")
+            st.error("### ⚠️ Pendências encontradas:")
+            for p in pendencias:
+                st.write(f"* {p}")
+            # Botão desabilitado enquanto houver erro
+            st.button("Validar e Enviar", disabled=True, use_container_width=True)
         
         else:
-            # Se não há pendências, habilita o processo de dois cliques
+            # Fluxo de Confirmação (Dois cliques)
             if "confirmar_envio" not in st.session_state:
                 st.session_state.confirmar_envio = False
 
             if not st.session_state.confirmar_envio:
-                if st.button("🚀 Revisar e Finalizar", use_container_width=True):
+                if st.button("🚀 Revisar e Finalizar", type="primary", use_container_width=True):
                     st.session_state.confirmar_envio = True
                     st.rerun()
             else:
-                st.success("✅ **Tudo pronto!** Revise suas respostas acima. Se estiver correto, clique no botão abaixo para transmitir os dados.")
+                st.warning("### 🧐 Quase lá! Revise seus dados acima.")
+                st.info("Se tudo estiver correto, clique em **Confirmar Transmissão**. Caso contrário, clique em **Voltar**.")
                 
-                col_btn1, col_btn2 = st.columns(2)
-                with col_btn1:
-                    if st.button("⬅️ Voltar e Corrigir", use_container_width=True):
+                col_voltar, col_confirmar = st.columns(2)
+                with col_voltar:
+                    if st.button("⬅️ Voltar para Edição", use_container_width=True):
                         st.session_state.confirmar_envio = False
                         st.rerun()
                 
-                with col_btn2:
-                    if st.button("📤 CONFIRMAR ENVIO AGORA", type="primary", use_container_width=True):
-                        # LÓGICA DE SALVAMENTO FINAL
+                with col_confirmar:
+                    if st.button("📤 CONFIRMAR TRANSMISSÃO", type="primary", use_container_width=True):
+                        # Montagem final do JSON
                         fuso_br = pytz.timezone('America/Sao_Paulo')
                         data_envio = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
 
                         dados_finais = {
                             "data_envio": data_envio,
                             "identificacao": {"nome": nome, "setor": setor, "cargo": cargo},
-                            "tabelas": {"alta": ativ_alta, "normal": ativ_norm, "baixa": ativ_baix, "dificuldades": difs, "sugestoes": sugs},
+                            "tabelas": {
+                                "alta": ativ_alta, "normal": ativ_norm, "baixa": ativ_baix,
+                                "dificuldades": difs, "sugestoes": sugs
+                            },
                             "disc": {f"p{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
                         }
 
-                        # Chama sua função de salvar no GitHub
-                        nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
-                        if salvar(dados_finais, nome_arquivo, f"Envio: {nome}"):
+                        # Envio para o GitHub
+                        nome_arq = f"final_{nome.strip().replace(' ', '_').lower()}.json"
+                        if salvar(dados_finais, nome_arq, f"Envio final: {nome}"):
                             st.balloons()
-                            st.success("✨ Enviado com sucesso! Seus dados foram computados.")
-                            st.session_state.confirmar_envio = False # Reseta para o próximo
+                            st.success("🎉 Enviado com sucesso!")
+                            st.session_state.confirmar_envio = False
                         else:
-                            st.error("Erro ao salvar no servidor. Tente novamente.")
+                            st.error("Erro ao salvar no GitHub. Verifique sua conexão.")
                     
                         
                   
