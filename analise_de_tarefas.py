@@ -2412,20 +2412,24 @@ if nome_usuario:
                 "sugestoes": edit_sug
             }
 
+            # O loop 'for' processa as tabelas
             for chave, df_editado in tabelas_finais.items():
-                # Validação robusta: tem que ser DataFrame, não pode estar vazio e TEM que ter colunas
                 if isinstance(df_editado, pd.DataFrame) and not df_editado.empty and len(df_editado.columns) > 0:
                     try:
                         col_ref = df_editado.columns[0]
-                        # Filtra apenas se a coluna de referência tiver texto
                         df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
                         payload[chave] = df_valido.to_dict("records")
                     except Exception:
-                        # Se der qualquer erro no acesso à coluna, salva como lista vazia e não trava
                         payload[chave] = []
                 else:
                     payload[chave] = []
 
-                        
-            except Exception as e:
-                st.error(f"❌ Erro: {str(e)}")
+            # O 'with' deve estar na mesma linha vertical do 'for'
+            with open(arquivo_nome, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, ensure_ascii=False, indent=4)
+            
+            st.success(f"✅ Dados de {nome} salvos!")
+
+        # ESTE EXCEPT DEVE ESTAR ALINHADO COM O 'if not nome' LÁ DE CIMA
+        except Exception as e:
+            st.error(f"❌ Erro: {str(e)}")
