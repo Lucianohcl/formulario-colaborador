@@ -1224,11 +1224,14 @@ if st.query_params.get("page") == "formulario":
                 st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
 
             # 3. VALIDAÇÃO DAS TABELAS (Verifica se houve preenchimento)
-            # Nota: Usamos os nomes 'df_alta', 'df_normal' e 'df_baixa' conforme as travas anteriores
-            elif (st.session_state["df_alta"]["Atividade Descrita"].str.strip().eq("").all() and 
-                  st.session_state["df_normal"]["Atividade Descrita"].str.strip().eq("").all() and
-                  st.session_state["df_baixa"]["Atividade Descrita"].str.strip().eq("").all()):
-                st.error("⚠️ Erro: Descreva pelo menos uma atividade em uma das tabelas de complexidade!")
+            elif (
+                st.session_state["atividades_alta"]["Atividade Descrita"].str.strip().eq("").all() and 
+                st.session_state["atividades_normal"]["Atividade Descrita"].str.strip().eq("").all() and 
+                st.session_state["atividades_baixa"]["Atividade Descrita"].str.strip().eq("").all() and
+                st.session_state["dificuldades"]["Dificuldade"].str.strip().eq("").all() and
+                st.session_state["sugestoes"]["Sugestão de Melhoria"].str.strip().eq("").all()
+            ):
+                st.error("❌ Erro: Preencha pelo menos uma atividade, dificuldade ou sugestão antes de salvar.")
 
             else:
                 # 4. PREPARAÇÃO DE DIRETÓRIO
