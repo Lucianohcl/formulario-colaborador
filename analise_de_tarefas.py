@@ -1199,6 +1199,38 @@ if st.query_params.get("page") == "formulario":
         # =================================================
         # BOTÃO DE ENVIO (PRECISA ESTAR DENTRO DO FORM)
         # =================================================
+
+        # --- DEFINIÇÃO DA FUNÇÃO (COLE EXATAMENTE AQUI) ---
+        def salvar(dados, nome_arquivo, mensagem):
+            try:
+                import requests
+                import base64
+                import json
+                
+                token = st.secrets["GITHUB_TOKEN"]
+                repo = "SEU_USUARIO/SEU_REPOSITORIO"  # <--- AJUSTE O NOME DO SEU REPO AQUI
+                url = f"https://api.github.com/repos/{repo}/contents/envios/{nome_arquivo}"
+                
+                conteudo = json.dumps(dados, indent=4, ensure_ascii=False)
+                encoded = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
+                
+                headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
+                
+                res = requests.get(url, headers=headers)
+                sha = res.json().get("sha") if res.status_code == 200 else None
+                
+                payload = {"message": mensagem, "content": encoded}
+                if sha: 
+                    payload["sha"] = sha
+                    
+                final_res = requests.put(url, headers=headers, json=payload)
+                return final_res.status_code in [200, 201]
+            except Exception as e:
+                st.error(f"Erro técnico ao salvar: {e}")
+                return False
+
+        # --- ABAIXO DA FUNÇÃO SEGUE O SEU BOTÃO ---
+        
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
 
         if enviar:
