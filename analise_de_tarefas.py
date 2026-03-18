@@ -2395,29 +2395,18 @@ if nome_usuario:
         sug_final = filtrar_vazios(edit_sug, "Sugestão de Melhoria")
             
             
+        # 2. Montagem do Payload (8 espaços)
+        payload = {
+            "nome": nome,
+            "atividades": ativ_final,
+            "dificuldades": dif_final,
+            "sugestoes": sug_final,
+            **respostas_disc,
+            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+        }
 
-            payload = {
-                "nome": nome, 
-                "cargo": cargo, 
-                "departamento": departamento,
-                "setor": setor, 
-                "chefe": chefe, 
-                "empresa": empresa,
-                "escolaridade": escolaridade,
-                "devolucao": devolucao,
-                "cursos": cursos,
-                "objetivo": objetivo,
-                "atividades": ativ_final,
-                "dificuldades": dif_final,
-                "sugestoes": sug_final,
-                **respostas_disc,
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-            }
-            
-            if salvar(payload, arquivo_nome):
-                st.success("✅ Rascunho salvo com sucesso no servidor!")
-            else:
-                st.error("❌ Falha ao salvar. Verifique sua conexão e permissões do Token.")
-
-# Nota: Usei st.rerun() apenas no fluxo de cadastro inicial para atualizar a tela.
+        # 3. Chamada da função salvar (8 espaços)
+        if salvar(payload, arquivo_nome):
+            st.success("✅ Rascunho salvo com sucesso!")        
+    
 
