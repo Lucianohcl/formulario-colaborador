@@ -1230,10 +1230,9 @@ if st.query_params.get("page") == "formulario":
                     payload["sha"] = sha
                     
                 final_res = requests.put(url, headers=headers, json=payload)
+                if final_res.status_code not in [200, 201]:
+                    st.error(f"GitHub negou a gravação: {final_res.status_code} - {final_res.text}")
                 return final_res.status_code in [200, 201]
-            except Exception as e:
-                st.error(f"Erro técnico ao salvar: {e}")
-                return False
 
         # --- BOTÃO DE ENVIO ---
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
