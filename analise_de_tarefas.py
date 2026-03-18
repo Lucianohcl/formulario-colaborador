@@ -1198,90 +1198,92 @@ if st.query_params.get("page") == "formulario":
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
         # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSO DE ENVIO (FORA DO st.form)
+        # BLOCO FINAL DE VALIDAÇÃO E ENVIO (DENTRO DO FORM)
         # -------------------------------------------------
         
-        # 1. PEGAR DADOS DAS TABELAS (Blindado contra KeyError)
-        def processar_tabela(key_name, col_principal):
-            df = st.session_state.get(key_name, pd.DataFrame())
-            if df.empty or col_principal not in df.columns:
-                return []
-            return [row.to_dict() for _, row in df.iterrows() if str(row.get(col_principal, "")).strip()]
+        # O botão de submissão TEM que ser o st.form_submit_button dentro de um with st.form
+        btn_enviar = st.form_submit_button("VALIDAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True)
 
-        ativ_alta = processar_tabela("atividades_alta", "Atividade Descrita")
-        ativ_norm = processar_tabela("atividades_normal", "Atividade Descrita")
-        ativ_baix = processar_tabela("atividades_baixa", "Atividade Descrita")
-        difs = processar_tabela("df_dificuldades", "Dificuldade")
-        sugs = processar_tabela("df_sugestoes", "Sugestão de Melhoria")
+        if btn_enviar:
+            import json
+            import pytz
+            from datetime import datetime
 
-        # 2. MAPEAMENTO DE PENDÊNCIAS (Atualiza a cada interação)
-        pendencias = []
-        if not nome.strip(): pendencias.append("Nome")
-        if not setor.strip(): pendencias.append("Setor")
-        if not cargo.strip(): pendencias.append("Cargo")
-        
-        # Verifica se ao menos uma linha foi preenchida em qualquer tabela
-        if not any([ativ_alta, ativ_norm, ativ_baix, difs, sugs]):
-            pendencias.append("Preencher ao menos uma linha em Atividades, Dificuldades ou Sugestões")
+            # 1. COLETA SEGURA DE TABELAS (Evita KeyError e limpa linhas vazias)
+            def extrair_tabela(key, col_ref):
+                df_temp = st.session_state.get(key, pd.DataFrame())
+                if df_temp.empty or col_ref not in df_temp.columns:
+                    return []
+                # Retorna apenas linhas onde a coluna principal não está em branco
+                return [r.to_dict() for _, r in df_temp.iterrows() if str(r.get(col_ref, "")).strip()]
 
-        # Verifica o DISC
-        questoes_faltando = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
-        if questoes_faltando:
-            pendencias.append(f"Responder questões do DISC: {questoes_faltando}")
+            dados_alta = extrair_tabela("atividades_alta", "Atividade Descrita")
+            dados_norm = extrair_tabela("atividades_normal", "Atividade Descrita")
+            dados_baix = extrair_tabela("atividades_baixa", "Atividade Descrita")
+            dados_difs = extrair_tabela("df_dificuldades", "Dificuldade")
+            dados_sugs = extrair_tabela("df_sugestoes", "Sugestão de Melhoria")
 
-        st.divider()
+            # 2. VERIFICAÇÃO DE PENDÊNCIAS
+            erros = []
+            
+            # Identificação (Verifica se as variáveis existem e não estão vazias)
+            if not nome.strip(): erros.append("Campo 'Nome' é obrigatório.")
+            if not setor.strip(): erros.append("Campo 'Setor' é obrigatório.")
+            if not cargo.strip(): erros.append("Campo 'Cargo' é obrigatório.")
+            
+            # Validação de Conteúdo Mínimo
+            if not any([dados_alta, dados_norm, dados_baix, dados_difs, dados_sugs]):
+                erros.append("Preencha pelo menos uma linha em qualquer uma das tabelas.")
 
-        # 3. LÓGICA DO BOTÃO DINÂMICO
-        if pendencias:
-            st.error("### ⚠️ Pendências encontradas:")
-            for p in pendencias:
-                st.write(f"* {p}")
-            # Botão desabilitado enquanto houver erro
-            st.button("Validar e Enviar", disabled=True, use_container_width=True)
-        
-        else:
-            # Fluxo de Confirmação (Dois cliques)
-            if "confirmar_envio" not in st.session_state:
-                st.session_state.confirmar_envio = False
+            # Validação DISC
+            faltando_disc = [i for i in range(1, 25) if st.session_state.get(f"radio_{i}") is None]
+            if faltando_disc:
+                erros.append(f"Responda as questões do DISC: {faltando_disc}")
 
-            if not st.session_state.confirmar_envio:
-                if st.button("🚀 Revisar e Finalizar", type="primary", use_container_width=True):
-                    st.session_state.confirmar_envio = True
-                    st.rerun()
+            # 3. LÓGICA DE DECISÃO
+            if erros:
+                # Mostra todos os erros de uma vez para o usuário corrigir
+                st.error("### ❌ Erro ao enviar! Verifique os itens abaixo:")
+                for e in erros:
+                    st.write(f"⚠️ {e}")
             else:
-                st.warning("### 🧐 Quase lá! Revise seus dados acima.")
-                st.info("Se tudo estiver correto, clique em **Confirmar Transmissão**. Caso contrário, clique em **Voltar**.")
-                
-                col_voltar, col_confirmar = st.columns(2)
-                with col_voltar:
-                    if st.button("⬅️ Voltar para Edição", use_container_width=True):
-                        st.session_state.confirmar_envio = False
-                        st.rerun()
-                
-                with col_confirmar:
-                    if st.button("📤 CONFIRMAR TRANSMISSÃO", type="primary", use_container_width=True):
-                        # Montagem final do JSON
-                        fuso_br = pytz.timezone('America/Sao_Paulo')
-                        data_envio = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
+                # TUDO CERTO -> PROCESSAR ENVIO
+                fuso_br = pytz.timezone('America/Sao_Paulo')
+                data_final = datetime.now(fuso_br).strftime('%d/%m/%Y %H:%M:%S')
 
-                        dados_finais = {
-                            "data_envio": data_envio,
-                            "identificacao": {"nome": nome, "setor": setor, "cargo": cargo},
-                            "tabelas": {
-                                "alta": ativ_alta, "normal": ativ_norm, "baixa": ativ_baix,
-                                "dificuldades": difs, "sugestoes": sugs
-                            },
-                            "disc": {f"p{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
-                        }
+                payload = {
+                    "data_envio": data_final,
+                    "identificacao": {
+                        "nome": nome, 
+                        "setor": setor, 
+                        "cargo": cargo,
+                        "chefe": chefe,
+                        "departamento": departamento,
+                        "empresa": empresa
+                    },
+                    "atividades": {
+                        "alta": dados_alta,
+                        "normal": dados_norm,
+                        "baixa": dados_baix,
+                        "dificuldades": dados_difs,
+                        "sugestoes": dados_sugs
+                    },
+                    "disc": {f"pergunta_{i}": st.session_state.get(f"radio_{i}") for i in range(1, 25)}
+                }
 
-                        # Envio para o GitHub
-                        nome_arq = f"final_{nome.strip().replace(' ', '_').lower()}.json"
-                        if salvar(dados_finais, nome_arq, f"Envio final: {nome}"):
-                            st.balloons()
-                            st.success("🎉 Enviado com sucesso!")
-                            st.session_state.confirmar_envio = False
-                        else:
-                            st.error("Erro ao salvar no GitHub. Verifique sua conexão.")
+                # Nome do arquivo sanitizado
+                nome_arquivo = f"final_{nome.strip().replace(' ', '_').lower()}.json"
+                
+                # Chamada da sua função de salvar no GitHub
+                try:
+                    if salvar(payload, nome_arquivo, f"Formulário Final: {nome}"):
+                       
+                        st.success(f"✨ Sucesso! O formulário de {nome} foi transmitido corretamente.")
+                        # Opcional: st.info("Você pode fechar esta aba agora.")
+                    else:
+                        st.error("Erro na comunicação com o banco de dados (GitHub). Tente clicar novamente.")
+                except Exception as e:
+                    st.error(f"Ocorreu um erro inesperado: {e}")
                     
                         
                   
