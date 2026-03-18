@@ -2172,21 +2172,21 @@ if nome_usuario:
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
-    
-    # GARANTIA 1: Verifica se a chave existe E se é um DataFrame. 
-    # Se por algum erro do Streamlit ela virar um dicionário, o 'isinstance' detecta e reseta para DataFrame.
-    if "form_atividades_alta" not in st.session_state or not isinstance(st.session_state["form_atividades_alta"], pd.DataFrame):
-        st.session_state["form_atividades_alta"] = pd.DataFrame({
+
+    # 1. GARANTIA DE ESTRUTURA: Força a criação do DataFrame se não existir ou se bugou
+    if "df_alta" not in st.session_state or not isinstance(st.session_state["df_alta"], pd.DataFrame):
+        st.session_state["df_alta"] = pd.DataFrame({
             "Atividade Descrita": [""] * 20,
             "Frequência": [None] * 20,
             "Horas": [0] * 20,
             "Minutos": [0] * 20
         })
 
-    # GARANTIA 2: Usamos uma KEY nova ("v100") para forçar o Streamlit a limpar qualquer cache antigo desse widget.
-    atividades_alta = st.data_editor(
-        st.session_state["form_atividades_alta"],
-        key="editor_alta_v100", 
+    # 2. EXIBIÇÃO: O editor usa o que está no estado, mas com uma KEY nova e limpa
+    # Mudamos o nome da key para 'editor_alta_final_v5' para resetar o cache do Streamlit
+    atividades_alta_editadas = st.data_editor(
+        st.session_state["df_alta"],
+        key="editor_alta_final_v5", 
         column_config={
             "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -2196,8 +2196,10 @@ if nome_usuario:
         num_rows="fixed",
         use_container_width=True
     )
-    # GARANTIA 3: Atualizamos o estado explicitamente com o retorno do widget (que é sempre um DataFrame).
-    st.session_state["form_atividades_alta"] = atividades_alta
+
+    # 3. ATUALIZAÇÃO SEGURA: Só salvamos se o retorno for um DataFrame válido
+    if isinstance(atividades_alta_editadas, pd.DataFrame):
+        st.session_state["df_alta"] = atividades_alta_editadas
 
     # ===========================
     # Tabela de Nível Normal
