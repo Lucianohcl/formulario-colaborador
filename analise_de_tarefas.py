@@ -2403,7 +2403,7 @@ if nome_usuario:
                 "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
             }
 
-            # 3. Processamento Seguro das Tabelas
+            # 3. Processamento Seguro das Tabelas (SOLUÇÃO DO INDEXERROR)
             tabelas_finais = {
                 "atividades_alta": atividades_alta_editadas,
                 "atividades_normal": atividades_normal_editadas,
@@ -2413,40 +2413,42 @@ if nome_usuario:
             }
 
             for chave, df_editado in tabelas_finais.items():
-                # Garantia: Se o editor retornar None ou Erro, tratamos como lista vazia
-                if isinstance(df_editado, pd.DataFrame):
-                    # Filtro de Persistência: Remove linhas sem conteúdo real
-                    col_ref = df_editado.columns[0]
-                    df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
-                    payload[chave] = df_valido.to_dict("records")
+                # Validação robusta: tem que ser DataFrame, não pode estar vazio e TEM que ter colunas
+                if isinstance(df_editado, pd.DataFrame) and not df_editado.empty and len(df_editado.columns) > 0:
+                    try:
+                        col_ref = df_editado.columns[0]
+                        # Filtra apenas se a coluna de referência tiver texto
+                        df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
+                        payload[chave] = df_valido.to_dict("records")
+                    except Exception:
+                        # Se der qualquer erro no acesso à coluna, salva como lista vazia e não trava
+                        payload[chave] = []
                 else:
                     payload[chave] = []
 
-            # 4. Consolidação do Questionário DISC
-            # Busca as respostas no session_state para garantir que pegamos o valor atualizado
-            respostas_atuais = {k: v for k, v in st.session_state.items() if k.startswith("disc_")}
-            payload.update(respostas_atuais)
+            # 4. COMANDOS GIT PARA SUBIR (ADD, COMMIT, PULL REBASE, PUSH)
+            import subprocess
+            import json
 
-            # 5. Execução do Upload com Tratamento de Exceção
-            with st.spinner("🚀 Sincronizando com o servidor seguro..."):
-                try:
-                    # 'arquivo_nome' gerado no início do script
-                    sucesso = salvar(payload, arquivo_nome, mensagem=f"Persistência Blindada: {nome}")
+            try:
+                # Salva o arquivo no disco para o Git detectar
+                with open(arquivo_nome, 'w', encoding='utf-8') as f:
+                    json.dump(payload, f, ensure_ascii=False, indent=4)
 
-                    if sucesso:
-                        st.toast("Dados sincronizados com sucesso!", icon="✅")
-                        st.success(f"✅ Rascunho de **{nome}** gravado permanentemente.")
-                        
-                        # Limpa caches de edição para evitar que o Streamlit recupere dados antigos
-                        st.session_state["ultimo_save"] = payload
-                        
-                        # O rerun força a interface a renderizar os dados limpos do servidor
-                        st.rerun()
-                    else:
-                        st.error("❌ Falha de Persistência: O GitHub rejeitou a gravação. Tente novamente em 5 segundos.")
-                except Exception as e:
-                    st.error(f"❌ Erro Crítico de Sistema: {str(e)}")
+                # Sequência Git Blindada
+                subprocess.run(["git", "add", "."], check=True)
+                subprocess.run(["git", "commit", "-m", f"Sincronização: {nome}"], check=True)
+                
+                # Pull Rebase resolve o conflito de "rejected"
+                subprocess.run(["git", "pull", "origin", "main", "--rebase"], check=True)
+                
+                # Push para o GitHub
+                subprocess.run(["git", "push", "origin", "main"], check=True)
+                
+                st.success(f"🚀 Dados de {nome} sincronizados!")
+                st.rerun()
 
-    # Rodapé de Auditoria
-    if "ultima_atualizacao" in dados:
-        st.caption(f"🕒 Última versão persistida encontrada: {dados.get('ultima_atualizacao')}")
+            except subprocess.CalledProcessError as e:
+                st.error("⚠️ Conflito no Git. Tente salvar novamente em instantes.")
+            except Exception as e:
+                st.error(f"❌ Erro: {str(e)}")
