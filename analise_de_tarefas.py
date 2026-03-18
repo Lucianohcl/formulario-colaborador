@@ -2411,14 +2411,12 @@ if nome_usuario:
         
 
         # ============================================================
-        # 7. BOTÕES FINAIS (RASCUNHO E ENVIO)
+        # 7. BOTÕES FINAIS (ENVIO E POVOAMENTO IMEDIATO)
         # ============================================================
         st.markdown("---")
         col_btn1, col_btn2 = st.columns(2)
         
-        # USAMOS A FUNÇÃO DE LIMPEZA PARA EVITAR ERROS NO JSON
-        # Certifique-se de que a função 'limpar_df' foi definida logo acima do 'if logado'
-        
+        # 1. Captura TUDO o que está na tela agora
         dados_atuais = {
             "nome": nome_f,
             "cargo": cargo_f,
@@ -2435,30 +2433,26 @@ if nome_usuario:
             "atividades_baixa": limpar_df(atividades_baixa_editadas),
             "dificuldades": limpar_df(edit_dif),
             "sugestoes": limpar_df(edit_sug),
-            "status": "em_andamento"
         }
-        
-        # Incluímos as respostas do DISC
         dados_atuais.update(respostas_disc)
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
                 if salvar(dados_atuais, arquivo_nome):
+                    # ESTA LINHA POVOA O FORMULÁRIO NA HORA
                     st.session_state["dados_oficiais"] = dados_atuais
-                    st.success("✅ Rascunho salvo com sucesso no GitHub!")
+                    st.success("✅ Rascunho salvo e formulário atualizado!")
 
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-                # Validação simples para não enviar vazio
                 if not nome_f or nome_f.strip() == "":
-                    st.error("⚠️ Por favor, preencha o nome antes de enviar.")
+                    st.error("⚠️ Preencha o nome para enviar.")
                 else:
-                    dados_atuais["status"] = "finalizado"
                     arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                    dados_atuais["status"] = "finalizado"
                     
                     if salvar(dados_atuais, arquivo_oficial):
-                        st.balloons() 
-                        # Atualiza a memória para manter os dados na tela
+                        st.balloons()
+                        # ESTA LINHA GARANTE QUE OS DADOS CONTINUEM NO FORMULÁRIO
                         st.session_state["dados_oficiais"] = dados_atuais
-                        st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
-                        st.info(f"Os dados oficiais de {nome_f} estão salvos no GitHub.")
+                        st.success(f"🎊 ENVIADO! O formulário de {nome_f.upper()} continua visível acima.")
