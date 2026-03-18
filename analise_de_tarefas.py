@@ -2123,14 +2123,14 @@ if primeira_vez:
     if st.button("✅ Criar meu Rascunho"):
         if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
             st.success("Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-        return
+        
 
 # ===========================
 # Usuário existente ou primeira vez desmarcada
 # ===========================
 if not dados:
     st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
-    return
+   
 
 st.success(f"📋 Rascunho de {nome_usuario} carregado!")
 
