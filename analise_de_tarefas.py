@@ -2361,52 +2361,34 @@ if nome_usuario:
         # --- BOTÃO SALVAR ---
         st.markdown("---")
         if st.button("💾 Salvar Rascunho"):
-            # Limpeza simples: remove linhas onde a descrição está vazia
-            # Garante que seja DataFrame mesmo se estiver vazio
-            import pandas as pd
+            # 1. Converte tudo para lista primeiro (dentro do clique do botão)
+            lista_alta = edit_ativ_alta.to_dict("records") if isinstance(edit_ativ_alta, pd.DataFrame) else (edit_ativ_alta or [])
+            lista_norm = edit_ativ_normal.to_dict("records") if isinstance(edit_ativ_normal, pd.DataFrame) else (edit_ativ_normal or [])
+            lista_baix = edit_ativ_baixa.to_dict("records") if isinstance(edit_ativ_baixa, pd.DataFrame) else (edit_ativ_baixa or [])
+            lista_dif  = edit_dif.to_dict("records") if isinstance(edit_dif, pd.DataFrame) else (edit_dif or [])
+            lista_sug  = edit_sug.to_dict("records") if isinstance(edit_sug, pd.DataFrame) else (edit_sug or [])
 
-            
+            # 2. Filtro simples que não quebra (12 espaços de recuo)
+            ativ_final = [r for r in lista_alta + lista_norm + lista_baix if str(r.get("Atividade Descrita", "")).strip()]
+            dif_final  = [r for r in lista_dif if str(r.get("Dificuldade", "")).strip()]
+            sug_final  = [r for r in lista_sug if str(r.get("Sugestão de Melhoria", "")).strip()]
 
+            # 3. Montagem do Payload (12 espaços de recuo)
+            payload = {
+                "nome": nome, 
+                "cargo": cargo, 
+                "departamento": departamento,
+                "setor": setor, 
+                "chefe": chefe, 
+                "empresa": empresa,
+                "atividades": ativ_final,
+                "dificuldades": dif_final,
+                "sugestoes": sug_final,
+                **respostas_disc,
+                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
+            }
 
-        # ==============================
-        # ALTERNATIVA DIRETA E SEGURA
-        # ==============================
-        
-        # 1. Função simples para limpar qualquer lista de dicionários
-        def filtrar_vazios(lista_dados, campo_chave):
-            if not lista_dados:
-                return []
-            # Converte para lista caso venha como DataFrame e filtra
-            if isinstance(lista_dados, pd.DataFrame):
-                lista_dados = lista_dados.to_dict("records")
-            
-            return [
-                linha for linha in lista_dados 
-                if str(linha.get(campo_chave, "")).strip() != ""
-            ]
-
-        # 2. Captura direto das variáveis que o st.data_editor criou
-        # Use o nome das variáveis que você definiu nos widgets!
-        ativ_alta_final   = filtrar_vazios(edit_ativ_alta, "Atividade Descrita")
-        ativ_normal_final = filtrar_vazios(edit_ativ_normal, "Atividade Descrita")
-        ativ_baixa_final  = filtrar_vazios(edit_ativ_baixa, "Atividade Descrita")
-        
-        dif_final = filtrar_vazios(edit_dif, "Dificuldade")
-        sug_final = filtrar_vazios(edit_sug, "Sugestão de Melhoria")
-            
-            
-        # 2. Montagem do Payload (8 espaços)
-        payload = {
-            "nome": nome,
-            "atividades": ativ_final,
-            "dificuldades": dif_final,
-            "sugestoes": sug_final,
-            **respostas_disc,
-            "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M")
-        }
-
-        # 3. Chamada da função salvar (8 espaços)
-        if salvar(payload, arquivo_nome):
-            st.success("✅ Rascunho salvo com sucesso!")        
-    
-
+            if salvar(payload, arquivo_nome):
+                st.success("✅ Rascunho salvo com sucesso no servidor!")
+            else:
+                st.error("❌ Falha ao salvar. Verifique sua conexão.")
