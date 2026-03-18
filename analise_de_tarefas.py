@@ -2168,68 +2168,39 @@ if nome_usuario:
         # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
         
-    # ===========================
-    # Inicializa DataFrames no session_state se não existirem
-    # ===========================
-    for key in ["form_atividades_alta","form_atividades_normal","form_atividades_baixa"]:
-        if key not in st.session_state:
-            st.session_state[key] = pd.DataFrame({
+        # Inicializa DataFrames do rascunho ou vazios se não houver
+    if "form_atividades_alta" not in st.session_state:
+        if dados and "Atividades" in dados and "Alta" in dados["Atividades"]:
+            st.session_state["form_atividades_alta"] = pd.DataFrame(dados["Atividades"]["Alta"])
+        else:
+            st.session_state["form_atividades_alta"] = pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
             })
 
-    # ===========================
-    # Tabela de Alta Complexidade
-    # ===========================
-    st.subheader("🔹 Atividades de Alta Complexidade")
-    atividades_alta = st.data_editor(
-        st.session_state["form_atividades_alta"],
-        key="form_atividades_alta",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
+    if "form_atividades_normal" not in st.session_state:
+        if dados and "Atividades" in dados and "Normal" in dados["Atividades"]:
+            st.session_state["form_atividades_normal"] = pd.DataFrame(dados["Atividades"]["Normal"])
+        else:
+            st.session_state["form_atividades_normal"] = pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })
 
-    # ===========================
-    # Tabela de Nível Normal
-    # ===========================
-    st.subheader("🔹 Atividades de Nível Normal")
-    atividades_normal = st.data_editor(
-        st.session_state["form_atividades_normal"],
-        key="form_atividades_normal",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
-
-    # ===========================
-    # Tabela de Baixa Complexidade
-    # ===========================
-    st.subheader("🔹 Atividades de Baixa Complexidade")
-    atividades_baixa = st.data_editor(
-        st.session_state["form_atividades_baixa"],
-        key="form_atividades_baixa",
-        column_config={
-            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-        },
-        hide_index=True,
-        num_rows="fixed",
-        use_container_width=True
-    )
+    if "form_atividades_baixa" not in st.session_state:
+        if dados and "Atividades" in dados and "Baixa" in dados["Atividades"]:
+            st.session_state["form_atividades_baixa"] = pd.DataFrame(dados["Atividades"]["Baixa"])
+        else:
+            st.session_state["form_atividades_baixa"] = pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            })
 
     # 3. TABELA DIFICULDADES
     st.markdown("---")
