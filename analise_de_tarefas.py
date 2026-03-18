@@ -2387,49 +2387,50 @@ if nome_usuario:
         if not nome or nome.strip() == "":
             st.error("❌ Erro: O campo 'Nome' é obrigatório para persistência.")
         else:
-            # 2. Coleta de Dados de Identificação
-            payload = {
-                "nome": nome,
-                "cargo": cargo,
-                "departamento": departamento,
-                "setor": setor,
-                "chefe": chefe,
-                "empresa": empresa,
-                "escolaridade": escolaridade,
-                "devolucao": devolucao,
-                "cursos": cursos,
-                "objetivo": objetivo,
-                "status_formulario": "rascunho",
-                "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            }
+            try:
+                # 2. Coleta de Dados de Identificação
+                payload = {
+                    "nome": nome,
+                    "cargo": cargo,
+                    "departamento": departamento,
+                    "setor": setor,
+                    "chefe": chefe,
+                    "empresa": empresa,
+                    "escolaridade": escolaridade,
+                    "devolucao": devolucao,
+                    "cursos": cursos,
+                    "objetivo": objetivo,
+                    "status_formulario": "rascunho",
+                    "ultima_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                }
 
-            # 3. Processamento Seguro das Tabelas (SOLUÇÃO DO INDEXERROR)
-            tabelas_finais = {
-                "atividades_alta": atividades_alta_editadas,
-                "atividades_normal": atividades_normal_editadas,
-                "atividades_baixa": atividades_baixa_editadas,
-                "dificuldades": edit_dif,
-                "sugestoes": edit_sug
-            }
+                # 3. Processamento Seguro das Tabelas
+                tabelas_finais = {
+                    "atividades_alta": atividades_alta_editadas,
+                    "atividades_normal": atividades_normal_editadas,
+                    "atividades_baixa": atividades_baixa_editadas,
+                    "dificuldades": edit_dif,
+                    "sugestoes": edit_sug
+                }
 
-            # O loop 'for' processa as tabelas
-            for chave, df_editado in tabelas_finais.items():
-                if isinstance(df_editado, pd.DataFrame) and not df_editado.empty and len(df_editado.columns) > 0:
-                    try:
-                        col_ref = df_editado.columns[0]
-                        df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
-                        payload[chave] = df_valido.to_dict("records")
-                    except Exception:
+                for chave, df_editado in tabelas_finais.items():
+                    if isinstance(df_editado, pd.DataFrame) and not df_editado.empty and len(df_editado.columns) > 0:
+                        try:
+                            col_ref = df_editado.columns[0]
+                            df_valido = df_editado[df_editado[col_ref].astype(str).str.strip() != ""]
+                            payload[chave] = df_valido.to_dict("records")
+                        except Exception:
+                            payload[chave] = []
+                    else:
                         payload[chave] = []
-                else:
-                    payload[chave] = []
 
-            # O 'with' deve estar na mesma linha vertical do 'for'
-            with open(arquivo_nome, 'w', encoding='utf-8') as f:
-                json.dump(payload, f, ensure_ascii=False, indent=4)
-            
-            st.success(f"✅ Dados de {nome} salvos!")
+                # 4. Salvamento físico do arquivo (alinhado com o for)
+                with open(arquivo_nome, 'w', encoding='utf-8') as f:
+                    json.dump(payload, f, ensure_ascii=False, indent=4)
+                
+                st.success(f"✅ Dados de {nome} salvos!")
+                st.balloons()
 
-        # ESTE EXCEPT DEVE ESTAR ALINHADO COM O 'if not nome' LÁ DE CIMA
-        except Exception as e:
-            st.error(f"❌ Erro: {str(e)}")
+            except Exception as e:
+                # Este except agora está alinhado com o 'try' do processamento
+                st.error(f"❌ Erro ao salvar: {str(e)}")
