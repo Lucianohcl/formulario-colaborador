@@ -2368,8 +2368,8 @@ if nome_usuario:
             
 
             # Filtra apenas linhas com conteúdo
-            ativ_final = edit_ativ[edit_ativ["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
-            dif_final = edit_dif[edit_dif["Dificuldade"].astype(str).str.strip() != ""].to_dict("records")
+            
+            ativ_final = edit_ativ_df[edit_ativ_df["Atividade Descrita"].astype(str).str.strip() != ""].to_dict("records")
             sug_final = edit_sug[edit_sug["Sugestão de Melhoria"].astype(str).str.strip() != ""].to_dict("records")
 
             payload = {
