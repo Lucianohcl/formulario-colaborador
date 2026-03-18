@@ -1197,59 +1197,7 @@ if st.query_params.get("page") == "formulario":
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
-        # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO
-        # -------------------------------------------------
         
-        if enviar:
-
-            # 1. GERA A DATA E HORA DE BRASÍLIA
-            fuso_brasilia = pytz.timezone('America/Sao_Paulo')
-            data_hoje = datetime.now(fuso_brasilia).strftime('%d/%m/%Y %H:%M:%S')
-            # Criamos uma lista com todos os campos que NÃO podem estar vazios
-            # Verifique se os nomes das variáveis (cursos, trabalho, objetivo) são esses mesmos
-            campos_obrigatorios = [
-                nome, setor, cargo, chefe, departamento, empresa,
-                cursos, objetivo
-            ]
-
-            # 1. VALIDAÇÃO DE CAMPOS (Identificação + Cursos/Trabalho/Objetivo)
-            # O strip() remove espaços vazios para garantir que haja texto real
-            if any(not str(campo).strip() for campo in campos_obrigatorios):
-                st.error("⚠️ Erro: Preencha todos os campos obrigatórios!")
-
-            # 2. VALIDAÇÃO DO DISC
-            elif any(st.session_state.get(f"disc_{i}") is None for i in range(1, 25)):
-                st.error("⚠️ Erro: Responda todas as perguntas do DISC!")
-
-            else:
-                import os
-                import json
-
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-                os.makedirs(dados_dir, exist_ok=True)
-
-                # 3. EVITAR DUPLICIDADE
-                nome_limpo = nome.strip().replace(" ", "_")
-                arquivos_existentes = [f for f in os.listdir(dados_dir) if f.startswith(nome_limpo)]
-
-                if arquivos_existentes:
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-
-                else:
-
-                    # 4. CONFIRMAÇÃO
-                    if not st.session_state.get("confirmado", False):
-
-                        st.warning(
-                            "⚠️ Revise o formulário. Clique novamente no botão para confirmar o envio."
-                        )
-
-                        st.session_state["confirmado"] = True
-
-                    else:
-                        st.success("✅ Formulário enviado com sucesso!")
 
        
         
