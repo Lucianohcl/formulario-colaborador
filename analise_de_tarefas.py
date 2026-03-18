@@ -2168,7 +2168,7 @@ if nome_usuario:
         # dentro do dicionário 'payload' no botão SALVAR lá embaixo!
 
         
-    # ===========================
+        # ===========================
     # Tabela de Alta Complexidade
     # ===========================
     st.subheader("🔹 Atividades de Alta Complexidade")
@@ -2229,6 +2229,19 @@ if nome_usuario:
             "Horas": [""] * 20,
             "Minutos": [""] * 20
         })
+
+    atividades_baixa = st.data_editor(
+        st.session_state["form_atividades_baixa"],
+        key="form_atividades_baixa_editor",
+        column_config={
+            "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+            "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+            "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+        },
+        hide_index=True,
+        num_rows="fixed",
+        use_container_width=True
+    )
 
     atividades_baixa = st.data_editor(
         st.session_state["form_atividades_baixa"],
