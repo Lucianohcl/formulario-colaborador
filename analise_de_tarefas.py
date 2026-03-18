@@ -2264,28 +2264,40 @@ if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     
-    # --- O PULO DO GATO: RESETAR A VARIÁVEL ---
+    # 1. Reset total da variável
     dados = {} 
     
-    # Tenta carregar os dados do rascunho
+    # 2. Tenta carregar do GitHub
     dados_carregados, _ = carregar(arquivo_nome)
     
-    # Se carregou algo com conteúdo real, atribuímos à variável dados
-    if dados_carregados and isinstance(dados_carregados, dict) and len(dados_carregados) > 0:
+    # --- LINHA DE DEBUG (EXIBE O QUE VEM DO GITHUB) ---
+    # st.write("DEBUG - O que veio do GitHub:", dados_carregados)
+
+    # 3. VALIDAÇÃO REAL: Só aceita se for um dicionário E tiver a chave 'nome'
+    # Isso evita que mensagens de erro como {"message": "Not Found"} sejam lidas como cadastro
+    if isinstance(dados_carregados, dict) and "nome" in dados_carregados:
         dados = dados_carregados
 
     if primeira_vez:
-        # Só barra se o arquivo realmente existir (tiver dados dentro)
+        # Só barra se achou um rascunho VÁLIDO (com nome dentro)
         if dados:
             st.warning(f"⚠️ O usuário '{nome_usuario}' já possui um rascunho. Desmarque a opção acima para entrar.")
-            st.stop() # Para o script aqui para não mostrar o formulário embaixo
+            st.stop() 
         else:
             if st.button("✅ Criar meu Rascunho"):
-                # Criamos um rascunho básico para "reservar" o nome no GitHub
+                # Salvamos um rascunho inicial
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
                     st.success("✅ Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    # O rerun é necessário para o Streamlit ler que o arquivo agora existe
-                    st.rerun()
+                    st.rerun() # Força o app a recarregar e reconhecer o novo arquivo
+    else:
+        # Se não for primeira vez e o rascunho não existe/não é válido
+        if not dados:
+            st.error("❌ Nome não encontrado. Verifique se digitou corretamente ou cadastre-se.")
+            st.stop()
+
+        st.success(f"📋 Rascunho de {nome_usuario} carregado!")
+
+
     else:
         if not dados:
             st.error("❌ Nome não encontrado. Cadastre-se primeiro.")
