@@ -2252,51 +2252,48 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 # 3. INTERFACE E LÓGICA DE ACESSO
 # ================================
 st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-st.info("📝 Gerar Rascunho")
+
+# Criamos uma trava de memória para evitar o loop de "Já cadastrado"
+if "logado" not in st.session_state:
+    st.session_state["logado"] = False
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**")
-primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)")
 
-# Inicializamos 'dados' como vazio para evitar erros caso não haja rascunho
+# Se o usuário acabou de criar o rascunho, forçamos 'primeira_vez' a ser Falso
+primeira_vez = st.checkbox("É minha primeira vez (Cadastrar)") if not st.session_state["logado"] else False
+
 dados = {}
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     
-    # 1. Reset total da variável
-    dados = {} 
-    
-    # 2. Tenta carregar do GitHub
+    # 1. Tenta carregar do GitHub
     dados_carregados, _ = carregar(arquivo_nome)
     
-    # --- LINHA DE DEBUG (EXIBE O QUE VEM DO GITHUB) ---
-    # st.write("DEBUG - O que veio do GitHub:", dados_carregados)
-
-    # 3. VALIDAÇÃO REAL: Só aceita se for um dicionário E tiver a chave 'nome'
-    # Isso evita que mensagens de erro como {"message": "Not Found"} sejam lidas como cadastro
+    # 2. Validação Real
     if isinstance(dados_carregados, dict) and "nome" in dados_carregados:
         dados = dados_carregados
 
-    if primeira_vez:
-        # Só barra se achou um rascunho VÁLIDO (com nome dentro)
+    if primeira_vez and not st.session_state["logado"]:
         if dados:
-            st.warning(f"⚠️ O usuário '{nome_usuario}' já possui um rascunho. Desmarque a opção acima para entrar.")
+            st.warning(f"⚠️ O usuário '{nome_usuario}' já existe. Desmarque a caixa para entrar.")
             st.stop() 
         else:
             if st.button("✅ Criar meu Rascunho"):
-                # Salvamos um rascunho inicial
                 if salvar({"nome": nome_usuario, "status": "iniciado"}, arquivo_nome):
-                    st.success("✅ Rascunho criado! Agora desmarque a caixa 'É minha primeira vez'.")
-                    st.rerun() # Força o app a recarregar e reconhecer o novo arquivo
+                    st.session_state["logado"] = True # Ativa a trava de sucesso
+                    st.rerun()
     else:
-        # Se não for primeira vez e o rascunho não existe/não é válido
-        if not dados:
-            st.error("❌ Nome não encontrado. Verifique se digitou corretamente ou cadastre-se.")
+        # Se não achou rascunho e não acabou de logar
+        if not dados and not st.session_state["logado"]:
+            st.error("❌ Nome não encontrado. Marque 'É minha primeira vez' para cadastrar.")
             st.stop()
 
+        # SE CHEGOU AQUI, MOSTRA O FORMULÁRIO
         st.success(f"📋 Rascunho de {nome_usuario} carregado!")
-
+        
+       
 
         
         # --- DADOS DE IDENTIFICAÇÃO ---
