@@ -1196,81 +1196,122 @@ if st.query_params.get("page") == "formulario":
         
         
           
-        # -------------------------------------------------
-        # BLOCO FINAL: AJUSTADO PARA SUAS VARIÁVEIS
-        # -------------------------------------------------
-        btn_enviar = st.form_submit_button("🚀 VALIDAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True)
-
-        if btn_enviar:
+        if enviar:
+            import os
             import json
-            import pytz
-            import pandas as pd
             from datetime import datetime
+            from zoneinfo import ZoneInfo
 
-            # 1. FUNÇÃO PARA LIMPAR AS SUAS TABELAS
-            def limpar_tabela(df, col_referencia):
-                if df is None or not isinstance(df, pd.DataFrame):
-                    return []
-                # Remove linhas onde a coluna principal está vazia
-                df_filtrado = df[df[col_referencia].str.strip() != ""]
-                return df_filtrado.to_dict('records')
-
-            # Captura direta das variáveis que você criou no st.data_editor
-            dados_alta = limpar_tabela(atividades_alta, "Atividade Descrita")
-            dados_norm = limpar_tabela(atividades_normal, "Atividade Descrita")
-            dados_baix = limpar_tabela(atividades_baixa, "Atividade Descrita")
-            dados_difs = limpar_tabela(edit_dif, "Dificuldade")
-            dados_sugs = limpar_tabela(edit_sug, "Sugestão de Melhoria")
-
-            # 2. VALIDAÇÃO
-            erros = []
-            if not nome.strip(): erros.append("Nome")
-            if not cargo.strip(): erros.append("Cargo")
+            pendencias = {}
             
-            # Validação do DISC (Garantindo as 24)
-            respostas_disc = {}
-            for i in range(1, 25):
-                v = st.session_state.get(f"radio_{i}")
-                if v: respostas_disc[f"p{i}"] = v
-            
-            if len(respostas_disc) < 24:
-                erros.append(f"Responda todas as 24 questões do DISC (faltam {24 - len(respostas_disc)})")
+            # 1. IDENTIFICAÇÃO (Sua lógica exata)
+            campos_ident = {
+                "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
+                "Departamento": departamento, "Empresa": empresa,
+                "Escolaridade": escolaridade, "Devolução": devolucao
+            }
+            for campo, valor in campos_ident.items():
+                if not valor or valor == "Escolha...":
+                    pendencias.setdefault("Identificação", []).append(campo)
 
-            # 3. ENVIO SE NÃO HOUVER ERROS
-            if erros:
-                st.error("### ❌ Não foi possível enviar")
-                for e in erros:
-                    st.write(f"⚠️ {e}")
-            else:
-                try:
-                    fuso = pytz.timezone('America/Sao_Paulo')
-                    agora = datetime.now(fuso).strftime('%d/%m/%Y %H:%M:%S')
+            # 2. CURSOS E OBJETIVO
+            if not cursos:
+                pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
+            if not objetivo:
+                pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
-                    payload = {
-                        "data_envio": agora,
-                        "colaborador": {
-                            "nome": nome, "setor": setor, "cargo": cargo, "chefe": chefe
-                        },
-                        "tabelas_atividades": {
-                            "alta": dados_alta,
-                            "normal": dados_norm,
-                            "baixa": dados_baix
-                        },
-                        "dificuldades": dados_difs,
-                        "sugestoes": dados_sugs,
-                        "disc": respostas_disc,
-                        "perfil": {"cursos": cursos, "objetivo": objetivo}
-                    }
+            # 3. VALIDAÇÃO DAS 5 TABELAS (Repetindo seu padrão para cada uma)
+            atividades_finais = []
+            tabelas_validas = False
 
-                    # Chama a sua função salvar
-                    if salvar(payload, f"envio_{nome.strip().lower()}.json", f"Final: {nome}"):
-                        
-                        st.success("✨ FORMULÁRIO ENVIADO COM SUCESSO!")
+            # --- Tabela Alta ---
+            for i, row in atividades_alta.iterrows():
+                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
+                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
+                        atividades_finais.append({"tipo": "Alta", **row.to_dict()})
+                        tabelas_validas = True
                     else:
-                        st.error("❌ Erro ao salvar no GitHub. Verifique o Token/Repositório.")
-                
-                except Exception as e:
-                    st.error(f"Erro técnico: {e}")
+                        pendencias.setdefault("Atividades Alta", []).append(f"Linha {i+1} incompleta")
+
+            # --- Tabela Normal ---
+            for i, row in atividades_normal.iterrows():
+                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
+                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
+                        atividades_finais.append({"tipo": "Normal", **row.to_dict()})
+                        tabelas_validas = True
+                    else:
+                        pendencias.setdefault("Atividades Normal", []).append(f"Linha {i+1} incompleta")
+
+            # --- Tabela Baixa ---
+            for i, row in atividades_baixa.iterrows():
+                if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
+                    if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] != "", row["Minutos"] != ""]):
+                        atividades_finais.append({"tipo": "Baixa", **row.to_dict()})
+                        tabelas_validas = True
+                    else:
+                        pendencias.setdefault("Atividades Baixa", []).append(f"Linha {i+1} incompleta")
+
+            # --- Tabela Dificuldades ---
+            dificuldades_finais = []
+            for i, row in edit_dif.iterrows():
+                if any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"]]):
+                    if all([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"]]):
+                        dificuldades_finais.append(row.to_dict())
+                        tabelas_validas = True
+                    else:
+                        pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta")
+
+            # --- Tabela Sugestões ---
+            sugestoes_finais = []
+            for i, row in edit_sug.iterrows():
+                if any([row["Sugestão de Melhoria"], row["Impacto Esperado"]]):
+                    if all([row["Sugestão de Melhoria"], row["Impacto Esperado"]]):
+                        sugestoes_finais.append(row.to_dict())
+                        tabelas_validas = True
+                    else:
+                        pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta")
+
+            if not tabelas_validas:
+                pendencias.setdefault("Tabelas", []).append("Preencha pelo menos uma linha completa em qualquer tabela.")
+
+            # 4. DISC (Sua lógica exata)
+            disc_faltando = []
+            for i in range(1, 25):
+                if not st.session_state.get(f"disc_{i}"):
+                    disc_faltando.append(f"Questão {i}")
+            if disc_faltando:
+                pendencias["DISC"] = [", ".join(disc_faltando)]
+
+            # 5. RESULTADO DAS VALIDAÇÕES E CONFIRMAÇÃO (Dois cliques)
+            if pendencias:
+                st.error("⚠️ O formulário possui pendências:")
+                for secao, itens in pendencias.items():
+                    st.write(f"**{secao}**: {', '.join(itens)}")
+                st.session_state["confirmado"] = False
+                st.stop()
+
+            if not st.session_state.get("confirmado", False):
+                st.warning("⚠️ Tudo certo! Clique em ENVIAR novamente para confirmar o envio único.")
+                st.session_state["confirmado"] = True
+                st.stop()
+
+            # 6. ENVIO FINAL
+            dados = {
+                "identificacao": campos_ident,
+                "cursos": cursos, "objetivo": objetivo,
+                "atividades": atividades_finais,
+                "dificuldades": dificuldades_finais,
+                "sugestoes": sugestoes_finais,
+                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)},
+                "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
+            }
+
+            if salvar(dados, f"{nome.strip().replace(' ', '_')}.json", f"Envio: {nome}"):
+                st.success("✅ Formulário enviado com sucesso!")
+                st.balloons()
+                st.session_state["confirmado"] = False
+            else:
+                st.error("❌ Erro ao enviar para o GitHub.")
                     
                         
                   
