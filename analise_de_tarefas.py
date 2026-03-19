@@ -2244,39 +2244,47 @@ if nome_usuario:
             btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados")
             
             if btn_povoar:
-                st.write("🔍 **Debug:** Iniciando processo de preenchimento...")
+                st.info("🔍 **Debug:** Iniciando injeção de dados...")
                 
-                if dados_git and isinstance(dados_git, dict) and "nome" in dados_git:
+                if dados_git and isinstance(dados_git, dict):
                     try:
-                        # 1. Limpeza agressiva de cache visual (Widgets)
-                        # Remove a "memória" antiga para forçar a leitura do valor da 'fonte'
-                        chaves_widgets = [
-                            "ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug", 
-                            "f_nome", "f_cargo", "f_depto", "f_esc", "f_setor", 
-                            "f_chefe", "f_unidade", "f_dev", "f_cursos", "f_obj"
-                        ]
+                        # --- DE-PARA EXPLÍCITO (Injeção Direta no Session State) ---
+                        # Aqui dizemos: "Streamlit, coloque este valor na gaveta do campo X"
                         
-                        # Adiciona as chaves do DISC na limpeza
+                        # Dados de Identificação
+                        st.session_state["f_nome"] = dados_git.get("nome", nome_usuario)
+                        st.session_state["f_cargo"] = dados_git.get("cargo", "")
+                        st.session_state["f_depto"] = dados_git.get("departamento", "")
+                        st.session_state["f_esc"] = dados_git.get("escolaridade", "")
+                        st.session_state["f_setor"] = dados_git.get("setor", "")
+                        st.session_state["f_chefe"] = dados_git.get("chefe", "")
+                        st.session_state["f_unidade"] = dados_git.get("empresa", "")
+                        st.session_state["f_dev"] = dados_git.get("devolucao", "")
+                        
+                        # Áreas de Texto
+                        st.session_state["f_cursos"] = dados_git.get("cursos", "")
+                        st.session_state["f_obj"] = dados_git.get("objetivo", "")
+
+                        # --- DEBUG DOS DADOS NAS TABELAS ---
+                        st.write(f"✔️ Dados carregados para: {st.session_state['f_nome']}")
+                        
+                        # Injeção das chaves do DISC (1 a 24)
+                        disc_data = dados_git.get("disc", {})
                         for i in range(1, 25):
-                            chaves_widgets.append(f"r_{i}")
+                            chave_disc = f"disc_{i}"
+                            if chave_disc in disc_data:
+                                st.session_state[f"r_{i}"] = disc_data[chave_disc]
+
+                        st.success("✅ Rascunho injetado com sucesso!")
                         
-                        for k in chaves_widgets:
-                            if k in st.session_state:
-                                del st.session_state[k]
-                        
-                        # 2. Injeção dos dados na Memória VIP
-                        st.session_state["dados_oficiais"] = dados_git.copy()
-                        
-                        st.success(f"✅ Sucesso! Encontrado rascunho de: {dados_git.get('nome')}")
-                        st.info("🔄 Recarregando formulário com os dados salvos...")
-                        
+                        # Pausa curta para leitura do debug antes do refresh
                         import time
-                        time.sleep(1) 
+                        time.sleep(0.5)
                         
                         st.rerun()
                         
                     except Exception as e:
-                        st.error(f"❌ Erro crítico ao processar dados: {e}")
+                        st.error(f"❌ Erro no De-Para: {e}")
                 else:
-                    st.error("❌ Falha de Debug: 'dados_git' está vazio ou não é um dicionário válido.")
-                    st.write("Conteúdo atual de dados_git:", dados_git)
+                    st.error("❌ Erro: O arquivo rascunho está vazio ou ilegível no GitHub.")
+                    st.write("Conteúdo do arquivo encontrado:", dados_git)
