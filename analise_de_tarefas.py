@@ -2240,51 +2240,59 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            # Botão com chave única para evitar conflitos
             btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados")
             
             if btn_povoar:
-                st.info("🔍 **Debug:** Iniciando injeção de dados...")
+                st.info("🔍 **DEBUG INICIADO**")
                 
-                if dados_git and isinstance(dados_git, dict):
+                # 1. Verificar se os dados chegaram do GitHub
+                if not dados_git:
+                    st.error("❌ DEBUG: 'dados_git' está vazio! O arquivo não foi lido corretamente.")
+                else:
+                    st.write("✔️ DEBUG: Dados carregados do GitHub com sucesso.")
+                    
                     try:
-                        # --- DE-PARA EXPLÍCITO (Injeção Direta no Session State) ---
-                        # Aqui dizemos: "Streamlit, coloque este valor na gaveta do campo X"
-                        
-                        # Dados de Identificação
-                        st.session_state["f_nome"] = dados_git.get("nome", nome_usuario)
-                        st.session_state["f_cargo"] = dados_git.get("cargo", "")
-                        st.session_state["f_depto"] = dados_git.get("departamento", "")
-                        st.session_state["f_esc"] = dados_git.get("escolaridade", "")
-                        st.session_state["f_setor"] = dados_git.get("setor", "")
-                        st.session_state["f_chefe"] = dados_git.get("chefe", "")
-                        st.session_state["f_unidade"] = dados_git.get("empresa", "")
-                        st.session_state["f_dev"] = dados_git.get("devolucao", "")
-                        
-                        # Áreas de Texto
-                        st.session_state["f_cursos"] = dados_git.get("cursos", "")
-                        st.session_state["f_obj"] = dados_git.get("objetivo", "")
+                        mapeamento = {
+                            "nome": "f_nome",
+                            "cargo": "f_cargo",
+                            "departamento": "f_depto",
+                            "escolaridade": "f_esc",
+                            "setor": "f_setor",
+                            "chefe": "f_chefe",
+                            "empresa": "f_unidade",
+                            "devolucao": "f_dev",
+                            "cursos": "f_cursos",
+                            "objetivo": "f_obj"
+                        }
 
-                        # --- DEBUG DOS DADOS NAS TABELAS ---
-                        st.write(f"✔️ Dados carregados para: {st.session_state['f_nome']}")
-                        
-                        # Injeção das chaves do DISC (1 a 24)
+                        # 2. Processo de Injeção com rastro
+                        for chave_json, chave_st in mapeamento.items():
+                            valor = dados_git.get(chave_json, "")
+                            
+                            # Limpa o que existia antes
+                            if chave_st in st.session_state:
+                                del st.session_state[chave_st]
+                            
+                            # Injeta o valor do rascunho
+                            st.session_state[chave_st] = valor
+                            st.write(f"🧪 Injetando em `{chave_st}` -> `{valor}`")
+
+                        # 3. Processo do DISC
                         disc_data = dados_git.get("disc", {})
-                        for i in range(1, 25):
-                            chave_disc = f"disc_{i}"
-                            if chave_disc in disc_data:
-                                st.session_state[f"r_{i}"] = disc_data[chave_disc]
+                        if disc_data:
+                            for i in range(1, 25):
+                                k_st, k_js = f"r_{i}", f"disc_{i}"
+                                if k_st in st.session_state: del st.session_state[k_st]
+                                if k_js in disc_data:
+                                    st.session_state[k_st] = disc_data[k_js]
+                            st.write("✔️ DEBUG: Respostas DISC processadas.")
 
-                        st.success("✅ Rascunho injetado com sucesso!")
+                        st.success("✅ Tudo pronto! Reiniciando para aplicar...")
                         
-                        # Pausa curta para leitura do debug antes do refresh
                         import time
-                        time.sleep(0.5)
-                        
+                        time.sleep(1.5) # Tempo para você conseguir ler os logs de debug
                         st.rerun()
                         
                     except Exception as e:
-                        st.error(f"❌ Erro no De-Para: {e}")
-                else:
-                    st.error("❌ Erro: O arquivo rascunho está vazio ou ilegível no GitHub.")
-                    st.write("Conteúdo do arquivo encontrado:", dados_git)
+                        st.error(f"❌ DEBUG: Erro durante a injeção: {e}")
+                        st.exception(e) # Mostra o erro completo
