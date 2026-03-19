@@ -1054,6 +1054,22 @@ if st.query_params.get("page") == "formulario":
     # ===========================
     # TABELAS DE ATIVIDADES
     # ===========================
+    def preparar_df(chave_json, colunas, fonte_local, linhas_padrao=20):
+        import pandas as pd
+        if not isinstance(fonte_local, dict):
+            fonte_local = {}
+        dados = fonte_local.get(chave_json, [])
+        if dados and isinstance(dados, list):
+            df = pd.DataFrame(dados)
+            for col in colunas:
+                if col not in df.columns:
+                    df[col] = ""
+            return df[colunas]
+        return pd.DataFrame({col: [""] * linhas_padrao for col in colunas})
+
+    if 'fonte' not in locals():
+        fonte = st.session_state.get("dados_oficiais", {})
+
     st.subheader("🔹 Atividades de Alta Complexidade")
     df_alta = preparar_df("atividades_alta", ["Atividade Descrita", "Frequência", "Horas", "Minutos"], fonte, 20)
     edit_alta = st.data_editor(df_alta, key="ed_alta", use_container_width=True, hide_index=True, 
