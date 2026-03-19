@@ -984,7 +984,7 @@ if st.query_params.get("page") == "formulario":
             resposta = st.radio(
                 label=f"{i}. {pergunta}",
                 options=["A", "B", "C", "D"],
-                key=f"disc_form_{i}"
+                key=f"disc_form_{i}",
                 horizontal=True
             )
 
