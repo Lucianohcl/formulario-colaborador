@@ -2473,16 +2473,22 @@ if nome_usuario:
         with col2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
 
+                st.write("DEBUG: clicou no botão")
+
                 if not nome_f or nome_f.strip() == "":
                     st.error("⚠️ Preencha o nome antes de enviar.")
                 else:
                     with st.spinner("Enviando formulário..."):
+
+                        st.write("DEBUG antes de salvar")
 
                         arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
                         dados_atuais["status"] = "finalizado"
                         dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
                         ok = salvar(dados_atuais, arquivo_oficial)
+
+                        st.write("DEBUG salvar:", ok)  # 👈 TEM QUE ESTAR AQUI
 
                     if ok:
                         salvar(dados_atuais, arquivo_nome)
