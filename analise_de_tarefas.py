@@ -860,15 +860,62 @@ if st.query_params.get("page") == "formulario":
         
         
         
-        st.subheader("🔹 Atividades Executadas")
-        
-        edit_ativ = st.data_editor(
+        # ===========================
+        # Tabela de Alta Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Alta Complexidade")
+        atividades_alta = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True), # Limpeza do índice
+            }).reset_index(drop=True),
+            key="form_atividades_alta",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        # ===========================
+        # Tabela de Nível Normal
+        # ===========================
+        st.subheader("🔹 Atividades de Nível Normal")
+        atividades_normal = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }).reset_index(drop=True),
+            key="form_atividades_normal",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True
+        )
+
+        # ===========================
+        # Tabela de Baixa Complexidade
+        # ===========================
+        st.subheader("🔹 Atividades de Baixa Complexidade")
+        atividades_baixa = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }).reset_index(drop=True),
+            key="form_atividades_baixa",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -884,34 +931,25 @@ if st.query_params.get("page") == "formulario":
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
         edit_dif = st.data_editor(
-                pd.DataFrame({
-                        "Dificuldade": [""] * 20,
-                        "Setor/Parceiro Envolvido": [""] * 20,
-                        "Frequência": [""] * 20,
-                        "Horas Perdidas": [""] * 20,
-                        "Minutos Perdidos": [""] * 20
-                }),
-                column_config={
-                        "Frequência": st.column_config.SelectboxColumn(
-                                "Frequência", 
-                                options=lista_frequencia
-                        ),
-                        "Horas Perdidas": st.column_config.SelectboxColumn(
-                                "Horas Perdidas", 
-                                options=lista_horas
-                        ),
-                        "Minutos Perdidos": st.column_config.SelectboxColumn(
-                                "Minutos Perdidos", 
-                                options=lista_minutos
-                        ),
-                },
-                hide_index=True,
-                num_rows="fixed",
-                use_container_width=True,
-                key="dif_editor"
+            pd.DataFrame({
+                "Dificuldade": [""] * 20,
+                "Setor/Parceiro Envolvido": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas Perdidas": [""] * 20,
+                "Minutos Perdidos": [""] * 20
+            }),
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
+            use_container_width=True,
+            key="dif_editor"
         )
 
-        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
+        # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
         
@@ -924,24 +962,31 @@ if st.query_params.get("page") == "formulario":
                 "Frequência do Impacto": [""] * 20
             }).reset_index(drop=True),
             column_config={
-                "Redução Horas": st.column_config.SelectboxColumn(
-                    "Redução Horas", 
-                    options=lista_horas
-                ),
-                "Redução Minutos": st.column_config.SelectboxColumn(
-                    "Redução Minutos", 
-                    options=lista_minutos
-                ),
-                "Frequência do Impacto": st.column_config.SelectboxColumn(
-                    "Frequência do Impacto", 
-                    options=lista_frequencia
-                ),
+                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
             },
             hide_index=True,
             num_rows="fixed",
             use_container_width=True,
             key="sug_editor"
         )
+
+        # --- QUESTIONÁRIO DISC ---
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            st.radio(
+                label=f"{i}. {pergunta}", 
+                options=["A", "B", "C", "D"], 
+                key=f"disc_{i}", 
+                horizontal=True, 
+                index=None
+            )
+
+        # BOTÃO DO FORMULÁRIO
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+
 
         
 
