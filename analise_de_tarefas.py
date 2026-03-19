@@ -161,7 +161,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
 if "logado" not in st.session_state:
-    st.session_state["logado"] = FalseF
+    st.session_state["logado"] = False
 
 def gerar_pdf(form):
     buffer = io.BytesIO()
