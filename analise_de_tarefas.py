@@ -2225,10 +2225,18 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            if st.button("🚀 RESTAURAR DADOS SALVOS", type="primary", use_container_width=True):
+            if st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True):
                 if dados_git:
+                    # 1. Limpa as chaves antigas das tabelas para forçar o reset visual
+                    chaves_para_resetar = ["ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug"]
+                    for chave in chaves_para_resetar:
+                        if chave in st.session_state:
+                            del st.session_state[chave]
+                    
+                    # 2. Injeta os dados do GitHub na fonte oficial
                     st.session_state["dados_oficiais"] = dados_git.copy()
-                    st.success("✅ Dados restaurados! O formulário foi atualizado.")
+                    
+                    st.success("✅ Formulário preenchido! Aguarde o recarregamento...")
                     st.rerun()
                 else:
-                    st.warning("⚠️ Nenhum dado encontrado para restaurar.")
+                    st.warning("⚠️ Você ainda não tem um rascunho salvo no sistema.")
