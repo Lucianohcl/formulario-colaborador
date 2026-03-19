@@ -1183,7 +1183,7 @@ if st.query_params.get("page") == "formulario":
 
         # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
-        st.subheader("📊 Questionário DISC")
+        st.subheader("📊 Questionário")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
