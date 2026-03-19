@@ -287,6 +287,46 @@ if not os.path.exists(dados_dir):
     os.makedirs(dados_dir)
 
 
+# ================================
+# LOGIN / ACESSO
+# ================================
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="input_nome_principal")
+
+dados_git = {}
+
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+
+    novo_cadastro = st.checkbox(
+        "🌟 Primeira vez? Marque aqui para abrir um rascunho em branco.",
+        key="check_novo"
+    )
+
+    if novo_cadastro:
+        st.session_state["logado"] = True
+
+        if st.session_state.get("reset_feito") != nome_limpo:
+            st.session_state["dados_oficiais"] = {}
+            st.session_state["reset_feito"] = nome_limpo
+
+    else:
+        dados_git, _ = carregar(arquivo_nome)
+
+        if dados_git and "nome" in dados_git:
+            st.session_state["dados_oficiais"] = dados_git
+            st.session_state["logado"] = True
+
+
+# ================================
+# 🔥 AQUI É ONDE ENTRA O BLOQUEIO
+# ================================
+if not st.session_state["logado"]:
+    st.stop()
+
+
+
+
 # --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -2283,7 +2323,7 @@ for i, pergunta in enumerate(perguntas_disc, 1):
         pergunta,
         options=opcoes,
         index=idx,
-        key=chave
+        key=f"disc_form_{i}"
     )
 
 
