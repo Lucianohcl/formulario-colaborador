@@ -974,18 +974,24 @@ if st.query_params.get("page") == "formulario":
 
         # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
-        st.subheader("📊 Questionário")
+        st.subheader("📊 Questionário DISC")
+
+        if "disc_respostas" not in st.session_state:
+            st.session_state["disc_respostas"] = {}
+
         for i, pergunta in enumerate(perguntas_disc, 1):
-            st.radio(
-                label=f"{i}. {pergunta}", 
-                options=["A", "B", "C", "D"], 
-                key=f"disc_{i}", 
-                horizontal=True, 
-                index=None
+
+            resposta = st.radio(
+                label=f"{i}. {pergunta}",
+                options=["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                horizontal=True
             )
 
+            st.session_state["disc_respostas"][f"q{i}"] = resposta
+
         # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")        
 
 
         
