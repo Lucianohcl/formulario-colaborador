@@ -618,5 +618,7 @@
             "Horas": 0,
             "Minutos": 0
         }
-    ]
+    ],
+    "status": "finalizado",
+    "data_envio": "2026-03-19 04:16:27"
 }
