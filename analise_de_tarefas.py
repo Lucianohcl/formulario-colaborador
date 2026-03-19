@@ -6,72 +6,79 @@ import streamlit as st
 import pandas as pd
 import json
 import os
+import io
 from datetime import datetime
 from statistics import mean
 
-# PDF
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+# PDF / DOC
+from docx import Document
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.units import inch
-from datetime import datetime
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+
 import pytz
 import time
 from zoneinfo import ZoneInfo
 import plotly.express as px
+
 # ============================================================
-
-# CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
-
+# CONFIGURAÇÃO STREAMLIT (ÚNICA)
 # ============================================================
 
 st.set_page_config(
-
     page_title="Sistema de Análise de Tarefas",
-
     page_icon="📊",
-
     layout="wide",
-
     initial_sidebar_state="expanded"
-
 )
 
+# ============================================================
+# SESSION STATE (UNIFICADO)
+# ============================================================
 
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
 
-# Inicialização centralizada
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "home"
 
-if "logged_in" not in st.session_state: st.session_state.logged_in = False
+if "formularios" not in st.session_state:
+    st.session_state["formularios"] = []
 
-if "pagina" not in st.session_state: st.session_state.pagina = "home"
-
-if "formularios" not in st.session_state: st.session_state["formularios"] = []
-
-
-
-# Leitura da URL (Prioridade total para permitir acesso ao formulário)
+# ============================================================
+# NAVEGAÇÃO VIA URL
+# ============================================================
 
 query_params = st.query_params
+pagina_url = query_params.get("page", None)
 
-if "page" in query_params:
+if pagina_url:
+    st.session_state["pagina"] = pagina_url
 
-    st.session_state.pagina = query_params["page"]
+# ============================================================
+# CSS (DATA EDITOR FIX)
+# ============================================================
 
 st.markdown("""
     <style>
-    /* Oculta a coluna de índice do data_editor */
     div[data-testid="stDataEditor"] > div > div > div > div:first-child {
         display: none !important;
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
-# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+# ============================================================
+# DIRETÓRIO DE DADOS
+# ============================================================
+
 dados_dir = "dados"
-if not os.path.exists(dados_dir):
-    os.makedirs(dados_dir)
+os.makedirs(dados_dir, exist_ok=True)
 
+# ============================================================
+# DISC
+# ============================================================
 
-# --- LISTA DE PERGUNTAS DISC ---
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -291,41 +298,35 @@ if not os.path.exists(dados_dir):
 
 
 # ================================
-# LOGIN / ACESSO
+# LOGIN / ENTRADA NO APP
 # ================================
-nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="input_nome_principal")
 
-dados_git = {}
+if "logado" not in st.session_state:
+    st.session_state["logado"] = False
+
+
+nome_usuario = st.text_input("Digite seu NOME COMPLETO", key="input_nome_principal")
 
 if nome_usuario:
+
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+
+    # aqui você pode tentar carregar dados do usuário
     arquivo_nome = f"rascunho_{nome_limpo}.json"
+    dados_git, _ = carregar(arquivo_nome)
 
-    novo_cadastro = st.checkbox(
-        "🌟 Primeira vez? Marque aqui para abrir um rascunho em branco.",
-        key="check_novo"
-    )
+    if dados_git and "nome" in dados_git:
+        st.session_state["dados_oficiais"] = dados_git
 
-    if novo_cadastro:
-        st.session_state["logado"] = True
-
-        st.session_state["dados_oficiais"] = {}
-        st.session_state["reset_feito"] = nome_limpo
-
-    else:
-        dados_git, _ = carregar(arquivo_nome)
-
-        if dados_git and "nome" in dados_git:
-            st.session_state["dados_oficiais"] = dados_git
-            st.session_state["logado"] = True
+    # 🔥 ISSO AQUI É O LOGIN REAL
+    st.session_state["logado"] = True
 
 
 # ================================
-# 🔥 AQUI É ONDE ENTRA O BLOQUEIO
+# BLOQUEIO DO APP
 # ================================
 if not st.session_state.get("logado", False):
     st.stop()
-
 
 
 
