@@ -2299,9 +2299,10 @@ if nome_usuario:
             "dificuldades": edit_dif.to_dict("records"),
             "sugestoes": edit_sug.to_dict("records"),
 
-            "disc": respostas_disc.copy()
-            "status": "finalizado"
-        }
+            dados = {
+                "algo": valor,
+                "disc": respostas_disc.copy()
+            }
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
