@@ -1018,6 +1018,10 @@ perguntas_disc = [
 if st.query_params.get("page") == "formulario":
     st.title("📋 Formulário Completo do Colaborador")
     
+    # --- GARANTIA DAS VARIÁVEIS (RESOLVE O NAMEERROR) ---
+    fonte = st.session_state.get("dados_oficiais", {})
+    nome_usuario = st.session_state.get("usuario_nome", "") 
+    
     # Listas padronizadas
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
@@ -1027,7 +1031,6 @@ if st.query_params.get("page") == "formulario":
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
     
-    # O SEGREDO: Usamos value=fonte.get(...) e a key="f_..."
     nome_f = col1.text_input("Nome do colaborador", value=fonte.get("nome", nome_usuario), key="f_nome")
     setor_f = col2.text_input("Setor", value=fonte.get("setor", ""), key="f_setor")
     cargo_f = col1.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo")
@@ -1036,9 +1039,6 @@ if st.query_params.get("page") == "formulario":
     empresa_f = col2.text_input("Empresa / Unidade", value=fonte.get("empresa", ""), key="f_unidade")
     esc_f = col1.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc")
     dev_f = col2.text_input("Devolver preenchido em", value=fonte.get("devolucao", ""), key="f_dev")
-    
-    cursos_f = st.text_area("Cursos obrigatórios ou diferenciais", value=fonte.get("cursos", ""), key="f_cursos")
-    objetivo_f = st.text_area("Trabalho e principal objetivo", value=fonte.get("objetivo", ""), key="f_obj")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
