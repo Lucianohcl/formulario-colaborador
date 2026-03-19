@@ -984,14 +984,13 @@ if st.query_params.get("page") == "formulario":
             resposta = st.radio(
                 label=f"{i}. {pergunta}",
                 options=["A", "B", "C", "D"],
-                key=f"disc_form_{i}",
+                key=f"disc_{i}",
                 horizontal=True
             )
 
             st.session_state["disc_respostas"][f"q{i}"] = resposta
 
-        # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")        
+               
 
 
         
