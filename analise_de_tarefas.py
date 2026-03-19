@@ -2329,7 +2329,7 @@ if nome_usuario:
         # ================================
 
         with col2:
-            if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
+            if st.form_submit_button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
 
                 # validação mínima
                 if not nome_f or nome_f.strip() == "":
