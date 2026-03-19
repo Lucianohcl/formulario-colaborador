@@ -2167,23 +2167,117 @@ if nome_usuario:
             
 
         
-        # --- DADOS DE IDENTIFICAÇÃO ---
+        # ===========================
+        # IDENTIFICAÇÃO
+        # ===========================
         st.subheader("👤 Dados de Identificação")
         col1, col2 = st.columns(2)
+
         with col1:
-            # O parâmetro 'value' agora busca na 'fonte' (que pode ser o rascunho ou a memória do botão)
             nome_f = st.text_input("Nome do colaborador", fonte.get("nome", nome_usuario), key="f_nome")
             cargo_f = st.text_input("Cargo", fonte.get("cargo", ""), key="f_cargo")
             depto_f = st.text_input("Departamento", fonte.get("departamento", ""), key="f_depto")
             esc_f = st.text_input("Escolaridade", fonte.get("escolaridade", ""), key="f_esc")
+
         with col2:
             setor_f = st.text_input("Setor", fonte.get("setor", ""), key="f_setor")
             chefe_f = st.text_input("Chefe imediato", fonte.get("chefe", ""), key="f_chefe")
             unidade_f = st.text_input("Empresa / Unidade", fonte.get("empresa", ""), key="f_unidade")
             dev_f = st.text_input("Devolver preenchido em", fonte.get("devolucao", ""), key="f_dev")
-        
+
         cursos_f = st.text_area("Cursos obrigatórios ou diferenciais", fonte.get("cursos", ""), key="f_cursos")
         obj_f = st.text_area("Trabalho e principal objetivo", fonte.get("objetivo", ""), key="f_obj")
+
+
+        # ===========================
+        # ATIVIDADES ALTA
+        # ===========================
+        st.subheader("🔹 Atividades de Alta Complexidade")
+
+        atividades_alta_f = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }),
+            key="f_ativ_alta",
+            use_container_width=True
+        )
+
+
+        # ===========================
+        # ATIVIDADES NORMAL
+        # ===========================
+        st.subheader("🔹 Atividades de Nível Normal")
+
+        atividades_normal_f = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }),
+            key="f_ativ_normal",
+            use_container_width=True
+        )
+
+
+        # ===========================
+        # ATIVIDADES BAIXA
+        # ===========================
+        st.subheader("🔹 Atividades de Baixa Complexidade")
+
+        atividades_baixa_f = st.data_editor(
+            pd.DataFrame({
+                "Atividade Descrita": [""] * 20,
+                "Frequência": [""] * 20,
+                "Horas": [""] * 20,
+                "Minutos": [""] * 20
+            }),
+            key="f_ativ_baixa",
+            use_container_width=True
+        )
+
+
+        # ===========================
+        # DIFICULDADES
+        # ===========================
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+
+        dificuldades_f = st.data_editor(
+            pd.DataFrame(dados.get("dificuldades", [{} for _ in range(10)])),
+            key="f_dificuldades",
+            use_container_width=True
+        )
+
+
+        # ===========================
+        # SUGESTÕES
+        # ===========================
+        st.subheader("💡 Sugestões de Melhoria")
+
+        sugestoes_f = st.data_editor(
+            pd.DataFrame(dados.get("sugestoes", [{} for _ in range(10)])),
+            key="f_sugestoes",
+            use_container_width=True
+        )
+
+
+        # ===========================
+        # DISC
+        # ===========================
+        st.subheader("📊 Questionário")
+
+        respostas_disc_f = {}
+
+        for i, pergunta in enumerate(perguntas_disc, 1):
+            respostas_disc_f[f"disc_{i}"] = st.radio(
+                f"{i}. {pergunta}",
+                ["A", "B", "C", "D"],
+                horizontal=True,
+                key=f"f_disc_{i}"
+            )        
 
 
 
