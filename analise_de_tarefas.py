@@ -2374,7 +2374,7 @@ if nome_usuario:
                 pergunta,
                 opcoes,
                 index=idx,
-                key=f"disc_{i}"
+                key=f"disc_{i}_{nome_limpo}"
             )
 
         # ================================
