@@ -214,6 +214,222 @@ def gerar_pdf(form):
         elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
         elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
         elementos.append(Spacer(1, 6))
+# ============================================================
+# IMPORTS
+# ============================================================
+
+import streamlit as st
+import pandas as pd
+import json
+import os
+from datetime import datetime
+from statistics import mean
+
+# PDF
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from datetime import datetime
+import pytz
+import time
+from zoneinfo import ZoneInfo
+import plotly.express as px
+# ============================================================
+
+# CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
+
+# ============================================================
+
+st.set_page_config(
+
+    page_title="Sistema de Análise de Tarefas",
+
+    page_icon="📊",
+
+    layout="wide",
+
+    initial_sidebar_state="expanded"
+
+)
+
+
+
+# Inicialização centralizada
+
+if "logged_in" not in st.session_state: st.session_state.logged_in = False
+
+if "pagina" not in st.session_state: st.session_state.pagina = "home"
+
+if "formularios" not in st.session_state: st.session_state["formularios"] = []
+
+
+
+# Leitura da URL (Prioridade total para permitir acesso ao formulário)
+
+query_params = st.query_params
+
+if "page" in query_params:
+
+    st.session_state.pagina = query_params["page"]
+
+st.markdown("""
+    <style>
+    /* Oculta a coluna de índice do data_editor */
+    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
+        display: none !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+dados_dir = "dados"
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir)
+
+
+# --- LISTA DE PERGUNTAS DISC ---
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
+# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
+from docx import Document
+from fpdf import FPDF
+import io
+
+def gerar_word(form):
+    doc = Document()
+    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
+    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
+    
+    # 1. Informações Gerais
+    doc.add_heading("Informações de Identificação", level=1)
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
+    
+    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for chave, colunas in secoes.items():
+        if chave in form and isinstance(form[chave], list):
+            doc.add_heading(f"📋 {chave}", level=1)
+            # Filtra apenas itens que tenham conteúdo real
+            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                table = doc.add_table(rows=1, cols=len(colunas))
+                table.style = 'Table Grid'
+                # Cabeçalho
+                for i, col in enumerate(colunas):
+                    table.rows[0].cells[i].text = col
+                # Linhas
+                for item in dados:
+                    row = table.add_row().cells
+                    for i, col in enumerate(colunas):
+                        row[i].text = str(item.get(col, ''))
+            else:
+                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
+
+    # 3. Avaliação DISC
+    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
+        doc.add_paragraph(f"Resposta: {valor_resposta}")
+        doc.add_paragraph("-" * 20)
+    
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+
+def gerar_pdf(form):
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    elementos = []
+
+    # Título
+    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
+    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
+    elementos.append(Spacer(1, 12))
+
+    # Informações Gerais
+    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
+    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
+    for campo in campos_gerais:
+        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
+    
+    elementos.append(Spacer(1, 12))
+
+    # Tabelas (Atividades, Dificuldades, Sugestoes)
+    secoes = {
+        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
+        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
+        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
+    }
+    
+    for titulo, colunas in secoes.items():
+        if titulo in form and isinstance(form[titulo], list):
+            elementos.append(Paragraph(titulo, styles['Heading2']))
+            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
+            
+            if dados:
+                data = [colunas] # Cabeçalho
+                for item in dados:
+                    data.append([str(item.get(c, '')) for c in colunas])
+                
+                tabela = Table(data, repeatRows=1)
+                tabela.setStyle(TableStyle([
+                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
+                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+                    ('FONTSIZE', (0,0), (-1,-1), 8)
+                ]))
+                elementos.append(tabela)
+            else:
+                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
+            elementos.append(Spacer(1, 12))
+
+    # DISC
+    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        valor_resposta = form.get(f"Q{i}", "Não respondido")
+        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
+        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
+        elementos.append(Spacer(1, 6))
 
     doc.build(elementos)
     buffer.seek(0)
@@ -825,16 +1041,11 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
-        
-        
-        # --- SEÇÃO DE ATIVIDADES ---
+        # --- SEÇÃO DE INSTRUÇÕES ---
         st.markdown("---")
+        col_inst1, col_inst2, col_inst3 = st.columns(3)
         
-        # Mude para 3 colunas
-        col1, col2, col3 = st.columns(3)
-        
-        # Supondo que você tenha definido col1, col2 e col3 anteriormente
-        with col1:
+        with col_inst1:
             st.info("""
             **📋 LEGENDA DE FREQUÊNCIA:**
             * **DVD**: Diário Várias Vezes
@@ -843,22 +1054,20 @@ if st.query_params.get("page") == "formulario":
             * **T**: Trimestral | **A**: Anual
             """)
 
-        with col2:
+        with col_inst2:
             st.warning("""
             **⏱️ COMO REGISTRAR O TEMPO:**
             * **Horas e Minutos**: Selecione o valor em cada coluna.
             * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
+            * **Não se aplica?**: Selecione **0 h** e **0 min**.
             """)
             
-        with col3:
+        with col_inst3:
             st.error("""
             **⚠️ DETALHE:**
-            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
-            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
+            * A numeração lateral (nones) é nativa do sistema.
+            * Ignore-a e preencha normalmente; isso não afeta os dados.
             """)        
-        
-        
         
         # ===========================
         # Tabela de Alta Complexidade
@@ -975,30 +1184,6 @@ if st.query_params.get("page") == "formulario":
         # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
-
-        if "disc_respostas" not in st.session_state:
-            st.session_state["disc_respostas"] = {}
-
-        for i, pergunta in enumerate(perguntas_disc, 1):
-
-            resposta = st.radio(
-                label=f"{i}. {pergunta}",
-                options=["A", "B", "C", "D"],
-                key=f"disc_{i}",
-                horizontal=True
-            )
-
-            st.session_state["disc_respostas"][f"q{i}"] = resposta
-
-               
-
-
-        
-
-        
-
-        st.markdown("---")
-        st.subheader("📊 Questionário")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
@@ -1007,194 +1192,11 @@ if st.query_params.get("page") == "formulario":
                 horizontal=True, 
                 index=None
             )
+
         # BOTÃO DO FORMULÁRIO
         enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
-          
-        # -------------------------------------------------
-        # VALIDAÇÕES E PROCESSAMENTO
-        # -------------------------------------------------
-        if enviar:
-
-                # Inicializa pendencias para evitar NameError
-                pendencias = {}
-
-                # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
-                nome_limpo = nome.strip().replace(" ", "_")
-                base_dir = os.path.dirname(os.path.abspath(__file__))
-                dados_dir = os.path.join(base_dir, "dados")
-
-                if not os.path.exists(dados_dir):
-                    os.makedirs(dados_dir, exist_ok=True)
-
-                arquivo_esperado = f"{nome_limpo}.json"
-
-                # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
-                if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
-                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
-                    st.session_state["confirmado"] = False
-                    st.stop()
-
-                # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES
-
-                # -------------------------------------------------
-                # 2. IDENTIFICAÇÃO
-                # -------------------------------------------------
-                campos_ident = {
-                        "Nome": nome,
-                        "Setor": setor,
-                        "Cargo": cargo,
-                        "Chefe": chefe,
-                        "Departamento": departamento,
-                        "Empresa": empresa,
-                        "Escolaridade": escolaridade,
-                        "Devolução preenchida em": devolucao
-                }
-
-                for campo, valor in campos_ident.items():
-                        if not valor:
-                                pendencias.setdefault("Identificação", []).append(campo)
-
-                # -------------------------------------------------
-                # 3. Cursos e Trabalho/Objetivo
-                # -------------------------------------------------
-                if not cursos:
-                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
-                if not objetivo:
-                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
-
-                # -------------------------------------------------
-                # 4. ATIVIDADES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                atividades_limpas = []
-                atividade_valida = False
-                for i, row in edit_ativ.iterrows():
-                        # Verifica se a linha tem qualquer conteúdo
-                        tem_algo = any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Atividade Descrita"]: faltantes.append("Descrição")
-                                if not row["Frequência"]: faltantes.append("Frequência")
-                                if row["Horas"] in ["", None]: faltantes.append("Horas")
-                                if row["Minutos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        atividade_valida = True
-                                        atividades_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Atividades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-                if not atividade_valida:
-                        pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
-
-                # -------------------------------------------------
-                # 5. DIFICULDADES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                dificuldades_limpas = []
-                dificuldade_valida = False
-                for i, row in edit_dif.iterrows():
-                        tem_algo = any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"], row["Horas Perdidas"], row["Minutos Perdidos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Dificuldade"]: faltantes.append("Descrição")
-                                if not row["Setor/Parceiro Envolvido"]: faltantes.append("Setor/Parceiro")
-                                if not row["Frequência"]: faltantes.append("Frequência")
-                                if row["Horas Perdidas"] in ["", None]: faltantes.append("Horas")
-                                if row["Minutos Perdidos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        dificuldade_valida = True
-                                        dificuldades_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-                if not dificuldade_valida:
-                        pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
-
-                # -------------------------------------------------
-                # 6. SUGESTÕES (Mínimo 1 linha completa)
-                # -------------------------------------------------
-                sugestoes_limpas = []
-                sugestao_valida = False
-                for i, row in edit_sug.iterrows():
-                        tem_algo = any([row["Sugestão de Melhoria"], row["Impacto Esperado"], row["Frequência do Impacto"], row["Redução Horas"], row["Redução Minutos"]])
-                        
-                        if tem_algo:
-                                faltantes = []
-                                if not row["Sugestão de Melhoria"]: faltantes.append("Descrição")
-                                if not row["Impacto Esperado"]: faltantes.append("Impacto Esperado")
-                                if not row["Frequência do Impacto"]: faltantes.append("Frequência")
-                                if row["Redução Horas"] in ["", None]: faltantes.append("Horas")
-                                if row["Redução Minutos"] in ["", None]: faltantes.append("Minutos")
-                                
-                                if not faltantes:
-                                        sugestao_valida = True
-                                        sugestoes_limpas.append(row.to_dict())
-                                else:
-                                        pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
-
-                if not sugestao_valida:
-                        pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
-
-                # -------------------------------------------------
-                # 7. DISC
-                # -------------------------------------------------
-                disc_faltando = []
-                for i in range(1, 25):
-                        if not st.session_state.get(f"disc_{i}"):
-                                disc_faltando.append(f"Questão {i}")
-                if disc_faltando:
-                        pendencias["DISC"] = [", ".join(disc_faltando)]
-
-                # -------------------------------------------------
-                # RESULTADO DAS VALIDAÇÕES
-                # -------------------------------------------------
-                if pendencias:
-                        st.error("⚠️ O formulário possui pendências. Confira abaixo:")
-                        for secao, itens in pendencias.items():
-                                st.write(f"**{secao}**:")
-                                for item in itens:
-                                        st.write(f"- {item}")
-                        st.session_state["confirmado"] = False
-                        st.stop()
-
-                
-                # -------------------------------------------------
-                # CONFIRMAÇÃO EM DOIS CLIQUES
-                # -------------------------------------------------
-                if not st.session_state.get("confirmado", False):
-                        st.warning("⚠️ Tudo certo! Revise suas respostas. O envio é único. Clique em ENVIAR novamente.")
-                        st.session_state["confirmado"] = True
-                        st.stop()
-
-                # -------------------------------------------------
-                # ENVIO FINAL (Salvar JSON)
-                # -------------------------------------------------
-                dados = {
-                        "nome": nome,
-                        "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
-                        "setor": setor,
-                        "cargo": cargo,
-                        "chefe": chefe,
-                        "departamento": departamento,
-                        "empresa": empresa,
-                        "escolaridade": escolaridade,
-                        "devolucao": devolucao,
-                        "cursos": cursos,
-                        "objetivo": objetivo,
-                        "atividades": atividades_limpas,
-                        "dificuldades": dificuldades_limpas,
-                        "sugestoes": sugestoes_limpas,
-                        "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
-                }
-
-                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
-                with open(caminho, "w", encoding="utf-8") as f:
-                        json.dump(dados, f, ensure_ascii=False, indent=4)
-
-                st.success("✅ Formulário enviado com sucesso!")
-                st.session_state["confirmado"] = False
+       
+    
 
 
                 
