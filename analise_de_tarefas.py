@@ -2439,9 +2439,11 @@ if nome_usuario:
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
                 if salvar(dados_atuais, arquivo_nome):
-                    # ESTA LINHA POVOA O FORMULÁRIO NA HORA
+                    # Grava na memória
                     st.session_state["dados_oficiais"] = dados_atuais
-                    st.success("✅ Rascunho salvo e formulário atualizado!")
+                    st.success("✅ Rascunho salvo!")
+                    # O segredo: Força o código a recomeçar do topo lendo a memória nova
+                    st.rerun() 
 
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
@@ -2452,7 +2454,9 @@ if nome_usuario:
                     dados_atuais["status"] = "finalizado"
                     
                     if salvar(dados_atuais, arquivo_oficial):
-                        st.balloons()
-                        # ESTA LINHA GARANTE QUE OS DADOS CONTINUEM NO FORMULÁRIO
+                        # Grava na memória antes de atualizar a página
                         st.session_state["dados_oficiais"] = dados_atuais
-                        st.success(f"🎊 ENVIADO! O formulário de {nome_f.upper()} continua visível acima.")
+                        st.balloons()
+                        st.success(f"🎊 ENVIADO!")
+                        # Força o recarregamento para que os campos lá em cima puxem da 'fonte'
+                        st.rerun()
