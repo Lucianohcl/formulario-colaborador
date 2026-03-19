@@ -1138,7 +1138,7 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE DIFICULDADES ---
         st.markdown("---")
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        
+
         edit_dif = st.data_editor(
             pd.DataFrame({
                 "Dificuldade": [""] * 20,
@@ -1161,7 +1161,7 @@ if st.query_params.get("page") == "formulario":
         # --- SEÇÃO DE SUGESTÕES ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
-        
+
         edit_sug = st.data_editor(
             pd.DataFrame({
                 "Sugestão de Melhoria": [""] * 20,
@@ -1184,17 +1184,18 @@ if st.query_params.get("page") == "formulario":
         # --- QUESTIONÁRIO DISC ---
         st.markdown("---")
         st.subheader("📊 Questionário")
+
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
-                label=f"{i}. {pergunta}", 
-                options=["A", "B", "C", "D"], 
-                key=f"disc_{i}", 
-                horizontal=True, 
+                label=f"{i}. {pergunta}",
+                options=["A", "B", "C", "D"],
+                key=f"disc_{i}",
+                horizontal=True,
                 index=None
             )
 
         # BOTÃO DO FORMULÁRIO
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")        
        
     
 
