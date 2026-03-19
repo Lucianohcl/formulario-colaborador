@@ -2280,6 +2280,8 @@ if nome_usuario:
         col_btn1, col_btn2 = st.columns(2)
         
         # Preparamos o dicionário com tudo o que está na tela no momento
+        
+
         dados_oficiais = {
             "nome": nome_f,
             "cargo": cargo_f,
@@ -2299,10 +2301,11 @@ if nome_usuario:
             "dificuldades": edit_dif.to_dict("records"),
             "sugestoes": edit_sug.to_dict("records"),
 
-            dados = {
-                "algo": valor,
-                "disc": respostas_disc.copy()
-            }
+            "disc": respostas_disc.copy(),
+
+            # se quiser adicionar algo extra:
+            "algo": valor
+        }
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
