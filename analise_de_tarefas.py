@@ -2225,18 +2225,38 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            if st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True):
-                if dados_git:
-                    # 1. Limpa as chaves antigas das tabelas para forçar o reset visual
-                    chaves_para_resetar = ["ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug"]
-                    for chave in chaves_para_resetar:
-                        if chave in st.session_state:
-                            del st.session_state[chave]
-                    
-                    # 2. Injeta os dados do GitHub na fonte oficial
-                    st.session_state["dados_oficiais"] = dados_git.copy()
-                    
-                    st.success("✅ Formulário preenchido! Aguarde o recarregamento...")
-                    st.rerun()
+            # Criamos um botão com uma chave única para evitar conflitos de ID
+            btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados")
+            
+            if btn_povoar:
+                st.write("🔍 **Debug:** Iniciando processo de preenchimento...")
+                
+                if dados_git and isinstance(dados_git, dict) and "nome" in dados_git:
+                    try:
+                        # 1. Limpeza agressiva de cache visual (Widgets)
+                        # Isso remove a "memória" antiga do que você digitou na tela
+                        chaves_widgets = ["ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug", 
+                                         "f_nome", "f_cargo", "f_depto", "f_esc", "f_setor", 
+                                         "f_chefe", "f_unidade", "f_dev", "f_cursos", "f_obj"]
+                        
+                        for k in chaves_widgets:
+                            if k in st.session_state:
+                                del st.session_state[k]
+                        
+                        # 2. Injeção dos dados na Memória VIP
+                        st.session_state["dados_oficiais"] = dados_git.copy()
+                        
+                        st.success(f"✅ Sucesso! Encontrado rascunho de: {dados_git.get('nome')}")
+                        st.info("🔄 Recarregando formulário com os dados salvos...")
+                        
+                        # Pequena pausa para você ver a mensagem antes de recarregar
+                        import time
+                        time.sleep(1) 
+                        
+                        st.rerun()
+                        
+                    except Exception as e:
+                        st.error(f"❌ Erro crítico ao processar dados: {e}")
                 else:
-                    st.warning("⚠️ Você ainda não tem um rascunho salvo no sistema.")
+                    st.error("❌ Falha de Debug: 'dados_git' está vazio ou não é um dicionário válido.")
+                    st.write("Conteúdo atual de dados_git:", dados_git)
