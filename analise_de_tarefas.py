@@ -2261,6 +2261,7 @@ st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
 if "logado" not in st.session_state: st.session_state["logado"] = False
 if "dados_oficiais" not in st.session_state: st.session_state["dados_oficiais"] = {}
+if "visualizar_agora" not in st.session_state: st.session_state["visualizar_agora"] = False
 
 nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="input_nome_principal")
 
@@ -2333,30 +2334,50 @@ if nome_usuario:
         init_df("sug", {"Sugestão": [""]*10, "Impacto": [""]*10, "Frequência": [None]*10})
         ed_sug = st.data_editor(st.session_state["sug"], key="ed_sug", use_container_width=True, hide_index=True)
 
-        # --- DISC ---
+        # --- 6. QUESTIONÁRIO DISC (VERSÃO CORRIGIDA) ---
+        st.markdown("---")
         st.subheader("📊 Questionário DISC")
-        res_disc = {}
+        respostas_disc = {}
+
+        opcoes_validas = ["A", "B", "C", "D"]
+
         for i, pergunta in enumerate(perguntas_disc, 1):
-            ch = f"disc_{i}"
-            idx = ["A","B","C","D"].index(fonte[ch]) if ch in fonte else None
-            res_disc[ch] = st.radio(f"{i}. {pergunta}", ["A","B","C","D"], index=idx, horizontal=True, key=f"r_{i}")
+            chave_disc = f"disc_{i}"
+            valor_rascunho = fonte.get(chave_disc)
+            
+            # Só define o índice se o valor do rascunho estiver na lista [A, B, C, D]
+            idx_anterior = None
+            if valor_rascunho in opcoes_validas:
+                idx_anterior = opcoes_validas.index(valor_rascunho)
+            
+            respostas_disc[chave_disc] = st.radio(
+                f"{i}. {pergunta}", 
+                opcoes_validas, 
+                index=idx_anterior,
+                horizontal=True, 
+                key=f"radio_disc_{i}"
+            )
 
         # --- BOTÕES FINAIS ---
         st.markdown("---")
         b1, b2 = st.columns(2)
         
-        # Consolidação de TODOS os dados
         pacote_dados = {
             "nome": nome_f, "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
             "setor": setor_f, "chefe": chefe_f, "empresa": unidade_f, "devolucao": dev_f,
             "cursos": cursos_f, "objetivo": obj_f,
-            "at_alta": limpar_df(ed_alta), "at_normal": limpar_df(ed_normal), "at_baixa": limpar_df(ed_baixa),
-            "dificuldades": limpar_df(ed_dif), "sugestoes": limpar_df(ed_sug),
-            **res_disc
+            "at_alta": limpar_df(ed_alta), 
+            "at_normal": limpar_df(ed_normal), 
+            "at_baixa": limpar_df(ed_baixa),
+            "dificuldades": limpar_df(ed_dif), 
+            "sugestoes": limpar_df(ed_sug),
+            **respostas_disc
         }
 
         with b1:
             if st.button("💾 SALVAR RASCUNHO", use_container_width=True):
+                # Quando salva, a gente "desliga" a visualização para atualizar o rascunho limpo
+                st.session_state["visualizar_agora"] = False 
                 if salvar(pacote_dados, arquivo_nome):
                     st.success("Rascunho atualizado!")
                     st.session_state["dados_oficiais"] = pacote_dados
@@ -2364,6 +2385,7 @@ if nome_usuario:
                     st.rerun()
 
         with b2:
+            # BOTÃO DE ENVIO REAL (GITHUB)
             if st.button("🚀 ENVIAR OFICIAL", type="primary", use_container_width=True):
                 if nome_f:
                     pacote_dados["data_final"] = datetime.now().strftime("%d/%m/%Y %H:%M")
@@ -2372,3 +2394,40 @@ if nome_usuario:
                         st.success("ENVIADO COM SUCESSO!")
                         time.sleep(2)
                         st.rerun()
+            
+            # O BOTÃO QUE COSPE NA TELA IMEDIATAMENTE
+            if st.button("🔍 VER FORMULÁRIO AGORA (NA TELA)", use_container_width=True):
+                st.session_state["visualizar_agora"] = True
+
+        # --- LÓGICA DE EXIBIÇÃO IMEDIATA ---
+        if st.session_state.get("visualizar_agora"):
+            st.markdown("---")
+            st.header("📋 FORMULÁRIO CONSOLIDADO (VISUALIZAÇÃO IMEDIATA)")
+            
+            st.info(f"**COLABORADOR:** {nome_f.upper()} | **CARGO:** {cargo_f} | **SETOR:** {setor_f}")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.subheader("Atividades Alta Complexidade")
+                df_alta = pd.DataFrame(limpar_df(ed_alta))
+                if not df_alta.empty:
+                    st.table(df_alta[df_alta["Atividade"] != ""])
+            
+            with col_b:
+                st.subheader("Dificuldades Relatadas")
+                df_dif = pd.DataFrame(limpar_df(ed_dif))
+                if not df_dif.empty:
+                    st.table(df_dif[df_dif["Dificuldade"] != ""])
+
+            st.subheader("📊 Perfil DISC Identificado")
+            contagem = {"A": 0, "B": 0, "C": 0, "D": 0}
+            for v in respostas_disc.values():
+                if v in contagem: contagem[v] += 1
+            
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Dominância (A)", contagem["A"])
+            c2.metric("Influência (B)", contagem["B"])
+            c3.metric("Estabilidade (C)", contagem["C"])
+            c4.metric("Conformidade (D)", contagem["D"])
+
+            st.success("✅ Resultados processados e exibidos abaixo para conferência!")   
