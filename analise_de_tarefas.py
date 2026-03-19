@@ -2392,20 +2392,20 @@ if nome_usuario:
         # 4. Dificuldades
         # ===========================
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        init_df(
-            "dificuldades",
-            [{
-                "Dificuldade": "",
-                "Setor/Parceiro Envolvido": "",
-                "Frequência": "",
-                "Horas Perdidas": "",
-                "Minutos Perdidos": ""
-            } for _ in range(10)]
-        )
+
+        if "dificuldades" not in st.session_state:
+            st.session_state["dificuldades"] = pd.DataFrame({
+                "Dificuldade": [""] * 10,
+                "Setor/Parceiro Envolvido": [""] * 10,
+                "Frequência": [""] * 10,
+                "Horas Perdidas": [""] * 10,
+                "Minutos Perdidos": [""] * 10
+            })
 
         edit_dif = st.data_editor(
             st.session_state["dificuldades"],
             key="ed_dif",
+            num_rows="fixed",
             column_config={
                 "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
                 "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
@@ -2419,20 +2419,20 @@ if nome_usuario:
         # 5. Sugestões
         # ===========================
         st.subheader("💡 Sugestões de Melhoria")
-        init_df(
-            "sugestoes",
-            [{
-                "Sugestão de Melhoria": "",
-                "Impacto Esperado": "",
-                "Redução Horas": "",
-                "Redução Minutos": "",
-                "Frequência do Impacto": ""
-            } for _ in range(10)]
-        )
+
+        if "sugestoes" not in st.session_state:
+            st.session_state["sugestoes"] = pd.DataFrame({
+                "Sugestão de Melhoria": [""] * 10,
+                "Impacto Esperado": [""] * 10,
+                "Redução Horas": [""] * 10,
+                "Redução Minutos": [""] * 10,
+                "Frequência do Impacto": [""] * 10
+            })
 
         edit_sug = st.data_editor(
             st.session_state["sugestoes"],
             key="ed_sug",
+            num_rows="fixed",
             column_config={
                 "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
                 "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
@@ -2440,7 +2440,7 @@ if nome_usuario:
             },
             hide_index=True,
             use_container_width=True
-        )
+        )        
 
         # ===========================
         # 6. DISC
