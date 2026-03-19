@@ -2246,11 +2246,17 @@ if nome_usuario:
         st.subheader("⚠️ Dificuldades e Bloqueios")
 
         dificuldades_f = st.data_editor(
-            pd.DataFrame(dados.get("dificuldades", [{} for _ in range(10)])),
-            key="f_dificuldades",
+            pd.DataFrame(dados.get("dificuldades", [{"Dificuldade": "", "Setor/Parceiro Envolvido": "", "Frequência": "", "Horas Perdidas": "", "Minutos Perdidos": ""} for _ in range(10)])),
+            key="form_dificuldades_editor",
+            column_config={
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas Perdidas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos Perdidos": st.column_config.SelectboxColumn(options=lista_minutos),
+            },
+            hide_index=True,
+            num_rows="fixed",
             use_container_width=True
         )
-
 
         # ===========================
         # SUGESTÕES
@@ -2258,10 +2264,17 @@ if nome_usuario:
         st.subheader("💡 Sugestões de Melhoria")
 
         sugestoes_f = st.data_editor(
-            pd.DataFrame(dados.get("sugestoes", [{} for _ in range(10)])),
-            key="f_sugestoes",
+            pd.DataFrame(dados.get("sugestoes", [{"Sugestão de Melhoria": "", "Impacto Esperado": "", "Redução Horas": "", "Redução Minutos": "", "Frequência do Impacto": ""} for _ in range(10)])),
+            key="form_sugestoes_editor",
+            column_config={
+                "Redução Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Redução Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+                "Frequência do Impacto": st.column_config.SelectboxColumn(options=lista_frequencia),
+            },
+            hide_index=True,
+            num_rows="fixed",
             use_container_width=True
-        )        
+        )               
 
 
         # ===========================
