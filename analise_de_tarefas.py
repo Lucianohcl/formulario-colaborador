@@ -160,6 +160,9 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
 
+if "logado" not in st.session_state:
+    st.session_state["logado"] = FalseF
+
 def gerar_pdf(form):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter)
@@ -320,7 +323,7 @@ if nome_usuario:
 # ================================
 # 🔥 AQUI É ONDE ENTRA O BLOQUEIO
 # ================================
-if not st.session_state["logado"]:
+if not st.session_state.get("logado", False):
     st.stop()
 
 
