@@ -1974,3 +1974,206 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
+import streamlit as st
+import pandas as pd
+import json
+import os
+from datetime import datetime
+
+# ================================
+# CONFIG / BASE
+# ================================
+st.set_page_config(page_title="Formulário do Colaborador", layout="wide")
+
+
+# ================================
+# FUNÇÕES
+# ================================
+def limpar_df(df):
+    return df.fillna("") if isinstance(df, pd.DataFrame) else df
+
+
+def init_df(key, default):
+    if key not in st.session_state:
+        st.session_state[key] = pd.DataFrame(default)
+
+
+def carregar(arquivo):
+    if os.path.exists(arquivo):
+        with open(arquivo, "r", encoding="utf-8") as f:
+            return json.load(f), True
+    return {}, False
+
+
+def salvar(dados, arquivo):
+    with open(arquivo, "w", encoding="utf-8") as f:
+        json.dump(dados, f, ensure_ascii=False, indent=2)
+    return True
+
+
+# ================================
+# SESSION STATE
+# ================================
+if "logado" not in st.session_state:
+    st.session_state["logado"] = False
+
+if "dados_oficiais" not in st.session_state:
+    st.session_state["dados_oficiais"] = {}
+
+if "reset_feito" not in st.session_state:
+    st.session_state["reset_feito"] = None
+
+
+# ================================
+# LOGIN / ACESSO
+# ================================
+st.title("📋 Sistema de Formulário")
+
+nome_usuario = st.text_input("Digite seu NOME COMPLETO", key="input_nome_principal")
+
+dados_git = {}
+
+if nome_usuario:
+    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
+    arquivo_nome = f"rascunho_{nome_limpo}.json"
+
+    novo_cadastro = st.checkbox(
+        "🌟 Primeira vez? Marque para criar rascunho vazio",
+        key="check_novo"
+    )
+
+    if novo_cadastro:
+        st.session_state["logado"] = True
+
+        if st.session_state.get("reset_feito") != nome_limpo:
+            st.session_state["dados_oficiais"] = {}
+            st.session_state["reset_feito"] = nome_limpo
+
+    else:
+        dados_git, _ = carregar(arquivo_nome)
+
+        if dados_git and "nome" in dados_git:
+            st.session_state["dados_oficiais"] = dados_git
+            st.session_state["logado"] = True
+
+
+# ================================
+# BLOQUEIO
+# ================================
+if not st.session_state["logado"]:
+    st.stop()
+
+
+# ================================
+# CARREGAMENTO DE DADOS
+# ================================
+dados_atuais = st.session_state.get("dados_oficiais", {})
+
+
+# ================================
+# CAMPOS BASE
+# ================================
+col1, col2 = st.columns(2)
+
+with col1:
+    nome_f = st.text_input("Nome", dados_atuais.get("nome", ""))
+    cargo_f = st.text_input("Cargo", dados_atuais.get("cargo", ""))
+    depto_f = st.text_input("Departamento", dados_atuais.get("departamento", ""))
+    esc_f = st.text_input("Escolaridade", dados_atuais.get("escolaridade", ""))
+
+with col2:
+    setor_f = st.text_input("Setor", dados_atuais.get("setor", ""))
+    chefe_f = st.text_input("Chefe", dados_atuais.get("chefe", ""))
+    unidade_f = st.text_input("Empresa", dados_atuais.get("empresa", ""))
+    dev_f = st.text_input("Devolução", dados_atuais.get("devolucao", ""))
+
+cursos_f = st.text_area("Cursos", dados_atuais.get("cursos", ""))
+obj_f = st.text_area("Objetivo", dados_atuais.get("objetivo", ""))
+
+
+# ================================
+# TABELAS
+# ================================
+st.subheader("🔹 Atividades de Alta Complexidade")
+init_df("atividades_alta", [{"Atividade": ""} for _ in range(20)])
+atividades_alta_editadas = st.data_editor(st.session_state["atividades_alta"], key="alta")
+
+st.subheader("🔹 Atividades de Nível Normal")
+init_df("atividades_normal", [{"Atividade": ""} for _ in range(20)])
+atividades_normal_editadas = st.data_editor(st.session_state["atividades_normal"], key="normal")
+
+st.subheader("🔹 Atividades de Baixa Complexidade")
+init_df("atividades_baixa", [{"Atividade": ""} for _ in range(20)])
+atividades_baixa_editadas = st.data_editor(st.session_state["atividades_baixa"], key="baixa")
+
+st.subheader("⚠️ Dificuldades")
+init_df("dificuldades", [{"Dificuldade": ""} for _ in range(10)])
+edit_dif = st.data_editor(st.session_state["dificuldades"], key="dif")
+
+st.subheader("💡 Sugestões")
+init_df("sugestoes", [{"Sugestão": ""} for _ in range(10)])
+edit_sug = st.data_editor(st.session_state["sugestoes"], key="sug")
+
+
+# ================================
+# DISC
+# ================================
+st.markdown("---")
+st.subheader("📊 Questionário")
+
+opcoes = ["A", "B", "C", "D"]
+respostas_disc = {}
+
+for i in range(1, 25):
+    chave = f"disc_{i}"
+    valor = dados_atuais.get(chave, "A")
+    idx = opcoes.index(valor) if valor in opcoes else 0
+
+    respostas_disc[chave] = st.radio(
+        f"Pergunta {i}",
+        options=opcoes,
+        index=idx,
+        key=f"disc_form_{i}"
+    )
+
+
+# ================================
+# MONTAGEM FINAL
+# ================================
+dados_atuais = {
+    "nome": nome_f,
+    "cargo": cargo_f,
+    "departamento": depto_f,
+    "escolaridade": esc_f,
+    "setor": setor_f,
+    "chefe": chefe_f,
+    "empresa": unidade_f,
+    "devolucao": dev_f,
+    "cursos": cursos_f,
+    "objetivo": obj_f,
+    "atividades_alta": limpar_df(atividades_alta_editadas),
+    "atividades_normal": limpar_df(atividades_normal_editadas),
+    "atividades_baixa": limpar_df(atividades_baixa_editadas),
+    "dificuldades": limpar_df(edit_dif),
+    "sugestoes": limpar_df(edit_sug),
+    **respostas_disc
+}
+
+
+# ================================
+# BOTÕES
+# ================================
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("💾 Salvar Rascunho"):
+        salvar(dados_atuais, f"rascunho_{nome_limpo}.json")
+        st.success("Rascunho salvo")
+        st.session_state["dados_oficiais"] = dados_atuais
+        st.rerun()
+
+with col2:
+    if st.button("🚀 ENVIAR OFICIAL"):
+        st.session_state["formulario_oficial"] = dados_atuais
+        st.success("Formulário enviado como oficial")
+        st.rerun()
