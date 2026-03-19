@@ -6,232 +6,6 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-import io
-from datetime import datetime
-from statistics import mean
-
-# PDF / DOC
-from docx import Document
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.pagesizes import letter
-from reportlab.lib import colors
-
-import pytz
-import time
-from zoneinfo import ZoneInfo
-import plotly.express as px
-
-# ============================================================
-# CONFIGURAÇÃO STREAMLIT (ÚNICA)
-# ============================================================
-
-st.set_page_config(
-    page_title="Sistema de Análise de Tarefas",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# ============================================================
-# SESSION STATE (UNIFICADO)
-# ============================================================
-
-if "logged_in" not in st.session_state:
-    st.session_state["logged_in"] = False
-
-if "pagina" not in st.session_state:
-    st.session_state["pagina"] = "home"
-
-if "formularios" not in st.session_state:
-    st.session_state["formularios"] = []
-
-# ============================================================
-# NAVEGAÇÃO VIA URL
-# ============================================================
-
-query_params = st.query_params
-pagina_url = query_params.get("page", None)
-
-if pagina_url:
-    st.session_state["pagina"] = pagina_url
-
-# ============================================================
-# CSS (DATA EDITOR FIX)
-# ============================================================
-
-st.markdown("""
-    <style>
-    div[data-testid="stDataEditor"] > div > div > div > div:first-child {
-        display: none !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# ============================================================
-# DIRETÓRIO DE DADOS
-# ============================================================
-
-dados_dir = "dados"
-os.makedirs(dados_dir, exist_ok=True)
-
-# ============================================================
-# DISC
-# ============================================================
-
-perguntas_disc = [
-    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
-    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
-    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
-    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
-    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
-]
-
-# --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
-from docx import Document
-from fpdf import FPDF
-import io
-
-def gerar_word(form):
-    doc = Document()
-    doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
-    doc.add_paragraph(f"Data de Envio: {form.get('DataEnvio', 'N/A')}")
-    
-    # 1. Informações Gerais
-    doc.add_heading("Informações de Identificação", level=1)
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        doc.add_paragraph(f"{campo}: {form.get(campo, 'N/A')}")
-    
-    # 2. Tabelas (Atividades, Dificuldades, Sugestões)
-    secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
-    }
-    
-    for chave, colunas in secoes.items():
-        if chave in form and isinstance(form[chave], list):
-            doc.add_heading(f"📋 {chave}", level=1)
-            # Filtra apenas itens que tenham conteúdo real
-            dados = [item for item in form[chave] if any(str(item.get(c, '')).strip() for c in colunas)]
-            
-            if dados:
-                table = doc.add_table(rows=1, cols=len(colunas))
-                table.style = 'Table Grid'
-                # Cabeçalho
-                for i, col in enumerate(colunas):
-                    table.rows[0].cells[i].text = col
-                # Linhas
-                for item in dados:
-                    row = table.add_row().cells
-                    for i, col in enumerate(colunas):
-                        row[i].text = str(item.get(col, ''))
-            else:
-                doc.add_paragraph("Nenhum dado preenchido nesta seção.")
-
-    # 3. Avaliação DISC
-    doc.add_heading("📊 Avaliação DISC (Perguntas e Respostas)", level=1)
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        doc.add_paragraph(f"{i}. {pergunta}", style='Heading 2')
-        doc.add_paragraph(f"Resposta: {valor_resposta}")
-        doc.add_paragraph("-" * 20)
-    
-    buffer = io.BytesIO()
-    doc.save(buffer)
-    buffer.seek(0)
-    return buffer
-
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-
-if "logado" not in st.session_state:
-    st.session_state["logado"] = False
-
-def gerar_pdf(form):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
-    styles = getSampleStyleSheet()
-    elementos = []
-
-    # Título
-    elementos.append(Paragraph(f"Relatório: {form.get('Nome', 'Colaborador')}", styles['Title']))
-    elementos.append(Paragraph(f"Data: {form.get('DataEnvio', 'N/A')}", styles['Normal']))
-    elementos.append(Spacer(1, 12))
-
-    # Informações Gerais
-    elementos.append(Paragraph("Informações Gerais", styles['Heading2']))
-    campos_gerais = ['Setor', 'Departamento', 'Cargo', 'Chefe', 'Empresa', 'Escolaridade', 'Cursos', 'Objetivo']
-    for campo in campos_gerais:
-        elementos.append(Paragraph(f"<b>{campo}:</b> {form.get(campo, 'N/A')}", styles['Normal']))
-    
-    elementos.append(Spacer(1, 12))
-
-    # Tabelas (Atividades, Dificuldades, Sugestoes)
-    secoes = {
-        "Atividades": ["Atividade Descrita", "Frequência", "Tempo Gasto"],
-        "Dificuldades": ["Dificuldade", "Setor/Parceiro Envolvido", "Tempo Perdido"],
-        "Sugestoes": ["Sugestão de Melhoria", "Impacto Esperado"]
-    }
-    
-    for titulo, colunas in secoes.items():
-        if titulo in form and isinstance(form[titulo], list):
-            elementos.append(Paragraph(titulo, styles['Heading2']))
-            dados = [item for item in form[titulo] if any(str(item.get(c, '')).strip() for c in colunas)]
-            
-            if dados:
-                data = [colunas] # Cabeçalho
-                for item in dados:
-                    data.append([str(item.get(c, '')) for c in colunas])
-                
-                tabela = Table(data, repeatRows=1)
-                tabela.setStyle(TableStyle([
-                    ('BACKGROUND', (0,0), (-1,0), colors.grey),
-                    ('GRID', (0,0), (-1,-1), 0.5, colors.black),
-                    ('FONTSIZE', (0,0), (-1,-1), 8)
-                ]))
-                elementos.append(tabela)
-            else:
-                elementos.append(Paragraph("Nenhum dado preenchido.", styles['Normal']))
-            elementos.append(Spacer(1, 12))
-
-    # DISC
-    elementos.append(Paragraph("Avaliação DISC", styles['Heading2']))
-    for i, pergunta in enumerate(perguntas_disc, 1):
-        valor_resposta = form.get(f"Q{i}", "Não respondido")
-        elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
-        elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
-        elementos.append(Spacer(1, 6))
-# ============================================================
-# IMPORTS
-# ============================================================
-
-import streamlit as st
-import pandas as pd
-import json
-import os
 from datetime import datetime
 from statistics import mean
 
@@ -295,39 +69,6 @@ st.markdown("""
 dados_dir = "dados"
 if not os.path.exists(dados_dir):
     os.makedirs(dados_dir)
-
-
-# ================================
-# LOGIN / ENTRADA NO APP
-# ================================
-
-if "logado" not in st.session_state:
-    st.session_state["logado"] = False
-
-
-nome_usuario = st.text_input("Digite seu NOME COMPLETO", key="input_nome_principal")
-
-if nome_usuario:
-
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-
-    # aqui você pode tentar carregar dados do usuário
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
-    dados_git, _ = carregar(arquivo_nome)
-
-    if dados_git and "nome" in dados_git:
-        st.session_state["dados_oficiais"] = dados_git
-
-    # 🔥 ISSO AQUI É O LOGIN REAL
-    st.session_state["logado"] = True
-
-
-# ================================
-# BLOQUEIO DO APP
-# ================================
-if not st.session_state.get("logado", False):
-    st.stop()
-
 
 
 # --- LISTA DE PERGUNTAS DISC ---
@@ -1084,11 +825,16 @@ if st.query_params.get("page") == "formulario":
         cursos = st.text_area("Cursos obrigatórios ou diferenciais")
         objetivo = st.text_area("Trabalho e principal objetivo")
         
-        # --- SEÇÃO DE INSTRUÇÕES ---
-        st.markdown("---")
-        col_inst1, col_inst2, col_inst3 = st.columns(3)
         
-        with col_inst1:
+        
+        # --- SEÇÃO DE ATIVIDADES ---
+        st.markdown("---")
+        
+        # Mude para 3 colunas
+        col1, col2, col3 = st.columns(3)
+        
+        # Supondo que você tenha definido col1, col2 e col3 anteriormente
+        with col1:
             st.info("""
             **📋 LEGENDA DE FREQUÊNCIA:**
             * **DVD**: Diário Várias Vezes
@@ -1097,77 +843,32 @@ if st.query_params.get("page") == "formulario":
             * **T**: Trimestral | **A**: Anual
             """)
 
-        with col_inst2:
+        with col2:
             st.warning("""
             **⏱️ COMO REGISTRAR O TEMPO:**
             * **Horas e Minutos**: Selecione o valor em cada coluna.
             * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
-            * **Não se aplica?**: Selecione **0 h** e **0 min**.
+            * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
             """)
             
-        with col_inst3:
+        with col3:
             st.error("""
             **⚠️ DETALHE:**
-            * A numeração lateral (nones) é nativa do sistema.
-            * Ignore-a e preencha normalmente; isso não afeta os dados.
+            * A numeração lateral (nones) é um comportamento nativo do sistema que polui a página.
+            * Ignore-a e preencha normalmente; isso não afeta em nada os seus dados.
             """)        
         
-        # ===========================
-        # Tabela de Alta Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Alta Complexidade")
-        atividades_alta = st.data_editor(
+        
+        
+        st.subheader("🔹 Atividades Executadas")
+        
+        edit_ativ = st.data_editor(
             pd.DataFrame({
                 "Atividade Descrita": [""] * 20,
                 "Frequência": [""] * 20,
                 "Horas": [""] * 20,
                 "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="form_atividades_alta",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ===========================
-        # Tabela de Nível Normal
-        # ===========================
-        st.subheader("🔹 Atividades de Nível Normal")
-        atividades_normal = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="form_atividades_normal",
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
-                "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True
-        )
-
-        # ===========================
-        # Tabela de Baixa Complexidade
-        # ===========================
-        st.subheader("🔹 Atividades de Baixa Complexidade")
-        atividades_baixa = st.data_editor(
-            pd.DataFrame({
-                "Atividade Descrita": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas": [""] * 20,
-                "Minutos": [""] * 20
-            }).reset_index(drop=True),
-            key="form_atividades_baixa",
+            }).reset_index(drop=True), # Limpeza do índice
             column_config={
                 "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
                 "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
@@ -1183,25 +884,34 @@ if st.query_params.get("page") == "formulario":
         st.subheader("⚠️ Dificuldades e Bloqueios")
         
         edit_dif = st.data_editor(
-            pd.DataFrame({
-                "Dificuldade": [""] * 20,
-                "Setor/Parceiro Envolvido": [""] * 20,
-                "Frequência": [""] * 20,
-                "Horas Perdidas": [""] * 20,
-                "Minutos Perdidos": [""] * 20
-            }),
-            column_config={
-                "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
-                "Horas Perdidas": st.column_config.SelectboxColumn("Horas Perdidas", options=lista_horas),
-                "Minutos Perdidos": st.column_config.SelectboxColumn("Minutos Perdidos", options=lista_minutos),
-            },
-            hide_index=True,
-            num_rows="fixed",
-            use_container_width=True,
-            key="dif_editor"
+                pd.DataFrame({
+                        "Dificuldade": [""] * 20,
+                        "Setor/Parceiro Envolvido": [""] * 20,
+                        "Frequência": [""] * 20,
+                        "Horas Perdidas": [""] * 20,
+                        "Minutos Perdidos": [""] * 20
+                }),
+                column_config={
+                        "Frequência": st.column_config.SelectboxColumn(
+                                "Frequência", 
+                                options=lista_frequencia
+                        ),
+                        "Horas Perdidas": st.column_config.SelectboxColumn(
+                                "Horas Perdidas", 
+                                options=lista_horas
+                        ),
+                        "Minutos Perdidos": st.column_config.SelectboxColumn(
+                                "Minutos Perdidos", 
+                                options=lista_minutos
+                        ),
+                },
+                hide_index=True,
+                num_rows="fixed",
+                use_container_width=True,
+                key="dif_editor"
         )
 
-        # --- SEÇÃO DE SUGESTÕES ---
+        # --- SEÇÃO DE SUGESTÕES ATUALIZADA ---
         st.markdown("---")
         st.subheader("💡 Sugestões de Melhoria e Impacto")
         
@@ -1214,9 +924,18 @@ if st.query_params.get("page") == "formulario":
                 "Frequência do Impacto": [""] * 20
             }).reset_index(drop=True),
             column_config={
-                "Redução Horas": st.column_config.SelectboxColumn("Redução Horas", options=lista_horas),
-                "Redução Minutos": st.column_config.SelectboxColumn("Redução Minutos", options=lista_minutos),
-                "Frequência do Impacto": st.column_config.SelectboxColumn("Frequência do Impacto", options=lista_frequencia),
+                "Redução Horas": st.column_config.SelectboxColumn(
+                    "Redução Horas", 
+                    options=lista_horas
+                ),
+                "Redução Minutos": st.column_config.SelectboxColumn(
+                    "Redução Minutos", 
+                    options=lista_minutos
+                ),
+                "Frequência do Impacto": st.column_config.SelectboxColumn(
+                    "Frequência do Impacto", 
+                    options=lista_frequencia
+                ),
             },
             hide_index=True,
             num_rows="fixed",
@@ -1224,9 +943,12 @@ if st.query_params.get("page") == "formulario":
             key="sug_editor"
         )
 
-        # --- QUESTIONÁRIO DISC ---
+        
+
+        
+
         st.markdown("---")
-        st.subheader("📊 Questionário")
+        st.subheader("📊 Questionário DISC")
         for i, pergunta in enumerate(perguntas_disc, 1):
             st.radio(
                 label=f"{i}. {pergunta}", 
@@ -1235,166 +957,194 @@ if st.query_params.get("page") == "formulario":
                 horizontal=True, 
                 index=None
             )
-
-        
-        
+        # BOTÃO DO FORMULÁRIO
+        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL")
           
-        # =================================================
-        # BOTÃO DE ENVIO (CONFIGURADO PARA A PASTA DADOS)
-        # =================================================
-
-        def salvar(dados, nome_arquivo, mensagem):
-            try:
-                import requests
-                import base64
-                import json
-                
-                token = st.secrets["DB_TOKEN"]
-                username = st.secrets["DB_USERNAME"]
-                repo = f"{username}/formulario-colaborador"
-                
-                # AQUI ESTÁ O AJUSTE: salvando na pasta 'dados'
-                url = f"https://api.github.com/repos/{repo}/contents/dados/{nome_arquivo}"
-                
-                conteudo = json.dumps(dados, indent=4, ensure_ascii=False)
-                encoded = base64.b64encode(conteudo.encode("utf-8")).decode("utf-8")
-                
-                headers = {
-                    "Authorization": f"token {token}", 
-                    "Accept": "application/vnd.github.v3+json"
-                }
-                
-                # Verifica se o arquivo já existe para pegar o SHA
-                res = requests.get(url, headers=headers)
-                sha = res.json().get("sha") if res.status_code == 200 else None
-                
-                payload = {"message": mensagem, "content": encoded, "branch": "main"}
-                if sha: 
-                    payload["sha"] = sha
-                    
-                final_res = requests.put(url, headers=headers, json=payload)
-                if final_res.status_code not in [200, 201]:
-                    st.error(f"GitHub negou a gravação: {final_res.status_code} - {final_res.text}")
-                return final_res.status_code in [200, 201]
-
-            except Exception as e:
-                st.error(f"Erro técnico ao salvar: {e}")
-                return False
-
-        # --- BOTÃO DE ENVIO (ALINHADO FORA DA FUNÇÃO) ---
-        enviar = st.form_submit_button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
-
-        
-        
-        
-
-        # =================================================
-        # PROCESSAMENTO DO BOTÃO ENVIAR
-        # =================================================
+        # -------------------------------------------------
+        # VALIDAÇÕES E PROCESSAMENTO
+        # -------------------------------------------------
         if enviar:
-            import os
-            import json
-            import pandas as pd
-            from datetime import datetime
-            try: from zoneinfo import ZoneInfo
-            except: import pytz as ZoneInfo
 
-            pendencias = {}
-            
-            # 1. IDENTIFICAÇÃO
-            campos_ident = {
-                "Nome": nome, "Setor": setor, "Cargo": cargo, "Chefe": chefe,
-                "Departamento": departamento, "Empresa": empresa,
-                "Escolaridade": escolaridade, "Devolução": devolucao
-            }
-            for campo, valor in campos_ident.items():
-                if not valor or valor == "Escolha...":
-                    pendencias.setdefault("Identificação", []).append(campo)
+                # Inicializa pendencias para evitar NameError
+                pendencias = {}
 
-            # 2. CURSOS E OBJETIVO
-            if not cursos:
-                pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
-            if not objetivo:
-                pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
+                # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE (PRIORIDADE)
+                nome_limpo = nome.strip().replace(" ", "_")
+                base_dir = os.path.dirname(os.path.abspath(__file__))
+                dados_dir = os.path.join(base_dir, "dados")
 
-            # 3. VALIDAÇÃO DAS 5 TABELAS (RIGOR TOTAL: LINHA CHEIA)
-            def linha_cheia(row, colunas):
-                return all(str(row.get(c, "")).strip() not in ["", "None", "nan"] for c in colunas)
+                if not os.path.exists(dados_dir):
+                    os.makedirs(dados_dir, exist_ok=True)
 
-            # --- Tabelas de Atividades ---
-            cols_ativ = ["Atividade Descrita", "Frequência", "Horas", "Minutos"]
-            at_alta = [r.to_dict() for _, r in atividades_alta.iterrows() if linha_cheia(r, cols_ativ)]
-            at_norm = [r.to_dict() for _, r in atividades_normal.iterrows() if linha_cheia(r, cols_ativ)]
-            at_baix = [r.to_dict() for _, r in atividades_baixa.iterrows() if linha_cheia(r, cols_ativ)]
-            
-            # --- Tabela Dificuldades ---
-            cols_dif = ["Dificuldade", "Setor/Parceiro Envolvido", "Frequência", "Horas Perdidas", "Minutos Perdidos"]
-            difs = [r.to_dict() for _, r in edit_dif.iterrows() if linha_cheia(r, cols_dif)]
-            
-            # --- Tabela Sugestões ---
-            cols_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência do Impacto", "Redução Horas", "Redução Minutos"]
-            sugs = [r.to_dict() for _, r in edit_sug.iterrows() if linha_cheia(r, cols_sug)]
+                arquivo_esperado = f"{nome_limpo}.json"
 
-            # Verificação de obrigatoriedade (mínimo 1 linha completa em cada)
-            if not at_alta: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Alta Complexidade")
-            if not at_norm: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Nível Normal")
-            if not at_baix: pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Baixa Complexidade")
-            if not difs:    pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Dificuldades")
-            if not sugs:    pendencias.setdefault("Tabelas", []).append("Falta 1 linha completa em: Sugestões")
+                # Se o nome foi preenchido e o arquivo já existe, para aqui mesmo!
+                if nome.strip() and arquivo_esperado in os.listdir(dados_dir):
+                    st.error(f"⚠️ Já existe um formulário enviado para '{nome}'.")
+                    st.session_state["confirmado"] = False
+                    st.stop()
 
-            # 4. DISC
-            disc_faltando = []
-            for i in range(1, 25):
-                if not st.session_state.get(f"disc_{i}"):
-                    disc_faltando.append(f"Questão {i}")
-            if disc_faltando:
-                pendencias["DISC"] = [", ".join(disc_faltando)]
+                # 2. SE NÃO HOUVER DUPLICIDADE, SEGUE PARA AS OUTRAS VALIDAÇÕES
 
-            # 5. PROCESSAMENTO DE ERROS
-            if pendencias:
-                st.error("⚠️ O formulário possui pendências:")
-                for secao, itens in pendencias.items():
-                    st.write(f"**{secao}**: {', '.join(itens)}")
-                st.session_state["confirmado"] = False
-                st.stop()
+                # -------------------------------------------------
+                # 2. IDENTIFICAÇÃO
+                # -------------------------------------------------
+                campos_ident = {
+                        "Nome": nome,
+                        "Setor": setor,
+                        "Cargo": cargo,
+                        "Chefe": chefe,
+                        "Departamento": departamento,
+                        "Empresa": empresa,
+                        "Escolaridade": escolaridade,
+                        "Devolução preenchida em": devolucao
+                }
 
-            # 6. CONFIRMAÇÃO (Dois cliques)
-            if not st.session_state.get("confirmado", False):
-                st.warning("⚠️ Tudo certo! Clique em ENVIAR novamente para confirmar.")
-                st.session_state["confirmado"] = True
-                st.stop()
+                for campo, valor in campos_ident.items():
+                        if not valor:
+                                pendencias.setdefault("Identificação", []).append(campo)
 
-            # 7. ENVIO FINAL (Salvando via API GitHub na pasta 'dados')
-            dados_finais = {
-                "identificacao": campos_ident,
-                "cursos": cursos,
-                "objetivo": objetivo,
-                "atividades": {
-                    "alta": at_alta,
-                    "normal": at_norm,
-                    "baixa": at_baix
-                },
-                "dificuldades": difs,
-                "sugestoes": sugs,
-                "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)},
-                "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M")
-            }
+                # -------------------------------------------------
+                # 3. Cursos e Trabalho/Objetivo
+                # -------------------------------------------------
+                if not cursos:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Cursos")
+                if not objetivo:
+                        pendencias.setdefault("Cursos e Trabalho/Objetivo", []).append("Trabalho/Principal Objetivo")
 
-            # Nome do arquivo sanitizado
-            nome_limpo = nome.strip().replace(' ', '_')
-            arquivo_nome = f"{nome_limpo}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-
-            if salvar(dados_finais, arquivo_nome, f"Envio: {nome}"):
-                st.success("✅ Formulário enviado e salvo com sucesso no Banco de Dados!")
-                
-                st.session_state["confirmado"] = False
-                # Recarrega a lista para que apareça no botão 'Visualizar'
-                st.session_state["formularios"] = carregar_todos_formularios()
-            else:
-                st.error("❌ Erro ao enviar para o GitHub. Verifique os Secrets do Streamlit.")
-                    
+                # -------------------------------------------------
+                # 4. ATIVIDADES (Mínimo 1 linha completa)
+                # -------------------------------------------------
+                atividades_limpas = []
+                atividade_valida = False
+                for i, row in edit_ativ.iterrows():
+                        # Verifica se a linha tem qualquer conteúdo
+                        tem_algo = any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]])
                         
-                  
+                        if tem_algo:
+                                faltantes = []
+                                if not row["Atividade Descrita"]: faltantes.append("Descrição")
+                                if not row["Frequência"]: faltantes.append("Frequência")
+                                if row["Horas"] in ["", None]: faltantes.append("Horas")
+                                if row["Minutos"] in ["", None]: faltantes.append("Minutos")
+                                
+                                if not faltantes:
+                                        atividade_valida = True
+                                        atividades_limpas.append(row.to_dict())
+                                else:
+                                        pendencias.setdefault("Atividades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                if not atividade_valida:
+                        pendencias.setdefault("Atividades", []).append("Preencha pelo menos uma linha completa de Atividades.")
+
+                # -------------------------------------------------
+                # 5. DIFICULDADES (Mínimo 1 linha completa)
+                # -------------------------------------------------
+                dificuldades_limpas = []
+                dificuldade_valida = False
+                for i, row in edit_dif.iterrows():
+                        tem_algo = any([row["Dificuldade"], row["Setor/Parceiro Envolvido"], row["Frequência"], row["Horas Perdidas"], row["Minutos Perdidos"]])
+                        
+                        if tem_algo:
+                                faltantes = []
+                                if not row["Dificuldade"]: faltantes.append("Descrição")
+                                if not row["Setor/Parceiro Envolvido"]: faltantes.append("Setor/Parceiro")
+                                if not row["Frequência"]: faltantes.append("Frequência")
+                                if row["Horas Perdidas"] in ["", None]: faltantes.append("Horas")
+                                if row["Minutos Perdidos"] in ["", None]: faltantes.append("Minutos")
+                                
+                                if not faltantes:
+                                        dificuldade_valida = True
+                                        dificuldades_limpas.append(row.to_dict())
+                                else:
+                                        pendencias.setdefault("Dificuldades", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                if not dificuldade_valida:
+                        pendencias.setdefault("Dificuldades", []).append("Preencha pelo menos uma linha completa de Dificuldades.")
+
+                # -------------------------------------------------
+                # 6. SUGESTÕES (Mínimo 1 linha completa)
+                # -------------------------------------------------
+                sugestoes_limpas = []
+                sugestao_valida = False
+                for i, row in edit_sug.iterrows():
+                        tem_algo = any([row["Sugestão de Melhoria"], row["Impacto Esperado"], row["Frequência do Impacto"], row["Redução Horas"], row["Redução Minutos"]])
+                        
+                        if tem_algo:
+                                faltantes = []
+                                if not row["Sugestão de Melhoria"]: faltantes.append("Descrição")
+                                if not row["Impacto Esperado"]: faltantes.append("Impacto Esperado")
+                                if not row["Frequência do Impacto"]: faltantes.append("Frequência")
+                                if row["Redução Horas"] in ["", None]: faltantes.append("Horas")
+                                if row["Redução Minutos"] in ["", None]: faltantes.append("Minutos")
+                                
+                                if not faltantes:
+                                        sugestao_valida = True
+                                        sugestoes_limpas.append(row.to_dict())
+                                else:
+                                        pendencias.setdefault("Sugestões", []).append(f"Linha {i+1} incompleta: {', '.join(faltantes)}")
+
+                if not sugestao_valida:
+                        pendencias.setdefault("Sugestões", []).append("Preencha pelo menos uma linha completa de Sugestões.")
+
+                # -------------------------------------------------
+                # 7. DISC
+                # -------------------------------------------------
+                disc_faltando = []
+                for i in range(1, 25):
+                        if not st.session_state.get(f"disc_{i}"):
+                                disc_faltando.append(f"Questão {i}")
+                if disc_faltando:
+                        pendencias["DISC"] = [", ".join(disc_faltando)]
+
+                # -------------------------------------------------
+                # RESULTADO DAS VALIDAÇÕES
+                # -------------------------------------------------
+                if pendencias:
+                        st.error("⚠️ O formulário possui pendências. Confira abaixo:")
+                        for secao, itens in pendencias.items():
+                                st.write(f"**{secao}**:")
+                                for item in itens:
+                                        st.write(f"- {item}")
+                        st.session_state["confirmado"] = False
+                        st.stop()
+
+                
+                # -------------------------------------------------
+                # CONFIRMAÇÃO EM DOIS CLIQUES
+                # -------------------------------------------------
+                if not st.session_state.get("confirmado", False):
+                        st.warning("⚠️ Tudo certo! Revise suas respostas. O envio é único. Clique em ENVIAR novamente.")
+                        st.session_state["confirmado"] = True
+                        st.stop()
+
+                # -------------------------------------------------
+                # ENVIO FINAL (Salvar JSON)
+                # -------------------------------------------------
+                dados = {
+                        "nome": nome,
+                        "data_envio": datetime.now(ZoneInfo("America/Sao_Paulo")).strftime("%d/%m/%Y %H:%M"),
+                        "setor": setor,
+                        "cargo": cargo,
+                        "chefe": chefe,
+                        "departamento": departamento,
+                        "empresa": empresa,
+                        "escolaridade": escolaridade,
+                        "devolucao": devolucao,
+                        "cursos": cursos,
+                        "objetivo": objetivo,
+                        "atividades": atividades_limpas,
+                        "dificuldades": dificuldades_limpas,
+                        "sugestoes": sugestoes_limpas,
+                        "disc": {f"disc_{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)}
+                }
+
+                caminho = os.path.join(dados_dir, f"{nome_limpo}.json")
+                with open(caminho, "w", encoding="utf-8") as f:
+                        json.dump(dados, f, ensure_ascii=False, indent=4)
+
+                st.success("✅ Formulário enviado com sucesso!")
+                st.session_state["confirmado"] = False
 
 
                 
@@ -2224,206 +1974,3 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
-import streamlit as st
-import pandas as pd
-import json
-import os
-from datetime import datetime
-
-# ================================
-# CONFIG / BASE
-# ================================
-st.set_page_config(page_title="Formulário do Colaborador", layout="wide")
-
-
-# ================================
-# FUNÇÕES
-# ================================
-def limpar_df(df):
-    return df.fillna("") if isinstance(df, pd.DataFrame) else df
-
-
-def init_df(key, default):
-    if key not in st.session_state:
-        st.session_state[key] = pd.DataFrame(default)
-
-
-def carregar(arquivo):
-    if os.path.exists(arquivo):
-        with open(arquivo, "r", encoding="utf-8") as f:
-            return json.load(f), True
-    return {}, False
-
-
-def salvar(dados, arquivo):
-    with open(arquivo, "w", encoding="utf-8") as f:
-        json.dump(dados, f, ensure_ascii=False, indent=2)
-    return True
-
-
-# ================================
-# SESSION STATE
-# ================================
-if "logado" not in st.session_state:
-    st.session_state["logado"] = False
-
-if "dados_oficiais" not in st.session_state:
-    st.session_state["dados_oficiais"] = {}
-
-if "reset_feito" not in st.session_state:
-    st.session_state["reset_feito"] = None
-
-
-# ================================
-# LOGIN / ACESSO
-# ================================
-st.title("📋 Sistema de Formulário")
-
-nome_usuario = st.text_input("Digite seu NOME COMPLETO", key="input_nome_principal")
-
-dados_git = {}
-
-if nome_usuario:
-    nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
-    arquivo_nome = f"rascunho_{nome_limpo}.json"
-
-    novo_cadastro = st.checkbox(
-        "🌟 Primeira vez? Marque para criar rascunho vazio",
-        key="check_novo"
-    )
-
-    if novo_cadastro:
-        st.session_state["logado"] = True
-
-        if st.session_state.get("reset_feito") != nome_limpo:
-            st.session_state["dados_oficiais"] = {}
-            st.session_state["reset_feito"] = nome_limpo
-
-    else:
-        dados_git, _ = carregar(arquivo_nome)
-
-        if dados_git and "nome" in dados_git:
-            st.session_state["dados_oficiais"] = dados_git
-            st.session_state["logado"] = True
-
-
-# ================================
-# BLOQUEIO
-# ================================
-if not st.session_state["logado"]:
-    st.stop()
-
-
-# ================================
-# CARREGAMENTO DE DADOS
-# ================================
-dados_atuais = st.session_state.get("dados_oficiais", {})
-
-
-# ================================
-# CAMPOS BASE
-# ================================
-col1, col2 = st.columns(2)
-
-with col1:
-    nome_f = st.text_input("Nome", dados_atuais.get("nome", ""))
-    cargo_f = st.text_input("Cargo", dados_atuais.get("cargo", ""))
-    depto_f = st.text_input("Departamento", dados_atuais.get("departamento", ""))
-    esc_f = st.text_input("Escolaridade", dados_atuais.get("escolaridade", ""))
-
-with col2:
-    setor_f = st.text_input("Setor", dados_atuais.get("setor", ""))
-    chefe_f = st.text_input("Chefe", dados_atuais.get("chefe", ""))
-    unidade_f = st.text_input("Empresa", dados_atuais.get("empresa", ""))
-    dev_f = st.text_input("Devolução", dados_atuais.get("devolucao", ""))
-
-cursos_f = st.text_area("Cursos", dados_atuais.get("cursos", ""))
-obj_f = st.text_area("Objetivo", dados_atuais.get("objetivo", ""))
-
-
-# ================================
-# TABELAS
-# ================================
-st.subheader("🔹 Atividades de Alta Complexidade")
-init_df("atividades_alta", [{"Atividade": ""} for _ in range(20)])
-atividades_alta_editadas = st.data_editor(st.session_state["atividades_alta"], key="alta")
-
-st.subheader("🔹 Atividades de Nível Normal")
-init_df("atividades_normal", [{"Atividade": ""} for _ in range(20)])
-atividades_normal_editadas = st.data_editor(st.session_state["atividades_normal"], key="normal")
-
-st.subheader("🔹 Atividades de Baixa Complexidade")
-init_df("atividades_baixa", [{"Atividade": ""} for _ in range(20)])
-atividades_baixa_editadas = st.data_editor(st.session_state["atividades_baixa"], key="baixa")
-
-st.subheader("⚠️ Dificuldades")
-init_df("dificuldades", [{"Dificuldade": ""} for _ in range(10)])
-edit_dif = st.data_editor(st.session_state["dificuldades"], key="dif")
-
-st.subheader("💡 Sugestões")
-init_df("sugestoes", [{"Sugestão": ""} for _ in range(10)])
-edit_sug = st.data_editor(st.session_state["sugestoes"], key="sug")
-
-
-# ================================
-# DISC
-# ================================
-st.markdown("---")
-st.subheader("📊 Questionário")
-
-opcoes = ["A", "B", "C", "D"]
-respostas_disc = {}
-
-for i in range(1, 25):
-    chave = f"disc_{i}"
-    valor = dados_atuais.get(chave, "A")
-    idx = opcoes.index(valor) if valor in opcoes else 0
-
-    respostas_disc[chave] = st.radio(
-        f"Pergunta {i}",
-        options=opcoes,
-        index=idx,
-        key=f"disc_form_{i}"
-    )
-
-
-# ================================
-# MONTAGEM FINAL
-# ================================
-dados_atuais = {
-    "nome": nome_f,
-    "cargo": cargo_f,
-    "departamento": depto_f,
-    "escolaridade": esc_f,
-    "setor": setor_f,
-    "chefe": chefe_f,
-    "empresa": unidade_f,
-    "devolucao": dev_f,
-    "cursos": cursos_f,
-    "objetivo": obj_f,
-    "atividades_alta": limpar_df(atividades_alta_editadas),
-    "atividades_normal": limpar_df(atividades_normal_editadas),
-    "atividades_baixa": limpar_df(atividades_baixa_editadas),
-    "dificuldades": limpar_df(edit_dif),
-    "sugestoes": limpar_df(edit_sug),
-    **respostas_disc
-}
-
-
-# ================================
-# BOTÕES
-# ================================
-col1, col2 = st.columns(2)
-
-with col1:
-    if st.button("💾 Salvar Rascunho"):
-        salvar(dados_atuais, f"rascunho_{nome_limpo}.json")
-        st.success("Rascunho salvo")
-        st.session_state["dados_oficiais"] = dados_atuais
-        st.rerun()
-
-with col2:
-    if st.button("🚀 ENVIAR OFICIAL"):
-        st.session_state["formulario_oficial"] = dados_atuais
-        st.success("Formulário enviado como oficial")
-        st.rerun()
