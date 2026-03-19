@@ -66,9 +66,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 # DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
-dados_dir = "dados"
-if not os.path.exists(dados_dir):
-    os.makedirs(dados_dir)
+
 
 
 # --- LISTA DE PERGUNTAS DISC ---
@@ -2044,6 +2042,11 @@ lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
+# ================================
+# BRIDGE (RAScunho → formulário)
+# ================================
+fonte = st.session_state.get("formulario_pre_preenchido", {})
+
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2096,6 +2099,8 @@ def salvar(dados, arquivo, mensagem="Atualização"):
     if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code in [200, 201]
+
+
 
 # ================================
 # 3. INTERFACE E LÓGICA DE ACESSO
@@ -2534,31 +2539,67 @@ if nome_usuario:
             "algo": valor
         }
 
-        # ============================
-        # BOTÃO 1 - RASCUNHO
-        # ============================
+                # ============================================================
+        # BOTÕES FINAIS (AJUSTADOS + SEGUROS)
+        # ============================================================
+
+        st.markdown("---")
+        col_btn1, col_btn2 = st.columns(2)
+
+        # garante nome limpo seguro
+        nome_limpo = nome_usuario.strip().lower().replace(" ", "_") if nome_usuario else "sem_nome"
+
+        arquivo_rascunho = f"rascunho_{nome_limpo}.json"
+        arquivo_oficial = f"oficial_{nome_limpo}.json"
+
+        dados_oficiais = {
+            "nome": nome_usuario,
+
+            "cargo": cargo,
+            "departamento": departamento,
+            "setor": setor,
+            "chefe": chefe,
+            "empresa": empresa,
+            "escolaridade": escolaridade,
+            "devolucao": devolucao,
+            "cursos": cursos,
+            "objetivo": objetivo,
+
+            "atividades_alta": atividades_alta.to_dict("records"),
+            "atividades_normal": atividades_normal.to_dict("records"),
+            "atividades_baixa": atividades_baixa.to_dict("records"),
+
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+
+            "disc": respostas_disc
+        }
+
+        # ===========================
+        # BOTÕES FINAIS
+        # ===========================
+        st.markdown("---")
+        col_btn1, col_btn2 = st.columns(2)
+
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-
-                arquivo_rascunho = f"RASCUNHO_{nome_limpo}.json"
-
-                if salvar(dados_oficiais, arquivo_rascunho):
-                    st.session_state["dados_oficiais"] = dados_oficiais
-                    st.session_state["status_form"] = "rascunho"
-                    st.success("✅ Rascunho salvo com sucesso no GitHub!")
-
-        # ============================
-        # BOTÃO 2 - ENVIO FINAL
-        # ============================
-        with col_btn2:
-            if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-
-                dados_oficiais["status"] = "finalizado"
-                arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
-
                 if salvar(dados_oficiais, arquivo_oficial):
                     st.session_state["dados_oficiais"] = dados_oficiais
-                    st.session_state["status_form"] = "finalizado"
-                    st.balloons()
-                    st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
-                    st.info(f"Dados de {nome_f} salvos no GitHub.")        
+                    st.success("✅ Rascunho salvo com sucesso!")
+
+        with col_btn2:
+            if st.button("🚀 PREENCHER FORMULÁRIO (DO RASCUNHO)", use_container_width=True, type="primary"):
+
+                if "formulario_pre_preenchido" in st.session_state:
+
+                    # CTRL + C (pega rascunho)
+                    dados_copiados = st.session_state["formulario_pre_preenchido"]
+
+                    # CTRL + V (cola no sistema de UI)
+                    st.session_state["formulario_pre_preenchido"] = dados_copiados
+
+                    st.success("✅ Formulário preenchido com dados do rascunho!")
+                    st.rerun()
+
+                else:
+                    st.warning("⚠️ Nenhum rascunho encontrado.")                
