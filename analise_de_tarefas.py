@@ -2288,26 +2288,33 @@ if nome_usuario:
 
         # --- DADOS IDENTIFICAÇÃO ---
         st.subheader("👤 Identificação")
+        f = st.session_state.get("dados_oficiais", {}) # Atalho para a memória
+
         col1, col2 = st.columns(2)
         with col1:
-            nome_f = st.text_input("Nome", fonte.get("nome", nome_usuario))
-            cargo_f = st.text_input("Cargo", fonte.get("cargo", ""))
-            depto_f = st.text_input("Departamento", fonte.get("departamento", ""))
-            esc_f = st.text_input("Escolaridade", fonte.get("escolaridade", ""))
+            nome_f = st.text_input("Nome", value=f.get("nome", nome_usuario))
+            cargo_f = st.text_input("Cargo", value=f.get("cargo", ""))
+            depto_f = st.text_input("Departamento", value=f.get("departamento", ""))
+            esc_f = st.text_input("Escolaridade", value=f.get("escolaridade", ""))
         with col2:
-            setor_f = st.text_input("Setor", fonte.get("setor", ""))
-            chefe_f = st.text_input("Chefe imediato", fonte.get("chefe", ""))
-            unidade_f = st.text_input("Empresa", fonte.get("empresa", ""))
-            dev_f = st.text_input("Devolver em", fonte.get("devolucao", ""))
+            setor_f = st.text_input("Setor", value=f.get("setor", ""))
+            chefe_f = st.text_input("Chefe imediato", value=f.get("chefe", ""))
+            unidade_f = st.text_input("Empresa", value=f.get("empresa", ""))
+            dev_f = st.text_input("Devolver em", value=f.get("devolucao", ""))
         
-        cursos_f = st.text_area("Cursos", fonte.get("cursos", ""))
-        obj_f = st.text_area("Objetivo", fonte.get("objetivo", ""))
-
-        def init_df(chave, colunas_vazias):
-            if fonte.get(chave): st.session_state[chave] = pd.DataFrame(fonte[chave])
-            elif chave not in st.session_state: st.session_state[chave] = pd.DataFrame(colunas_vazias)
+        cursos_f = st.text_area("Cursos", value=f.get("cursos", ""))
+        obj_f = st.text_area("Objetivo", value=f.get("objetivo", ""))
 
         # --- TABELAS DE ATIVIDADES ---
+        # ESSA FUNÇÃO É O QUE FAZ A TABELA APARECER PREENCHIDA (POVOADA)
+        def init_df(chave, colunas_padrao):
+            # Se clicou em POVOAR e os dados estão em 'f', usa eles
+            if f.get(chave):
+                st.session_state[chave] = pd.DataFrame(f[chave])
+            # Se não, e a tabela ainda não existe na memória, cria vazia
+            elif chave not in st.session_state:
+                st.session_state[chave] = pd.DataFrame(colunas_padrao)
+
         config_tabela = {
             "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn(options=lista_horas),
@@ -2327,25 +2334,26 @@ if nome_usuario:
         ed_baixa = st.data_editor(st.session_state["at_baixa"], key="ed_baixa", column_config=config_tabela, use_container_width=True, hide_index=True)
 
         st.subheader("⚠️ Dificuldades")
-        init_df("dif", {"Dificuldade": [""]*10, "Setor": [""]*10, "Frequência": [None]*10, "Horas": ["0 h"]*10})
-        ed_dif = st.data_editor(st.session_state["dif"], key="ed_dif", use_container_width=True, hide_index=True)
+        # Atenção: Ajustei a chave para 'dificuldades' para bater com o que você salva
+        init_df("dificuldades", {"Dificuldade": [""]*10, "Setor": [""]*10, "Frequência": [None]*10, "Horas": ["0 h"]*10})
+        ed_dif = st.data_editor(st.session_state["dificuldades"], key="ed_dif", use_container_width=True, hide_index=True)
 
         st.subheader("💡 Sugestões")
-        init_df("sug", {"Sugestão": [""]*10, "Impacto": [""]*10, "Frequência": [None]*10})
-        ed_sug = st.data_editor(st.session_state["sug"], key="ed_sug", use_container_width=True, hide_index=True)
+        # Atenção: Ajustei a chave para 'sugestoes' para bater com o que você salva
+        init_df("sugestoes", {"Sugestão": [""]*10, "Impacto": [""]*10, "Frequência": [None]*10})
+        ed_sug = st.data_editor(st.session_state["sugestoes"], key="ed_sug", use_container_width=True, hide_index=True)
 
-        # --- 6. QUESTIONÁRIO DISC (VERSÃO CORRIGIDA) ---
+        # --- 6. QUESTIONÁRIO DISC ---
         st.markdown("---")
         st.subheader("📊 Questionário DISC")
         respostas_disc = {}
-
         opcoes_validas = ["A", "B", "C", "D"]
 
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave_disc = f"disc_{i}"
-            valor_rascunho = fonte.get(chave_disc)
+            # 'f' é o atalho que criamos lá na Identificação: st.session_state.get("dados_oficiais", {})
+            valor_rascunho = f.get(chave_disc)
             
-            # Só define o índice se o valor do rascunho estiver na lista [A, B, C, D]
             idx_anterior = None
             if valor_rascunho in opcoes_validas:
                 idx_anterior = opcoes_validas.index(valor_rascunho)
@@ -2361,11 +2369,19 @@ if nome_usuario:
         # --- BOTÕES FINAIS ---
         st.markdown("---")
         b1, b2 = st.columns(2)
-        
+
+        # O pacote de dados consolida tudo o que foi preenchido
         pacote_dados = {
-            "nome": nome_f, "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
-            "setor": setor_f, "chefe": chefe_f, "empresa": unidade_f, "devolucao": dev_f,
-            "cursos": cursos_f, "objetivo": obj_f,
+            "nome": nome_f, 
+            "cargo": cargo_f, 
+            "departamento": depto_f, 
+            "escolaridade": esc_f,
+            "setor": setor_f, 
+            "chefe": chefe_f, 
+            "empresa": unidade_f, 
+            "devolucao": dev_f,
+            "cursos": cursos_f, 
+            "objetivo": obj_f,
             "at_alta": limpar_df(ed_alta), 
             "at_normal": limpar_df(ed_normal), 
             "at_baixa": limpar_df(ed_baixa),
@@ -2376,58 +2392,18 @@ if nome_usuario:
 
         with b1:
             if st.button("💾 SALVAR RASCUNHO", use_container_width=True):
-                # Quando salva, a gente "desliga" a visualização para atualizar o rascunho limpo
-                st.session_state["visualizar_agora"] = False 
                 if salvar(pacote_dados, arquivo_nome):
-                    st.success("Rascunho atualizado!")
+                    st.success("Rascunho salvo com sucesso!")
                     st.session_state["dados_oficiais"] = pacote_dados
                     time.sleep(1)
                     st.rerun()
 
         with b2:
-            # BOTÃO DE ENVIO REAL (GITHUB)
-            if st.button("🚀 ENVIAR OFICIAL", type="primary", use_container_width=True):
-                if nome_f:
-                    pacote_dados["data_final"] = datetime.now().strftime("%d/%m/%Y %H:%M")
-                    if salvar(pacote_dados, f"OFICIAL_{nome_limpo}.json"):
-                        st.balloons()
-                        st.success("ENVIADO COM SUCESSO!")
-                        time.sleep(2)
-                        st.rerun()
-            
-            # O BOTÃO QUE COSPE NA TELA IMEDIATAMENTE
-            if st.button("🔍 VER FORMULÁRIO AGORA (NA TELA)", use_container_width=True):
-                st.session_state["visualizar_agora"] = True
-
-        # --- LÓGICA DE EXIBIÇÃO IMEDIATA ---
-        if st.session_state.get("visualizar_agora"):
-            st.markdown("---")
-            st.header("📋 FORMULÁRIO CONSOLIDADO (VISUALIZAÇÃO IMEDIATA)")
-            
-            st.info(f"**COLABORADOR:** {nome_f.upper()} | **CARGO:** {cargo_f} | **SETOR:** {setor_f}")
-            
-            col_a, col_b = st.columns(2)
-            with col_a:
-                st.subheader("Atividades Alta Complexidade")
-                df_alta = pd.DataFrame(limpar_df(ed_alta))
-                if not df_alta.empty:
-                    st.table(df_alta[df_alta["Atividade"] != ""])
-            
-            with col_b:
-                st.subheader("Dificuldades Relatadas")
-                df_dif = pd.DataFrame(limpar_df(ed_dif))
-                if not df_dif.empty:
-                    st.table(df_dif[df_dif["Dificuldade"] != ""])
-
-            st.subheader("📊 Perfil DISC Identificado")
-            contagem = {"A": 0, "B": 0, "C": 0, "D": 0}
-            for v in respostas_disc.values():
-                if v in contagem: contagem[v] += 1
-            
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Dominância (A)", contagem["A"])
-            c2.metric("Influência (B)", contagem["B"])
-            c3.metric("Estabilidade (C)", contagem["C"])
-            c4.metric("Conformidade (D)", contagem["D"])
-
-            st.success("✅ Resultados processados e exibidos abaixo para conferência!")   
+            # ESTE É O BOTÃO QUE "COSPE" OS DADOS PARA OS CAMPOS DE CIMA
+            if st.button("🚀 POVOAR FORMULÁRIO (CUSPIR DADOS)", type="primary", use_container_width=True):
+                dados_recuperados, _ = carregar(arquivo_nome)
+                if dados_recuperados:
+                    # Alimenta a memória 'f' que os campos lá no topo consultam
+                    st.session_state["dados_oficiais"] = dados_recuperados
+                    # Recarrega a página para os valores aparecerem nos inputs
+                    st.rerun()
