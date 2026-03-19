@@ -2116,6 +2116,12 @@ if nome_usuario:
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados_git, _ = carregar(arquivo_nome)
 
+    # 1. ESTA É A ÚNICA DEFINIÇÃO DE FONTE QUE VOCÊ PRECISA
+    if st.session_state.get("dados_oficiais"):
+        fonte = st.session_state["dados_oficiais"]
+    else:
+        fonte = dados_git if dados_git else {}
+
     if primeira_vez and not st.session_state["logado"]:
         if dados_git:
             st.warning("⚠️ Usuário já existe. Desmarque a caixa para entrar.")
@@ -2128,28 +2134,31 @@ if nome_usuario:
         if not dados_git and not st.session_state["logado"]:
             st.error("❌ Nome não encontrado. Marque 'Primeira vez' para cadastrar.")
             st.stop()
+        
+        # --- REMOVA A REPETIÇÃO DA FONTE QUE ESTAVA AQUI ---
+        # Agora o código segue direto para os campos do formulário...
 
-        # DEFINE A FONTE: Ou o que acabamos de carregar, ou o que foi injetado pelo botão Restaurar
-        fonte = st.session_state["dados_oficiais"] if st.session_state["dados_oficiais"] else dados_git
 
         # ============================================================
         # 4. FORMULÁRIO - DADOS DE IDENTIFICAÇÃO
         # ============================================================
         st.subheader("👤 Dados de Identificação")
         c1, c2 = st.columns(2)
-        with c1:
-            nome_f = st.text_input("Nome", fonte.get("nome", nome_usuario))
-            cargo_f = st.text_input("Cargo", fonte.get("cargo", ""))
-            depto_f = st.text_input("Departamento", fonte.get("departamento", ""))
-            esc_f = st.text_input("Escolaridade", fonte.get("escolaridade", ""))
-        with c2:
-            setor_f = st.text_input("Setor", fonte.get("setor", ""))
-            chefe_f = st.text_input("Chefe imediato", fonte.get("chefe", ""))
-            unidade_f = st.text_input("Empresa", fonte.get("empresa", ""))
-            dev_f = st.text_input("Devolução em", fonte.get("devolucao", ""))
 
-        cursos_f = st.text_area("Cursos", fonte.get("cursos", ""))
-        obj_f = st.text_area("Objetivo", fonte.get("objetivo", ""))
+        with c1:
+            nome_f = st.text_input("Nome", value=fonte.get("nome", nome_usuario), key="f_nome")
+            cargo_f = st.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo")
+            depto_f = st.text_input("Departamento", value=fonte.get("departamento", ""), key="f_depto")
+            esc_f = st.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc")
+
+        with c2:
+            setor_f = st.text_input("Setor", value=fonte.get("setor", ""), key="f_setor")
+            chefe_f = st.text_input("Chefe imediato", value=fonte.get("chefe", ""), key="f_chefe")
+            unidade_f = st.text_input("Empresa", value=fonte.get("empresa", ""), key="f_unidade")
+            dev_f = st.text_input("Devolução em", value=fonte.get("devolucao", ""), key="f_dev")
+
+        cursos_f = st.text_area("Cursos", value=fonte.get("cursos", ""), key="f_cursos")
+        obj_f = st.text_area("Objetivo", value=fonte.get("objetivo", ""), key="f_obj")
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
@@ -2192,10 +2201,16 @@ if nome_usuario:
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave_disc = f"disc_{i}"
             res_ant = fonte.get("disc", {}).get(chave_disc)
+            
+            # Cálculo do índice para marcar a opção salva
+            idx = ["A", "B", "C", "D"].index(res_ant) if res_ant in ["A", "B", "C", "D"] else None
+            
             respostas_disc[chave_disc] = st.radio(
-                f"{i}. {pergunta}", ["A", "B", "C", "D"], 
-                index=["A", "B", "C", "D"].index(res_ant) if res_ant in ["A", "B", "C", "D"] else None,
-                horizontal=True, key=f"r_{i}"
+                f"{i}. {pergunta}", 
+                ["A", "B", "C", "D"], 
+                index=idx,
+                horizontal=True, 
+                key=f"r_{i}"
             )
 
         # ============================================================
@@ -2225,7 +2240,7 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            # Criamos um botão com uma chave única para evitar conflitos de ID
+            # Botão com chave única para evitar conflitos
             btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados")
             
             if btn_povoar:
@@ -2234,10 +2249,16 @@ if nome_usuario:
                 if dados_git and isinstance(dados_git, dict) and "nome" in dados_git:
                     try:
                         # 1. Limpeza agressiva de cache visual (Widgets)
-                        # Isso remove a "memória" antiga do que você digitou na tela
-                        chaves_widgets = ["ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug", 
-                                         "f_nome", "f_cargo", "f_depto", "f_esc", "f_setor", 
-                                         "f_chefe", "f_unidade", "f_dev", "f_cursos", "f_obj"]
+                        # Remove a "memória" antiga para forçar a leitura do valor da 'fonte'
+                        chaves_widgets = [
+                            "ed_alta", "ed_normal", "ed_baixa", "ed_dif", "ed_sug", 
+                            "f_nome", "f_cargo", "f_depto", "f_esc", "f_setor", 
+                            "f_chefe", "f_unidade", "f_dev", "f_cursos", "f_obj"
+                        ]
+                        
+                        # Adiciona as chaves do DISC na limpeza
+                        for i in range(1, 25):
+                            chaves_widgets.append(f"r_{i}")
                         
                         for k in chaves_widgets:
                             if k in st.session_state:
@@ -2249,7 +2270,6 @@ if nome_usuario:
                         st.success(f"✅ Sucesso! Encontrado rascunho de: {dados_git.get('nome')}")
                         st.info("🔄 Recarregando formulário com os dados salvos...")
                         
-                        # Pequena pausa para você ver a mensagem antes de recarregar
                         import time
                         time.sleep(1) 
                         
