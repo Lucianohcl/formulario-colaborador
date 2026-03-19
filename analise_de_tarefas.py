@@ -2442,7 +2442,7 @@ if nome_usuario:
                 **respostas_disc
         }
 
-       with col1:
+        with col1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
                 with st.spinner("Salvando..."):
                     ok = salvar(dados_atuais, arquivo_nome)
@@ -2453,13 +2453,15 @@ if nome_usuario:
                     st.rerun()
 
         with col2:
-                if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
-                        arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
-                        dados_atuais["status"] = "finalizado"
-                        dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
+                arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                dados_atuais["status"] = "finalizado"
+                dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                        if salvar(dados_atuais, arquivo_oficial):
-                                salvar(dados_atuais, arquivo_nome)
-                                st.success("Enviado com sucesso!")
-                                st.balloons()
-                                st.rerun()
+                if salvar(dados_atuais, arquivo_oficial):
+                    salvar(dados_atuais, arquivo_nome)
+                    st.success("Enviado com sucesso!")
+                    st.balloons()
+                    st.rerun()
+
+    
