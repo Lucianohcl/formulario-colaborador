@@ -2370,18 +2370,10 @@ if nome_usuario:
         st.markdown("---")
         b1, b2 = st.columns(2)
 
-        # O pacote de dados consolida tudo o que foi preenchido
         pacote_dados = {
-            "nome": nome_f, 
-            "cargo": cargo_f, 
-            "departamento": depto_f, 
-            "escolaridade": esc_f,
-            "setor": setor_f, 
-            "chefe": chefe_f, 
-            "empresa": unidade_f, 
-            "devolucao": dev_f,
-            "cursos": cursos_f, 
-            "objetivo": obj_f,
+            "nome": nome_f, "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
+            "setor": setor_f, "chefe": chefe_f, "empresa": unidade_f, "devolucao": dev_f,
+            "cursos": cursos_f, "objetivo": obj_f,
             "at_alta": limpar_df(ed_alta), 
             "at_normal": limpar_df(ed_normal), 
             "at_baixa": limpar_df(ed_baixa),
@@ -2399,11 +2391,17 @@ if nome_usuario:
                     st.rerun()
 
         with b2:
-            # ESTE É O BOTÃO QUE "COSPE" OS DADOS PARA OS CAMPOS DE CIMA
             if st.button("🚀 POVOAR FORMULÁRIO (CUSPIR DADOS)", type="primary", use_container_width=True):
                 dados_recuperados, _ = carregar(arquivo_nome)
                 if dados_recuperados:
-                    # Alimenta a memória 'f' que os campos lá no topo consultam
+                    # 1. Atualiza a fonte principal
                     st.session_state["dados_oficiais"] = dados_recuperados
-                    # Recarrega a página para os valores aparecerem nos inputs
+                    
+                    # 2. LIMPEZA CRÍTICA: Remove o estado antigo dos editores para forçar o 'povoamento'
+                    chaves_para_resetar = ["at_alta", "at_normal", "at_baixa", "dificuldades", "sugestoes"]
+                    for chave in chaves_para_resetar:
+                        # Limpa o dataframe e o estado do widget (ed_...)
+                        if chave in st.session_state: del st.session_state[chave]
+                        if f"ed_{chave}" in st.session_state: del st.session_state[f"ed_{chave}"]
+                    
                     st.rerun()
