@@ -306,9 +306,8 @@ if nome_usuario:
     if novo_cadastro:
         st.session_state["logado"] = True
 
-        
-            st.session_state["dados_oficiais"] = {}
-            st.session_state["reset_feito"] = nome_limpo
+        st.session_state["dados_oficiais"] = {}
+        st.session_state["reset_feito"] = nome_limpo
 
     else:
         dados_git, _ = carregar(arquivo_nome)
