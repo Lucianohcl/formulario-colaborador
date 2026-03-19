@@ -2475,7 +2475,7 @@ if nome_usuario:
             respostas_disc[chave] = st.radio(
                 f"{i}. {pergunta}",
                 ["A", "B", "C", "D"],
-                index=["A", "B", "C", "D"].index(res_anterior)
+                index=["A", "B", "C", "D"].index(res_anterior) if res_anterior in ["A", "B", "C", "D"] else None,
                 if res_anterior in ["A", "B", "C", "D"] else None,
                 horizontal=True,
                 key=f"radio_{i}"
@@ -2575,31 +2575,48 @@ if nome_usuario:
             "disc": respostas_disc
         }
 
-        # ===========================
-        # BOTÕES FINAIS
-        # ===========================
+        # ============================================================
+        # BOTÕES FINAIS (SINCRONIZADOS E COM PREENCHIMENTO ATIVO)
+        # ============================================================
         st.markdown("---")
         col_btn1, col_btn2 = st.columns(2)
 
+        # 1. Montagem do dicionário com as chaves que a 'fonte' espera ler
+        dados_finais_ajustados = {
+            "nome": nome_f,
+            "cargo": cargo_f,
+            "departamento": depto_f,
+            "setor": setor_f,
+            "chefe": chefe_f,
+            "empresa": unidade_f,
+            "escolaridade": esc_f,
+            "devolucao": dev_f,
+            "cursos": cursos_f,
+            "objetivo": obj_f,
+            "atividades_alta": atividades_alta_editadas.to_dict("records") if 'atividades_alta_editadas' in locals() else [],
+            "atividades_normal": atividades_normal_editadas.to_dict("records") if 'atividades_normal_editadas' in locals() else [],
+            "atividades_baixa": atividades_baixa_editadas.to_dict("records") if 'atividades_baixa_editadas' in locals() else [],
+            "dificuldades": edit_dif.to_dict("records") if 'edit_dif' in locals() else [],
+            "sugestoes": edit_sug.to_dict("records") if 'edit_sug' in locals() else [],
+            "disc": respostas_disc
+        }
+
         with col_btn1:
+            # BOTÃO 1: Salva o estado ATUAL da tela no arquivo oficial
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-                if salvar(dados_oficiais, arquivo_oficial):
-                    st.session_state["dados_oficiais"] = dados_oficiais
-                    st.success("✅ Rascunho salvo com sucesso!")
+                if salvar(dados_finais_ajustados, arquivo_nome):
+                    st.session_state["dados_oficiais"] = dados_finais_ajustados
+                    st.success(f"✅ Rascunho de {nome_usuario} salvo com sucesso!")
+                else:
+                    st.error("❌ Erro ao salvar no GitHub. Verifique o Token.")
 
         with col_btn2:
+            # BOTÃO 2: Injeta o que foi CARREGADO do GitHub nos campos da tela
             if st.button("🚀 PREENCHER FORMULÁRIO (DO RASCUNHO)", use_container_width=True, type="primary"):
-
-                if "formulario_pre_preenchido" in st.session_state:
-
-                    # CTRL + C (pega rascunho)
-                    dados_copiados = st.session_state["formulario_pre_preenchido"]
-
-                    # CTRL + V (cola no sistema de UI)
-                    st.session_state["formulario_pre_preenchido"] = dados_copiados
-
-                    st.success("✅ Formulário preenchido com dados do rascunho!")
-                    st.rerun()
-
+                if dados and isinstance(dados, dict) and "nome" in dados:
+                    # Alimenta a 'fonte' com o JSON vindo do carregar()
+                    st.session_state["dados_oficiais"] = dados.copy()
+                    st.success("✅ Formulário povoado com seu rascunho salvo!")
+                    st.rerun() 
                 else:
-                    st.warning("⚠️ Nenhum rascunho encontrado.")                
+                    st.warning("⚠️ Nenhum rascunho anterior encontrado para este nome.")                  
