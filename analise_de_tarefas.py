@@ -2185,14 +2185,35 @@ if nome_usuario:
         cursos_f = st.text_area("Cursos obrigatórios ou diferenciais", fonte.get("cursos", ""), key="f_cursos")
         obj_f = st.text_area("Trabalho e principal objetivo", fonte.get("objetivo", ""), key="f_obj")
 
-        # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
-        # Agora ela olha para a 'fonte' para saber se preenche a tabela automaticamente
-        def init_df(chave, colunas_vazias):
-            if chave not in st.session_state:
-                if fonte.get(chave):
-                    st.session_state[chave] = pd.DataFrame(fonte.get(chave))
-                else:
-                    st.session_state[chave] = pd.DataFrame(colunas_vazias)
+
+
+
+    
+    # --- FUNÇÃO PARA INICIALIZAR TABELAS ---
+    # Agora ela olha para a 'fonte' para saber se preenche a tabela automaticamente
+    def init_df(chave, template_df):
+
+        valor = fonte.get(chave) if isinstance(fonte, dict) else None
+
+        if (
+            chave not in st.session_state
+            or not isinstance(st.session_state[chave], pd.DataFrame)
+        ):
+
+            if isinstance(valor, list):
+                st.session_state[chave] = pd.DataFrame(valor)
+
+            elif isinstance(valor, dict):
+                try:
+                    st.session_state[chave] = pd.DataFrame.from_dict(valor)
+                except Exception:
+                    st.session_state[chave] = template_df.copy()
+
+            elif isinstance(valor, pd.DataFrame):
+                st.session_state[chave] = valor.copy()
+
+            else:
+                st.session_state[chave] = template_df.copy()        
 
         # 1. Atividades Alta
         st.subheader("🔹 Atividades de Alta Complexidade")
@@ -2259,7 +2280,7 @@ if nome_usuario:
         col_btn1, col_btn2 = st.columns(2)
         
         # Preparamos o dicionário com tudo o que está na tela no momento
-        dados_atuais = {
+        dados_oficiais = {
             "nome": nome_f,
             "cargo": cargo_f,
             "departamento": depto_f,
@@ -2270,20 +2291,22 @@ if nome_usuario:
             "devolucao": dev_f,
             "cursos": cursos_f,
             "objetivo": obj_f,
-            "atividades_alta": atividades_alta_editadas.to_dict('records'),
-            "atividades_normal": atividades_normal_editadas.to_dict('records'),
-            "atividades_baixa": atividades_baixa_editadas.to_dict('records'),
-            "dificuldades": edit_dif.to_dict('records'),
-            "sugestoes": edit_sug.to_dict('records'),
-            "status": "em_andamento"
+
+            "atividades_alta": atividades_alta_editadas.to_dict("records"),
+            "atividades_normal": atividades_normal_editadas.to_dict("records"),
+            "atividades_baixa": atividades_baixa_editadas.to_dict("records"),
+
+            "dificuldades": edit_dif.to_dict("records"),
+            "sugestoes": edit_sug.to_dict("records"),
+
+            "disc": respostas_disc.copy()
+            "status": "finalizado"
         }
-        # Incluímos as respostas do DISC (capturadas no loop anterior)
-        dados_atuais.update(respostas_disc)
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
                 # arquivo_nome foi definido lá no topo do script
-                if salvar(dados_atuais, arquivo_nome):
+                if salvar(dados_oficiais, arquivo_oficial):
                     # Sincroniza a memória da sessão com o que foi salvo
                     st.session_state["dados_oficiais"] = dados_atuais
                     st.success("✅ Rascunho salvo com sucesso no GitHub!")
@@ -2291,7 +2314,7 @@ if nome_usuario:
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
                 # Prepara os dados finais
-                dados_atuais["status"] = "finalizado"
+                dados_oficiais["status"] = "finalizado"
                 arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
                 
                 if salvar(dados_atuais, arquivo_oficial):
