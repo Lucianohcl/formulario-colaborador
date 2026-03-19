@@ -2245,11 +2245,29 @@ def carregar(arquivo):
 def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
-    _, sha = carregar(arquivo)
-    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
-    payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
-    if sha: payload["sha"] = sha
+
+    atual, sha = carregar(arquivo)
+
+    conteudo_b64 = base64.b64encode(
+        json.dumps(dados, indent=4, ensure_ascii=False).encode("utf-8")
+    ).decode("utf-8")
+
+    payload = {
+        "message": mensagem,
+        "content": conteudo_b64,
+        "branch": "main"
+    }
+
+    if sha:
+        payload["sha"] = sha
+
     r = requests.put(url, headers=headers, json=payload)
+
+    # 🔥 DEBUG IMPORTANTE
+    if r.status_code not in [200, 201]:
+        st.error(f"Erro GitHub: {r.status_code}")
+        st.write(r.json())
+
     return r.status_code in [200, 201]
 
 # ================================
@@ -2309,33 +2327,31 @@ if nome_usuario:
         # ================================
         # BOTÃO DE PUXAR RASCUNHO (CORRETO)
         # ================================
-        if st.button("🚀 PUXAR DADOS DO RASCUNHO", use_container_width=True):
-            dados_recuperados, _ = carregar(arquivo_nome)
 
-            if dados_recuperados:
-                st.session_state["dados_oficiais"] = dados_recuperados
+        with col2:
+            if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
 
-                # limpa tabelas
-                for chave in [
-                    "atividades_alta",
-                    "atividades_normal",
-                    "atividades_baixa",
-                    "dificuldades",
-                    "sugestoes"
-                ]:
-                    if chave in st.session_state:
-                        del st.session_state[chave]
+                # validação mínima
+                if not nome_f or nome_f.strip() == "":
+                    st.error("⚠️ Preencha o nome antes de enviar.")
+                else:
+                    with st.spinner("Enviando formulário..."):
 
-                # limpa editores
-                for chave in list(st.session_state.keys()):
-                    if chave.startswith("ed_"):
-                        del st.session_state[chave]
+                        arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                        dados_atuais["status"] = "finalizado"
+                        dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                st.rerun()
-            else:
-                st.warning("Nenhum rascunho encontrado.")
+                        ok = salvar(dados_atuais, arquivo_oficial)
 
-        fonte = st.session_state.get("dados_oficiais") or {}
+                    if ok:
+                        salvar(dados_atuais, arquivo_nome)
+                        st.session_state["dados_oficiais"] = dados_atuais
+                        st.success("Enviado com sucesso!")
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error("Erro ao enviar.")        
+        
 
         # ================================
         # IDENTIFICAÇÃO
@@ -2410,12 +2426,14 @@ if nome_usuario:
                 valor = fonte.get(chave)
                 idx = opcoes.index(valor) if valor in opcoes else 0
 
-                respostas_disc[chave] = st.radio(
-                        f"{i}. {pergunta}",
-                        opcoes,
-                        index=idx,
-                        key=f"disc_unico_{i}_{nome_limpo}"
+                st.radio(
+                    f"{i}. {pergunta}",
+                    opcoes,
+                    index=idx,
+                    horizontal=True,
+                    key=f"disc_unico_{i}_{nome_limpo}"
                 )
+                        
 
         # ================================
         # SALVAR + ENVIAR
@@ -2454,14 +2472,25 @@ if nome_usuario:
 
         with col2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
-                arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
-                dados_atuais["status"] = "finalizado"
-                dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-                if salvar(dados_atuais, arquivo_oficial):
-                    salvar(dados_atuais, arquivo_nome)
-                    st.success("Enviado com sucesso!")
-                    st.balloons()
-                    st.rerun()
+                if not nome_f or nome_f.strip() == "":
+                    st.error("⚠️ Preencha o nome antes de enviar.")
+                else:
+                    with st.spinner("Enviando formulário..."):
+
+                        arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                        dados_atuais["status"] = "finalizado"
+                        dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        ok = salvar(dados_atuais, arquivo_oficial)
+
+                    if ok:
+                        salvar(dados_atuais, arquivo_nome)
+                        st.session_state["dados_oficiais"] = dados_atuais
+                        st.success("Enviado com sucesso!")
+                        st.balloons()
+                        st.rerun()
+                    else:
+                        st.error("❌ Erro ao enviar para o GitHub.")        
 
     
