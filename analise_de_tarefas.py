@@ -2505,18 +2505,51 @@ if nome_usuario:
             "algo": valor
         }
 
-        # ===========================
-        # 8. BOTÕES
-        # ===========================
+        # ============================================================
+        # 7. BOTÕES FINAIS (RASCUNHO E ENVIO)
+        # ============================================================
         st.markdown("---")
         col_btn1, col_btn2 = st.columns(2)
 
+        dados_oficiais = {
+            "nome": nome_f,
+            "cargo": cargo_f,
+            "departamento": depto_f,
+            "escolaridade": esc_f,
+            "setor": setor_f,
+            "chefe": chefe_f,
+            "empresa": unidade_f,
+            "devolucao": dev_f,
+            "cursos": cursos_f,
+            "objetivo": obj_f,
+
+            "atividades_alta": atividades_alta_f.to_dict("records"),
+            "atividades_normal": atividades_normal_f.to_dict("records"),
+            "atividades_baixa": atividades_baixa_f.to_dict("records"),
+
+            "dificuldades": dificuldades_f.to_dict("records"),
+            "sugestoes": sugestoes_f.to_dict("records"),
+
+            "disc": respostas_disc_f.copy(),
+            "algo": valor
+        }
+
+        # ============================
+        # BOTÃO 1 - RASCUNHO
+        # ============================
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-                if salvar(dados_oficiais, arquivo_oficial):
-                    st.session_state["dados_oficiais"] = dados_oficiais
-                    st.success("✅ Rascunho salvo com sucesso!")
 
+                arquivo_rascunho = f"RASCUNHO_{nome_limpo}.json"
+
+                if salvar(dados_oficiais, arquivo_rascunho):
+                    st.session_state["dados_oficiais"] = dados_oficiais
+                    st.session_state["status_form"] = "rascunho"
+                    st.success("✅ Rascunho salvo com sucesso no GitHub!")
+
+        # ============================
+        # BOTÃO 2 - ENVIO FINAL
+        # ============================
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
 
@@ -2524,6 +2557,8 @@ if nome_usuario:
                 arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
 
                 if salvar(dados_oficiais, arquivo_oficial):
-                    st.balloons()
                     st.session_state["dados_oficiais"] = dados_oficiais
+                    st.session_state["status_form"] = "finalizado"
+                    st.balloons()
                     st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
+                    st.info(f"Dados de {nome_f} salvos no GitHub.")        
