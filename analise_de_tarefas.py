@@ -2261,7 +2261,7 @@ if nome_usuario:
             pd.DataFrame(dados.get("sugestoes", [{} for _ in range(10)])),
             key="f_sugestoes",
             use_container_width=True
-        )
+        )        
 
 
         # ===========================
@@ -2372,9 +2372,6 @@ if nome_usuario:
         # ============================================================
         st.markdown("---")
         col_btn1, col_btn2 = st.columns(2)
-        
-        # Preparamos o dicionário com tudo o que está na tela no momento
-        
 
         dados_oficiais = {
             "nome": nome_f,
@@ -2388,43 +2385,31 @@ if nome_usuario:
             "cursos": cursos_f,
             "objetivo": obj_f,
 
-            "atividades_alta": atividades_alta_editadas.to_dict("records"),
-            "atividades_normal": atividades_normal_editadas.to_dict("records"),
-            "atividades_baixa": atividades_baixa_editadas.to_dict("records"),
+            "atividades_alta": atividades_alta_f.to_dict("records"),
+            "atividades_normal": atividades_normal_f.to_dict("records"),
+            "atividades_baixa": atividades_baixa_f.to_dict("records"),
 
-            "dificuldades": edit_dif.to_dict("records"),
-            "sugestoes": edit_sug.to_dict("records"),
+            "dificuldades": dificuldades_f.to_dict("records"),
+            "sugestoes": sugestoes_f.to_dict("records"),
 
-            "disc": respostas_disc.copy(),
-
-            # se quiser adicionar algo extra:
+            "disc": respostas_disc_f.copy(),
             "algo": valor
         }
 
         with col_btn1:
             if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
-                # arquivo_nome foi definido lá no topo do script
                 if salvar(dados_oficiais, arquivo_oficial):
-                    # Sincroniza a memória da sessão com o que foi salvo
-                    st.session_state["dados_oficiais"] = dados_atuais
+                    st.session_state["dados_oficiais"] = dados_oficiais
                     st.success("✅ Rascunho salvo com sucesso no GitHub!")
 
         with col_btn2:
             if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True, type="primary"):
-                # Prepara os dados finais
+
                 dados_oficiais["status"] = "finalizado"
                 arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
-                
-                if salvar(dados_atuais, arquivo_oficial):
-                    # 1. Efeito visual de sucesso
-                    st.balloons() 
-                    
-                    # 2. Atualiza a 'fonte' na memória para garantir que a tela continue cheia
-                    st.session_state["dados_oficiais"] = dados_atuais
-                    
-                    # 3. Mensagens de confirmação sem travar a tela
+
+                if salvar(dados_oficiais, arquivo_oficial):
+                    st.balloons()
+                    st.session_state["dados_oficiais"] = dados_oficiais
                     st.success("🎊 FORMULÁRIO ENVIADO COM SUCESSO!")
-                    st.info(f"Os dados oficiais de {nome_f} estão visíveis abaixo e salvos no GitHub.")
-                    
-                    # IMPORTANTE: Removi o st.stop() e o logado = False 
-                    # para que você VEJA os dados na tela agora.   
+                    st.info(f"Dados de {nome_f} salvos no GitHub.")        
