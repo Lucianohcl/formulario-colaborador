@@ -2186,10 +2186,10 @@ import pandas as pd
 import json
 import base64
 import requests
-import time
+from datetime import datetime
 
 # ================================
-# CONFIG
+# 1. CONFIGURAÇÕES E LISTAS
 # ================================
 USER = st.secrets["DB_USERNAME"]
 TOKEN = st.secrets["DB_TOKEN"]
@@ -2199,8 +2199,35 @@ lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
+perguntas_disc = [
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+]
+
 # ================================
-# FUNÇÕES
+# 2. FUNÇÕES DE COMUNICAÇÃO
 # ================================
 def carregar(arquivo):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
@@ -2215,141 +2242,72 @@ def carregar(arquivo):
         pass
     return {}, None
 
-def salvar(dados, arquivo):
+def salvar(dados, arquivo, mensagem="Atualização"):
     url = f"https://api.github.com/repos/{USER}/{REPO}/contents/{arquivo}"
     headers = {"Authorization": f"token {TOKEN}"}
     _, sha = carregar(arquivo)
-
-    conteudo_b64 = base64.b64encode(
-        json.dumps(dados, indent=4, ensure_ascii=False).encode()
-    ).decode()
-
-    payload = {"message": "update", "content": conteudo_b64, "branch": "main"}
-    if sha:
-        payload["sha"] = sha
-
+    conteudo_b64 = base64.b64encode(json.dumps(dados, indent=4, ensure_ascii=False).encode('utf-8')).decode('utf-8')
+    payload = {"message": mensagem, "content": conteudo_b64, "branch": "main"}
+    if sha: payload["sha"] = sha
     r = requests.put(url, headers=headers, json=payload)
     return r.status_code in [200, 201]
 
-def limpar_df(df):
-    return pd.DataFrame(df).to_dict('records')
+# ================================
+# 3. INTERFACE E LÓGICA DE ACESSO
+# ================================
+st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
 
-# ================================
-# SESSION
-# ================================
+# Inicializa as variáveis de controle se não existirem
 if "logado" not in st.session_state:
     st.session_state["logado"] = False
 if "dados_oficiais" not in st.session_state:
     st.session_state["dados_oficiais"] = {}
 
-st.set_page_config(layout="wide")
-
-# ================================
-# LOGIN
-# ================================
-nome_usuario = st.text_input("Digite seu NOME COMPLETO")
+nome_usuario = st.text_input("Digite seu **NOME COMPLETO**", key="input_nome_principal")
 
 if nome_usuario:
     nome_limpo = nome_usuario.strip().lower().replace(" ", "_")
     arquivo_nome = f"rascunho_{nome_limpo}.json"
-
-    novo = st.checkbox("Primeira vez?")
-
-    dados_git, _ = carregar(arquivo_nome)
-
-    if not st.session_state["logado"]:
-        if novo:
-            st.session_state["logado"] = True
-        elif dados_git:
-            st.success("Rascunho encontrado")
-            if st.button("CARREGAR RASCUNHO"):
-                st.session_state["dados_oficiais"] = dados_git
+    
+    # 1. Checkbox para novo cadastro
+    novo_cadastro = st.checkbox("🌟 Primeira vez? Marque aqui para abrir um rascunho em branco.", key="check_novo")
+    
+    # Lógica de carregamento
+    dados_git = {}
+    
+    if novo_cadastro:
+        # Se é novo, liberamos o acesso e garantimos que a memória oficial esteja limpa
+        st.session_state["logado"] = True
+        if "reset_feito" not in st.session_state or st.session_state.reset_feito != nome_limpo:
+            st.session_state["dados_oficiais"] = {}
+            st.session_state["reset_feito"] = nome_limpo
+    else:
+        # Só tenta carregar do GitHub se NÃO for novo cadastro
+        dados_git, _ = carregar(arquivo_nome)
+        
+        if dados_git and "nome" in dados_git and not st.session_state["logado"]:
+            st.success(f"📋 Rascunho de {nome_usuario} localizado!")
+            if st.button("📥 CLIQUE AQUI PARA POVOAR O FORMULÁRIO", type="primary", use_container_width=True):
+                st.session_state["dados_oficiais"] = dados_git.copy()
                 st.session_state["logado"] = True
                 st.rerun()
+        elif not dados_git and not st.session_state["logado"]:
+            st.info("ℹ️ Nenhum rascunho encontrado. Marque a caixa acima para iniciar um novo.")
 
-    if st.session_state["logado"]:
+    # --- DEFINIÇÃO DA FONTE (A REGRA DE OURO) ---
+    if st.session_state.get("dados_oficiais"):
+        fonte = st.session_state["dados_oficiais"]
+    else:
+        fonte = dados_git if dados_git else {}
 
-        dados = (
-            st.session_state["dados_oficiais"]
-            if st.session_state["dados_oficiais"]
-            else dados_git
-        )
+    # --- SÓ MOSTRA O FORMULÁRIO SE ESTIVER LOGADO ---
+    if st.session_state.get("logado"):
 
-        # ================================
-        # IDENTIFICAÇÃO
-        # ================================
-        col1, col2 = st.columns(2)
-
-        with col1:
-            nome_f = st.text_input("Nome", dados.get("nome", nome_usuario))
-            cargo_f = st.text_input("Cargo", dados.get("cargo", ""))
-            depto_f = st.text_input("Departamento", dados.get("departamento", ""))
-            esc_f = st.text_input("Escolaridade", dados.get("escolaridade", ""))
-
-        with col2:
-            setor_f = st.text_input("Setor", dados.get("setor", ""))
-            chefe_f = st.text_input("Chefe", dados.get("chefe", ""))
-            unidade_f = st.text_input("Empresa", dados.get("empresa", ""))
-            dev_f = st.text_input("Devolução", dados.get("devolucao", ""))
-
-        cursos_f = st.text_area("Cursos", dados.get("cursos", ""))
-        obj_f = st.text_area("Objetivo", dados.get("objetivo", ""))
+        def limpar_df(df):
+            return pd.DataFrame(df).to_dict('records')
 
         # ================================
-        # INIT DF (CORRIGIDO)
-        # ================================
-        def init_df(chave, modelo):
-            if chave not in st.session_state:
-                if chave in dados:
-                    st.session_state[chave] = pd.DataFrame(dados[chave])
-                else:
-                    st.session_state[chave] = pd.DataFrame(modelo)
-
-        config = {
-            "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-            "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-            "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
-        }
-
-        # ================================
-        # TABELAS
-        # ================================
-        init_df("atividades_alta", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
-        ed_alta = st.data_editor(st.session_state["atividades_alta"], key="ed_alta", column_config=config, hide_index=True, use_container_width=True)
-
-        init_df("atividades_normal", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
-        ed_normal = st.data_editor(st.session_state["atividades_normal"], key="ed_normal", column_config=config, hide_index=True, use_container_width=True)
-
-        init_df("atividades_baixa", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
-        ed_baixa = st.data_editor(st.session_state["atividades_baixa"], key="ed_baixa", column_config=config, hide_index=True, use_container_width=True)
-
-        init_df("dificuldades", [{"Dificuldade": ""} for _ in range(10)])
-        ed_dif = st.data_editor(st.session_state["dificuldades"], key="ed_dif", hide_index=True, use_container_width=True)
-
-        init_df("sugestoes", [{"Sugestão": ""} for _ in range(10)])
-        ed_sug = st.data_editor(st.session_state["sugestoes"], key="ed_sug", hide_index=True, use_container_width=True)
-
-        # ================================
-        # DISC (CORRIGIDO)
-        # ================================
-        respostas_disc = {}
-        opcoes = ["A","B","C","D"]
-
-        for i, pergunta in enumerate(perguntas_disc, 1):
-            chave = f"disc_{i}"
-            valor = dados.get(chave)
-
-            idx = opcoes.index(valor) if valor in opcoes else None
-
-            respostas_disc[chave] = st.radio(
-                pergunta,
-                opcoes,
-                index=idx,
-                key=f"disc_{i}_{nome_limpo}"
-            )
-
-        # ================================
-        # BOTÃO POVOAR
+        # BOTÃO DE PUXAR RASCUNHO (CORRETO)
         # ================================
         if st.button("🚀 PUXAR DADOS DO RASCUNHO", use_container_width=True):
             dados_recuperados, _ = carregar(arquivo_nome)
@@ -2357,6 +2315,7 @@ if nome_usuario:
             if dados_recuperados:
                 st.session_state["dados_oficiais"] = dados_recuperados
 
+                # limpa tabelas
                 for chave in [
                     "atividades_alta",
                     "atividades_normal",
@@ -2367,6 +2326,7 @@ if nome_usuario:
                     if chave in st.session_state:
                         del st.session_state[chave]
 
+                # limpa editores
                 for chave in list(st.session_state.keys()):
                     if chave.startswith("ed_"):
                         del st.session_state[chave]
@@ -2375,11 +2335,95 @@ if nome_usuario:
             else:
                 st.warning("Nenhum rascunho encontrado.")
 
+        fonte = st.session_state.get("dados_oficiais") or {}
+
         # ================================
-        # SALVAR
+        # IDENTIFICAÇÃO
         # ================================
-        if st.button("💾 SALVAR"):
-            pacote = {
+        st.subheader("👤 Dados de Identificação")
+        col1, col2 = st.columns(2)
+
+        with col1:
+                nome_f = st.text_input("Nome do colaborador", fonte.get("nome", nome_usuario))
+                cargo_f = st.text_input("Cargo", fonte.get("cargo", ""))
+                depto_f = st.text_input("Departamento", fonte.get("departamento", ""))
+                esc_f = st.text_input("Escolaridade", fonte.get("escolaridade", ""))
+
+        with col2:
+                setor_f = st.text_input("Setor", fonte.get("setor", ""))
+                chefe_f = st.text_input("Chefe imediato", fonte.get("chefe", ""))
+                unidade_f = st.text_input("Empresa / Unidade", fonte.get("empresa", ""))
+                dev_f = st.text_input("Devolver preenchido em", fonte.get("devolucao", ""))
+
+        cursos_f = st.text_area("Cursos obrigatórios ou diferenciais", fonte.get("cursos", ""))
+        obj_f = st.text_area("Trabalho e principal objetivo", fonte.get("objetivo", ""))
+
+        # ================================
+        # INIT DF (ÚNICO)
+        # ================================
+        def init_df(chave, modelo):
+                if chave in fonte:
+                        st.session_state[chave] = pd.DataFrame(fonte[chave])
+                elif chave not in st.session_state:
+                        st.session_state[chave] = pd.DataFrame(modelo)
+
+        config = {
+                "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+                "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+                "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
+        }
+
+        # ================================
+        # TABELAS (SEM DUPLICAÇÃO)
+        # ================================
+        st.subheader("🔹 Atividades de Alta Complexidade")
+        init_df("atividades_alta", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
+        atividades_alta_editadas = st.data_editor(st.session_state["atividades_alta"], key="ed_alta", column_config=config)
+
+        st.subheader("🔹 Atividades de Nível Normal")
+        init_df("atividades_normal", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
+        atividades_normal_editadas = st.data_editor(st.session_state["atividades_normal"], key="ed_normal", column_config=config)
+
+        st.subheader("🔹 Atividades de Baixa Complexidade")
+        init_df("atividades_baixa", {"Atividade Descrita": [""]*20, "Frequência": [None]*20, "Horas": ["0 h"]*20, "Minutos": ["0 min"]*20})
+        atividades_baixa_editadas = st.data_editor(st.session_state["atividades_baixa"], key="ed_baixa", column_config=config)
+
+        st.subheader("⚠️ Dificuldades e Bloqueios")
+        init_df("dificuldades", [{"Dificuldade": ""} for _ in range(10)])
+        edit_dif = st.data_editor(st.session_state["dificuldades"], key="ed_dif")
+
+        st.subheader("💡 Sugestões de Melhoria")
+        init_df("sugestoes", [{"Sugestão": ""} for _ in range(10)])
+        edit_sug = st.data_editor(st.session_state["sugestoes"], key="ed_sug")
+
+        # ================================
+        # DISC (KEY ÚNICA — SEM ERRO)
+        # ================================
+        st.markdown("---")
+        st.subheader("📊 Questionário DISC")
+
+        respostas_disc = {}
+        opcoes = ["A", "B", "C", "D"]
+
+        for i, pergunta in enumerate(perguntas_disc, 1):
+                chave = f"disc_{i}"
+                valor = fonte.get(chave)
+                idx = opcoes.index(valor) if valor in opcoes else 0
+
+                respostas_disc[chave] = st.radio(
+                        f"{i}. {pergunta}",
+                        opcoes,
+                        index=idx,
+                        key=f"disc_unico_{i}_{nome_limpo}"
+                )
+
+        # ================================
+        # SALVAR + ENVIAR
+        # ================================
+        st.markdown("---")
+        col1, col2 = st.columns(2)
+
+        dados_atuais = {
                 "nome": nome_f,
                 "cargo": cargo_f,
                 "departamento": depto_f,
@@ -2390,15 +2434,32 @@ if nome_usuario:
                 "devolucao": dev_f,
                 "cursos": cursos_f,
                 "objetivo": obj_f,
-                "atividades_alta": limpar_df(ed_alta),
-                "atividades_normal": limpar_df(ed_normal),
-                "atividades_baixa": limpar_df(ed_baixa),
-                "dificuldades": limpar_df(ed_dif),
-                "sugestoes": limpar_df(ed_sug),
+                "atividades_alta": limpar_df(atividades_alta_editadas),
+                "atividades_normal": limpar_df(atividades_normal_editadas),
+                "atividades_baixa": limpar_df(atividades_baixa_editadas),
+                "dificuldades": limpar_df(edit_dif),
+                "sugestoes": limpar_df(edit_sug),
                 **respostas_disc
-            }
+        }
 
-            if salvar(pacote, arquivo_nome):
-                st.success("Salvo!")
-                st.session_state["dados_oficiais"] = pacote
-                st.rerun()
+       with col1:
+            if st.button("💾 Salvar Rascunho Permanente", use_container_width=True):
+                with st.spinner("Salvando..."):
+                    ok = salvar(dados_atuais, arquivo_nome)
+
+                if ok:
+                    st.success("Salvo!")
+                    st.session_state["dados_oficiais"] = dados_atuais
+                    st.rerun()
+
+        with col2:
+                if st.button("🚀 ENVIAR FORMULÁRIO OFICIAL", use_container_width=True):
+                        arquivo_oficial = f"OFICIAL_{nome_limpo}.json"
+                        dados_atuais["status"] = "finalizado"
+                        dados_atuais["data_envio"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                        if salvar(dados_atuais, arquivo_oficial):
+                                salvar(dados_atuais, arquivo_nome)
+                                st.success("Enviado com sucesso!")
+                                st.balloons()
+                                st.rerun()
