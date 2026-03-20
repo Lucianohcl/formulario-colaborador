@@ -2092,15 +2092,15 @@ if nome_usuario:
 
         st.subheader("🔹 Atividades de Alta Complexidade")
         df_alta = preparar_df("atividades_alta", cols_ativ, fonte, 20)
-        edit_alta = st.data_editor(df_alta, key="ed_alta", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_alta = st.data_editor(df_alta, key="ed_alta_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
 
         st.subheader("🔹 Atividades de Nível Normal")
         df_normal = preparar_df("atividades_normal", cols_ativ, fonte, 20)
-        edit_normal = st.data_editor(df_normal, key="ed_normal", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_normal = st.data_editor(df_normal, key="ed_normal_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
 
         st.subheader("🔹 Atividades de Baixa Complexidade")
         df_baixa = preparar_df("atividades_baixa", cols_ativ, fonte, 20)
-        edit_baixa = st.data_editor(df_baixa, key="ed_baixa", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_baixa = st.data_editor(df_baixa, key="ed_baixa_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
 
         # ============================================================
         # 6. DIFICULDADES E SUGESTÕES
