@@ -1080,16 +1080,10 @@ if st.query_params.get("page") == "formulario":
         col_esq, col_dir = st.columns(2)
 
         with col_esq:
-            cursos = st.text_area("Cursos obrigatórios ou diferenciais", 
-                value=st.session_state.get("f_cursos_new") or fonte.get("cursos", ""),
-                key="f_cursos_new", 
-                height=150)
+            cursos = st.text_area("Cursos obrigatórios ou diferenciais")
 
         with col_dir:
-            objetivo = st.text_area("Trabalho e principal objetivo", 
-                value=st.session_state.get("f_obj_new") or fonte.get("objetivo", ""),
-                key="f_obj_new", 
-                height=150)
+            objetivo = st.text_area("Trabalho e principal objetivo")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
