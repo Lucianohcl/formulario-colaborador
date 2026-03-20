@@ -2072,22 +2072,41 @@ if nome_usuario:
         # 4. FORMULÁRIO - DADOS DE IDENTIFICAÇÃO
         # ============================================================
         st.subheader("👤 Dados de Identificação")
+        
+        # LOGICA DE COPIA (Executa ANTES dos widgets aparecerem)
+        if st.session_state.get("disparar_copia"):
+            campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
+            for c in campos:
+                k_origem, k_destino = f"f_{c}", f"f_{c}_v2"
+                if k_origem in st.session_state:
+                    st.session_state[k_destino] = st.session_state[k_origem]
+            
+            for i in range(1, 25):
+                if f"r_{i}" in st.session_state:
+                    st.session_state[f"r_v2_{i}"] = st.session_state[f"r_{i}"]
+            
+            st.session_state["disparar_copia"] = False
+
+        # FUNÇÃO AUXILIAR PARA NÃO DAR CONFLITO DE VALUE
+        def get_val(key, default_val):
+            return st.session_state[key] if key in st.session_state else default_val
+
         c1, c2 = st.columns(2)
 
         with c1:
-            nome_f = st.text_input("Nome", value=fonte.get("nome", nome_usuario), key="f_nome_v2")
-            cargo_f = st.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo_v2")
-            depto_f = st.text_input("Departamento", value=fonte.get("departamento", ""), key="f_depto_v2")
-            esc_f = st.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc_v2")
+            nome_f = st.text_input("Nome", value=get_val("f_nome_v2", fonte.get("nome", nome_usuario)), key="f_nome_v2")
+            cargo_f = st.text_input("Cargo", value=get_val("f_cargo_v2", fonte.get("cargo", "")), key="f_cargo_v2")
+            depto_f = st.text_input("Departamento", value=get_val("f_depto_v2", fonte.get("departamento", "")), key="f_depto_v2")
+            esc_f = st.text_input("Escolaridade", value=get_val("f_esc_v2", fonte.get("escolaridade", "")), key="f_esc_v2")
 
         with c2:
-            setor_f = st.text_input("Setor", value=fonte.get("setor", ""), key="f_setor_v2")
-            chefe_f = st.text_input("Chefe imediato", value=fonte.get("chefe", ""), key="f_chefe_v2")
-            unidade_f = st.text_input("Empresa", value=fonte.get("empresa", ""), key="f_unidade_v2")
-            dev_f = st.text_input("Devolução em", value=fonte.get("devolucao", ""), key="f_dev_v2")
+            setor_f = st.text_input("Setor", value=get_val("f_setor_v2", fonte.get("setor", "")), key="f_setor_v2")
+            chefe_f = st.text_input("Chefe imediato", value=get_val("f_chefe_v2", fonte.get("chefe", "")), key="f_chefe_v2")
+            unidade_f = st.text_input("Empresa", value=get_val("f_unidade_v2", fonte.get("empresa", "")), key="f_unidade_v2")
+            dev_f = st.text_input("Devolução em", value=get_val("f_dev_v2", fonte.get("devolucao", "")), key="f_dev_v2")
 
-        cursos_f = st.text_area("Cursos", value=fonte.get("cursos", ""), key="f_cursos_v2")
-        obj_f = st.text_area("Objetivo", value=fonte.get("objetivo", ""), key="f_obj_v2")
+        cursos_f = st.text_area("Cursos", value=get_val("f_cursos_v2", fonte.get("cursos", "")), key="f_cursos_v2")
+        obj_f = st.text_area("Objetivo", value=get_val("f_obj_v2", fonte.get("objetivo", "")), key="f_obj_v2")
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
@@ -2174,32 +2193,7 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            # O botão de espelhamento local (Script 1 -> Script 2)
             if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", type="primary", use_container_width=True, key="btn_copiar_local"):
-                # 1. Lista de campos para facilitar o loop
-                campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
-                
-                # 2. Loop de transferência de dados (Texto)
-                for c in campos:
-                    k_origem = f"f_{c}"      # Chave do Script 1
-                    k_destino = f"f_{c}_v2"   # Chave do Script 2
-                    
-                    # Se o valor existir no Script 1, joga para o Script 2
-                    if k_origem in st.session_state:
-                        st.session_state[k_destino] = st.session_state[k_origem]
-
-                # 3. Loop de transferência do Questionário DISC
-                for i in range(1, 25):
-                    c_origem = f"r_{i}"      # Chave r_1, r_2...
-                    c_destino = f"r_v2_{i}"  # Chave r_v2_1, r_v2_2...
-                    
-                    if c_origem in st.session_state:
-                        st.session_state[c_destino] = st.session_state[c_origem]
-
-                # 4. Mensagem de sucesso e Reinicialização
-                st.success("✅ Dados sincronizados com sucesso!")
-                
-                # O rerun é essencial para os campos "acordarem" com o novo valor
-                import time
-                time.sleep(0.5)
+                # Em vez de tentar escrever no state agora, avisamos que queremos copiar
+                st.session_state["disparar_copia"] = True
                 st.rerun()
