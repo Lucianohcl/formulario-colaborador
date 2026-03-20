@@ -2084,7 +2084,9 @@ if nome_usuario:
         # 5. TABELAS DE ATIVIDADES
         # ============================================================
         cols_ativ = ["Atividade Descrita", "Frequência", "Horas", "Minutos"]
-        config_ativ = {
+        
+        # DEFINIÇÃO LOCAL - Garante que o erro de NameError suma
+        config_tabelas = {
             "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
             "Horas": st.column_config.SelectboxColumn(options=lista_horas),
             "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
@@ -2092,15 +2094,15 @@ if nome_usuario:
 
         st.subheader("🔹 Atividades de Alta Complexidade")
         df_alta = preparar_df("atividades_alta", cols_ativ, fonte, 20)
-        edit_alta = st.data_editor(df_alta, key="ed_alta_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_alta = st.data_editor(df_alta, key="ed_alta_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
 
         st.subheader("🔹 Atividades de Nível Normal")
         df_normal = preparar_df("atividades_normal", cols_ativ, fonte, 20)
-        edit_normal = st.data_editor(df_normal, key="ed_normal_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_normal = st.data_editor(df_normal, key="ed_normal_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
 
         st.subheader("🔹 Atividades de Baixa Complexidade")
         df_baixa = preparar_df("atividades_baixa", cols_ativ, fonte, 20)
-        edit_baixa = st.data_editor(df_baixa, key="ed_baixa_v2", use_container_width=True, hide_index=True, column_config=config_ativ)
+        edit_baixa = st.data_editor(df_baixa, key="ed_baixa_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
 
         # ============================================================
         # 6. DIFICULDADES E SUGESTÕES
@@ -2108,12 +2110,14 @@ if nome_usuario:
         st.subheader("⚠️ Dificuldades e Bloqueios")
         cols_dif = ["Dificuldade", "Setor Envolvido", "Frequência", "Horas", "Minutos"]
         df_dif = preparar_df("dificuldades", cols_dif, fonte, 10)
-        edit_dif = st.data_editor(df_dif, key="ed_dif_v2", use_container_width=True, hide_index=True, column_config=config_padrao)
+        # Usando config_tabelas aqui também
+        edit_dif = st.data_editor(df_dif, key="ed_dif_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
 
         st.subheader("💡 Sugestões de Melhoria")
         cols_sug = ["Sugestão", "Impacto", "Frequência", "Horas", "Minutos"]
         df_sug = preparar_df("sugestoes", cols_sug, fonte, 10)
-        edit_sug = st.data_editor(df_sug, key="ed_sug_v2", use_container_width=True, hide_index=True, column_config=config_padrao)
+        # Usando config_tabelas aqui também
+        edit_sug = st.data_editor(df_sug, key="ed_sug_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
         
 
         # ============================================================
