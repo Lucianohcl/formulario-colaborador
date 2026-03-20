@@ -1076,9 +1076,13 @@ if st.query_params.get("page") == "formulario":
             value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
 
-        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-        objetivo = st.text_area("Trabalho e principal objetivo")
-    
+    cursos_f_v2 = st.text_area("Cursos realizados", 
+        value=st.session_state.get("f_cursos_v2", fonte.get("cursos", "")), key="f_cursos_v2")
+            
+    obj_f_v2 = st.text_area("Objetivo profissional", 
+        value=st.session_state.get("f_obj_v2", fonte.get("objetivo", "")), key="f_obj_v2")    
+
+
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
     col_inst1, col_inst2, col_inst3 = st.columns(3)
