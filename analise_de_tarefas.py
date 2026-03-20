@@ -2016,8 +2016,17 @@ def salvar(dados, arquivo, mensagem="Atualização"):
 
 # Função auxiliar para preparar os DataFrames das tabelas
 def preparar_df(chave, colunas, dados_fonte, padrao_linhas=10):
+    # 1. Se houver dados salvos
     if chave in dados_fonte and dados_fonte[chave]:
-        return pd.DataFrame(dados_fonte[chave])
+        df_existente = pd.DataFrame(dados_fonte[chave])
+        # FORÇA: Se a coluna nova (ex: Horas) não existir no rascunho, cria ela vazia
+        for col in colunas:
+            if col not in df_existente.columns:
+                df_existente[col] = ""
+        # Retorna exatamente as colunas que pedimos na ordem certa
+        return df_existente[colunas]
+    
+    # 2. Se não houver dados, cria tudo do zero com as colunas certas
     return pd.DataFrame({c: [""] * padrao_linhas for c in colunas})
 
 # ============================================================
@@ -2110,13 +2119,11 @@ if nome_usuario:
         st.subheader("⚠️ Dificuldades e Bloqueios")
         cols_dif = ["Dificuldade", "Setor Envolvido", "Frequência", "Horas", "Minutos"]
         df_dif = preparar_df("dificuldades", cols_dif, fonte, 10)
-        # Usando config_tabelas aqui também
         edit_dif = st.data_editor(df_dif, key="ed_dif_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
 
         st.subheader("💡 Sugestões de Melhoria")
         cols_sug = ["Sugestão", "Impacto", "Frequência", "Horas", "Minutos"]
         df_sug = preparar_df("sugestoes", cols_sug, fonte, 10)
-        # Usando config_tabelas aqui também
         edit_sug = st.data_editor(df_sug, key="ed_sug_v2", use_container_width=True, hide_index=True, column_config=config_tabelas)
         
 
