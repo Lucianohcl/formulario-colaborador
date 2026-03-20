@@ -2174,14 +2174,14 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados")
+            btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados_v2")
             
             if btn_povoar:
-                st.info("🔍 **DEBUG: Sincronizando com o Formulário...**")
+                st.info("🔍 **Sincronizando rascunho com o novo formulário...**")
                 
                 if dados_git and isinstance(dados_git, dict):
                     try:
-                        # Mapeamento exato entre JSON e as Keys do novo Formulário
+                        # MAPEAMENTO ATUALIZADO PARA AS CHAVES _V2
                         mapeamento = {
                             "nome": "f_nome_v2",
                             "cargo": "f_cargo_v2",
@@ -2195,24 +2195,20 @@ if nome_usuario:
                             "objetivo": "f_obj_v2"
                         }
 
-                        # Limpeza e Injeção
+                        # Injeção dos Campos de Texto
                         for chave_json, chave_st in mapeamento.items():
                             valor = dados_git.get(chave_json, "")
-                            if chave_st in st.session_state:
-                                del st.session_state[chave_st]
                             st.session_state[chave_st] = valor
-                            st.write(f"🧪 Sincronizado: `{chave_st}`")
 
-                        # Injeção do DISC (r_v2_1 até r_v2_24)
+                        # Injeção do DISC (Usando r_v2_1 até r_v2_24)
                         disc_data = dados_git.get("disc", {})
                         for i in range(1, 25):
                             k_st = f"r_v2_{i}"
                             k_js = f"disc_{i}"
-                            if k_st in st.session_state: del st.session_state[k_st]
                             if k_js in disc_data:
                                 st.session_state[k_st] = disc_data[k_js]
 
-                        st.success("✅ Memória sincronizada! Aplicando no formulário...")
+                        st.success("✅ Dados carregados! Clique em qualquer lugar ou aguarde o recarregamento...")
                         
                         import time
                         time.sleep(1)
@@ -2221,4 +2217,4 @@ if nome_usuario:
                     except Exception as e:
                         st.error(f"❌ Erro na sincronização: {e}")
                 else:
-                    st.error("❌ Erro: Dados do rascunho não encontrados.")
+                    st.error("❌ Nenhum rascunho encontrado para este nome.")
