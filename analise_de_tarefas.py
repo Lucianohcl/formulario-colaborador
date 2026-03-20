@@ -2214,11 +2214,19 @@ if nome_usuario:
         st.markdown("---")
         b1, b2 = st.columns(2)
 
-        # Dicionário unificado para salvar
+        
+        # Dicionário unificado para salvar (ATUALIZADO COM V2)
         dados_finais = {
-            "nome": nome_f, "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
-            "setor": setor_f, "chefe": chefe_f, "empresa": unidade_f, "devolucao": dev_f,
-            "cursos": cursos_f, "objetivo": obj_f,
+            "nome": nome_f_v2, 
+            "cargo": cargo_f_v2, 
+            "departamento": depto_f_v2, 
+            "escolaridade": esc_f_v2,
+            "setor": setor_f_v2, 
+            "chefe": chefe_f_v2, 
+            "empresa": unidade_f_v2, 
+            "devolucao": dev_f_v2,
+            "cursos": cursos_f_v2, 
+            "objetivo": obj_f_v2,
             "atividades_alta": edit_alta.to_dict("records"),
             "atividades_normal": edit_normal.to_dict("records"),
             "atividades_baixa": edit_baixa.to_dict("records"),
