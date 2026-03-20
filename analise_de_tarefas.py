@@ -1076,28 +1076,20 @@ if st.query_params.get("page") == "formulario":
             value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
 
-        # --- SEÇÃO DE CURSOS E OBJETIVOS LADO A LADO ---
-        st.markdown("---")
+        # --- CAMPOS LADO A LADO ---
+        col_esq, col_dir = st.columns(2)
 
-        # Cria duas colunas de tamanhos iguais com 8 espaços de recuo
-        col_cursos, col_obj = st.columns(2)
+        with col_esq:
+            cursos = st.text_area("Cursos obrigatórios ou diferenciais", 
+                value=st.session_state.get("f_cursos_new") or fonte.get("cursos", ""),
+                key="f_cursos_new", 
+                height=150)
 
-        with col_cursos:
-            cursos_f = st.text_area(
-                "Cursos obrigatórios ou diferenciais",
-                value=st.session_state.get("f_cursos") or fonte.get("cursos", ""),
-                key="f_cursos",
-                height=150
-            )
-
-        with col_obj:
-            obj_f = st.text_area(
-                "Trabalho e principal objetivo",
-                value=st.session_state.get("f_obj") or fonte.get("objetivo", ""),
-                key="f_obj",
-                height=150
-            )
-
+        with col_dir:
+            objetivo = st.text_area("Trabalho e principal objetivo", 
+                value=st.session_state.get("f_obj_new") or fonte.get("objetivo", ""),
+                key="f_obj_new", 
+                height=150)
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
