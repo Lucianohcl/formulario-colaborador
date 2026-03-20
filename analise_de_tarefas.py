@@ -2106,42 +2106,43 @@ if nome_usuario:
             st.success("✅ Dados sincronizados com sucesso!")
 
         # ============================================================
-        # 4. FORMULÁRIO - DADOS DE IDENTIFICAÇÃO
+        # ============================================================
+        # 4. FORMULÁRIO - DADOS DE IDENTIFICAÇÃO (AJUSTADO V2)
         # ============================================================
         st.subheader("👤 Dados de Identificação")
         c1, c2 = st.columns(2)
 
         with c1:
-            nome_f = st.text_input("Nome do colaborador", 
-                value=st.session_state.get("f_nome", fonte.get("nome", nome_usuario)), key="f_nome")
+            nome_f_v2 = st.text_input("Nome do colaborador", 
+                value=st.session_state.get("f_nome_v2", fonte.get("nome", nome_usuario)), key="f_nome_v2")
             
-            cargo_f = st.text_input("Cargo", 
-                value=st.session_state.get("f_cargo", fonte.get("cargo", "")), key="f_cargo")
+            cargo_f_v2 = st.text_input("Cargo", 
+                value=st.session_state.get("f_cargo_v2", fonte.get("cargo", "")), key="f_cargo_v2")
             
-            depto_f = st.text_input("Departamento", 
-                value=st.session_state.get("f_depto", fonte.get("departamento", "")), key="f_depto")
+            depto_f_v2 = st.text_input("Departamento", 
+                value=st.session_state.get("f_depto_v2", fonte.get("departamento", "")), key="f_depto_v2")
             
-            esc_f = st.text_input("Escolaridade", 
-                value=st.session_state.get("f_esc", fonte.get("escolaridade", "")), key="f_esc")
+            esc_f_v2 = st.text_input("Escolaridade", 
+                value=st.session_state.get("f_esc_v2", fonte.get("escolaridade", "")), key="f_esc_v2")
 
         with c2:
-            setor_f = st.text_input("Setor", 
-                value=st.session_state.get("f_setor", fonte.get("setor", "")), key="f_setor")
+            setor_f_v2 = st.text_input("Setor", 
+                value=st.session_state.get("f_setor_v2", fonte.get("setor", "")), key="f_setor_v2")
             
-            chefe_f = st.text_input("Chefe imediato", 
-                value=st.session_state.get("f_chefe", fonte.get("chefe", "")), key="f_chefe")
+            chefe_f_v2 = st.text_input("Chefe imediato", 
+                value=st.session_state.get("f_chefe_v2", fonte.get("chefe", "")), key="f_chefe_v2")
             
-            unidade_f = st.text_input("Empresa / Unidade", 
-                value=st.session_state.get("f_unidade", fonte.get("empresa", "")), key="f_unidade")
+            unidade_f_v2 = st.text_input("Empresa / Unidade", 
+                value=st.session_state.get("f_unidade_v2", fonte.get("empresa", "")), key="f_unidade_v2")
             
-            dev_f = st.text_input("Devolver preenchido em", 
-                value=st.session_state.get("f_dev", fonte.get("devolucao", "")), key="f_dev")
+            dev_f_v2 = st.text_input("Devolver preenchido em", 
+                value=st.session_state.get("f_dev_v2", fonte.get("devolucao", "")), key="f_dev_v2")
 
-        cursos_f = st.text_area("Cursos realizados", 
-            value=st.session_state.get("f_cursos", fonte.get("cursos", "")), key="f_cursos")
+        cursos_f_v2 = st.text_area("Cursos realizados", 
+            value=st.session_state.get("f_cursos_v2", fonte.get("cursos", "")), key="f_cursos_v2")
             
-        obj_f = st.text_area("Objetivo profissional", 
-            value=st.session_state.get("f_obj", fonte.get("objetivo", "")), key="f_obj")
+        obj_f_v2 = st.text_area("Objetivo profissional", 
+            value=st.session_state.get("f_obj_v2", fonte.get("objetivo", "")), key="f_obj_v2")
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
