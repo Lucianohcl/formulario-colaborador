@@ -2066,19 +2066,19 @@ if nome_usuario:
         c1, c2 = st.columns(2)
 
         with c1:
-            nome_f = st.text_input("Nome", value=fonte.get("nome", nome_usuario), key="f_nome")
-            cargo_f = st.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo")
-            depto_f = st.text_input("Departamento", value=fonte.get("departamento", ""), key="f_depto")
-            esc_f = st.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc")
+            nome_f = st.text_input("Nome", value=fonte.get("nome", nome_usuario), key="f_nome_v2")
+            cargo_f = st.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo_v2")
+            depto_f = st.text_input("Departamento", value=fonte.get("departamento", ""), key="f_depto_v2")
+            esc_f = st.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc_v2")
 
         with c2:
-            setor_f = st.text_input("Setor", value=fonte.get("setor", ""), key="f_setor")
-            chefe_f = st.text_input("Chefe imediato", value=fonte.get("chefe", ""), key="f_chefe")
-            unidade_f = st.text_input("Empresa", value=fonte.get("empresa", ""), key="f_unidade")
-            dev_f = st.text_input("Devolução em", value=fonte.get("devolucao", ""), key="f_dev")
+            setor_f = st.text_input("Setor", value=fonte.get("setor", ""), key="f_setor_v2")
+            chefe_f = st.text_input("Chefe imediato", value=fonte.get("chefe", ""), key="f_chefe_v2")
+            unidade_f = st.text_input("Empresa", value=fonte.get("empresa", ""), key="f_unidade_v2")
+            dev_f = st.text_input("Devolução em", value=fonte.get("devolucao", ""), key="f_dev_v2")
 
-        cursos_f = st.text_area("Cursos", value=fonte.get("cursos", ""), key="f_cursos")
-        obj_f = st.text_area("Objetivo", value=fonte.get("objetivo", ""), key="f_obj")
+        cursos_f = st.text_area("Cursos", value=fonte.get("cursos", ""), key="f_cursos_v2")
+        obj_f = st.text_area("Objetivo", value=fonte.get("objetivo", ""), key="f_obj_v2")
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
@@ -2169,16 +2169,16 @@ if nome_usuario:
                     try:
                         # Mapeamento exato entre JSON e as Keys do novo Formulário
                         mapeamento = {
-                            "nome": "f_nome",
-                            "cargo": "f_cargo",
-                            "departamento": "f_depto",
-                            "escolaridade": "f_esc",
-                            "setor": "f_setor",
-                            "chefe": "f_chefe",
-                            "empresa": "f_unidade", # Alterado de f_empresa para f_unidade
-                            "devolucao": "f_dev",
-                            "cursos": "f_cursos",
-                            "objetivo": "f_obj"
+                            "nome": "f_nome_v2",
+                            "cargo": "f_cargo_v2",
+                            "departamento": "f_depto_v2",
+                            "escolaridade": "f_esc_v2",
+                            "setor": "f_setor_v2",
+                            "chefe": "f_chefe_v2",
+                            "empresa": "f_unidade_v2",
+                            "devolucao": "f_dev_v2",
+                            "cursos": "f_cursos_v2",
+                            "objetivo": "f_obj_v2"
                         }
 
                         # Limpeza e Injeção
