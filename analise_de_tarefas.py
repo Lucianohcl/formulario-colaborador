@@ -2073,19 +2073,25 @@ if nome_usuario:
         # ============================================================
         st.subheader("👤 Dados de Identificação")
         
-        # LOGICA DE COPIA (Executa ANTES dos widgets aparecerem)
+        
+        # LOGICA DE COPIA COM DEBUG
         if st.session_state.get("disparar_copia"):
-            campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
-            for c in campos:
-                k_origem, k_destino = f"f_{c}", f"f_{c}_v2"
-                if k_origem in st.session_state:
-                    st.session_state[k_destino] = st.session_state[k_origem]
-            
-            for i in range(1, 25):
-                if f"r_{i}" in st.session_state:
-                    st.session_state[f"r_v2_{i}"] = st.session_state[f"r_{i}"]
-            
-            st.session_state["disparar_copia"] = False
+            st.warning("⚙️ Executando transferência de chaves...")
+            try:
+                campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
+                for c in campos:
+                    k_origem, k_destino = f"f_{c}", f"f_{c}_v2"
+                    if k_origem in st.session_state:
+                        valor = st.session_state[k_origem]
+                        st.session_state[k_destino] = valor
+                        st.write(f"➡️ Copiado: {k_origem} -> {k_destino}")
+                
+                # Desliga o gatilho
+                st.session_state["disparar_copia"] = False
+                st.success("✨ Sincronização concluída!")
+            except Exception as e:
+                st.error(f"❌ Erro durante a transferência: {e}")
+                st.session_state["disparar_copia"] = False
 
         # FUNÇÃO AUXILIAR PARA NÃO DAR CONFLITO DE VALUE
         def get_val(key, default_val):
@@ -2194,6 +2200,21 @@ if nome_usuario:
 
         with b2:
             if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", type="primary", use_container_width=True, key="btn_copiar_local"):
-                # Em vez de tentar escrever no state agora, avisamos que queremos copiar
-                st.session_state["disparar_copia"] = True
-                st.rerun()
+                st.write("🔍 Iniciando processo de cópia local...")
+                try:
+                    # 1. Aciona o gatilho para a lógica que está no topo
+                    st.session_state["disparar_copia"] = True
+                    st.write("✅ Gatilho 'disparar_copia' ativado.")
+                    
+                    # 2. Tenta limpar qualquer conflito prévio
+                    if "dados_oficiais" in st.session_state:
+                        del st.session_state["dados_oficiais"]
+                        st.write("🧹 Cache de 'dados_oficiais' limpo.")
+
+                    st.info("Reiniciando para aplicar mudanças...")
+                    import time
+                    time.sleep(0.5)
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"❌ Erro crítico no botão: {e}")
