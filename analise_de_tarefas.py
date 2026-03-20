@@ -1031,14 +1031,14 @@ if st.query_params.get("page") == "formulario":
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
     
-    nome_f = col1.text_input("Nome do colaborador", value=fonte.get("nome", nome_usuario), key="f_nome")
-    setor_f = col2.text_input("Setor", value=fonte.get("setor", ""), key="f_setor")
-    cargo_f = col1.text_input("Cargo", value=fonte.get("cargo", ""), key="f_cargo")
-    chefe_f = col2.text_input("Chefe imediato", value=fonte.get("chefe", ""), key="f_chefe")
-    depto_f = col1.text_input("Departamento", value=fonte.get("departamento", ""), key="f_depto")
-    empresa_f = col2.text_input("Empresa / Unidade", value=fonte.get("empresa", ""), key="f_unidade")
-    esc_f = col1.text_input("Escolaridade", value=fonte.get("escolaridade", ""), key="f_esc")
-    dev_f = col2.text_input("Devolver preenchido em", value=fonte.get("devolucao", ""), key="f_dev")
+    nome_f = col1.text_input("Nome do colaborador", key="f_nome")
+    setor_f = col2.text_input("Setor", key="f_setor")
+    cargo_f = col1.text_input("Cargo", key="f_cargo")
+    chefe_f = col2.text_input("Chefe imediato", key="f_chefe")
+    depto_f = col1.text_input("Departamento", key="f_depto")
+    empresa_f = col2.text_input("Empresa / Unidade", key="f_unidade")
+    esc_f = col1.text_input("Escolaridade", key="f_esc")
+    dev_f = col2.text_input("Devolver preenchido em", key="f_dev")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
@@ -2074,24 +2074,19 @@ if nome_usuario:
         st.subheader("👤 Dados de Identificação")
         
         
-        # LOGICA DE COPIA COM DEBUG
+        # LOGICA DE COPIA (No topo do Script 2)
         if st.session_state.get("disparar_copia"):
-            st.warning("⚙️ Executando transferência de chaves...")
-            try:
-                campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
-                for c in campos:
-                    k_origem, k_destino = f"f_{c}", f"f_{c}_v2"
-                    if k_origem in st.session_state:
-                        valor = st.session_state[k_origem]
-                        st.session_state[k_destino] = valor
-                        st.write(f"➡️ Copiado: {k_origem} -> {k_destino}")
-                
-                # Desliga o gatilho
-                st.session_state["disparar_copia"] = False
-                st.success("✨ Sincronização concluída!")
-            except Exception as e:
-                st.error(f"❌ Erro durante a transferência: {e}")
-                st.session_state["disparar_copia"] = False
+            # Mapeamento manual para não ter erro
+            de = ["f_nome", "f_setor", "f_cargo", "f_chefe", "f_depto", "f_unidade", "f_esc", "f_dev"]
+            para = ["f_nome_v2", "f_setor_v2", "f_cargo_v2", "f_chefe_v2", "f_depto_v2", "f_unidade_v2", "f_esc_v2", "f_dev_v2"]
+            
+            for d, p in zip(de, para):
+                if d in st.session_state:
+                    st.session_state[p] = st.session_state[d]
+            
+            st.session_state["disparar_copia"] = False
+            st.success("Sincronização concluída!")
+            # Não use rerun aqui se estiver dando erro de API, deixe o código fluir
 
         # FUNÇÃO AUXILIAR PARA NÃO DAR CONFLITO DE VALUE
         def get_val(key, default_val):
