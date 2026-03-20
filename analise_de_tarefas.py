@@ -2174,47 +2174,32 @@ if nome_usuario:
                     st.error("❌ Erro ao salvar. Verifique o Token.")
 
         with b2:
-            btn_povoar = st.button("🚀 PREENCHER COM MEU RASCUNHO", type="primary", use_container_width=True, key="btn_povoar_dados_v2")
-            
-            if btn_povoar:
-                st.info("🔍 **Sincronizando rascunho com o novo formulário...**")
+            # O botão de espelhamento local (Script 1 -> Script 2)
+            if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", type="primary", use_container_width=True, key="btn_copiar_local"):
+                # 1. Lista de campos para facilitar o loop
+                campos = ["nome", "cargo", "depto", "esc", "setor", "chefe", "unidade", "dev", "cursos", "obj"]
                 
-                if dados_git and isinstance(dados_git, dict):
-                    try:
-                        # MAPEAMENTO ATUALIZADO PARA AS CHAVES _V2
-                        mapeamento = {
-                            "nome": "f_nome_v2",
-                            "cargo": "f_cargo_v2",
-                            "departamento": "f_depto_v2",
-                            "escolaridade": "f_esc_v2",
-                            "setor": "f_setor_v2",
-                            "chefe": "f_chefe_v2",
-                            "empresa": "f_unidade_v2",
-                            "devolucao": "f_dev_v2",
-                            "cursos": "f_cursos_v2",
-                            "objetivo": "f_obj_v2"
-                        }
+                # 2. Loop de transferência de dados (Texto)
+                for c in campos:
+                    k_origem = f"f_{c}"      # Chave do Script 1
+                    k_destino = f"f_{c}_v2"   # Chave do Script 2
+                    
+                    # Se o valor existir no Script 1, joga para o Script 2
+                    if k_origem in st.session_state:
+                        st.session_state[k_destino] = st.session_state[k_origem]
 
-                        # Injeção dos Campos de Texto
-                        for chave_json, chave_st in mapeamento.items():
-                            valor = dados_git.get(chave_json, "")
-                            st.session_state[chave_st] = valor
+                # 3. Loop de transferência do Questionário DISC
+                for i in range(1, 25):
+                    c_origem = f"r_{i}"      # Chave r_1, r_2...
+                    c_destino = f"r_v2_{i}"  # Chave r_v2_1, r_v2_2...
+                    
+                    if c_origem in st.session_state:
+                        st.session_state[c_destino] = st.session_state[c_origem]
 
-                        # Injeção do DISC (Usando r_v2_1 até r_v2_24)
-                        disc_data = dados_git.get("disc", {})
-                        for i in range(1, 25):
-                            k_st = f"r_v2_{i}"
-                            k_js = f"disc_{i}"
-                            if k_js in disc_data:
-                                st.session_state[k_st] = disc_data[k_js]
-
-                        st.success("✅ Dados carregados! Clique em qualquer lugar ou aguarde o recarregamento...")
-                        
-                        import time
-                        time.sleep(1)
-                        st.rerun()
-                        
-                    except Exception as e:
-                        st.error(f"❌ Erro na sincronização: {e}")
-                else:
-                    st.error("❌ Nenhum rascunho encontrado para este nome.")
+                # 4. Mensagem de sucesso e Reinicialização
+                st.success("✅ Dados sincronizados com sucesso!")
+                
+                # O rerun é essencial para os campos "acordarem" com o novo valor
+                import time
+                time.sleep(0.5)
+                st.rerun()
