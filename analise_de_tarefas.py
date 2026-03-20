@@ -1076,14 +1076,8 @@ if st.query_params.get("page") == "formulario":
             value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
 
-        # --- CAMPOS LADO A LADO ---
-        col_esq, col_dir = st.columns(2)
-
-        with col_esq:
-            cursos = st.text_area("Cursos obrigatórios ou diferenciais")
-
-        with col_dir:
-            objetivo = st.text_area("Trabalho e principal objetivo")
+        cursos = st.text_area("Cursos obrigatórios ou diferenciais")
+        objetivo = st.text_area("Trabalho e principal objetivo")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
