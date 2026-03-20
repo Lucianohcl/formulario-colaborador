@@ -2054,11 +2054,10 @@ def preparar_df(chave, colunas, dados_fonte, padrao_linhas=10):
     # 2. Se não houver dados, cria tudo do zero com as colunas certas
     return pd.DataFrame({c: [""] * padrao_linhas for c in colunas})
 
+
 # ============================================================
 # 3. INTERFACE E LÓGICA DE LOGIN
 # ============================================================
-st.set_page_config(page_title="Formulário DISC Avançado", layout="wide")
-
 if "logado" not in st.session_state: st.session_state["logado"] = False
 if "dados_oficiais" not in st.session_state: st.session_state["dados_oficiais"] = {}
 
@@ -2070,7 +2069,7 @@ if nome_usuario:
     arquivo_nome = f"rascunho_{nome_limpo}.json"
     dados_git, _ = carregar(arquivo_nome)
 
-    # 1. ESTA É A ÚNICA DEFINIÇÃO DE FONTE QUE VOCÊ PRECISA
+    # Definição da fonte de dados
     if st.session_state.get("dados_oficiais"):
         fonte = st.session_state["dados_oficiais"]
     else:
@@ -2089,50 +2088,60 @@ if nome_usuario:
             st.error("❌ Nome não encontrado. Marque 'Primeira vez' para cadastrar.")
             st.stop()
         
-        # --- REMOVA A REPETIÇÃO DA FONTE QUE ESTAVA AQUI ---
-        # Agora o código segue direto para os campos do formulário...
-
+        # O login deu certo, agora processamos a sincronização antes de mostrar os campos
+        if st.session_state.get("disparar_copia"):
+            # Mapeamento de campos de texto
+            chaves_f = ["f_nome", "f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", "f_cursos", "f_obj"]
+            for c in chaves_f:
+                c_v2 = f"{c}_v2"
+                if c_v2 in st.session_state:
+                    st.session_state[c] = st.session_state[c_v2]
+            
+            # Sincroniza o DISC (1 a 24)
+            for i in range(1, 25):
+                if f"r_v2_{i}" in st.session_state:
+                    st.session_state[f"r_{i}"] = st.session_state[f"r_v2_{i}"]
+            
+            st.session_state["disparar_copia"] = False
+            st.success("✅ Dados sincronizados com sucesso!")
 
         # ============================================================
         # 4. FORMULÁRIO - DADOS DE IDENTIFICAÇÃO
         # ============================================================
         st.subheader("👤 Dados de Identificação")
-        
-        
-        # LOGICA DE COPIA (No topo do Script 2)
-        if st.session_state.get("disparar_copia"):
-            # Mapeamento manual para não ter erro
-            de = ["f_nome", "f_setor", "f_cargo", "f_chefe", "f_depto", "f_unidade", "f_esc", "f_dev"]
-            para = ["f_nome_v2", "f_setor_v2", "f_cargo_v2", "f_chefe_v2", "f_depto_v2", "f_unidade_v2", "f_esc_v2", "f_dev_v2"]
-            
-            for d, p in zip(de, para):
-                if d in st.session_state:
-                    st.session_state[p] = st.session_state[d]
-            
-            st.session_state["disparar_copia"] = False
-            st.success("Sincronização concluída!")
-            # Não use rerun aqui se estiver dando erro de API, deixe o código fluir
-
-        # FUNÇÃO AUXILIAR PARA NÃO DAR CONFLITO DE VALUE
-        def get_val(key, default_val):
-            return st.session_state[key] if key in st.session_state else default_val
-
         c1, c2 = st.columns(2)
 
         with c1:
-            nome_f = st.text_input("Nome", value=get_val("f_nome_v2", fonte.get("nome", nome_usuario)), key="f_nome_v2")
-            cargo_f = st.text_input("Cargo", value=get_val("f_cargo_v2", fonte.get("cargo", "")), key="f_cargo_v2")
-            depto_f = st.text_input("Departamento", value=get_val("f_depto_v2", fonte.get("departamento", "")), key="f_depto_v2")
-            esc_f = st.text_input("Escolaridade", value=get_val("f_esc_v2", fonte.get("escolaridade", "")), key="f_esc_v2")
+            nome_f = st.text_input("Nome do colaborador", 
+                value=st.session_state.get("f_nome", fonte.get("nome", nome_usuario)), key="f_nome")
+            
+            cargo_f = st.text_input("Cargo", 
+                value=st.session_state.get("f_cargo", fonte.get("cargo", "")), key="f_cargo")
+            
+            depto_f = st.text_input("Departamento", 
+                value=st.session_state.get("f_depto", fonte.get("departamento", "")), key="f_depto")
+            
+            esc_f = st.text_input("Escolaridade", 
+                value=st.session_state.get("f_esc", fonte.get("escolaridade", "")), key="f_esc")
 
         with c2:
-            setor_f = st.text_input("Setor", value=get_val("f_setor_v2", fonte.get("setor", "")), key="f_setor_v2")
-            chefe_f = st.text_input("Chefe imediato", value=get_val("f_chefe_v2", fonte.get("chefe", "")), key="f_chefe_v2")
-            unidade_f = st.text_input("Empresa", value=get_val("f_unidade_v2", fonte.get("empresa", "")), key="f_unidade_v2")
-            dev_f = st.text_input("Devolução em", value=get_val("f_dev_v2", fonte.get("devolucao", "")), key="f_dev_v2")
+            setor_f = st.text_input("Setor", 
+                value=st.session_state.get("f_setor", fonte.get("setor", "")), key="f_setor")
+            
+            chefe_f = st.text_input("Chefe imediato", 
+                value=st.session_state.get("f_chefe", fonte.get("chefe", "")), key="f_chefe")
+            
+            unidade_f = st.text_input("Empresa / Unidade", 
+                value=st.session_state.get("f_unidade", fonte.get("empresa", "")), key="f_unidade")
+            
+            dev_f = st.text_input("Devolver preenchido em", 
+                value=st.session_state.get("f_dev", fonte.get("devolucao", "")), key="f_dev")
 
-        cursos_f = st.text_area("Cursos", value=get_val("f_cursos_v2", fonte.get("cursos", "")), key="f_cursos_v2")
-        obj_f = st.text_area("Objetivo", value=get_val("f_obj_v2", fonte.get("objetivo", "")), key="f_obj_v2")
+        cursos_f = st.text_area("Cursos realizados", 
+            value=st.session_state.get("f_cursos", fonte.get("cursos", "")), key="f_cursos")
+            
+        obj_f = st.text_area("Objetivo profissional", 
+            value=st.session_state.get("f_obj", fonte.get("objetivo", "")), key="f_obj")
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
@@ -2173,20 +2182,26 @@ if nome_usuario:
         
 
         # ============================================================
-        # 7. QUESTIONÁRIO DISC
+        # 7. QUESTIONÁRIO DISC (CORRIGIDO PARA SINCRONIZAÇÃO)
         # ============================================================
         st.subheader("📊 Questionário")
         respostas_disc = {}
+        
         for i, pergunta in enumerate(perguntas_disc, 1):
-            chave_disc = f"disc_{i}"
-            res_ant = fonte.get("disc", {}).get(chave_disc)
+            # 1. Tenta pegar da sincronização (r_1, r_2...) 
+            # 2. Se não tiver, tenta do rascunho (fonte)
+            # 3. Se não tiver nada, fica None
+            chave_sincronizada = f"r_{i}"
+            res_ant = st.session_state.get(chave_sincronizada, fonte.get("disc", {}).get(f"disc_{i}"))
             
-            # Cálculo do índice para marcar a opção salva
-            idx = ["A", "B", "C", "D"].index(res_ant) if res_ant in ["A", "B", "C", "D"] else None
+            # Converte "A", "B", "C", "D" para o índice 0, 1, 2, 3
+            opcoes = ["A", "B", "C", "D"]
+            idx = opcoes.index(res_ant) if res_ant in opcoes else None
             
-            respostas_disc[chave_disc] = st.radio(
+            # IMPORTANTE: O key deve ser f"r_v2_{i}" para que o Script 2 funcione como emissor/receptor
+            respostas_disc[f"disc_{i}"] = st.radio(
                 f"{i}. {pergunta}", 
-                ["A", "B", "C", "D"], 
+                opcoes, 
                 index=idx,
                 horizontal=True, 
                 key=f"r_v2_{i}"
