@@ -1076,14 +1076,27 @@ if st.query_params.get("page") == "formulario":
             value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
 
-        # Novos campos adicionados com a mesma lógica de persistência:
-        cursos_f = st.text_area("Cursos obrigatórios ou diferenciais",
-            value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""),
-            key="f_cursos")
+        # --- SEÇÃO DE CURSOS E OBJETIVOS LADO A LADO ---
+        st.markdown("---")
 
-        obj_f = st.text_area("Trabalho e principal objetivo",
-            value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""),
-            key="f_obj")
+        # Cria duas colunas de tamanhos iguais com 8 espaços de recuo
+        col_cursos, col_obj = st.columns(2)
+
+        with col_cursos:
+            cursos_f = st.text_area(
+                "Cursos obrigatórios ou diferenciais",
+                value=st.session_state.get("f_cursos") or fonte.get("cursos", ""),
+                key="f_cursos",
+                height=150
+            )
+
+        with col_obj:
+            obj_f = st.text_area(
+                "Trabalho e principal objetivo",
+                value=st.session_state.get("f_obj") or fonte.get("objetivo", ""),
+                key="f_obj",
+                height=150
+            )
 
     
     # --- SEÇÃO DE INSTRUÇÕES ---
