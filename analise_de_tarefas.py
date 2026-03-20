@@ -2106,12 +2106,14 @@ if nome_usuario:
         # 6. DIFICULDADES E SUGESTÕES
         # ============================================================
         st.subheader("⚠️ Dificuldades e Bloqueios")
-        df_dif = preparar_df("dificuldades", ["Dificuldade", "Setor Envolvido", "Frequência", "Horas Perdidas"], fonte, 10)
-        edit_dif = st.data_editor(df_dif, key="ed_dif", use_container_width=True, hide_index=True)
+        cols_dif = ["Dificuldade", "Setor Envolvido", "Frequência", "Horas", "Minutos"]
+        df_dif = preparar_df("dificuldades", cols_dif, fonte, 10)
+        edit_dif = st.data_editor(df_dif, key="ed_dif_v2", use_container_width=True, hide_index=True, column_config=config_padrao)
 
         st.subheader("💡 Sugestões de Melhoria")
-        df_sug = preparar_df("sugestoes", ["Sugestão", "Impacto", "Redução Horas"], fonte, 10)
-        edit_sug = st.data_editor(df_sug, key="ed_sug", use_container_width=True, hide_index=True)
+        cols_sug = ["Sugestão", "Impacto", "Frequência", "Horas", "Minutos"]
+        df_sug = preparar_df("sugestoes", cols_sug, fonte, 10)
+        edit_sug = st.data_editor(df_sug, key="ed_sug_v2", use_container_width=True, hide_index=True, column_config=config_padrao)
 
         # ============================================================
         # 7. QUESTIONÁRIO DISC
@@ -2130,7 +2132,7 @@ if nome_usuario:
                 ["A", "B", "C", "D"], 
                 index=idx,
                 horizontal=True, 
-                key=f"r_{i}"
+                key=f"r_v2_{i}"
             )
 
         # ============================================================
@@ -2189,10 +2191,10 @@ if nome_usuario:
                             st.session_state[chave_st] = valor
                             st.write(f"🧪 Sincronizado: `{chave_st}`")
 
-                        # Injeção do DISC (r_1 até r_24)
+                        # Injeção do DISC (r_v2_1 até r_v2_24)
                         disc_data = dados_git.get("disc", {})
                         for i in range(1, 25):
-                            k_st = f"r_{i}"
+                            k_st = f"r_v2_{i}"
                             k_js = f"disc_{i}"
                             if k_st in st.session_state: del st.session_state[k_st]
                             if k_js in disc_data:
