@@ -2271,11 +2271,17 @@ if nome_usuario:
             dev_f_v2 = st.text_input("Devolver preenchido em", 
                 value=st.session_state.get("f_dev_v2", fonte.get("devolucao", "")), key="f_dev_v2")
 
-        cursos_f_v2 = st.text_area("Cursos Obrigatórios e Difernciais independente que vc os tenha ou não", 
-            value=st.session_state.get("f_cursos_v2", fonte.get("cursos", "")), key="f_cursos_v2")
-            
-        obj_f_v2 = st.text_area("Em que consiste seu trabalho e qual é seu principal Objetivo", 
-            value=st.session_state.get("f_obj_v2", fonte.get("objetivo", "")), key="f_obj_v2")
+        cursos_f_v2 = st.text_area(
+            "Cursos Obrigatórios e Diferenciais independente que vc os tenha ou não",
+            value=st.session_state.get("f_cursos_v2", fonte.get("cursos", "")),
+            key="f_cursos_v2_bloco2"
+        )
+        
+        obj_f_v2 = st.text_area(
+            "Em que consiste seu trabalho e qual é seu principal Objetivo",
+            value=st.session_state.get("f_obj_v2", fonte.get("objetivo", "")),
+            key="f_obj_v2_bloco2"
+        )
 
         # ============================================================
         # 5. TABELAS DE ATIVIDADES
