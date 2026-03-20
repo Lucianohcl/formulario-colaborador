@@ -1033,36 +1033,36 @@ if st.query_params.get("page") == "formulario":
 
     with col1:
         nome_f = st.text_input("Nome do colaborador", 
-            value=st.session_state.get("f_nome_v2", fonte.get("nome", nome_usuario)), 
+            value=st.session_state.get("f_nome_v2") or fonte.get("nome", nome_usuario), 
             key="f_nome")
         
         cargo_f = st.text_input("Cargo", 
-            value=st.session_state.get("f_cargo_v2", fonte.get("cargo", "")), 
+            value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), 
             key="f_cargo")
         
         depto_f = st.text_input("Departamento", 
-            value=st.session_state.get("f_depto_v2", fonte.get("departamento", "")), 
+            value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), 
             key="f_depto")
         
         esc_f = st.text_input("Escolaridade", 
-            value=st.session_state.get("f_esc_v2", fonte.get("escolaridade", "")), 
+            value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), 
             key="f_esc")
 
     with col2:
         setor_f = st.text_input("Setor", 
-            value=st.session_state.get("f_setor_v2", fonte.get("setor", "")), 
+            value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), 
             key="f_setor")
         
         chefe_f = st.text_input("Chefe imediato", 
-            value=st.session_state.get("f_chefe_v2", fonte.get("chefe", "")), 
+            value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), 
             key="f_chefe")
         
         unidade_f = st.text_input("Empresa / Unidade", 
-            value=st.session_state.get("f_unidade_v2", fonte.get("empresa", "")), 
+            value=st.session_state.get("f_unidade_v2") or fonte.get("empresa", ""), 
             key="f_unidade")
         
         dev_f = st.text_input("Devolver preenchido em", 
-            value=st.session_state.get("f_dev_v2", fonte.get("devolucao", "")), 
+            value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
@@ -2215,16 +2215,16 @@ if nome_usuario:
         b1, b2 = st.columns(2)
 
         
-        # Dicionário unificado para salvar (ATUALIZADO COM V2)
+        # Dicionário unificado para salvar (Ajustado para o padrão do Script 1)
         dados_finais = {
             "nome": nome_f_v2, 
             "cargo": cargo_f_v2, 
-            "departamento": depto_f_v2, 
+            "departamento": depto_f_v2, # Mantendo o nome que o Script 1 procura
             "escolaridade": esc_f_v2,
             "setor": setor_f_v2, 
             "chefe": chefe_f_v2, 
             "empresa": unidade_f_v2, 
-            "devolucao": dev_f_v2,
+            "devolucao": dev_f_v2, # Mantendo o nome que o Script 1 procura
             "cursos": cursos_f_v2, 
             "objetivo": obj_f_v2,
             "atividades_alta": edit_alta.to_dict("records"),
