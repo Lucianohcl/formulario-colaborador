@@ -1156,10 +1156,9 @@ if st.query_params.get("page") == "formulario":
             f"{i}. {pergunta}", ["A", "B", "C", "D"], index=idx, key=chave_st, horizontal=True
         )
 
-    # BOTÃO FINAL (Fora do form agora é um botão comum)
-    if st.button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True):
-        # Aqui vai sua lógica de salvar o resultado final
-        st.success("Formulário enviado com sucesso!")
+# BOTÃO FINAL (Fora do form agora é um botão comum)
+enviar = st.button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True)
+        
  
 
 # -------------------------------------------------
