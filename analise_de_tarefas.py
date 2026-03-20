@@ -1099,7 +1099,7 @@ if st.query_params.get("page") == "formulario":
 
     # --- QUESTIONÁRIO DISC ---
     st.markdown("---")
-    st.subheader("📊 Questionário DISC")
+    st.subheader("📊 Questionário")
     respostas_disc = {}
     for i, pergunta in enumerate(perguntas_disc, 1):
         chave_st = f"r_{i}"
@@ -2114,11 +2114,12 @@ if nome_usuario:
         cols_sug = ["Sugestão", "Impacto", "Frequência", "Horas", "Minutos"]
         df_sug = preparar_df("sugestoes", cols_sug, fonte, 10)
         edit_sug = st.data_editor(df_sug, key="ed_sug_v2", use_container_width=True, hide_index=True, column_config=config_padrao)
+        
 
         # ============================================================
         # 7. QUESTIONÁRIO DISC
         # ============================================================
-        st.subheader("📊 Questionário DISC")
+        st.subheader("📊 Questionário")
         respostas_disc = {}
         for i, pergunta in enumerate(perguntas_disc, 1):
             chave_disc = f"disc_{i}"
