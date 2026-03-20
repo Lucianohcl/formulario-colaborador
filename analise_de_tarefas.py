@@ -1022,6 +1022,17 @@ if st.query_params.get("page") == "formulario":
     fonte = st.session_state.get("dados_oficiais", {})
     nome_usuario = st.session_state.get("usuario_nome", "") 
     
+    if fonte:
+        # Minimalismo total: se o campo está vazio na memória, preenche com o que está no arquivo
+        chaves = {
+            "f_nome": "nome", "f_cargo": "cargo", "f_depto": "departamento",
+            "f_esc": "escolaridade", "f_setor": "setor", "f_chefe": "chefe",
+            "f_unidade": "empresa", "f_dev": "devolucao"
+        }
+        for k_sessao, k_json in chaves.items():
+            if k_sessao not in st.session_state:
+                st.session_state[k_sessao] = fonte.get(k_json, "")
+
     # Listas padronizadas
     lista_horas = [f"{i} h" for i in range(25)]
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
