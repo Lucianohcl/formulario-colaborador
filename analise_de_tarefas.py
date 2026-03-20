@@ -2209,22 +2209,43 @@ if nome_usuario:
             )
 
         # ============================================================
-        # 8. BOTÕES FINAIS
+        # 8. BOTÕES FINAIS (SCRIPT 2 - RIGOR TOTAL COM O SCRIPT 1)
         # ============================================================
         st.markdown("---")
         b1, b2 = st.columns(2)
 
-        
-        # Dicionário unificado para salvar (Ajustado para o padrão do Script 1)
+        # FUNÇÃO DE CÓPIA: Alinhada com as KEYS exatas do seu Script 1
+        def copiar_valores_v2():
+            mapeamento = {
+                "f_nome": "f_nome_v2",
+                "f_cargo": "f_cargo_v2",
+                "f_depto": "f_depto_v2",
+                "f_esc": "f_esc_v2",
+                "f_setor": "f_setor_v2",
+                "f_chefe": "f_chefe_v2",
+                "f_unidade": "f_unidade_v2",
+                "f_dev": "f_dev_v2"
+            }
+            for destino, origem in mapeamento.items():
+                if origem in st.session_state:
+                    st.session_state[destino] = st.session_state[origem]
+            
+            # Sincroniza o DISC (r_1 até r_24)
+            for i in range(1, 25):
+                chave_origem = f"r_v2_{i}"
+                if chave_origem in st.session_state:
+                    st.session_state[f"r_{i}"] = st.session_state[chave_origem]
+
+        # DICIONÁRIO DE SALVAMENTO: Alinhado com os fonte.get() do seu Script 1
         dados_finais = {
             "nome": nome_f_v2, 
             "cargo": cargo_f_v2, 
-            "departamento": depto_f_v2, # Mantendo o nome que o Script 1 procura
+            "departamento": depto_f_v2, 
             "escolaridade": esc_f_v2,
             "setor": setor_f_v2, 
             "chefe": chefe_f_v2, 
             "empresa": unidade_f_v2, 
-            "devolucao": dev_f_v2, # Mantendo o nome que o Script 1 procura
+            "devolucao": dev_f_v2, 
             "cursos": cursos_f_v2, 
             "objetivo": obj_f_v2,
             "atividades_alta": edit_alta.to_dict("records"),
@@ -2240,17 +2261,12 @@ if nome_usuario:
                 if salvar(dados_finais, arquivo_nome):
                     st.success("✅ Rascunho salvo com sucesso no GitHub!")
                 else:
-                    st.error("❌ Erro ao salvar. Verifique o Token.")
+                    st.error("❌ Erro ao salvar.")
 
         with b2:
-            if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", type="primary", use_container_width=True, key="btn_copiar_local"):
-                try:
-                    # Como os campos de cima já estão lendo os de baixo via 'value',
-                    # basta recarregar a página para os dados aparecerem lá.
-                    st.success("✅ Sincronizando dados...")
-                    import time
-                    time.sleep(0.5)
-                    st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"❌ Erro ao atualizar: {e}")
+            if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", 
+                         type="primary", 
+                         use_container_width=True, 
+                         key="btn_copiar_local", 
+                         on_click=copiar_valores_v2):
+                st.toast("✅ Dados sincronizados!")
