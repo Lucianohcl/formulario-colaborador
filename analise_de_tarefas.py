@@ -1075,6 +1075,16 @@ if st.query_params.get("page") == "formulario":
         dev_f = st.text_input("Devolver preenchido em", 
             value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), 
             key="f_dev")
+
+        # Novos campos adicionados com a mesma lógica de persistência:
+        cursos_f = st.text_area("Cursos obrigatórios ou diferenciais",
+            value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""),
+            key="f_cursos")
+
+        obj_f = st.text_area("Trabalho e principal objetivo",
+            value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""),
+            key="f_obj")
+
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
@@ -1149,7 +1159,123 @@ if st.query_params.get("page") == "formulario":
     # BOTÃO FINAL (Fora do form agora é um botão comum)
     if st.button("🚀 ENVIAR FORMULÁRIO FINAL", type="primary", use_container_width=True):
         # Aqui vai sua lógica de salvar o resultado final
-        st.success("Formulário enviado com sucesso!")       
+        st.success("Formulário enviado com sucesso!")
+ 
+
+# -------------------------------------------------
+# VALIDAÇÕES E PROCESSAMENTO
+# -------------------------------------------------
+if enviar:
+    # Inicializa pendencias para evitar NameError
+    pendencias = {}
+
+    # 1. DEFINIÇÃO DE CAMINHOS E VERIFICAÇÃO DE DUPLICIDADE
+    nome_limpo = nome_f.strip().replace(" ", "_")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    dados_dir = os.path.join(base_dir, "dados")
+
+    if not os.path.exists(dados_dir):
+        os.makedirs(dados_dir, exist_ok=True)
+
+    arquivo_esperado = f"{nome_limpo}.json"
+
+    if nome_f.strip() and arquivo_esperado in os.listdir(dados_dir):
+        st.error(f"⚠️ Já existe um formulário enviado para '{nome_f}'.")
+        st.session_state["confirmado"] = False
+        st.stop()
+
+    # 2. IDENTIFICAÇÃO (Sincronizado com os inputs nome_f, setor_f, etc)
+    campos_ident = {
+        "Nome": nome_f,
+        "Setor": setor_f,
+        "Cargo": cargo_f,
+        "Chefe": chefe_f,
+        "Departamento": depto_f,
+        "Empresa": unidade_f,
+        "Escolaridade": esc_f,
+        "Devolução": dev_f
+    }
+
+    for campo, valor in campos_ident.items():
+        if not valor:
+            pendencias.setdefault("Identificação", []).append(campo)
+
+    # 3. CURSOS E OBJETIVO
+    if not cursos_f:
+        pendencias.setdefault("Cursos e Trabalho", []).append("Cursos")
+    if not obj_f:
+        pendencias.setdefault("Cursos e Trabalho", []).append("Objetivo")
+
+    # 4. VALIDAÇÃO DAS 3 TABELAS DE ATIVIDADES
+    tabelas = {
+        "Alta Complexidade": (edit_alta, "ativ_alta"),
+        "Complexidade Normal": (edit_normal, "ativ_normal"),
+        "Baixa Complexidade": (edit_baixa, "ativ_baixa")
+    }
+    
+    dados_atividades = {}
+
+    for label, (df, chave) in tabelas.items():
+        lista_limpa = []
+        valida = False
+        for i, row in df.iterrows():
+            if any([row["Atividade Descrita"], row["Frequência"], row["Horas"], row["Minutos"]]):
+                if all([row["Atividade Descrita"], row["Frequência"], row["Horas"] is not None]):
+                    valida = True
+                    lista_limpa.append(row.to_dict())
+                else:
+                    pendencias.setdefault(label, []).append(f"Linha {i+1} incompleta")
+        
+        if not valida:
+            pendencias.setdefault(label, []).append("Preencha ao menos uma linha completa.")
+        dados_atividades[chave] = lista_limpa
+
+    # 5. DIFICULDADES E SUGESTÕES
+    dificuldades_limpas = [row.to_dict() for _, row in edit_dif.iterrows() if row["Dificuldade"]]
+    if not dificuldades_limpas:
+        pendencias.setdefault("Dificuldades", []).append("Preencha ao menos uma dificuldade.")
+
+    sugestoes_limpas = [row.to_dict() for _, row in edit_sug.iterrows() if row["Sugestão de Melhoria"]]
+    if not sugestoes_limpas:
+        pendencias.setdefault("Sugestões", []).append("Preencha ao menos uma sugestão.")
+
+    # 6. DISC (Checa se as 24 foram respondidas)
+    if any(not st.session_state.get(f"disc_{i}") for i in range(1, 25)):
+        pendencias["DISC"] = ["Responda todas as 24 questões."]
+
+    # --- 1º PASSO: VERIFICAÇÃO DE PENDÊNCIAS (ERROS) ---
+    if pendencias:
+        st.error("⚠️ Existem pendências no formulário:")
+        for secao, itens in pendencias.items():
+            st.write(f"**{secao}**: {', '.join(itens)}")
+        st.session_state["confirmado"] = False # Reseta se houver erro
+        st.stop() # Para aqui para o usuário corrigir
+
+    # --- 2º PASSO: CONFIRMAÇÃO EM DOIS CLIQUES (SÓ SE NÃO HOUVER ERRO) ---
+    if not st.session_state.get("confirmado", False):
+        st.warning("⚠️ Tudo certo! Revise suas respostas. O envio é único. Clique em ENVIAR novamente para confirmar.")
+        st.session_state["confirmado"] = True
+        st.stop() # Para aqui e espera o 2º clique
+
+    # --- 3º PASSO: SALVAMENTO FINAL (SÓ CHEGA AQUI NO 2º CLIQUE) ---
+    dados_finais = {
+        "identificacao": campos_ident,
+        "cursos": cursos_f,
+        "objetivo": obj_f,
+        "atividades": dados_atividades,
+        "dificuldades": dificuldades_limpas,
+        "sugestoes": sugestoes_limpas,
+        "disc": {f"q{i}": st.session_state.get(f"disc_{i}") for i in range(1, 25)},
+        "data_envio": datetime.now().strftime("%d/%m/%Y %H:%M")
+    }
+
+    # Lógica de salvar o arquivo (open... json.dump...)
+    caminho_arquivo = os.path.join(dados_dir, f"{nome_limpo}.json")
+    with open(caminho_arquivo, "w", encoding="utf-8") as f:
+        json.dump(dados_finais, f, ensure_ascii=False, indent=4)
+
+    st.success("✅ Formulário enviado com sucesso!")
+    st.session_state["confirmado"] = False # Reseta para uma próxima vez         
     
 
 
