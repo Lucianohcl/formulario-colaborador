@@ -1030,15 +1030,40 @@ if st.query_params.get("page") == "formulario":
     # --- DADOS DE IDENTIFICAÇÃO ---
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
-    
-    nome_f = col1.text_input("Nome do colaborador", key="f_nome")
-    setor_f = col2.text_input("Setor", key="f_setor")
-    cargo_f = col1.text_input("Cargo", key="f_cargo")
-    chefe_f = col2.text_input("Chefe imediato", key="f_chefe")
-    depto_f = col1.text_input("Departamento", key="f_depto")
-    empresa_f = col2.text_input("Empresa / Unidade", key="f_unidade")
-    esc_f = col1.text_input("Escolaridade", key="f_esc")
-    dev_f = col2.text_input("Devolver preenchido em", key="f_dev")
+
+    with col1:
+        nome_f = st.text_input("Nome do colaborador", 
+            value=st.session_state.get("f_nome", fonte.get("nome", nome_usuario)), 
+            key="f_nome")
+        
+        cargo_f = st.text_input("Cargo", 
+            value=st.session_state.get("f_cargo", fonte.get("cargo", "")), 
+            key="f_cargo")
+        
+        depto_f = st.text_input("Departamento", 
+            value=st.session_state.get("f_depto", fonte.get("departamento", "")), 
+            key="f_depto")
+        
+        esc_f = st.text_input("Escolaridade", 
+            value=st.session_state.get("f_esc", fonte.get("escolaridade", "")), 
+            key="f_esc")
+
+    with col2:
+        setor_f = st.text_input("Setor", 
+            value=st.session_state.get("f_setor", fonte.get("setor", "")), 
+            key="f_setor")
+        
+        chefe_f = st.text_input("Chefe imediato", 
+            value=st.session_state.get("f_chefe", fonte.get("chefe", "")), 
+            key="f_chefe")
+        
+        unidade_f = st.text_input("Empresa / Unidade", 
+            value=st.session_state.get("f_unidade", fonte.get("empresa", "")), 
+            key="f_unidade")
+        
+        dev_f = st.text_input("Devolver preenchido em", 
+            value=st.session_state.get("f_dev", fonte.get("devolucao", "")), 
+            key="f_dev")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
     st.markdown("---")
