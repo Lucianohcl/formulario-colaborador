@@ -1027,42 +1027,42 @@ if st.query_params.get("page") == "formulario":
     lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
     lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
     
-    # --- DADOS DE IDENTIFICAÇÃO ---
+    # --- DADOS DE IDENTIFICAÇÃO (FORMULÁRIO 1 - O DE CIMA) ---
     st.subheader("👤 Dados de Identificação")
     col1, col2 = st.columns(2)
 
     with col1:
         nome_f = st.text_input("Nome do colaborador", 
-            value=st.session_state.get("f_nome", fonte.get("nome", nome_usuario)), 
+            value=st.session_state.get("f_nome_v2", fonte.get("nome", nome_usuario)), 
             key="f_nome")
         
         cargo_f = st.text_input("Cargo", 
-            value=st.session_state.get("f_cargo", fonte.get("cargo", "")), 
+            value=st.session_state.get("f_cargo_v2", fonte.get("cargo", "")), 
             key="f_cargo")
         
         depto_f = st.text_input("Departamento", 
-            value=st.session_state.get("f_depto", fonte.get("departamento", "")), 
+            value=st.session_state.get("f_depto_v2", fonte.get("departamento", "")), 
             key="f_depto")
         
         esc_f = st.text_input("Escolaridade", 
-            value=st.session_state.get("f_esc", fonte.get("escolaridade", "")), 
+            value=st.session_state.get("f_esc_v2", fonte.get("escolaridade", "")), 
             key="f_esc")
 
     with col2:
         setor_f = st.text_input("Setor", 
-            value=st.session_state.get("f_setor", fonte.get("setor", "")), 
+            value=st.session_state.get("f_setor_v2", fonte.get("setor", "")), 
             key="f_setor")
         
         chefe_f = st.text_input("Chefe imediato", 
-            value=st.session_state.get("f_chefe", fonte.get("chefe", "")), 
+            value=st.session_state.get("f_chefe_v2", fonte.get("chefe", "")), 
             key="f_chefe")
         
         unidade_f = st.text_input("Empresa / Unidade", 
-            value=st.session_state.get("f_unidade", fonte.get("empresa", "")), 
+            value=st.session_state.get("f_unidade_v2", fonte.get("empresa", "")), 
             key="f_unidade")
         
         dev_f = st.text_input("Devolver preenchido em", 
-            value=st.session_state.get("f_dev", fonte.get("devolucao", "")), 
+            value=st.session_state.get("f_dev_v2", fonte.get("devolucao", "")), 
             key="f_dev")
     
     # --- SEÇÃO DE INSTRUÇÕES ---
@@ -2244,21 +2244,13 @@ if nome_usuario:
 
         with b2:
             if st.button("🚀 COPIAR DADOS PARA O FORMULÁRIO", type="primary", use_container_width=True, key="btn_copiar_local"):
-                st.write("🔍 Iniciando processo de cópia local...")
                 try:
-                    # 1. Aciona o gatilho para a lógica que está no topo
-                    st.session_state["disparar_copia"] = True
-                    st.write("✅ Gatilho 'disparar_copia' ativado.")
-                    
-                    # 2. Tenta limpar qualquer conflito prévio
-                    if "dados_oficiais" in st.session_state:
-                        del st.session_state["dados_oficiais"]
-                        st.write("🧹 Cache de 'dados_oficiais' limpo.")
-
-                    st.info("Reiniciando para aplicar mudanças...")
+                    # Como os campos de cima já estão lendo os de baixo via 'value',
+                    # basta recarregar a página para os dados aparecerem lá.
+                    st.success("✅ Sincronizando dados...")
                     import time
                     time.sleep(0.5)
                     st.rerun()
                     
                 except Exception as e:
-                    st.error(f"❌ Erro crítico no botão: {e}")
+                    st.error(f"❌ Erro ao atualizar: {e}")
