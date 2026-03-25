@@ -1,0 +1,11 @@
+streamlit
+pandas
+openai==0.27.0
+matplotlib
+openpyxl
+python-docx
+fpdf
+reportlab
+pytz
+plotly
+PyGithub

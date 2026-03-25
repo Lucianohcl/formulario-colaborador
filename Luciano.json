@@ -1,0 +1,85 @@
+{
+    "identificacao": {
+        "Nome": "Luciano",
+        "Setor": "Setor de Custos",
+        "Cargo": "Analista de Custos",
+        "Chefe": "José de Souza",
+        "Departamento": "Controladoria",
+        "Empresa": "Empresa X",
+        "Escolaridade": "Graduação em Ciências Contábeis",
+        "Devolução": "20/03/2026"
+    },
+    "cursos": "c",
+    "objetivo": "c",
+    "atividades": {
+        "alta": [
+            {
+                "Atividade Descrita": "c",
+                "Frequência": "DVD",
+                "Horas": "1 h",
+                "Minutos": "10 min"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade Descrita": "c",
+                "Frequência": "D",
+                "Horas": "1 h",
+                "Minutos": "10 min"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade Descrita": "c",
+                "Frequência": "D",
+                "Horas": "1 h",
+                "Minutos": "5 min"
+            }
+        ]
+    },
+    "dificuldades": [
+        {
+            "Dificuldade": "d",
+            "Setor/Parceiro Envolvido": "d",
+            "Frequência": "D",
+            "Horas Perdidas": "2 h",
+            "Minutos Perdidos": "5 min"
+        }
+    ],
+    "sugestoes": [
+        {
+            "Sugestão de Melhoria": "d",
+            "Impacto Esperado": "d",
+            "Redução Horas": "1 h",
+            "Redução Minutos": "5 min",
+            "Frequência do Impacto": "D"
+        }
+    ],
+    "disc": {
+        "disc_1": "A",
+        "disc_2": "A",
+        "disc_3": "A",
+        "disc_4": "A",
+        "disc_5": "A",
+        "disc_6": "A",
+        "disc_7": "A",
+        "disc_8": "A",
+        "disc_9": "A",
+        "disc_10": "A",
+        "disc_11": "A",
+        "disc_12": "A",
+        "disc_13": "A",
+        "disc_14": "A",
+        "disc_15": "A",
+        "disc_16": "A",
+        "disc_17": "A",
+        "disc_18": "A",
+        "disc_19": "A",
+        "disc_20": "A",
+        "disc_21": "A",
+        "disc_22": "A",
+        "disc_23": "A",
+        "disc_24": "A"
+    },
+    "data_envio": "18/03/2026 14:33"
+}
