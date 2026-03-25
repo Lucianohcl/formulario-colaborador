@@ -2513,66 +2513,165 @@ if nome_usuario:
                 key=f"r_v2_{i}"
             )
 
-        # ============================================================
-        # 8. BOTÕES FINAIS (SCRIPT 2 - SINCRONIZAÇÃO TOTAL)
-        # ============================================================
-        st.markdown("---")
+import streamlit as st
+import pandas as pd
+import json
+from datetime import datetime
+from github import Github  # pip install PyGithub
+
+# =========================
+# CONFIGURAÇÃO DA PÁGINA
+# =========================
+st.set_page_config(page_title="💾 Script 2 - Rascunho e Cospe", layout="wide")
+st.title("💾 Script 2 - Salvar Rascunho e Cospe para Script 1")
+
+# =========================
+# CONFIGURAÇÃO GITHUB (NUVEM)
+# =========================
+GITHUB_USER = "lucianohcl"               # Substitua pelo seu usuário
+GITHUB_REPO = "formulario-colaborador"   # Substitua pelo seu repositório
+GITHUB_PATH = "rascunhos"                # Pasta onde os JSON serão salvos
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]  # Token com permissão de escrita
+
+# =========================
+# CAMPOS DE IDENTIFICAÇÃO
+# =========================
+campos_id = {
+    "nome": st.text_input("Nome do colaborador"),
+    "cargo": st.text_input("Cargo"),
+    "departamento": st.text_input("Departamento"),
+    "escolaridade": st.text_input("Escolaridade"),
+    "setor": st.text_input("Setor"),
+    "chefe": st.text_input("Chefe imediato"),
+    "unidade": st.text_input("Empresa / Unidade"),
+    "devolucao": st.text_input("Devolver preenchido em"),
+    "cursos": st.text_area("Cursos Obrigatórios e Diferenciais"),
+    "objetivo": st.text_area("Objetivo Principal da Função")
+}
+
+# =========================
+# CONFIGURAÇÃO DE TABELAS
+# =========================
+lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [f"{i} h" for i in range(0,25)]
+lista_minutos = [f"{i} min" for i in range(0,60)]
+
+config_col = {
+    "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+    "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+    "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
+}
+
+# --- Tabelas de atividades
+st.subheader("🚀 Atividades de Alta Complexidade")
+e_alta = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                        key="alta", num_rows="dynamic", column_config=config_col)
+
+st.subheader("📋 Atividades de Nível Normal")
+e_normal = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                          key="normal", num_rows="dynamic", column_config=config_col)
+
+st.subheader("⏳ Atividades de Baixa Complexidade")
+e_baixa = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                         key="baixa", num_rows="dynamic", column_config=config_col)
+
+st.subheader("⚠️ Dificuldades e Bloqueios")
+e_dif = st.data_editor(pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
+                       key="dif", num_rows="dynamic", column_config=config_col)
+
+st.subheader("💡 Sugestões de Melhoria")
+e_sug = st.data_editor(pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
+                       key="sug", num_rows="dynamic", column_config=config_col)
+
+# =========================
+# QUESTIONÁRIO DISC
+# =========================
+perguntas_disc = [
+    "Quando surge um problema inesperado",
+    "Em situações de pressão",
+    "Ao receber tarefa difícil",
+    "No trabalho em equipe",
+    "Em reuniões",
+    "Ao lidar com conflitos",
+    "Seu ritmo de trabalho",
+    "Prefere tarefas",
+    "Seu foco principal",
+    "Ao decidir, você é",
+    "Confia mais em",
+    "Prefere decisões",
+    "Estilo de organização",
+    "Lida melhor com",
+    "Prefere trabalhar",
+    "Seu ponto forte",
+    "Você se considera",
+    "Se motiva por",
+    "Reação a cobranças",
+    "Ambiente ideal",
+    "Ao lidar com feedback",
+    "Como prefere aprender",
+    "Gestão de tempo",
+    "Como se comunica"
+]
+
+respostas_disc = {}
+for i, pergunta in enumerate(perguntas_disc, 1):
+    respostas_disc[f"q{i}"] = st.radio(f"{i}. {pergunta}", options=["A","B","C","D"], key=f"disc_{i}")
+
+# =========================
+# BOTÃO DE SALVAR RASCUNHO
+# =========================
+if st.button("💾 Salvar Rascunho na Nuvem"):
+    payload = {
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "campos": campos_id,
+        "tabelas": {
+            "alta": e_alta[e_alta["Atividade"]!=""].to_dict("records"),
+            "normal": e_normal[e_normal["Atividade"]!=""].to_dict("records"),
+            "baixa": e_baixa[e_baixa["Atividade"]!=""].to_dict("records"),
+            "dificuldades": e_dif[e_dif.iloc[:,0]!=""].to_dict("records"),
+            "sugestoes": e_sug[e_sug.iloc[:,0]!=""].to_dict("records")
+        },
+        "disc": respostas_disc
+    }
+
+    try:
+        g = Github(GITHUB_TOKEN)
+        repo = g.get_user().get_repo(GITHUB_REPO)
+        file_name = f"{campos_id['nome'].replace(' ','_').upper()}.json"
+        full_path = f"{GITHUB_PATH}/{file_name}"
+        content = json.dumps(payload, ensure_ascii=False, indent=4)
+
+        try:
+            f = repo.get_contents(full_path)
+            repo.update_file(f.path, f"Atualizando rascunho {file_name}", content, f.sha)
+        except:
+            repo.create_file(full_path, f"Criando rascunho {file_name}", content)
+
+        st.success(f"✅ Rascunho salvo na nuvem: {full_path}")
+    except Exception as e:
+        st.error(f"❌ Erro ao salvar na nuvem: {e}")
+
+# =========================
+# BOTÃO DE COSPE PARA SCRIPT 1
+# =========================
+if st.button("🚀 Cospe para Script 1"):
+    st.session_state["dados_oficiais"] = {
+        "nome": campos_id["nome"],
+        "cargo": campos_id["cargo"],
+        "departamento": campos_id["departamento"],
+        "escolaridade": campos_id["escolaridade"],
+        "setor": campos_id["setor"],
+        "chefe": campos_id["chefe"],
+        "empresa": campos_id["unidade"],
+        "devolucao": campos_id["devolucao"],
+        "cursos": campos_id["cursos"],
+        "objetivo": campos_id["objetivo"],
+        "atividades_alta": payload["tabelas"]["alta"],
+        "atividades_normal": payload["tabelas"]["normal"],
+        "atividades_baixa": payload["tabelas"]["baixa"],
+        "dificuldades": payload["tabelas"]["dificuldades"],
+        "sugestoes": payload["tabelas"]["sugestoes"],
+        "disc": payload["disc"]
+    }
+    st.success("🎉 Dados preparados para Script 1! Recarregue a página do Script 1 para ver preenchido automaticamente.")  
         
-        col_btn1, col_btn2 = st.columns(2)
-
-        with col_btn1:
-            # BOTÃO 1: Salva LOCAL e na NUVEM (GitHub)
-            if st.button("💾 SALVAR RASCUNHO (NUVEM + JSON)", use_container_width=True):
-                # Consolidação rigorosa para o Script 1 buscar no fonte.get()
-                dados_finais = {
-                    "nome": nome_f_v2, 
-                    "cargo": cargo_f_v2, 
-                    "departamento": depto_f_v2, 
-                    "setor": setor_f_v2, 
-                    "chefe": chefe_f_v2, 
-                    "empresa": unidade_f_v2, 
-                    "escolaridade": escolaridade_f_v2,
-                    "cursos": cursos_f_v2, 
-                    "objetivo": obj_f_v2,
-                    "atividades_alta": edit_alta.to_dict("records"),
-                    "atividades_normal": edit_normal.to_dict("records"),
-                    "atividades_baixa": edit_baixa.to_dict("records"),
-                    "dificuldades": edit_dif.to_dict("records"),
-                    "sugestoes": edit_sug.to_dict("records"),
-                    "disc": {f"q{i+1}": resp for i, resp in enumerate(respostas_disc)},
-                    "data_snapshot": datetime.now().strftime("%d/%m/%Y %H:%M"),
-                    # CHAVE CORRIGIDA: No Script 1 você usa fonte.get("devolucao")
-                    "devolucao": datetime.now().strftime("%d/%m/%Y") 
-                }
-
-                nome_arq = f"rascunho_{nome_f_v2.replace(' ', '_')}.json"
-                
-                # 1. Salvamento em Nuvem (GitHub)
-                github_ok = salvar_no_github(dados_finais, nome_arq)
-                
-                # 2. Salvamento Local (Backup)
-                try:
-                    pasta_dados = os.path.join(os.path.dirname(os.path.abspath(__file__)), "dados")
-                    if not os.path.exists(pasta_dados):
-                        os.makedirs(pasta_dados)
-                    
-                    caminho_completo = os.path.join(pasta_dados, nome_arq)
-                    with open(caminho_completo, "w", encoding="utf-8") as f:
-                        json.dump(dados_finais, f, ensure_ascii=False, indent=4)
-                    
-                    if github_ok:
-                        st.success(f"✅ Rascunho sincronizado na NUVEM e LOCAL!")
-                        
-                    else:
-                        st.warning("⚠️ Salvo apenas LOCALMENTE. Verifique conexão GitHub.")
-                except Exception as e:
-                    st.error(f"❌ Erro ao salvar: {e}")
-
-        with col_btn2:
-            # BOTÃO 2: Copia os dados para a memória (Session State) do Script 1
-            if st.button("🚀 COPIAR PARA FORMULÁRIO", 
-                         type="primary", 
-                         use_container_width=True, 
-                         key="btn_copiar_local", 
-                         on_click=copiar_para_script1): 
-                st.toast("✅ Dados prontos no formulário oficial!")
