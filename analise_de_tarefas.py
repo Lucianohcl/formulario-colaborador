@@ -2311,10 +2311,9 @@ def salvar_no_github(conteudo_dict, nome_arquivo):
 # =========================================================
 # 3. LISTA DE USUÁRIOS CADASTRADOS (SIMULAÇÃO LOCAL/GITHUB)
 # =========================================================
-# Aqui você pode buscar do GitHub se quiser
-usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves"]  # exemplo
+usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves"]
 
-st.title("💾 Script 2 - Cadastro e Rascunho")
+st.title("💾 Rascunho")
 
 # =========================================================
 # 4. CADASTRO / PRIMEIRO ACESSO
@@ -2353,9 +2352,9 @@ if primeira_vez:
     # =========================================================
     # 6. CONFIGURAÇÃO DE TABELAS
     # =========================================================
-    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
     lista_horas = [f"{i} h" for i in range(0,25)]
-    lista_minutos = [f"{i} min" for i in range(0,60)]
+    lista_minutos = [f"{i} min" for i in range(0,60,5)]
 
     config_col = {
         "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
@@ -2365,27 +2364,37 @@ if primeira_vez:
 
     # --- Tabelas com 15 linhas
     st.subheader("🚀 Atividades de Alta Complexidade")
-    e_alta = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                            key="alta", num_rows=15, column_config=config_col, use_container_width=True)
+    e_alta = st.data_editor(
+        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+        key="alta", num_rows=15, column_config=config_col, use_container_width=True
+    )
 
     st.subheader("📋 Atividades de Nível Normal")
-    e_normal = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                              key="normal", num_rows=15, column_config=config_col, use_container_width=True)
+    e_normal = st.data_editor(
+        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+        key="normal", num_rows=15, column_config=config_col, use_container_width=True
+    )
 
     st.subheader("⏳ Atividades de Baixa Complexidade")
-    e_baixa = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                             key="baixa", num_rows=15, column_config=config_col, use_container_width=True)
+    e_baixa = st.data_editor(
+        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+        key="baixa", num_rows=15, column_config=config_col, use_container_width=True
+    )
 
     st.subheader("⚠️ Dificuldades e Bloqueios")
-    e_dif = st.data_editor(pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
-                           key="dif", num_rows=15, column_config=config_col, use_container_width=True)
+    e_dif = st.data_editor(
+        pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
+        key="dif", num_rows=15, column_config=config_col, use_container_width=True
+    )
 
     st.subheader("💡 Sugestões de Melhoria")
-    e_sug = st.data_editor(pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
-                           key="sug", num_rows=15, column_config=config_col, use_container_width=True)
+    e_sug = st.data_editor(
+        pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
+        key="sug", num_rows=15, column_config=config_col, use_container_width=True
+    )
 
     # =========================================================
-    # 7. QUESTIONÁRIO DISC
+    # 7. QUESTIONÁRIO DISC (horizontal)
     # =========================================================
     perguntas_disc = [
         "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
@@ -2416,52 +2425,57 @@ if primeira_vez:
 
     respostas_disc = {}
     for i, pergunta in enumerate(perguntas_disc, 1):
-        respostas_disc[f"q{i}"] = st.radio(f"{i}. {pergunta}", options=["A","B","C","D"], key=f"disc_{i}")
+        respostas_disc[f"q{i}"] = st.radio(f"{i}. {pergunta}", options=["A","B","C","D"], key=f"disc_{i}", horizontal=True)
 
     # =========================================================
     # 8. BOTÃO DE SALVAR RASCUNHO
     # =========================================================
     if st.button("💾 Salvar Rascunho na Nuvem"):
-        payload = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "campos": campos_id,
-            "tabelas": {
-                "alta": e_alta[e_alta["Atividade"]!=""].to_dict("records"),
-                "normal": e_normal[e_normal["Atividade"]!=""].to_dict("records"),
-                "baixa": e_baixa[e_baixa["Atividade"]!=""].to_dict("records"),
-                "dificuldades": e_dif[e_dif.iloc[:,0]!=""].to_dict("records"),
-                "sugestoes": e_sug[e_sug.iloc[:,0]!=""].to_dict("records")
-            },
-            "disc": respostas_disc
-        }
-
-        nome_arquivo = f"{campos_id['nome'].replace(' ','_').upper()}.json"
-        sucesso = salvar_no_github(payload, nome_arquivo)
-        if sucesso:
-            st.success(f"✅ Rascunho salvo na nuvem: {nome_arquivo}")
-        else:
-            st.error("❌ Erro ao salvar rascunho.")
+        try:
+            payload = {
+                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "campos": campos_id,
+                "tabelas": {
+                    "alta": e_alta[e_alta["Atividade"]!=""].to_dict("records"),
+                    "normal": e_normal[e_normal["Atividade"]!=""].to_dict("records"),
+                    "baixa": e_baixa[e_baixa["Atividade"]!=""].to_dict("records"),
+                    "dificuldades": e_dif[e_dif.iloc[:,0]!=""].to_dict("records"),
+                    "sugestoes": e_sug[e_sug.iloc[:,0]!=""].to_dict("records")
+                },
+                "disc": respostas_disc
+            }
+            nome_arquivo = f"{campos_id['nome'].replace(' ','_').upper()}.json"
+            sucesso = salvar_no_github(payload, nome_arquivo)
+            if sucesso:
+                st.success(f"✅ Rascunho salvo na nuvem: {nome_arquivo}")
+            else:
+                st.error("❌ Falha ao salvar rascunho")
+        except Exception as e:
+            st.error(f"❌ Erro inesperado: {e}")
 
     # =========================================================
-    # 9. BOTÃO DE COSPE PARA SCRIPT 1
+    # 9. BOTÃO DE ENVIAR PARA SCRIPT 1 (MESMA INSTÂNCIA)
     # =========================================================
     if st.button("🚀 Enviar para Formulário"):
-        st.session_state["dados_oficiais"] = {
-            "nome": campos_id["nome"],
-            "cargo": campos_id["cargo"],
-            "departamento": campos_id["departamento"],
-            "escolaridade": campos_id["escolaridade"],
-            "setor": campos_id["setor"],
-            "chefe": campos_id["chefe"],
-            "empresa": campos_id["unidade"],
-            "devolucao": campos_id["devolucao"],
-            "cursos": campos_id["cursos"],
-            "objetivo": campos_id["objetivo"],
-            "atividades_alta": payload["tabelas"]["alta"],
-            "atividades_normal": payload["tabelas"]["normal"],
-            "atividades_baixa": payload["tabelas"]["baixa"],
-            "dificuldades": payload["tabelas"]["dificuldades"],
-            "sugestoes": payload["tabelas"]["sugestoes"],
-            "disc": payload["disc"]
-        }
-        st.success("🎉 Dados preparados para Script 1! Recarregue a página do Script 1 para ver preenchido automaticamente.")
+        try:
+            st.session_state["dados_oficiais"] = {
+                "nome": campos_id["nome"],
+                "cargo": campos_id["cargo"],
+                "departamento": campos_id["departamento"],
+                "escolaridade": campos_id["escolaridade"],
+                "setor": campos_id["setor"],
+                "chefe": campos_id["chefe"],
+                "empresa": campos_id["unidade"],
+                "devolucao": campos_id["devolucao"],
+                "cursos": campos_id["cursos"],
+                "objetivo": campos_id["objetivo"],
+                "atividades_alta": e_alta.to_dict("records"),
+                "atividades_normal": e_normal.to_dict("records"),
+                "atividades_baixa": e_baixa.to_dict("records"),
+                "dificuldades": e_dif.to_dict("records"),
+                "sugestoes": e_sug.to_dict("records"),
+                "disc": respostas_disc
+            }
+            st.success("🎉 Dados enviados para Script 1! Abra o Script 1 na mesma instância para ver preenchido automaticamente.")
+        except Exception as e:
+            st.error(f"❌ Falha ao enviar dados para Script 1: {e}")
