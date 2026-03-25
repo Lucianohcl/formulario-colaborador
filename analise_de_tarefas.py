@@ -997,7 +997,7 @@ try:
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
     DB_USERNAME    = st.secrets["DB_USERNAME"]
     DB_TOKEN       = st.secrets["DB_TOKEN"]
-    REPO_NOME      = st.secrets["REPO_NAME"]
+    
 except Exception as e:
     st.error(f"Erro nos Secrets: {e}")
     st.stop()
