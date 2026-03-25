@@ -988,106 +988,22 @@ if st.query_params.get("page") == "formulario":
 
 
 import streamlit as st
-import pandas as pd
-import os
-import json
-from datetime import datetime
 from github import Github
 
 # =========================================================
-# 1. CONFIGURAÇÕES DE ACESSO (VIA STREAMLIT SECRETS)
+# 1. CONFIGURAÇÕES DE ACESSO (MINIMALISTA)
 # =========================================================
-# O código abaixo busca as chaves que você vai colar no site do Streamlit
 try:
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
-    DB_TOKEN = st.secrets["GITHUB_TOKEN"]
-    REPO_NOME = st.secrets["REPO_NAME"]
+    DB_USERNAME    = st.secrets["DB_USERNAME"]
+    DB_TOKEN       = st.secrets["DB_TOKEN"]
+    REPO_NOME      = st.secrets["REPO_NAME"]
 except Exception as e:
-    st.error(f"Erro: Chaves não encontradas nos Secrets do Streamlit. {e}")
+    st.error(f"Erro nos Secrets: {e}")
     st.stop()
 
-# =========================================================
-# 2. FUNÇÃO PARA SALVAR NO GITHUB
-# =========================================================
-def salvar_no_github(conteudo_dict, nome_arquivo):
-    try:
-        g = Github(DB_TOKEN)
-        repo = g.get_repo(REPO_NOME)
-        caminho_git = f"dados/{nome_arquivo}"
-        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
-        
-        try:
-            # Tenta atualizar arquivo existente
-            contents = repo.get_contents(caminho_git)
-            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
-        except:
-            # Cria novo arquivo se não existir
-            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
-        return True
-    except Exception as e:
-        st.error(f"Erro na conexão com GitHub: {e}")
-        return False
-
-# =========================================================
-# 3. LÓGICA DE VALIDAÇÃO INTEGRAL (PARA O BOTÃO ENVIAR)
-# =========================================================
-def validar_e_enviar(tabelas_dict):
-    pendencias = []
-    
-    for nome_tab, df in tabelas_dict.items():
-        # Filtra apenas linhas que possuem descrição preenchida na primeira coluna
-        linhas_ativas = df[df.iloc[:, 0].astype(str).str.strip() != ""]
-        
-        for i, row in linhas_ativas.iterrows():
-            coluna_principal = str(row.get(df.columns[0], "")).strip()
-            
-            def extrair_num(v):
-                texto = str(v).replace("h", "").replace("min", "").strip()
-                try: return int(float(texto))
-                except: return 0
-
-            h = extrair_num(row.get("Horas", "0 h"))
-            m = extrair_num(row.get("Minutos", "0 min"))
-
-            # --- VALIDAÇÃO: DIFICULDADES ---
-            if nome_tab == "Dificuldades":
-                # iloc[1]=Setor, iloc[2]=Frequência
-                setor = str(row.get("Setor/Parceiro Envolvido", row.iloc[1] if len(row) > 1 else "")).strip()
-                freq_dif = str(row.get("Frequência", row.iloc[2] if len(row) > 2 else "")).strip()
-                
-                if coluna_principal != "":
-                    if h == 0 and m == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o tempo.")
-                    if setor == "" or "selecione" in setor.lower() or setor == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o Setor.")
-                    if freq_dif == "" or "selecione" in freq_dif.lower() or freq_dif == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-
-            # --- VALIDAÇÃO: SUGESTÕES E MELHORIAS ---
-            elif nome_tab == "Sugestões e Melhorias":
-                # iloc[1]=Impacto, iloc[2]=Frequência
-                impacto = str(row.get("Impacto", row.iloc[1] if len(row) > 1 else "")).strip()
-                freq_sug = str(row.get("Frequência", row.iloc[2] if len(row) > 2 else "")).strip()
-                
-                if coluna_principal != "":
-                    if h == 0 and m == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o tempo.")
-                    if impacto == "" or "selecione" in impacto.lower() or impacto == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o Impacto.")
-                    if freq_sug == "" or "selecione" in freq_sug.lower() or freq_sug == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-                        
-            # --- VALIDAÇÃO: COMPLEXIDADES (ALTA, NORMAL, BAIXA) ---
-            elif "Complexidade" in nome_tab:
-                freq_comp = str(row.get("Frequência", row.iloc[1] if len(row) > 1 else "")).strip()
-                if coluna_principal != "":
-                    if h == 0 and m == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o tempo.")
-                    if freq_comp == "" or "selecione" in freq_comp.lower():
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-
-    return pendencias
-
+# Conexão com GitHub
+g = Github(DB_TOKEN)
 
 
 # =========================================================
