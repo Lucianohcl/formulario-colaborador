@@ -988,23 +988,81 @@ if st.query_params.get("page") == "formulario":
 
 
 import streamlit as st
+import json
+from datetime import datetime
 from github import Github
 
 # =========================================================
-# 1. CONFIGURAÇÕES DE ACESSO (MINIMALISTA)
+# 1. CONFIGURAÇÕES DE ACESSO (VIA STREAMLIT SECRETS)
 # =========================================================
 try:
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
     DB_USERNAME    = st.secrets["DB_USERNAME"]
     DB_TOKEN       = st.secrets["DB_TOKEN"]
     
+    # Definimos o repositório direto aqui para evitar erro de Secret faltante
+    REPO_NOME = "lucianohcl/formulario-colaborador"
+    
 except Exception as e:
-    st.error(f"Erro nos Secrets: {e}")
+    st.error(f"❌ Erro nos Secrets: A chave {e} não foi encontrada no painel do Streamlit.")
     st.stop()
 
-# Conexão com GitHub
-g = Github(DB_TOKEN)
+# =========================================================
+# 2. FUNÇÃO PARA SALVAR DADOS NO GITHUB
+# =========================================================
+def salvar_no_github(conteudo_dict, nome_arquivo):
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NOME)
+        caminho_git = f"dados/{nome_arquivo}"
+        
+        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
+        
+        try:
+            contents = repo.get_contents(caminho_git)
+            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
+        except:
+            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
+        
+        return True
+    except Exception as e:
+        st.error(f"❌ Erro ao conectar com o GitHub: {e}")
+        return False
 
+# =========================================================
+# 3. INTERFACE E LÓGICA DO FORMULÁRIO
+# =========================================================
+
+st.title("📋 Formulário de Análise de Tarefas")
+st.write("Preencha as informações abaixo para processamento.")
+
+with st.form("meu_formulario"):
+    nome_colaborador = st.text_input("Nome do Colaborador:")
+    tarefa_descricao = st.text_area("Descrição da Tarefa:")
+    data_envio = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    submetido = st.form_submit_button("Enviar Dados")
+
+if submetido:
+    if nome_colaborador and tarefa_descricao:
+        dados_finais = {
+            "colaborador": nome_colaborador,
+            "tarefa": tarefa_descricao,
+            "data": data_envio
+        }
+        
+        nome_arq = f"tarefa_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        
+        with st.spinner("Salvando no banco de dados..."):
+            sucesso = salvar_no_github(dados_finais, nome_arq)
+            
+            if sucesso:
+                st.success("✅ Dados enviados com sucesso para o GitHub!")
+                st.balloons()
+            else:
+                st.error("Erro ao salvar os dados.")
+    else:
+        st.warning("⚠️ Por favor, preencha todos os campos antes de enviar.")
 
 # =========================================================
 # 1. FUNÇÕES DE SUPORTE
@@ -1341,7 +1399,7 @@ if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_containe
 
         # Finalização
         st.session_state["confirmacao_final"] = False
-        st.balloons()
+       
         st.success(f"✅ Dados enviados com sucesso! Arquivo gerado: {filename}")
         
         # Botão de download como comprovante
