@@ -2440,160 +2440,191 @@ import streamlit as st
 import pandas as pd
 import json
 from datetime import datetime
-from github import Github  # pip install PyGithub
+from github import Github
 
-# =========================
-# CONFIGURAÇÃO DA PÁGINA
-# =========================
-st.set_page_config(page_title="💾 Script 2 - Rascunho e Cospe", layout="wide")
+# =========================================================
+# 1. CONFIGURAÇÕES DE ACESSO (VIA STREAMLIT SECRETS)
+# =========================================================
+try:
+    DB_TOKEN = st.secrets["DB_TOKEN"]  # Token GitHub
+    REPO_NOME = "lucianohcl/formulario-colaborador"
+except Exception as e:
+    st.error(f"❌ Erro nos Secrets: {e}")
+    st.stop()
 
-# =========================
-# CONFIGURAÇÃO GITHUB (NUVEM)
-# =========================
-GITHUB_USER = "lucianohcl"               # Substitua pelo seu usuário
-GITHUB_REPO = "formulario-colaborador"   # Substitua pelo seu repositório
-GITHUB_PATH = "rascunhos"                # Pasta onde os JSON serão salvos
-GITHUB_TOKEN = st.secrets["DB_TOKEN"]
-
-# =========================
-# CAMPOS DE IDENTIFICAÇÃO
-# =========================
-campos_id = {
-    "nome": st.text_input("Nome do colaborador"),
-    "cargo": st.text_input("Cargo"),
-    "departamento": st.text_input("Departamento"),
-    "escolaridade": st.text_input("Escolaridade"),
-    "setor": st.text_input("Setor"),
-    "chefe": st.text_input("Chefe imediato"),
-    "unidade": st.text_input("Empresa / Unidade"),
-    "devolucao": st.text_input("Devolver preenchido em"),
-    "cursos": st.text_area("Cursos Obrigatórios e Diferenciais"),
-    "objetivo": st.text_area("Objetivo Principal da Função")
-}
-
-# =========================
-# CONFIGURAÇÃO DE TABELAS
-# =========================
-lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
-lista_horas = [f"{i} h" for i in range(0,25)]
-lista_minutos = [f"{i} min" for i in range(0,60)]
-
-config_col = {
-    "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
-    "Horas": st.column_config.SelectboxColumn(options=lista_horas),
-    "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
-}
-
-# --- Tabelas de atividades
-st.subheader("🚀 Atividades de Alta Complexidade")
-e_alta = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                        key="alta", num_rows="dynamic", column_config=config_col)
-
-st.subheader("📋 Atividades de Nível Normal")
-e_normal = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                          key="normal", num_rows="dynamic", column_config=config_col)
-
-st.subheader("⏳ Atividades de Baixa Complexidade")
-e_baixa = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-                         key="baixa", num_rows="dynamic", column_config=config_col)
-
-st.subheader("⚠️ Dificuldades e Bloqueios")
-e_dif = st.data_editor(pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
-                       key="dif", num_rows="dynamic", column_config=config_col)
-
-st.subheader("💡 Sugestões de Melhoria")
-e_sug = st.data_editor(pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
-                       key="sug", num_rows="dynamic", column_config=config_col)
-
-# =========================
-# QUESTIONÁRIO DISC
-# =========================
-perguntas_disc = [
-    "Quando surge um problema inesperado",
-    "Em situações de pressão",
-    "Ao receber tarefa difícil",
-    "No trabalho em equipe",
-    "Em reuniões",
-    "Ao lidar com conflitos",
-    "Seu ritmo de trabalho",
-    "Prefere tarefas",
-    "Seu foco principal",
-    "Ao decidir, você é",
-    "Confia mais em",
-    "Prefere decisões",
-    "Estilo de organização",
-    "Lida melhor com",
-    "Prefere trabalhar",
-    "Seu ponto forte",
-    "Você se considera",
-    "Se motiva por",
-    "Reação a cobranças",
-    "Ambiente ideal",
-    "Ao lidar com feedback",
-    "Como prefere aprender",
-    "Gestão de tempo",
-    "Como se comunica"
-]
-
-respostas_disc = {}
-for i, pergunta in enumerate(perguntas_disc, 1):
-    respostas_disc[f"q{i}"] = st.radio(f"{i}. {pergunta}", options=["A","B","C","D"], key=f"disc_{i}")
-
-# =========================
-# BOTÃO DE SALVAR RASCUNHO
-# =========================
-if st.button("💾 Salvar Rascunho na Nuvem"):
-    payload = {
-        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "campos": campos_id,
-        "tabelas": {
-            "alta": e_alta[e_alta["Atividade"]!=""].to_dict("records"),
-            "normal": e_normal[e_normal["Atividade"]!=""].to_dict("records"),
-            "baixa": e_baixa[e_baixa["Atividade"]!=""].to_dict("records"),
-            "dificuldades": e_dif[e_dif.iloc[:,0]!=""].to_dict("records"),
-            "sugestoes": e_sug[e_sug.iloc[:,0]!=""].to_dict("records")
-        },
-        "disc": respostas_disc
-    }
-
+# =========================================================
+# 2. FUNÇÃO PARA SALVAR DADOS NO GITHUB
+# =========================================================
+def salvar_no_github(conteudo_dict, nome_arquivo):
     try:
-        g = Github(GITHUB_TOKEN)
-        repo = g.get_user().get_repo(GITHUB_REPO)
-        file_name = f"{campos_id['nome'].replace(' ','_').upper()}.json"
-        full_path = f"{GITHUB_PATH}/{file_name}"
-        content = json.dumps(payload, ensure_ascii=False, indent=4)
-
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NOME)
+        caminho_git = f"rascunhos/{nome_arquivo}"
+        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
         try:
-            f = repo.get_contents(full_path)
-            repo.update_file(f.path, f"Atualizando rascunho {file_name}", content, f.sha)
+            contents = repo.get_contents(caminho_git)
+            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
         except:
-            repo.create_file(full_path, f"Criando rascunho {file_name}", content)
-
-        st.success(f"✅ Rascunho salvo na nuvem: {full_path}")
+            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
+        return True
     except Exception as e:
-        st.error(f"❌ Erro ao salvar na nuvem: {e}")
+        st.error(f"❌ Erro ao conectar com o GitHub: {e}")
+        return False
 
-# =========================
-# BOTÃO DE COSPE PARA SCRIPT 1
-# =========================
-if st.button("🚀 Cospe para Script 1"):
-    st.session_state["dados_oficiais"] = {
-        "nome": campos_id["nome"],
-        "cargo": campos_id["cargo"],
-        "departamento": campos_id["departamento"],
-        "escolaridade": campos_id["escolaridade"],
-        "setor": campos_id["setor"],
-        "chefe": campos_id["chefe"],
-        "empresa": campos_id["unidade"],
-        "devolucao": campos_id["devolucao"],
-        "cursos": campos_id["cursos"],
-        "objetivo": campos_id["objetivo"],
-        "atividades_alta": payload["tabelas"]["alta"],
-        "atividades_normal": payload["tabelas"]["normal"],
-        "atividades_baixa": payload["tabelas"]["baixa"],
-        "dificuldades": payload["tabelas"]["dificuldades"],
-        "sugestoes": payload["tabelas"]["sugestoes"],
-        "disc": payload["disc"]
+# =========================================================
+# 3. LISTA DE USUÁRIOS CADASTRADOS (SIMULAÇÃO LOCAL/GITHUB)
+# =========================================================
+# Aqui você pode buscar do GitHub se quiser
+usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves"]  # exemplo
+
+st.title("💾 Script 2 - Cadastro e Rascunho")
+
+# =========================================================
+# 4. CADASTRO / PRIMEIRO ACESSO
+# =========================================================
+nome_usuario = st.text_input("Digite seu NOME COMPLETO:")
+
+if nome_usuario:
+    if nome_usuario not in usuarios_cadastrados:
+        st.error("⚠️ Usuário não cadastrado.")
+        primeira_vez = st.checkbox("É minha primeira vez cadastrar")
+        if primeira_vez:
+            st.info("✅ Preencha o formulário abaixo para se cadastrar e criar seu rascunho.")
+    else:
+        st.success(f"Olá, {nome_usuario}! Continue para preencher o rascunho.")
+        primeira_vez = True
+else:
+    primeira_vez = False
+
+# =========================================================
+# 5. CAMPOS DE IDENTIFICAÇÃO
+# =========================================================
+if primeira_vez:
+    campos_id = {
+        "nome": nome_usuario,
+        "cargo": st.text_input("Cargo:"),
+        "departamento": st.text_input("Departamento:"),
+        "escolaridade": st.text_input("Escolaridade:"),
+        "setor": st.text_input("Setor:"),
+        "chefe": st.text_input("Chefe imediato:"),
+        "unidade": st.text_input("Empresa / Unidade:"),
+        "devolucao": st.text_input("Devolver preenchido em:"),
+        "cursos": st.text_area("Cursos Obrigatórios e Diferenciais:"),
+        "objetivo": st.text_area("Objetivo Principal da Função:")
     }
-    st.success("🎉 Dados preparados para Script 1! Recarregue a página do Script 1 para ver preenchido automaticamente.")  
-        
+
+    # =========================================================
+    # 6. CONFIGURAÇÃO DE TABELAS
+    # =========================================================
+    lista_frequencia = ["DVD", "D", "S", "Q", "M", "T", "A"]
+    lista_horas = [f"{i} h" for i in range(0,25)]
+    lista_minutos = [f"{i} min" for i in range(0,60)]
+
+    config_col = {
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
+    }
+
+    # --- Tabelas com 15 linhas
+    st.subheader("🚀 Atividades de Alta Complexidade")
+    e_alta = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                            key="alta", num_rows=15, column_config=config_col, use_container_width=True)
+
+    st.subheader("📋 Atividades de Nível Normal")
+    e_normal = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                              key="normal", num_rows=15, column_config=config_col, use_container_width=True)
+
+    st.subheader("⏳ Atividades de Baixa Complexidade")
+    e_baixa = st.data_editor(pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
+                             key="baixa", num_rows=15, column_config=config_col, use_container_width=True)
+
+    st.subheader("⚠️ Dificuldades e Bloqueios")
+    e_dif = st.data_editor(pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
+                           key="dif", num_rows=15, column_config=config_col, use_container_width=True)
+
+    st.subheader("💡 Sugestões de Melhoria")
+    e_sug = st.data_editor(pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
+                           key="sug", num_rows=15, column_config=config_col, use_container_width=True)
+
+    # =========================================================
+    # 7. QUESTIONÁRIO DISC
+    # =========================================================
+    perguntas_disc = [
+        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+        "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+        "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+        "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+        "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+        "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+        "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+        "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+        "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+        "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+        "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+        "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+        "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+        "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+        "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+        "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+        "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+        "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+        "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
+    ]
+
+    respostas_disc = {}
+    for i, pergunta in enumerate(perguntas_disc, 1):
+        respostas_disc[f"q{i}"] = st.radio(f"{i}. {pergunta}", options=["A","B","C","D"], key=f"disc_{i}")
+
+    # =========================================================
+    # 8. BOTÃO DE SALVAR RASCUNHO
+    # =========================================================
+    if st.button("💾 Salvar Rascunho na Nuvem"):
+        payload = {
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "campos": campos_id,
+            "tabelas": {
+                "alta": e_alta[e_alta["Atividade"]!=""].to_dict("records"),
+                "normal": e_normal[e_normal["Atividade"]!=""].to_dict("records"),
+                "baixa": e_baixa[e_baixa["Atividade"]!=""].to_dict("records"),
+                "dificuldades": e_dif[e_dif.iloc[:,0]!=""].to_dict("records"),
+                "sugestoes": e_sug[e_sug.iloc[:,0]!=""].to_dict("records")
+            },
+            "disc": respostas_disc
+        }
+
+        nome_arquivo = f"{campos_id['nome'].replace(' ','_').upper()}.json"
+        sucesso = salvar_no_github(payload, nome_arquivo)
+        if sucesso:
+            st.success(f"✅ Rascunho salvo na nuvem: {nome_arquivo}")
+        else:
+            st.error("❌ Erro ao salvar rascunho.")
+
+    # =========================================================
+    # 9. BOTÃO DE COSPE PARA SCRIPT 1
+    # =========================================================
+    if st.button("🚀 Enviar para Formulário"):
+        st.session_state["dados_oficiais"] = {
+            "nome": campos_id["nome"],
+            "cargo": campos_id["cargo"],
+            "departamento": campos_id["departamento"],
+            "escolaridade": campos_id["escolaridade"],
+            "setor": campos_id["setor"],
+            "chefe": campos_id["chefe"],
+            "empresa": campos_id["unidade"],
+            "devolucao": campos_id["devolucao"],
+            "cursos": campos_id["cursos"],
+            "objetivo": campos_id["objetivo"],
+            "atividades_alta": payload["tabelas"]["alta"],
+            "atividades_normal": payload["tabelas"]["normal"],
+            "atividades_baixa": payload["tabelas"]["baixa"],
+            "dificuldades": payload["tabelas"]["dificuldades"],
+            "sugestoes": payload["tabelas"]["sugestoes"],
+            "disc": payload["disc"]
+        }
+        st.success("🎉 Dados preparados para Script 1! Recarregue a página do Script 1 para ver preenchido automaticamente.")
