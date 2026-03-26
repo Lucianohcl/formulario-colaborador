@@ -1324,9 +1324,9 @@ def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_
     )
 
 # 3. Chamadas das Tabelas
-e_alta = gerar_tabela_final("🚀 Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_tabela_final("📋 Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_tabela_final("⏳ Baixa Complexidade", "baixa", "Atividade")
+e_alta = gerar_tabela_final("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_tabela_final("📋 Atividades de Complexidade Normal", "normal", "Atividade")
+e_baixa = gerar_tabela_final("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
 e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
 e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
