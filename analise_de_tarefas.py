@@ -18,6 +18,11 @@ import pytz
 import time
 from zoneinfo import ZoneInfo
 import plotly.express as px
+import streamlit as st
+import json
+from datetime import datetime
+from github import Github
+
 # ============================================================
 
 # CONFIGURAÇÃO E INICIALIZAÇÃO ÚNICA
@@ -101,6 +106,27 @@ perguntas_disc = [
 from docx import Document
 from fpdf import FPDF
 import io
+
+
+def salvar_no_github(conteudo_dict, nome_arquivo):
+    try:
+        g = Github(st.secrets["DB_TOKEN"])
+        repo = g.get_repo("lucianohcl/formulario-colaborador")
+        caminho_git = f"dados/{nome_arquivo}"
+        
+        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
+        
+        try:
+            contents = repo.get_contents(caminho_git)
+            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
+        except:
+            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
+        
+        return True
+    except Exception as e:
+        st.error(f"❌ Erro ao conectar com o GitHub: {e}")
+        return False
+
 
 def gerar_word(form):
     doc = Document()
@@ -1353,9 +1379,10 @@ if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_containe
     with open(f"dados/{nome_arq}", "w", encoding="utf-8") as f:
         json.dump(dados_finais, f, ensure_ascii=False, indent=4)
 
-    if salvar_no_github(dados_finais, nome_arq):
+    sucesso = salvar_no_github(dados_finais, nome_arq)
+
+    if sucesso:
         st.success("✅ Sincronizado com sucesso!")
-        
         st.session_state["confirmacao_final"] = False
     else:
         st.error("⚠️ Erro GitHub, salvo apenas localmente.")
