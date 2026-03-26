@@ -111,6 +111,48 @@ from fpdf import FPDF
 import io
 
 
+def atualizar_rascunhos_do_github():
+    """
+    Busca os arquivos JSON no repositório do GitHub e 
+    os carrega para o session_state['rascunhos'].
+    """
+    import requests
+    import json
+
+    # Substitua pelos seus dados reais ou use st.secrets
+    GITHUB_USER = "SEU_USUARIO"
+    GITHUB_REPO = "SEU_REPOSITORIO"
+    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"] # Recomendo usar Secrets do Streamlit
+    FOLDER_PATH = "rascunhos" # Pasta onde ficam os JSONs
+
+    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}"
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            arquivos = response.json()
+            rascunhos_temp = {}
+            
+            for arquivo in arquivos:
+                if arquivo["name"].endswith(".json"):
+                    # Pega o conteúdo de cada arquivo
+                    conteudo_res = requests.get(arquivo["download_url"], headers=headers)
+                    dados = conteudo_res.json()
+                    
+                    # Usa o nome do colaborador como chave
+                    nome_colaborador = dados.get("colaborador")
+                    if nome_colaborador:
+                        rascunhos_temp[nome_colaborador] = dados
+            
+            st.session_state["rascunhos"] = rascunhos_temp
+        else:
+            st.error(f"Erro ao acessar GitHub: {response.status_code}")
+    except Exception as e:
+        st.error(f"Falha na conexão com Cloud: {e}")
+
+
+
 def salvar_no_github(conteudo_dict, nome_arquivo):
     try:
         g = Github(st.secrets["DB_TOKEN"])
