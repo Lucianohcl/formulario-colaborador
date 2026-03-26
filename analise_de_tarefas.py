@@ -1038,6 +1038,9 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
+# =========================================================
+# Perguntas DISC
+# =========================================================
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -1087,7 +1090,6 @@ with col1:
     # --- 👀 Mostra quais rascunhos foram carregados ---
     st.write("🗂️ Rascunhos carregados:", st.session_state.get("rascunhos"))
 
-    
     # --- Botão para carregar rascunho ---
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
         if nome_f:
@@ -1111,11 +1113,57 @@ with col1:
                 st.warning("⚠️ Nenhum rascunho encontrado para este nome.")
         else:
             st.error("❌ Digite um nome antes de carregar o rascunho.")
+
+with col2:
+    cargo_f = st.text_input(
+        "Cargo",
+        value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""),
+        key="f_cargo"
+    )
+
+    depto_f = st.text_input(
+        "Departamento",
+        value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""),
+        key="f_depto"
+    )
+
+    esc_f = st.text_input(
+        "Escolaridade",
+        value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""),
+        key="f_esc"
+    )
+
+    setor_f = st.text_input(
+        "Setor",
+        value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""),
+        key="f_setor"
+    )
+
+    chefe_f = st.text_input(
+        "Chefe imediato",
+        value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""),
+        key="f_chefe"
+    )
+
+    unidade_f = st.text_input(
+        "Empresa / Unidade",
+        value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""),
+        key="f_unidade"
+    )
+
+    dev_f = st.text_input(
+        "Devolver preenchido em",
+        value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""),
+        key="f_dev"
+    )
+
+# =========================================================
 # No SCRIPT 1 - Adicionando a leitura da memória (Session State)
+# =========================================================
 cursos_f_v2 = st.text_area(
     "Cursos Obrigatórios e Diferenciais", 
     value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), 
-    key="f_cursos_v1" # Usei v1 na key para evitar conflito de widget
+    key="f_cursos_v1"  # Usei v1 na key para evitar conflito de widget
 )
 
 obj_f_v2 = st.text_area(
@@ -1129,7 +1177,6 @@ config_col = {
     "Horas": st.column_config.SelectboxColumn(options=lista_horas), 
     "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
 }
-
 
 # --- SEÇÃO DE INSTRUÇÕES ---
 st.markdown("---")
