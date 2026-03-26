@@ -1270,6 +1270,8 @@ obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.ge
 # =========================================================
 st.markdown("---")
 
+st.subheader("📋 Tabelas") # Título médio
+
 # --- FUNÇÃO AUXILIAR (Garante que o editor tenha linhas suficientes) ---
 def garantir_15_linhas(df, colunas):
     if df is None or df.empty:
@@ -1333,7 +1335,7 @@ e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestã
 # 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Perfil Comportamental (DISC)")
+st.subheader("📊 Questionário")
 
 # --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
 v = st.session_state.get("v_tab", 0) 
@@ -2541,7 +2543,7 @@ e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "I
 # 6. PERFIL DISC
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Perfil Comportamental (DISC)")
+st.subheader("📊 Questionário")
 
 # --- Controle de Versão para evitar NameError e conflitos de estado ---
 if "v_tab" not in st.session_state: 
