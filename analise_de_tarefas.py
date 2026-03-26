@@ -1266,30 +1266,37 @@ obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.ge
 
 
 
+
 # =========================================================
 # 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Perfil Comportamental (DISC)")
 
+# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
+v = st.session_state.get("v_tab", 0) 
+
 respostas_disc_atual = {}
 rascunho_disc = st.session_state.get("disc_v2", {})
 
+# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
 for i, pergunta in enumerate(perguntas_disc):
     # Tenta carregar a letra do rascunho
     letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
     
     # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
-    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_salva in ["A", "B", "C", "D"] else None
+    opcoes = ["A", "B", "C", "D"]
+    idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
     
     escolha = st.radio(
         f"**{i+1}.** {pergunta}",
-        options=["A", "B", "C", "D"],
+        options=opcoes,
         index=idx_selecionado,
-        key=f"disc_radio_{i}_{v}", # <--- KEY DINÂMICA TAMBÉM NO DISC
+        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
         horizontal=True
     )
     respostas_disc_atual[f"p{i}"] = escolha
+
 # =========================================================
 # 🚀 BOTÃO FINAL DE SALVAMENTO (CORRIGIDO PARA 5 TABELAS)
 # =========================================================
