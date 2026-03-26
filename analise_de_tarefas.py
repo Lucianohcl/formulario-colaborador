@@ -2444,60 +2444,55 @@ def garantir_15_linhas(df, colunas):
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE LOGIN (VERSÃO BLINDADA)
+# 3. FLUXO DE LOGIN COM PERSISTÊNCIA "ESTILO COPIAR"
 # =========================================================
 st.title("📋 Formulário de Colaborador")
 
 nome_digitado = st.text_input("Digite seu NOME COMPLETO:").strip()
 
 if nome_digitado:
-    # 1. Reset total ao trocar de usuário
+    # 1. Se mudou o usuário, resetamos tudo para garantir a nova busca
     if st.session_state.get("usuario_logado") != nome_digitado:
         st.session_state["usuario_logado"] = nome_digitado
-        st.session_state["rascunho_atual"] = {}
         st.session_state["rascunho_carregado"] = False
-        st.session_state["v_tab"] += 1
+        st.session_state["v_tab"] += 1  # Muda a versão das chaves
         st.rerun()
 
-    # 2. Busca de Rascunho Segura (Executa apenas uma vez por login)
-    if not st.session_state["rascunho_carregado"]:
+    # 2. BUSCA E INJEÇÃO DE DADOS (Persistência Garantida)
+    if not st.session_state.get("rascunho_carregado"):
         nome_arquivo = f"{nome_digitado.replace(' ','_').upper()}.json"
+        
         try:
             g = Github(DB_TOKEN)
             repo = g.get_repo(REPO_NOME)
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados_baixados = json.loads(conteudo.decoded_content.decode())
             
-            st.session_state["rascunho_atual"] = dados_baixados
-            
-            # Injetar dados baixados no Session State para os Widgets
-            v_atual = st.session_state["v_tab"]
+            # --- INJEÇÃO MANUAL NO SESSION STATE ---
+            v_at = st.session_state["v_tab"]
             cp = dados_baixados.get("campos", {})
             
-            st.session_state[f"cargo_{v_atual}"] = cp.get("cargo", "")
-            st.session_state[f"dep_{v_atual}"] = cp.get("departamento", "")
-            st.session_state[f"set_{v_atual}"] = cp.get("setor", "")
-            st.session_state[f"chef_{v_atual}"] = cp.get("chefe", "")
-            st.session_state[f"uni_{v_atual}"] = cp.get("unidade", "")
-            st.session_state[f"esc_{v_atual}"] = cp.get("escolaridade", "")
-            st.session_state[f"cursos_{v_atual}"] = cp.get("cursos", "")
-            st.session_state[f"obj_{v_atual}"] = cp.get("objetivo", "")
-            
+            # Carregando cada campo nas chaves dinâmicas
+            st.session_state[f"cargo_{v_at}"] = cp.get("cargo", "")
+            st.session_state[f"dep_{v_at}"] = cp.get("departamento", "")
+            st.session_state[f"set_{v_at}"] = cp.get("setor", "")
+            st.session_state[f"chef_{v_at}"] = cp.get("chefe", "")
+            st.session_state[f"uni_{v_at}"] = cp.get("unidade", "")
+            st.session_state[f"esc_{v_at}"] = cp.get("escolaridade", "")
+            st.session_state[f"cursos_{v_at}"] = cp.get("cursos", "")
+            st.session_state[f"obj_{v_at}"] = cp.get("objetivo", "")
+
+            # Guardamos o rascunho completo (importante para as tabelas e DISC)
+            st.session_state["rascunho_atual"] = dados_baixados
             st.session_state["rascunho_carregado"] = True
-            st.rerun()
             
+            st.toast("✅ Rascunho carregado com sucesso!")
+            st.rerun() # Essencial para o Streamlit renderizar os campos com os valores injetados
+
         except Exception:
-            # Caso não exista arquivo, inicializa como vazio
-            st.session_state["rascunho_atual"] = {"existente": False}
+            # Se não existir rascunho no GitHub, libera o formulário limpo para uso
             st.session_state["rascunho_carregado"] = True
-
-# Interrompe se o nome estiver vazio
-if not nome_digitado:
-    st.stop()
-
-# Variáveis globais de controle
-v = st.session_state["v_tab"]
-rascunho = st.session_state["rascunho_atual"]
+            st.session_state["rascunho_atual"] = {}
 
 # =========================================================
 # 4. CAMPOS BÁSICOS
@@ -2599,22 +2594,38 @@ for i, pergunta in enumerate(perguntas_disc):
 # 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
 # =========================================================
 st.markdown("---")
+
+# Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
+    
+    # 1. Verificação de segurança: Nome não pode estar vazio
+    if not nome_digitado or len(nome_digitado) < 3:
+        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+        st.stop()
+
     nome_arq = f"{nome_digitado.replace(' ','_').upper()}.json"
     
+    # Função interna para limpar linhas vazias das tabelas antes de enviar
     def limpar_para_rascunho(df):
         if df is None or df.empty: return []
         col_principal = df.columns[0]
+        # Remove linhas onde a descrição da atividade está em branco
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
+    # 2. Montagem do Payload (O pacote de dados que vai pro GitHub)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
         "campos": {
-            "cargo": cargo, "departamento": depto, "setor": setor,
-            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-            "cursos": cursos, "objetivo": objetivo
+            "cargo": cargo, 
+            "departamento": depto, 
+            "setor": setor,
+            "chefe": chefe, 
+            "unidade": unidade, 
+            "escolaridade": escolaridade,
+            "cursos": cursos, 
+            "objetivo": objetivo
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2626,9 +2637,15 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
     
-    with st.spinner("Salvando no GitHub..."):
-        if salvar_no_github(payload, nome_arq):
-            st.success(f"✅ Rascunho de {nome_digitado} salvo com sucesso!")
+    # 3. Execução do salvamento
+    with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
+        sucesso = salvar_no_github(payload, nome_arq)
+        
+        if sucesso:
+            # Atualizamos o estado local para garantir persistência imediata
+            st.session_state["rascunho_atual"] = payload
+            st.session_state["rascunho_carregado"] = True
+            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
             st.balloons()
         else:
-            st.error("❌ Erro ao salvar. Verifique sua conexão ou Token.")
+            st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
