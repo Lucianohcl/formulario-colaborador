@@ -1124,7 +1124,59 @@ with col1:
                 # --- LÓGICA DE COMPATIBILIDADE (CAMPOS) ---
                 cp = rascunho.get("campos", {})
                 st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
-                st.session_state["f_depto_v2"] = rascun
+                st.session_state["f_depto_v2"] = rascunho.get("departamento") or cp.get("departamento", "")
+                st.session_state["f_esc_v2"] = rascunho.get("escolaridade") or cp.get("escolaridade", "")
+                st.session_state["f_setor_v2"] = rascunho.get("setor") or cp.get("setor", "")
+                st.session_state["f_chefe_v2"] = rascunho.get("chefe") or cp.get("chefe", "")
+                st.session_state["f_unidade_v2"] = rascunho.get("unidade") or cp.get("unidade", "")
+                st.session_state["f_dev_v2"] = rascunho.get("devolucao") or cp.get("devolucao", "")
+                st.session_state["f_cursos_v2"] = rascunho.get("cursos") or cp.get("cursos", "")
+                st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
+
+                # --- LIMPEZA PARA FORÇAR ATUALIZAÇÃO VISUAL ---
+                chaves_widgets = ["f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", "f_cursos_area", "f_obj_area"]
+                for k in chaves_widgets:
+                    if k in st.session_state:
+                        del st.session_state[k]
+
+                # --- CONVERSÃO DA TABELA DE TAREFAS ---
+                if "tabela_tarefas" in rascunho:
+                    st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
+                elif "tabelas" in rascunho:
+                    antigas = rascunho.get("tabelas", {})
+                    unificadas = []
+                    for nivel in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+                        for item in antigas.get(nivel, []):
+                            unificadas.append({
+                                "Tarefa": f"[{nivel.upper()}] {item}", 
+                                "Frequência": "Diária", 
+                                "Horas": "0", 
+                                "Minutos": "00"
+                            })
+                    st.session_state["f_tabela_v2"] = unificadas
+
+                # --- DISC ---
+                st.session_state["disc_v2"] = rascunho.get("disc", {})
+
+                st.success(f"✅ Dados de {nome_f} carregados!")
+                st.rerun()
+            else:
+                st.error(f"⚠️ Rascunho de '{nome_f}' não encontrado.")
+        else:
+            st.warning("⚠️ Digite um nome antes de carregar.")
+
+with col2:
+    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
+    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
+    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
+    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
+    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
+    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
+    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
+
+cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
+obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
+
 
 # =========================================================
 # 📝 TABELA DE ANÁLISE DE TAREFAS (COM SUPORTE A ANTIGOS)
