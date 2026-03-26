@@ -2614,11 +2614,19 @@ e_baixa = gerar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
 e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
+
 # =========================================================
 # 6. PERFIL DISC
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Perfil Comportamental (DISC)")
+
+# --- Controle de Versão para evitar NameError e conflitos de estado ---
+if "v_tab" not in st.session_state: 
+    st.session_state["v_tab"] = 0
+v = st.session_state["v_tab"]
+
+# Recupera dados do rascunho
 disc_data = rascunho.get("disc", {})
 
 perguntas_disc = [
@@ -2646,10 +2654,23 @@ perguntas_disc = [
 ]
 
 respostas_disc = {}
+
 for i, pergunta in enumerate(perguntas_disc):
-    padrao = disc_data.get(str(i), "A")
-    idx = ["A","B","C","D"].index(padrao) if padrao in ["A","B","C","D"] else 0
-    respostas_disc[str(i)] = st.radio(f"**{i+1}.** {pergunta}", ["A","B","C","D"], index=idx, key=f"disc_{i}_{v}", horizontal=True)
+    # Tenta buscar o valor salvo; se não existir, define como None para vir desmarcado
+    valor_salvo = disc_data.get(str(i), None)
+    
+    # Mapeia a letra para o índice do radio button (A=0, B=1, C=2, D=3)
+    opcoes = ["A", "B", "C", "D"]
+    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
+    
+    # Renderiza a pergunta
+    respostas_disc[str(i)] = st.radio(
+        f"**{i+1}.** {pergunta}", 
+        options=opcoes, 
+        index=idx, 
+        key=f"disc_{i}_{v}", 
+        horizontal=True
+    )
 
 # =========================================================
 # 7. BOTÃO SALVAR
