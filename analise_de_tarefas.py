@@ -2444,7 +2444,7 @@ def garantir_15_linhas(df, colunas):
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE LOGIN E BUSCA DE RASCUNHO
+# 3. FLUXO DE LOGIN E BUSCA DE RASCUNHO (VERSÃO CORRIGIDA)
 # =========================================================
 st.title("📋 Formulário de Colaborador")
 
@@ -2452,11 +2452,13 @@ nome_digitado = st.text_input("Digite seu NOME COMPLETO:").strip()
 nome_f = nome_digitado # Ponte para o botão de salvar
 
 if nome_digitado:
+    # 1. Reset se mudar o usuário para evitar contaminação de dados
     if st.session_state.get("usuario_logado") != nome_digitado:
         st.session_state["confirmado"] = False
         st.session_state["rascunho_atual"] = {}
         st.session_state["usuario_logado"] = nome_digitado
 
+    # 2. Validação de Cadastro (Manual ou Automática)
     if nome_digitado in usuarios_cadastrados:
         st.session_state["confirmado"] = True
     else:
@@ -2468,22 +2470,47 @@ if nome_digitado:
             else:
                 st.stop()
 
-    # Busca rascunho automaticamente se logado
+    # 3. Busca e Sincronização Automática de Rascunho do GitHub
     if st.session_state["confirmado"] and not st.session_state["rascunho_atual"]:
         nome_arquivo = f"{nome_digitado.replace(' ','_').upper()}.json"
         try:
             g = Github(DB_TOKEN)
             repo = g.get_repo(REPO_NOME)
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
-            st.session_state["rascunho_atual"] = json.loads(conteudo.decoded_content.decode())
+            dados_baixados = json.loads(conteudo.decoded_content.decode())
+            
+            # Salva o rascunho bruto no estado da sessão
+            st.session_state["rascunho_atual"] = dados_baixados
+            
+            # --- SINCRONIZAÇÃO FORÇADA DOS CAMPOS ---
+            # Injetamos os dados baixados diretamente no dicionário de chaves dos Widgets
+            # Isso garante que o Streamlit ignore o "cache" visual e mostre o dado novo
+            v_atual = st.session_state["v_tab"]
+            cp = dados_baixados.get("campos", {})
+            
+            st.session_state[f"cargo_{v_atual}"] = cp.get("cargo", "")
+            st.session_state[f"dep_{v_atual}"] = cp.get("departamento", "")
+            st.session_state[f"set_{v_atual}"] = cp.get("setor", "")
+            st.session_state[f"chef_{v_atual}"] = cp.get("chefe", "")
+            st.session_state[f"uni_{v_atual}"] = cp.get("unidade", "")
+            st.session_state[f"esc_{v_atual}"] = cp.get("escolaridade", "")
+            st.session_state[f"cursos_{v_atual}"] = cp.get("cursos", "")
+            st.session_state[f"obj_{v_atual}"] = cp.get("objetivo", "")
+            
+            # Incrementamos a versão das chaves para "forçar" a reconstrução dos campos
             st.session_state["v_tab"] += 1 
-            st.success("✅ Rascunho carregado com sucesso!")
-        except:
+            st.success(f"✅ Rascunho de {nome_digitado} carregado e sincronizado!")
+            st.rerun() 
+            
+        except Exception:
+            # Caso o arquivo não exista no GitHub, marcamos como processado para evitar loops
             st.session_state["rascunho_atual"] = {"existente": False}
 
+# Se não houver nome, interrompe a execução para não mostrar o formulário vazio
 if not nome_digitado:
     st.stop()
 
+# Variáveis de trabalho globais que as próximas seções usarão
 v = st.session_state["v_tab"]
 rascunho = st.session_state["rascunho_atual"]
 
