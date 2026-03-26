@@ -1,48 +1,85 @@
 {
-    "timestamp": "26/03/2026 05:09:04",
-    "campos": {
+    "timestamp": "26/03/2026 18:46:43",
+    "colaborador": {
         "nome": "Pedro Martins",
-        "cargo": "Financeiro",
-        "departamento": "GERENTE",
-        "escolaridade": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "devolucao": "",
-        "cursos": "",
-        "objetivo": ""
+        "cargo": "Analista",
+        "departamento": "Controladoria",
+        "escolaridade": "Graduação em Ciências Contábeis",
+        "setor": "Custos",
+        "chefe": "José de Souza",
+        "unidade": "Empresa X",
+        "devolucao": "25/03/2026",
+        "cursos": "DDDDDD",
+        "objetivo": "CCCCCCC"
     },
     "tabelas": {
-        "alta": [],
-        "normal": [],
-        "baixa": [],
-        "dificuldades": [],
-        "sugestoes": []
+        "alta": [
+            {
+                "Atividade": "D",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "D",
+                "Horas": "1 h",
+                "Minutos": "5 min",
+                "Frequência": "D"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "S",
+                "Horas": "1 h",
+                "Minutos": "5 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "S",
+                "Setor/Parceiro Envolvido": "D",
+                "Horas": "1 h",
+                "Minutos": "5 min",
+                "Frequência": "D"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "D",
+                "Impacto": "D",
+                "Horas": "0 h",
+                "Minutos": "5 min",
+                "Frequência": "D"
+            }
+        ]
     },
-    "disc": {
-        "q1": "A",
-        "q2": "A",
-        "q3": "A",
-        "q4": "A",
-        "q5": "A",
-        "q6": "A",
-        "q7": "A",
-        "q8": "A",
-        "q9": "A",
-        "q10": "A",
-        "q11": "A",
-        "q12": "A",
-        "q13": "A",
-        "q14": "A",
-        "q15": "A",
-        "q16": "A",
-        "q17": "A",
-        "q18": "A",
-        "q19": "A",
-        "q20": "A",
-        "q21": "A",
-        "q22": "A",
-        "q23": "A",
-        "q24": "A"
+    "perfil_disc": {
+        "p0": "A",
+        "p1": "B",
+        "p2": "B",
+        "p3": "B",
+        "p4": "B",
+        "p5": "B",
+        "p6": "C",
+        "p7": "C",
+        "p8": "D",
+        "p9": "C",
+        "p10": "B",
+        "p11": "D",
+        "p12": "B",
+        "p13": "B",
+        "p14": "A",
+        "p15": "D",
+        "p16": "C",
+        "p17": "B",
+        "p18": "B",
+        "p19": "B",
+        "p20": "D",
+        "p21": "B",
+        "p22": "B",
+        "p23": "A"
     }
 }
