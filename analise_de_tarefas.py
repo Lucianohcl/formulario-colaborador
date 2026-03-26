@@ -1376,51 +1376,59 @@ for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DE TABELAS ---
-dict_tabelas = {
-    "Alta Complexidade": e_alta,
-    "Complexidade Normal": e_normal,
-    "Baixa Complexidade": e_baixa,
-    "Dificuldades": e_dif,
-    "Sugestões e Melhorias": e_sug
+# =========================================================
+# 2. VALIDAÇÃO DE TABELAS (SINCRONIZADO COM O LAYOUT)
+# =========================================================
+
+# Mapeamos o nome da tabela para a coluna principal que ela usa
+regras_colunas = {
+    "Alta Complexidade": "Atividade",
+    "Complexidade Normal": "Atividade",
+    "Baixa Complexidade": "Atividade",
+    "Dificuldades": "Dificuldade",
+    "Sugestões e Melhorias": "Sugestão"
 }
 
 def extrair_num(v):
+    if not v: return 0
     texto = str(v).replace("h", "").replace("min", "").strip()
     try: return int(float(texto))
     except: return 0
 
 for nome_tab, df in dict_tabelas.items():
-    # Verifica se a tabela existe e tem a coluna 'Tarefa'
-    if df is not None and "Tarefa" in df.columns:
-        linhas_ativas = df[df["Tarefa"].astype(str).str.strip() != ""]
+    col_principal = regras_colunas.get(nome_tab)
+    
+    if df is not None and col_principal in df.columns:
+        # Filtra linhas onde a coluna principal (Atividade/Dificuldade/Sugestão) não está vazia
+        linhas_ativas = df[df[col_principal].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
-            pendencias.append(f"Tabelas: A tabela **{nome_tab}** deve ter pelo menos 1 tarefa preenchida.")
+            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item preenchido.")
         else:
             for i, row in linhas_ativas.iterrows():
                 h = extrair_num(row.get("Horas", "0 h"))
                 m = extrair_num(row.get("Minutos", "0 min"))
                 freq = str(row.get("Frequência", "")).strip()
 
-                # Validação de Tempo e Frequência para as 3 principais
+                # Validação de Tempo e Frequência (Alta, Normal, Baixa)
                 if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
                     if h == 0 and m == 0:
-                        pendencias.append(f"Tabela {nome_tab}: Linha {i+1} está sem tempo definido.")
+                        pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem tempo (Horas/Minutos).")
                     if freq == "":
-                        pendencias.append(f"Tabela {nome_tab}: Linha {i+1} está sem frequência.")
+                        pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem frequência.")
                 
-                # Validação específica para Dificuldades
+                # Validação de Dificuldades
                 if nome_tab == "Dificuldades":
-                    setor_envolvido = str(row.get("Setor/Parceiro Envolvido", "")).strip()
-                    if setor_envolvido == "":
-                        pendencias.append(f"Tabela Dificuldades: Linha {i+1} precisa indicar o Setor.")
+                    setor = str(row.get("Setor/Parceiro Envolvido", "")).strip()
+                    if setor == "":
+                        pendencias.append(f"❌ Dificuldades: Linha {i+1} precisa indicar o Setor/Parceiro.")
 
-                # Validação específica para Sugestões
+                # Validação de Sugestões
                 if nome_tab == "Sugestões e Melhorias":
                     impacto = str(row.get("Impacto", "")).strip()
                     if impacto == "":
-                        pendencias.append(f"Tabela Sugestões: Linha {i+1} precisa indicar o Impacto.")
+                        pendencias.append(f"❌ Sugestões: Linha {i+1} precisa indicar o Impacto.")
+
 
 # --- 3. VALIDAÇÃO DO DISC (AQUI ESTAVA O ERRO) ---
 # Usando 'respostas_disc_atual' que é a variável que você criou no bloco do DISC
