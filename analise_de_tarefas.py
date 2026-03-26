@@ -111,19 +111,23 @@ from fpdf import FPDF
 import io
 
 
+# =========================================================
+# 📥 1. FUNÇÃO PARA BUSCAR (CARREGAR) RASCUNHOS
+# =========================================================
 def atualizar_rascunhos_do_github():
     """
-    Busca os arquivos JSON no repositório do GitHub e 
-    os carrega para o session_state['rascunhos'].
+    Busca os arquivos JSON na pasta 'rascunhos' do repositório lucianohcl
     """
     import requests
     import json
 
-    # Substitua pelos seus dados reais ou use st.secrets
-    GITHUB_USER = "SEU_USUARIO"
-    GITHUB_REPO = "SEU_REPOSITORIO"
-    GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"] # Recomendo usar Secrets do Streamlit
-    FOLDER_PATH = "rascunhos" # Pasta onde ficam os JSONs
+    # Configurações fixas baseadas no seu repositório
+    GITHUB_USER = "lucianohcl"
+    GITHUB_REPO = "formulario-colaborador"
+    FOLDER_PATH = "rascunhos" 
+    
+    # Usa a sua chave exata: DB_TOKEN
+    GITHUB_TOKEN = st.secrets["DB_TOKEN"]
 
     url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}"
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
@@ -136,40 +140,73 @@ def atualizar_rascunhos_do_github():
             
             for arquivo in arquivos:
                 if arquivo["name"].endswith(".json"):
-                    # Pega o conteúdo de cada arquivo
+                    # Pega o conteúdo de cada arquivo individualmente
                     conteudo_res = requests.get(arquivo["download_url"], headers=headers)
                     dados = conteudo_res.json()
                     
-                    # Usa o nome do colaborador como chave
+                    # Usa o nome do colaborador como chave para o dicionário
                     nome_colaborador = dados.get("colaborador")
                     if nome_colaborador:
                         rascunhos_temp[nome_colaborador] = dados
             
             st.session_state["rascunhos"] = rascunhos_temp
         else:
-            st.error(f"Erro ao acessar GitHub: {response.status_code}")
+            # Se a pasta estiver vazia ou não existir ainda, apenas inicia vazio
+            st.session_state["rascunhos"] = {}
     except Exception as e:
         st.error(f"Falha na conexão com Cloud: {e}")
+        st.session_state["rascunhos"] = {}
 
-
-
+# =========================================================
+# 📤 2. FUNÇÃO PARA SALVAR (PUSH) RASCUNHOS
+# =========================================================
 def salvar_no_github(conteudo_dict, nome_arquivo):
-    try:
-        g = Github(st.secrets["DB_TOKEN"])
-        repo = g.get_repo("lucianohcl/formulario-colaborador")
-        caminho_git = f"dados/{nome_arquivo}"
-        
-        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
-        
-        try:
-            contents = repo.get_contents(caminho_git)
-            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
-        except:
-            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
-        
+    """
+    Faz o Push (Add, Commit e Push) automático para a pasta 'rascunhos'
+    """
+    import requests
+    import base64
+    import json
+
+    GITHUB_USER = "lucianohcl"
+    GITHUB_REPO = "formulario-colaborador"
+    FOLDER_PATH = "rascunhos"
+    GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+
+    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}/{nome_arquivo}"
+    
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    # 1. Tenta verificar se o arquivo já existe (para pegar o SHA e fazer update)
+    res_get = requests.get(url, headers=headers)
+    sha = None
+    if res_get.status_code == 200:
+        sha = res_get.json().get("sha")
+
+    # 2. Prepara o conteúdo (deve ser Base64 para a API do GitHub)
+    json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
+    conteudo_b64 = base64.b64encode(json_string.encode("utf-8")).decode("utf-8")
+
+    # 3. Monta o corpo da mensagem (Commit)
+    payload = {
+        "message": f"Atualização de rascunho: {nome_arquivo}",
+        "content": conteudo_b64,
+        "branch": "main" # Sua branch principal
+    }
+    
+    if sha:
+        payload["sha"] = sha # Necessário para sobrescrever arquivo existente
+
+    # 4. Faz o envio (PUT)
+    res_put = requests.put(url, json=payload, headers=headers)
+
+    if res_put.status_code in [200, 201]:
         return True
-    except Exception as e:
-        st.error(f"❌ Erro ao conectar com o GitHub: {e}")
+    else:
+        st.error(f"❌ Erro ao salvar no GitHub: {res_put.json().get('message')}")
         return False
 
 
@@ -1248,9 +1285,14 @@ if st.button("💾 FINALIZAR E SALVAR TUDO", use_container_width=True, type="pri
         with st.spinner("Salvando no Cloud..."):
             if salvar_no_github(dados_finais, nome_arquivo):
                 st.success(f"✅ Formulário de **{nome_f}** enviado com sucesso!")
+                
+                # RECOMENDAÇÃO: Atualiza a lista de rascunhos local para o novo arquivo aparecer
+                atualizar_rascunhos_do_github()
+                
                 st.balloons()
     else:
         st.error("❌ O nome do colaborador é obrigatório para salvar.")
+
 # =========================================================
 # 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS
 # =========================================================
