@@ -2532,9 +2532,9 @@ def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_ext
 
     return st.data_editor(df, key=f"editor_{chave_rascunho}_{v}", column_config=config, use_container_width=True, num_rows="fixed")
 
-e_alta = gerar_editor("🚀 Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_editor("📋 Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
+e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
+e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
 e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
 e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
