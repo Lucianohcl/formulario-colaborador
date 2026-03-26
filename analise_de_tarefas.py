@@ -2187,7 +2187,6 @@ if "rascunhos" not in st.session_state:
     atualizar_rascunhos_do_github()
 
 # 4. PARTE VISUAL (Daqui para baixo segue o seu st.title, etc)
-st.title("📋 Formulário Completo do Colaborador")
 
 
 # =========================================================
