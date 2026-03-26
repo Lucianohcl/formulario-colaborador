@@ -1424,7 +1424,7 @@ for nome_tab, df_validar in dict_tabelas.items():
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
 if len(respostas_vazias) > 0:
-    pendencias.append(f"DISC: Faltam responder **{len(respostas_vazias)} questões**.")
+    pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
 
 # --- EXIBIÇÃO FINAL DO STATUS ---
 if pendencias:
@@ -2573,7 +2573,7 @@ e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "I
 # 6. PERFIL DISC
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário Comportamental")
+st.subheader("📊 Questionário")
 
 disc_data = rascunho.get("disc", {})
 perguntas_disc = [
