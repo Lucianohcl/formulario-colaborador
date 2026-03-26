@@ -112,6 +112,17 @@ import io
 
 
 
+def extrair_num(texto):
+    """Transforma '10 h' ou '5 min' em apenas o número 10 ou 5."""
+    try:
+        if isinstance(texto, str):
+            # Pega apenas os dígitos do texto
+            num = "".join(filter(str.isdigit, texto))
+            return int(num) if num else 0
+        return int(texto)
+    except:
+        return 0
+
 # =========================================================
 # 📤 FUNÇÃO PARA SALVAR NO GITHUB (COLE AQUI NO TOPO)
 # =========================================================
