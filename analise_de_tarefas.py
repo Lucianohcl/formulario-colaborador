@@ -1218,33 +1218,38 @@ cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_
 obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 # =========================================================
-# 📝 TABELAS DE ANÁLISE DE TAREFAS (DISTRIBUÍDAS)
+# 📝 TABELAS DE ANÁLISE DE TAREFAS (DISTRIBUÍDAS - CORRIGIDO)
 # =========================================================
 st.markdown("---")
 st.subheader("📝 Análise de Tarefas")
 
-# Função auxiliar para não repetir código 5 vezes
+# Suas listas exatas para bater com o validador
+lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [f"{i} h" for i in range(25)]
+lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+
 def gerar_editor_tarefas(titulo, chave_session, key_widget, colunas_extras={}):
     st.write(f"### {titulo}")
     
-    # Puxa os dados que o botão 'Carregar' colocou no session_state
     dados = st.session_state.get(chave_session, [])
     
-    # Se estiver vazio, cria o esqueleto padrão
+    # Criar colunas padrão
     if not dados:
-        df_init = pd.DataFrame([{"Tarefa": "", "Frequência": "Diária", "Horas": "0", "Minutos": "00"} for _ in range(3)])
+        # Criamos o esqueleto com os nomes de colunas que o validador espera
+        df_init = pd.DataFrame([{"Tarefa": "", "Frequência": "", "Horas": "0 h", "Minutos": "0 min"}] * 3)
+        # Se houver coluna extra (Setor ou Impacto), adiciona no DF inicial
+        for col in colunas_extras.keys():
+            df_init[col] = ""
     else:
         df_init = pd.DataFrame(dados)
 
-    # Configuração básica de colunas
+    # Configuração de colunas com NOMES EXATOS
     config = {
         "Tarefa": st.column_config.TextColumn("Descrição da Tarefa", width="large"),
-        "Frequência": st.column_config.SelectboxColumn("Frequência", options=["Diária", "Semanal", "Quinzenal", "Mensal", "Eventual"], required=True),
-        "Horas": st.column_config.SelectboxColumn("Horas", options=[str(i) for i in range(25)], required=True),
-        "Minutos": st.column_config.SelectboxColumn("Minutos", options=["00", "15", "30", "45"], required=True),
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos),
     }
-    
-    # Adiciona colunas específicas se houver (Setor ou Impacto)
     config.update(colunas_extras)
 
     return st.data_editor(
@@ -1255,19 +1260,17 @@ def gerar_editor_tarefas(titulo, chave_session, key_widget, colunas_extras={}):
         use_container_width=True
     )
 
-# --- Renderização das 5 Tabelas ---
+# --- Renderização das 5 Tabelas com nomes que o Validador reconhece ---
 
 e_alta = gerar_editor_tarefas("🔴 Alta Complexidade", "f_alta_v2", "ed_alta_v3")
-
 e_normal = gerar_editor_tarefas("🟡 Complexidade Normal", "f_normal_v2", "ed_norm_v3")
-
 e_baixa = gerar_editor_tarefas("🟢 Baixa Complexidade", "f_baixa_v2", "ed_baix_v3")
 
-# Dificuldades tem a coluna de Setor
+# Tabela 4: O validador usa exatamente esse nome longo
 e_dif = gerar_editor_tarefas("⚠️ Dificuldades e Bloqueios", "f_dif_v2", "ed_dif_v3", 
-                             colunas_extras={"Setor": st.column_config.TextColumn("Setor Envolvido")})
+                             colunas_extras={"Setor/Parceiro Envolvido": st.column_config.TextColumn("Setor/Parceiro Envolvido")})
 
-# Sugestões tem a coluna de Impacto
+# Tabela 5: O validador usa "Impacto"
 e_sug = gerar_editor_tarefas("💡 Sugestões e Melhorias", "f_sug_v2", "ed_sug_v3", 
                              colunas_extras={"Impacto": st.column_config.TextColumn("Impacto Esperado")})
 
@@ -1337,7 +1340,8 @@ st.subheader("✅ Status de Validação do Formulário")
 # Lista que armazena todas as inconsistências encontradas
 pendencias = []
 
-# --- 1. VALIDAÇÃO DE CABEÇALHO ---
+
+# --- 1. VALIDAÇÃO DE CABEÇALHO (CORRIGIDO) ---
 campos_id = {
     "Nome": nome_f,
     "Cargo": cargo_f,
@@ -1347,8 +1351,8 @@ campos_id = {
     "Chefe Imediato": chefe_f,
     "Empresa/Unidade": unidade_f,
     "Devolver em": dev_f,
-    "Cursos": cursos_f_v2,
-    "Objetivo Profissional": obj_f_v2
+    "Cursos": cursos_f,    # Removido o _v2 que causava o erro
+    "Objetivo": obj_f      # Removido o _v2 que causava o erro
 }
 
 for campo, valor in campos_id.items():
