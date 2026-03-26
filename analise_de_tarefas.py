@@ -1216,10 +1216,8 @@ for nome_tab, df in dict_tabelas.items():
 
                 if coluna_principal != "":
                     # TRAVA INDIVIDUAL: Obriga preencher os dois
-                    if h == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem as Horas.")
-                    if m == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem os Minutos.")
+                    if h == 0 and m == 0:
+                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem tempo (Horas e Minutos).")
                     if freq == "":
                         pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem Frequência.")
                 
@@ -2092,23 +2090,6 @@ def salvar_no_github(conteudo_dict, nome_arquivo):
         st.error(f"❌ Erro ao conectar com o GitHub: {e}")
         return False
 
-if submetido:
-    if nome_colaborador and tarefa_descricao:
-        dados_finais = {
-            "colaborador": nome_colaborador,
-            "tarefa": tarefa_descricao,
-            "data": data_envio
-        }
-        
-        nome_arq = f"tarefa_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        
-        # ✅ Aqui chamamos a função
-        sucesso = salvar_no_github(dados_finais, nome_arq)
-        
-        if sucesso:
-            st.success("✅ Dados enviados com sucesso para o GitHub!")
-        else:
-            st.error("❌ Erro ao salvar os dados no GitHub.")
 
 
 
