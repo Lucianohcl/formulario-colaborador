@@ -1206,7 +1206,7 @@ with col1:
     # Mostra os nomes encontrados no GitHub
     rascunhos_dict = st.session_state.get("rascunhos", {})
     nomes_disponiveis = list(rascunhos_dict.keys())
-    st.write(f"🗂️ Rascunhos no Cloud: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
+    st.write(f"🗂️ Rascunhos na Nuvem: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
 
     nome_f = st.text_input(
         "Nome do colaborador",
