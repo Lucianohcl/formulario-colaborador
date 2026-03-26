@@ -1042,6 +1042,8 @@ perguntas_disc = [
 st.set_page_config(page_title="Formulário do Colaborador", layout="wide")
 st.title("📋 Formulário Completo do Colaborador")
 
+# Garante que a fonte existe
+fonte = st.session_state.get("dados_oficiais", {})
 
 st.subheader("👤 Dados de Identificação")
 col1, col2 = st.columns(2)
