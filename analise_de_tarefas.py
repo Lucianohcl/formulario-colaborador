@@ -2504,6 +2504,7 @@ with col2:
     unidade = st.text_input("Empresa / Unidade:", value=campos_data.get("unidade",""), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=campos_data.get("escolaridade",""), key=f"esc_{v}")
 
+cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=campos_data.get("cursos",""), key=f"cursos_{v}")
 objetivo = st.text_area("Objetivo Principal da Função:", value=campos_data.get("objetivo",""), key=f"obj_{v}")
 
 # =========================================================
