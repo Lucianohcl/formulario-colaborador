@@ -1211,7 +1211,7 @@ tabela_tarefas_editada = st.data_editor(
 )
 
 # =========================================================
-# 📊 QUESTIONÁRIO DISC (COM SUPORTE A ANTIGOS)
+# 📊 QUESTIONÁRIO DISC (VERSÃO COMPLETA E CORRIGIDA)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Perfil Comportamental (DISC)")
@@ -1224,7 +1224,18 @@ for i, pergunta in enumerate(perguntas_disc):
     # Lógica extra: tenta 'p0' (novo) ou 'q1' (antigo)
     letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
     
-    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_
+    # Linha corrigida (completa):
+    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_salva in ["A", "B", "C", "D"] else None
+    
+    escolha = st.radio(
+        f"**{i+1}.** {pergunta}",
+        options=["A", "B", "C", "D"],
+        index=idx_selecionado,
+        key=f"disc_q_{i}",
+        horizontal=True
+    )
+    respostas_disc_atual[f"p{i}"] = escolha
+
 # =========================================================
 # 🚀 BOTÃO FINAL DE SALVAMENTO
 # =========================================================
