@@ -1301,47 +1301,64 @@ for i, pergunta in enumerate(perguntas_disc):
     respostas_disc_atual[f"p{i}"] = escolha
 
 # =========================================================
-# 🚀 BOTÃO FINAL DE SALVAMENTO
+# 🚀 BOTÃO FINAL DE SALVAMENTO (CORRIGIDO PARA 5 TABELAS)
 # =========================================================
 st.markdown("---")
 if st.button("💾 FINALIZAR E SALVAR TUDO", use_container_width=True, type="primary"):
     if nome_f:
+        # Criamos o dicionário unificando todos os dados coletados
         dados_finais = {
             "colaborador": nome_f,
             "campos": {
-                "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
-                "setor": setor_f, "chefe": chefe_f, "unidade": unidade_f,
-                "devolucao": dev_f, "cursos": cursos_f, "objetivo": obj_f
+                "cargo": cargo_f, 
+                "departamento": depto_f, 
+                "escolaridade": esc_f,
+                "setor": setor_f, 
+                "chefe": chefe_f, 
+                "unidade": unidade_f,
+                "devolucao": dev_f, 
+                "cursos": cursos_f, 
+                "objetivo": obj_f
             },
-            "tabela_tarefas": tabela_tarefas_editada.to_dict('records'),
+            # 💡 Aqui está a correção: mapeamos cada tabela individualmente
+            "atividades_alta": e_alta.to_dict('records'),
+            "atividades_normal": e_normal.to_dict('records'),
+            "atividades_baixa": e_baixa.to_dict('records'),
+            "dificuldades": e_dif.to_dict('records'),
+            "sugestoes": e_sug.to_dict('records'),
+            
             "disc": respostas_disc_atual,
             "data_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         }
         
+        # Define o nome do arquivo (Ex: JOAO_SILVA.json)
         nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
         
         with st.spinner("Salvando no Cloud..."):
+            # Chama a sua função de integração com GitHub
             if salvar_no_github(dados_finais, nome_arquivo):
                 st.success(f"✅ Formulário de **{nome_f}** enviado com sucesso!")
                 
-                # RECOMENDAÇÃO: Atualiza a lista de rascunhos local para o novo arquivo aparecer
+                # Força a atualização da lista para que o novo arquivo apareça no "Carregar"
                 atualizar_rascunhos_do_github()
                 
                 st.balloons()
+            else:
+                st.error("❌ Erro ao salvar no GitHub. Verifique sua conexão ou Token.")
     else:
         st.error("❌ O nome do colaborador é obrigatório para salvar.")
 
+
 # =========================================================
-# 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS
+# 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS (SINCRONIZADO)
 # =========================================================
 st.markdown("---")
 st.subheader("✅ Status de Validação do Formulário")
 
-# Lista que armazena todas as inconsistências encontradas
 pendencias = []
 
-
-# --- 1. VALIDAÇÃO DE CABEÇALHO (CORRIGIDO) ---
+# --- 1. VALIDAÇÃO DE CABEÇALHO ---
+# Ajustado para usar as variáveis exatas que definimos no Step 1
 campos_id = {
     "Nome": nome_f,
     "Cargo": cargo_f,
@@ -1351,15 +1368,15 @@ campos_id = {
     "Chefe Imediato": chefe_f,
     "Empresa/Unidade": unidade_f,
     "Devolver em": dev_f,
-    "Cursos": cursos_f,    # Removido o _v2 que causava o erro
-    "Objetivo": obj_f      # Removido o _v2 que causava o erro
+    "Cursos": cursos_f, 
+    "Objetivo": obj_f
 }
 
 for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DE TABELAS (MÍNIMO 1 LINHA COMPLETA) ---
+# --- 2. VALIDAÇÃO DE TABELAS ---
 dict_tabelas = {
     "Alta Complexidade": e_alta,
     "Complexidade Normal": e_normal,
@@ -1368,118 +1385,63 @@ dict_tabelas = {
     "Sugestões e Melhorias": e_sug
 }
 
-for nome_tab, df in dict_tabelas.items():
-    # Identifica linhas onde a 1ª coluna não está vazia
-    linhas_ativas = df[df.iloc[:, 0].astype(str).str.strip() != ""]
+def extrair_num(v):
+    texto = str(v).replace("h", "").replace("min", "").strip()
+    try: return int(float(texto))
+    except: return 0
 
-    if len(linhas_ativas) == 0:
-        pendencias.append(f"Tabelas: A tabela **{nome_tab}** deve ter pelo menos 1 linha preenchida.")
-    else:
-        for i, row in linhas_ativas.iterrows():
-            # --- 1. CAPTURA DE DADOS BÁSICOS ---
-            coluna_principal = str(row.get(df.columns[0], "")).strip()
-            
-            # --- 2. VALIDAÇÃO PARA TABELAS DE ATIVIDADE (ALTA, NORMAL, BAIXA) ---
-            if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                h_raw = row.get("Horas", "0 h")
-                m_raw = row.get("Minutos", "0 min")
+for nome_tab, df in dict_tabelas.items():
+    # Verifica se a tabela existe e tem a coluna 'Tarefa'
+    if df is not None and "Tarefa" in df.columns:
+        linhas_ativas = df[df["Tarefa"].astype(str).str.strip() != ""]
+        
+        if len(linhas_ativas) == 0:
+            pendencias.append(f"Tabelas: A tabela **{nome_tab}** deve ter pelo menos 1 tarefa preenchida.")
+        else:
+            for i, row in linhas_ativas.iterrows():
+                h = extrair_num(row.get("Horas", "0 h"))
+                m = extrair_num(row.get("Minutos", "0 min"))
                 freq = str(row.get("Frequência", "")).strip()
 
-                def extrair_num(v):
-                    texto = str(v).replace("h", "").replace("min", "").strip()
-                    try: return int(float(texto))
-                    except: return 0
-
-                h = extrair_num(h_raw)
-                m = extrair_num(m_raw)
-
-                if coluna_principal != "":
-                    # TRAVA INDIVIDUAL: Obriga preencher os dois
+                # Validação de Tempo e Frequência para as 3 principais
+                if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
                     if h == 0 and m == 0:
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem tempo (Horas e Minutos).")
+                        pendencias.append(f"Tabela {nome_tab}: Linha {i+1} está sem tempo definido.")
                     if freq == "":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem Frequência.")
+                        pendencias.append(f"Tabela {nome_tab}: Linha {i+1} está sem frequência.")
                 
-                elif h > 0 or m > 0 or freq != "":
-                    pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} tem tempo/freq mas falta a Descrição.")
+                # Validação específica para Dificuldades
+                if nome_tab == "Dificuldades":
+                    setor_envolvido = str(row.get("Setor/Parceiro Envolvido", "")).strip()
+                    if setor_envolvido == "":
+                        pendencias.append(f"Tabela Dificuldades: Linha {i+1} precisa indicar o Setor.")
 
-            # --- 1. CAPTURA DE TEMPO (Obrigatório para todas as tabelas) ---
-            def extrair_num(v):
-                texto = str(v).replace("h", "").replace("min", "").strip()
-                try: return int(float(texto))
-                except: return 0
+                # Validação específica para Sugestões
+                if nome_tab == "Sugestões e Melhorias":
+                    impacto = str(row.get("Impacto", "")).strip()
+                    if impacto == "":
+                        pendencias.append(f"Tabela Sugestões: Linha {i+1} precisa indicar o Impacto.")
 
-            h = extrair_num(row.get("Horas", "0 h"))
-            m = extrair_num(row.get("Minutos", "0 min"))
+# --- 3. VALIDAÇÃO DO DISC (AQUI ESTAVA O ERRO) ---
+# Usando 'respostas_disc_atual' que é a variável que você criou no bloco do DISC
+respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
 
-            # --- 2. VALIDAÇÃO PARA DIFICULDADES E BLOQUEIOS ---
-            if nome_tab == "Dificuldades":
-                # Captura Robusta: Tenta o nome, se não vier, tenta a 2ª e 3ª colunas
-                setor = str(row.get("Setor/Parceiro Envolvido", row.iloc[1] if len(row) > 1 else "")).strip()
-                freq_dif = str(row.get("Frequência", row.iloc[2] if len(row) > 2 else "")).strip()
-                
-                if coluna_principal != "":
-                    if h == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem as Horas.")
-                    if m == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem os Minutos.")
-                    
-                    if setor == "" or "selecione" in setor.lower() or setor == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} precisa indicar o Setor.")
-                    
-                    if freq_dif == "" or "selecione" in freq_dif.lower() or freq_dif == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-
-            # --- 3. VALIDAÇÃO PARA SUGESTÕES E MELHORIAS ---
-            elif nome_tab == "Sugestões e Melhorias":
-                impacto = str(row.get("Impacto", row.iloc[1] if len(row) > 1 else "")).strip()
-                freq_sug = str(row.get("Frequência", row.iloc[2] if len(row) > 2 else "")).strip()
-                
-                if coluna_principal != "":
-                    if h == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem as Horas.")
-                    if m == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem os Minutos.")
-                    
-                    if impacto == "" or "selecione" in impacto.lower() or impacto == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o Impacto.")
-                    
-                    if freq_sug == "" or "selecione" in freq_sug.lower() or freq_sug == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-            # --- 4. VALIDAÇÃO PARA SUGESTÕES E MELHORIAS ---
-            elif nome_tab == "Sugestões e Melhorias":
-                # Tenta pegar pelo nome "Impacto", se falhar, pega a 2ª coluna (índice 1)
-                impacto_raw = row.get("Impacto", row.iloc[1] if len(row) > 1 else "")
-                # Tenta pegar a "Frequência", se falhar, pega a 3ª coluna (índice 2)
-                freq_raw = row.get("Frequência", row.iloc[2] if len(row) > 2 else "")
-                
-                impacto = str(impacto_raw).strip()
-                frequencia = str(freq_raw).strip()
-
-                if coluna_principal != "":
-                    if h == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem as Horas.")
-                    if m == 0: pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem os Minutos.")
-                    
-                    # Se o impacto for vazio OU o texto padrão de seleção
-                    if impacto == "" or "selecione" in impacto.lower() or impacto == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem o Impacto.")
-                    
-                    # Se a frequência for vazia OU o texto padrão de seleção
-                    if frequencia == "" or "selecione" in frequencia.lower() or frequencia == "None":
-                        pendencias.append(f"Tabelas: Na **{nome_tab}**, a linha {i+1} está sem a Frequência.")
-
-# --- 3. VALIDAÇÃO DO DISC ---
-faltam_disc = [i for i, resp in respostas_disc.items() if resp is None]
-if faltam_disc:
-    pendencias.append(f"DISC: Faltam responder **{len(faltam_disc)} questões**.")
+if len(respostas_vazias) > 0:
+    pendencias.append(f"DISC: Faltam responder **{len(respostas_vazias)} questões**.")
 
 # --- EXIBIÇÃO DO STATUS ---
 if pendencias:
     st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
     for p in pendencias:
         st.write(f"• {p}")
+    # Resetamos a confirmação para obrigar o usuário a clicar de novo após corrigir
     st.session_state["confirmacao_final"] = False
 else:
-    st.success("🎉 **Perfeito! Tudo preenchido corretamente. O botão de envio foi liberado.**")
+    st.success("🎉 **Perfeito! Tudo preenchido corretamente. O envio está liberado.**")
+
 
 # =========================================================
-# 4. BOTÃO DE ENVIO E SALVAMENTO REAL (JSON)
+# 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
 # =========================================================
 if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True):
     if pendencias:
@@ -1491,23 +1453,31 @@ if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_containe
         st.session_state["confirmacao_final"] = True
         st.stop()
 
-    # --- INÍCIO DO PROCESSO DE SALVAMENTO ---
     try:
         from datetime import datetime
         import json
+        import os
 
-        # Função auxiliar para salvar apenas linhas com conteúdo
+        # Função auxiliar: Usa 'Tarefa' que é o nome real da sua coluna agora
         def preparar_dados(df):
-            return df[df.iloc[:, 0].astype(str).str.strip() != ""].to_dict("records")
+            if df is None or df.empty: return []
+            # Filtra linhas onde a descrição da tarefa não está vazia
+            return df[df["Tarefa"].astype(str).str.strip() != ""].to_dict("records")
 
-        # Estrutura do Dicionário Final
+        # Estrutura Unificada (CORRIGIDA: usa cursos_f e obj_f que definimos antes)
         payload = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": {
-                "nome": nome_f, "cargo": cargo_f, "departamento": depto_f,
-                "escolaridade": esc_f, "setor": setor_f, "chefe": chefe_f,
-                "unidade": unidade_f, "devolucao": dev_f,
-                "cursos": cursos_f_v2, "objetivo": obj_f_v2
+                "nome": nome_f, 
+                "cargo": cargo_f, 
+                "departamento": depto_f,
+                "escolaridade": esc_f, 
+                "setor": setor_f, 
+                "chefe": chefe_f,
+                "unidade": unidade_f, 
+                "devolucao": dev_f,
+                "cursos": cursos_f, 
+                "objetivo": obj_f
             },
             "tabelas": {
                 "alta": preparar_dados(e_alta),
@@ -1516,54 +1486,33 @@ if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_containe
                 "dificuldades": preparar_dados(e_dif),
                 "sugestoes": preparar_dados(e_sug)
             },
-            "perfil_disc": respostas_disc
+            "perfil_disc": respostas_disc_atual
         }
 
-        # Salvamento em Arquivo Local
-        filename = f"RESPOSTA_{nome_f.replace(' ', '_').upper()}.json"
-        with open(filename, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=4)
-
-        # Finalização
-        st.session_state["confirmacao_final"] = False
-       
-        st.success(f"✅ Dados enviados com sucesso! Arquivo gerado: {filename}")
+        # Nome do arquivo padronizado
+        nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
         
-        # Botão de download como comprovante
-        st.download_button(
-            label="📥 Baixar Comprovante de Envio (JSON)",
-            data=json.dumps(payload, indent=4, ensure_ascii=False),
-            file_name=filename,
-            mime="application/json"
-        )
+        with st.spinner("Sincronizando com o Cloud..."):
+            # 1. Tenta salvar no GitHub
+            sucesso = salvar_no_github(payload, nome_arquivo)
+
+            if sucesso:
+                st.success(f"✅ Formulário de {nome_f} enviado e sincronizado!")
+                st.balloons()
+                st.session_state["confirmacao_final"] = False
+            else:
+                st.error("⚠️ Erro ao sincronizar com GitHub. O arquivo foi gerado apenas para baixar.")
+
+            # 2. Oferece o botão de download (Segurança total)
+            st.download_button(
+                label="📥 Baixar Comprovante (JSON)",
+                data=json.dumps(payload, indent=4, ensure_ascii=False),
+                file_name=nome_arquivo,
+                mime="application/json"
+            )
 
     except Exception as e:
-        st.error(f"❌ Erro ao processar envio: {e}")
-
-    dados_finais = {
-        "nome": nome_f, "cargo": cargo_f, "departamento": depto_f, "setor": setor_f, "chefe": chefe_f, "empresa": unidade_f, "escolaridade": esc_f, "cursos": cursos_f_v2, "objetivo": obj_f_v2, "devolucao": dev_f,
-        "atividades_alta": e_alta[e_alta["Atividade"] != ""].to_dict("records"),
-        "atividades_normal": e_normal[e_normal["Atividade"] != ""].to_dict("records"),
-        "atividades_baixa": e_baixa[e_baixa["Atividade"] != ""].to_dict("records"),
-        "dificuldades": e_dif[e_dif.iloc[:, 0] != ""].to_dict("records"),
-        "sugestoes": e_sug[e_sug.iloc[:, 0] != ""].to_dict("records"),
-        "disc": respostas_disc,
-        "data_snapshot": datetime.now().strftime("%d/%m/%Y %H:%M")
-    }
-
-    nome_arq = f"{nome_f.replace(' ', '_')}.json"
-    if not os.path.exists("dados"): os.makedirs("dados")
-    with open(f"dados/{nome_arq}", "w", encoding="utf-8") as f:
-        json.dump(dados_finais, f, ensure_ascii=False, indent=4)
-
-    sucesso = salvar_no_github(dados_finais, nome_arq)
-
-    if sucesso:
-        st.success("✅ Sincronizado com sucesso!")
-        st.session_state["confirmacao_final"] = False
-    else:
-        st.error("⚠️ Erro GitHub, salvo apenas localmente.")
-
+        st.error(f"❌ Erro crítico no salvamento: {e}")
                 
 
 
