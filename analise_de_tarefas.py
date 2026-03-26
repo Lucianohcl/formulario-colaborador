@@ -1067,17 +1067,12 @@ perguntas_disc = [
     "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
-
 # =========================================================
-# 2. INTERFACE
+# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO FINAL)
 # =========================================================
-st.set_page_config(page_title="Formulário do Colaborador", layout="wide")
-st.title("📋 Formulário Completo do Colaborador")
-
-# Garante que a fonte existe
-fonte = st.session_state.get("dados_oficiais", {})
-
 st.subheader("👤 Dados de Identificação")
+
+fonte = st.session_state.get("dados_oficiais", {})
 col1, col2 = st.columns(2)
 
 with col1:
@@ -1087,14 +1082,17 @@ with col1:
         key="f_nome"
     )
 
-    # --- 👀 Mostra quais rascunhos foram carregados ---
-    st.write("🗂️ Rascunhos carregados:", st.session_state.get("rascunhos"))
+    rascunhos_dict = st.session_state.get("rascunhos", {})
+    nomes_disponiveis = list(rascunhos_dict.keys())
+    st.write(f"🗂️ Rascunhos no Cloud: {', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}")
 
-    # --- Botão para carregar rascunho ---
-    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
+    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
         if nome_f:
-            rascunho = st.session_state.get("rascunhos", {}).get(nome_f, {})
+            atualizar_rascunhos_do_github() 
+            rascunho = st.session_state.get("rascunhos", {}).get(nome_f)
+            
             if rascunho:
+                st.session_state["f_nome_v2"] = nome_f
                 campos = rascunho.get("campos", {})
                 st.session_state["f_cargo_v2"] = campos.get("cargo", "")
                 st.session_state["f_depto_v2"] = campos.get("departamento", "")
@@ -1105,128 +1103,112 @@ with col1:
                 st.session_state["f_dev_v2"] = campos.get("devolucao", "")
                 st.session_state["f_cursos_v2"] = campos.get("cursos", "")
                 st.session_state["f_obj_v2"] = campos.get("objetivo", "")
+                st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
-                st.success("✅ Rascunho carregado com sucesso!")
+                st.success(f"✅ Dados de {nome_f} carregados!")
                 st.rerun()
             else:
-                st.warning("⚠️ Nenhum rascunho encontrado para este nome.")
+                st.warning(f"⚠️ Não encontrei rascunho para '{nome_f}'.")
         else:
-            st.error("❌ Digite um nome antes de carregar o rascunho.")
+            st.error("❌ Digite o nome antes de carregar.")
 
 with col2:
-    cargo_f = st.text_input(
-        "Cargo",
-        value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""),
-        key="f_cargo"
-    )
+    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
+    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
+    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
+    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
+    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
+    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
+    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
 
-    depto_f = st.text_input(
-        "Departamento",
-        value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""),
-        key="f_depto"
-    )
-
-    esc_f = st.text_input(
-        "Escolaridade",
-        value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""),
-        key="f_esc"
-    )
-
-    setor_f = st.text_input(
-        "Setor",
-        value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""),
-        key="f_setor"
-    )
-
-    chefe_f = st.text_input(
-        "Chefe imediato",
-        value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""),
-        key="f_chefe"
-    )
-
-    unidade_f = st.text_input(
-        "Empresa / Unidade",
-        value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""),
-        key="f_unidade"
-    )
-
-    dev_f = st.text_input(
-        "Devolver preenchido em",
-        value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""),
-        key="f_dev"
-    )
+cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
+obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 # =========================================================
-# No SCRIPT 1 - Adicionando a leitura da memória (Session State)
+# 📝 TABELA DE ANÁLISE DE TAREFAS
 # =========================================================
-cursos_f_v2 = st.text_area(
-    "Cursos Obrigatórios e Diferenciais", 
-    value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), 
-    key="f_cursos_v1"  # Usei v1 na key para evitar conflito de widget
-)
-
-obj_f_v2 = st.text_area(
-    "Objetivo Principal da Função", 
-    value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), 
-    key="f_obj_v1"
-)
-
-config_col = {
-    "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia), 
-    "Horas": st.column_config.SelectboxColumn(options=lista_horas), 
-    "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
-}
-
-# --- SEÇÃO DE INSTRUÇÕES ---
 st.markdown("---")
-col_inst1, col_inst2, col_inst3 = st.columns(3)
+st.subheader("📝 Análise de Tarefas")
 
+col_inst1, col_inst2 = st.columns(2)
 with col_inst1:
-    st.info("**📋 LEGENDA DE FREQUÊNCIA:**\n* **DVD**: Diário Várias Vezes\n* **D**: Diário | **S**: Semanal\n* **Q**: Quinzenal | **M**: Mensal\n* **T**: Trimestral | **A**: Anual")
+    st.info("**📋 LEGENDA:** D (Diário), S (Semanal), Q (Quinzenal), M (Mensal), E (Eventual)")
 with col_inst2:
-    st.warning("**⏱️ COMO REGISTRAR O TEMPO:**\n* **Horas e Minutos**: Selecione o valor.\n* **Menos de 1 hora?**: Selecione **0 h**.\n* **Não se aplica?**: Selecione **0 h** e **0 min**.")
-with col_inst3:
-    st.error("**⚠️ DETALHE:**\n* A numeração lateral é nativa.\n* Ignore-a e preencha normalmente.")
+    st.warning("**⏱️ TEMPO:** Se for menos de 1h, selecione '0' em horas.")
 
+lista_frequencia = ["Diária", "Semanal", "Quinzenal", "Mensal", "Eventual"]
+lista_horas = [str(i) for i in range(25)]
+lista_minutos = ["00", "15", "30", "45"]
 
+dados_tabela_existente = st.session_state.get("f_tabela_v2", [])
+if not dados_tabela_existente:
+    df_inicial = pd.DataFrame([{"Tarefa": "", "Frequência": "Diária", "Horas": "0", "Minutos": "00"} for _ in range(3)])
+else:
+    df_inicial = pd.DataFrame(dados_tabela_existente)
 
-st.markdown("---")
-st.subheader("🚀 Atividades de Alta Complexidade")
-e_alta = st.data_editor(preparar_df("atividades_alta", col_atv, fonte), key="ed_alta", num_rows="dynamic", column_config=config_col, use_container_width=True)
-st.subheader("📋 Atividades de Nível Normal")
-e_normal = st.data_editor(preparar_df("atividades_normal", col_atv, fonte), key="ed_norm", num_rows="dynamic", column_config=config_col, use_container_width=True)
-st.subheader("⏳ Atividades de Baixa Complexidade")
-e_baixa = st.data_editor(preparar_df("atividades_baixa", col_atv, fonte), key="ed_baix", num_rows="dynamic", column_config=config_col, use_container_width=True)
-st.subheader("⚠️ Dificuldades e Bloqueios")
-e_dif = st.data_editor(preparar_df("dificuldades", col_dif, fonte), key="ed_dif", num_rows="dynamic", column_config=config_col, use_container_width=True)
-st.subheader("💡 Sugestões de Melhoria")
-e_sug = st.data_editor(preparar_df("sugestoes", col_sug, fonte), key="ed_sug", num_rows="dynamic", column_config=config_col, use_container_width=True)
+tabela_tarefas_editada = st.data_editor(
+    df_inicial,
+    column_config={
+        "Tarefa": st.column_config.TextColumn("Descrição da Tarefa", width="large"),
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, required=True),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, required=True),
+    },
+    num_rows="dynamic",
+    key="editor_tarefas_v3",
+    use_container_width=True
+)
 
+# =========================================================
+# 📊 QUESTIONÁRIO DISC
+# =========================================================
 st.markdown("---")
 st.subheader("📊 Perfil Comportamental (DISC)")
-respostas_disc = {}
+st.write("Selecione a opção que melhor descreve você:")
 
-for i, pergunta in enumerate(perguntas_disc, 1):
-    # 1. Defina as opções puras (sem o "" no início)
-    opcoes = ["A", "B", "C", "D"]
+respostas_disc_atual = {}
+rascunho_disc = st.session_state.get("disc_v2", {})
+
+for i, pergunta in enumerate(perguntas_disc):
+    letra_salva = rascunho_disc.get(f"p{i}")
+    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_salva in ["A", "B", "C", "D"] else None
     
-    # 2. Tente buscar o valor que vem do rascunho ou do JSON
-    val_salvo = st.session_state.get("dados_oficiais", {}).get("disc", {}).get(f"q{i}") or fonte.get("disc", {}).get(f"q{i}")
-    
-    # 3. Defina o índice inicial:
-    # Se houver algo salvo, ele descobre a posição (0 a 3). 
-    # Se não houver nada (formulário novo), ele fica None (bolinhas vazias).
-    idx_init = opcoes.index(val_salvo) if val_salvo in opcoes else None
-    
-    respostas_disc[f"q{i}"] = st.radio(
-        f"{i}. {pergunta}", 
-        options=opcoes, 
-        key=f"r_{i}", 
-        horizontal=True, 
-        index=idx_init  # <--- O SEGREDO ESTÁ AQUI
+    escolha = st.radio(
+        f"**{i+1}.** {pergunta}",
+        options=["A", "B", "C", "D"],
+        index=idx_selecionado,
+        key=f"disc_q_{i}",
+        horizontal=True
     )
+    respostas_disc_atual[f"p{i}"] = escolha
 
+# =========================================================
+# 🚀 BOTÃO FINAL DE SALVAMENTO
+# =========================================================
+st.markdown("---")
+if st.button("💾 FINALIZAR E SALVAR TUDO", use_container_width=True, type="primary"):
+    if nome_f:
+        dados_finais = {
+            "colaborador": nome_f,
+            "campos": {
+                "cargo": cargo_f, "departamento": depto_f, "escolaridade": esc_f,
+                "setor": setor_f, "chefe": chefe_f, "unidade": unidade_f,
+                "devolucao": dev_f, "cursos": cursos_f, "objetivo": obj_f
+            },
+            "tabela_tarefas": tabela_tarefas_editada.to_dict('records'),
+            "disc": respostas_disc_atual,
+            "data_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        }
+        
+        nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
+        
+        with st.spinner("Salvando no Cloud..."):
+            if salvar_no_github(dados_finais, nome_arquivo):
+                st.success(f"✅ Formulário de **{nome_f}** enviado com sucesso!")
+                st.balloons()
+    else:
+        st.error("❌ O nome do colaborador é obrigatório para salvar.")
 # =========================================================
 # 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS
 # =========================================================
@@ -2113,6 +2095,46 @@ try:
 except Exception as e:
     st.error(f"❌ Erro nos Secrets: A chave {e} não foi encontrada no painel do Streamlit.")
     st.stop()
+
+# =========================================================
+# 2. COLOQUE A FUNÇÃO AQUI (DEFINIÇÃO)
+# =========================================================
+def atualizar_rascunhos_do_github():
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NOME)
+        # O GitHub pode dar erro se a pasta 'dados' estiver vazia ou não existir
+        try:
+            contents = repo.get_contents("dados")
+        except:
+            st.session_state["rascunhos"] = {}
+            return False
+
+        rascunhos_localizados = {}
+        for content_file in contents:
+            if content_file.name.endswith(".json"):
+                file_data = content_file.decoded_content.decode("utf-8")
+                dados_json = json.loads(file_data)
+                # Tenta pegar o nome de dentro do arquivo para usar como chave de busca
+                nome_chave = dados_json.get("colaborador") or dados_json.get("nome")
+                if nome_chave:
+                    rascunhos_localizados[nome_chave] = dados_json
+        
+        st.session_state["rascunhos"] = rascunhos_localizados
+        return True
+    except Exception as e:
+        st.session_state["rascunhos"] = {}
+        return False
+
+# =========================================================
+# 3. CHAME A EXECUÇÃO AQUI (INICIALIZAÇÃO)
+# =========================================================
+if "rascunhos" not in st.session_state:
+    atualizar_rascunhos_do_github()
+
+# 4. PARTE VISUAL (Daqui para baixo segue o seu st.title, etc)
+st.title("📋 Formulário Completo do Colaborador")
+
 
 # =========================================================
 # 2. FUNÇÃO PARA SALVAR DADOS NO GITHUB
