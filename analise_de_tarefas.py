@@ -1184,11 +1184,12 @@ with col1:
                 st.session_state["f_dif_v2"] = rascunho.get("dificuldades") or rascunho.get("tabelas", {}).get("dificuldades", [])
                 st.session_state["f_sug_v2"] = rascunho.get("sugestoes") or rascunho.get("tabelas", {}).get("sugestoes", [])
 
-                # 3. LIMPEZA TOTAL DE CACHE (Para os widgets atualizarem na tela)
+                # 3. LIMPEZA TOTAL E FORÇADA DE CACHE
+                # Mudamos o nome das chaves para garantir que o Streamlit ignore o que tinha antes
                 chaves_para_limpar = [
                     "f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", 
                     "f_cursos_area", "f_obj_area", "ed_alta_v3", "ed_norm_v3", "ed_baix_v3", 
-                    "ed_dif_v3", "ed_sug_v3"
+                    "ed_dif_v3", "ed_sug_v3", "ed_alta", "ed_norm", "ed_baix", "ed_dif", "ed_sug"
                 ]
                 for k in chaves_para_limpar:
                     if k in st.session_state:
