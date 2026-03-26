@@ -1112,15 +1112,19 @@ with col1:
     )
 
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
+        st.write(f"🔍 DEBUG: Tentando carregar '{nome_f}'...") 
+        
         if nome_f:
             atualizar_rascunhos_do_github() 
-            rascunho = st.session_state.get("rascunhos", {}).get(nome_f)
+            # Pega o dicionário de rascunhos e tenta achar o nome digitado
+            rascunhos_dict = st.session_state.get("rascunhos", {})
+            rascunho = rascunhos_dict.get(nome_f)
             
             if rascunho:
+                st.write("✅ DEBUG: Rascunho encontrado! Processando dados...")
                 st.session_state["f_nome_v2"] = nome_f
                 
-                # --- LÓGICA DE COMPATIBILIDADE (NOVO vs ANTIGO) ---
-                # Se for antigo, os dados estão dentro de 'campos'. Se for novo, estão na raiz.
+                # --- LÓGICA DE COMPATIBILIDADE ---
                 cp = rascunho.get("campos", {})
                 
                 st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
@@ -1134,11 +1138,18 @@ with col1:
                 st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
 
                 # --- LIMPEZA PARA FORÇAR ATUALIZAÇÃO VISUAL ---
-                # Isso deleta o "rastro" manual dos campos para que o 'value=' funcione
                 chaves_widgets = ["f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", "f_cursos_area", "f_obj_area"]
                 for k in chaves_widgets:
                     if k in st.session_state:
                         del st.session_state[k]
+
+                st.success(f"✅ Dados de {nome_f} carregados!")
+                st.rerun() # <--- ESSENCIAL: Faz a tela atualizar com os dados novos
+            else:
+                st.error(f"❌ DEBUG: O nome '{nome_f}' não foi encontrado na lista do Cloud.")
+                st.write(f"Nomes disponíveis: {list(rascunhos_dict.keys())}")
+        else:
+            st.warning("⚠️ Digite um nome antes de carregar.")
 
 
                 # --- CONVERSÃO DA TABELA DE TAREFAS ---
