@@ -1218,41 +1218,58 @@ cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_
 obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 # =========================================================
-# 📝 TABELA DE ANÁLISE DE TAREFAS (COM SUPORTE A ANTIGOS)
+# 📝 TABELAS DE ANÁLISE DE TAREFAS (DISTRIBUÍDAS)
 # =========================================================
 st.markdown("---")
 st.subheader("📝 Análise de Tarefas")
 
-col_inst1, col_inst2 = st.columns(2)
-with col_inst1:
-    st.info("**📋 LEGENDA:** D (Diário), S (Semanal), Q (Quinzenal), M (Mensal), E (Eventual)")
-with col_inst2:
-    st.warning("**⏱️ TEMPO:** Se for menos de 1h, selecione '0' em horas.")
+# Função auxiliar para não repetir código 5 vezes
+def gerar_editor_tarefas(titulo, chave_session, key_widget, colunas_extras={}):
+    st.write(f"### {titulo}")
+    
+    # Puxa os dados que o botão 'Carregar' colocou no session_state
+    dados = st.session_state.get(chave_session, [])
+    
+    # Se estiver vazio, cria o esqueleto padrão
+    if not dados:
+        df_init = pd.DataFrame([{"Tarefa": "", "Frequência": "Diária", "Horas": "0", "Minutos": "00"} for _ in range(3)])
+    else:
+        df_init = pd.DataFrame(dados)
 
-lista_frequencia = ["Diária", "Semanal", "Quinzenal", "Mensal", "Eventual"]
-lista_horas = [str(i) for i in range(25)]
-lista_minutos = ["00", "15", "30", "45"]
-
-# Pega o que foi carregado no st.session_state (convertido ou direto)
-dados_tabela_existente = st.session_state.get("f_tabela_v2", [])
-
-if not dados_tabela_existente:
-    df_inicial = pd.DataFrame([{"Tarefa": "", "Frequência": "Diária", "Horas": "0", "Minutos": "00"} for _ in range(3)])
-else:
-    df_inicial = pd.DataFrame(dados_tabela_existente)
-
-tabela_tarefas_editada = st.data_editor(
-    df_inicial,
-    column_config={
+    # Configuração básica de colunas
+    config = {
         "Tarefa": st.column_config.TextColumn("Descrição da Tarefa", width="large"),
-        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, required=True),
-        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, required=True),
-        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, required=True),
-    },
-    num_rows="dynamic",
-    key="editor_tarefas_v3",
-    use_container_width=True
-)
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=["Diária", "Semanal", "Quinzenal", "Mensal", "Eventual"], required=True),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=[str(i) for i in range(25)], required=True),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=["00", "15", "30", "45"], required=True),
+    }
+    
+    # Adiciona colunas específicas se houver (Setor ou Impacto)
+    config.update(colunas_extras)
+
+    return st.data_editor(
+        df_init,
+        column_config=config,
+        num_rows="dynamic",
+        key=key_widget,
+        use_container_width=True
+    )
+
+# --- Renderização das 5 Tabelas ---
+
+e_alta = gerar_editor_tarefas("🔴 Alta Complexidade", "f_alta_v2", "ed_alta_v3")
+
+e_normal = gerar_editor_tarefas("🟡 Complexidade Normal", "f_normal_v2", "ed_norm_v3")
+
+e_baixa = gerar_editor_tarefas("🟢 Baixa Complexidade", "f_baixa_v2", "ed_baix_v3")
+
+# Dificuldades tem a coluna de Setor
+e_dif = gerar_editor_tarefas("⚠️ Dificuldades e Bloqueios", "f_dif_v2", "ed_dif_v3", 
+                             colunas_extras={"Setor": st.column_config.TextColumn("Setor Envolvido")})
+
+# Sugestões tem a coluna de Impacto
+e_sug = gerar_editor_tarefas("💡 Sugestões e Melhorias", "f_sug_v2", "ed_sug_v3", 
+                             colunas_extras={"Impacto": st.column_config.TextColumn("Impacto Esperado")})
 
 # =========================================================
 # 📊 QUESTIONÁRIO DISC (VERSÃO COMPLETA E CORRIGIDA)
