@@ -1470,10 +1470,65 @@ for campo, valor in campos_id.items():
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
 # =========================================================
-# 2. VALIDAÇÃO DE TABELAS (SINCRONIZADO COM O LAYOUT)
+# 5. TABELAS DE TAREFAS (LAYOUT CORRIGIDO E KEY DINÂMICA)
 # =========================================================
+st.markdown("---")
 
-# Mapeamos o nome da tabela para a coluna principal que ela usa
+# Recupera a versão para forçar o Streamlit a redesenhar o layout
+v_layout = st.session_state.get("v_tab", 0)
+
+def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_extra=None):
+    st.subheader(titulo)
+    # Busca dados do rascunho
+    dados_salvos = rascunho.get("tabelas", {}).get(chave_json, [])
+    
+    # Define as colunas EXATAS que o seu validador espera
+    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
+    if col_extra: 
+        colunas.insert(1, col_extra)
+    
+    # Garante as 15 linhas para o visual ficar padronizado
+    df_base = garantir_15_linhas(pd.DataFrame(dados_salvos), colunas)
+    
+    # Configuração visual das colunas
+    config_tab = {
+        col_principal: st.column_config.TextColumn("Descrição", width="large"),
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
+        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
+        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
+    }
+    if col_extra: 
+        config_tab[col_extra] = st.column_config.TextColumn(label_extra, width="medium")
+
+    # A KEY com "_v{v}" força o layout a atualizar nomes de colunas antigos
+    return st.data_editor(
+        df_base, 
+        key=f"editor_{chave_json}_v{v_layout}", 
+        column_config=config_tab, 
+        use_container_width=True, 
+        num_rows="fixed"
+    )
+
+# Chamadas das Tabelas
+e_alta = gerar_tabela_final("🚀 Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_tabela_final("📋 Complexidade Normal", "normal", "Atividade")
+e_baixa = gerar_tabela_final("⏳ Baixa Complexidade", "baixa", "Atividade")
+e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
+e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+
+# =========================================================
+# 6. DICIONÁRIO E VALIDAÇÃO (SEM NAMEERROR)
+# =========================================================
+dict_tabelas = {
+    "Alta Complexidade": e_alta,
+    "Complexidade Normal": e_normal,
+    "Baixa Complexidade": e_baixa,
+    "Dificuldades": e_dif,
+    "Sugestões e Melhorias": e_sug
+}
+
+pendencias = []
+
 regras_colunas = {
     "Alta Complexidade": "Atividade",
     "Complexidade Normal": "Atividade",
@@ -1482,18 +1537,18 @@ regras_colunas = {
     "Sugestões e Melhorias": "Sugestão"
 }
 
-def extrair_num(v):
-    if not v: return 0
-    texto = str(v).replace("h", "").replace("min", "").strip()
+def extrair_num(valor_campo):
+    if not valor_campo: return 0
+    texto = str(valor_campo).replace("h", "").replace("min", "").strip()
     try: return int(float(texto))
     except: return 0
 
-for nome_tab, df in dict_tabelas.items():
-    col_principal = regras_colunas.get(nome_tab)
+for nome_tab, df_validar in dict_tabelas.items():
+    col_alvo = regras_colunas.get(nome_tab)
     
-    if df is not None and col_principal in df.columns:
-        # Filtra linhas onde a coluna principal (Atividade/Dificuldade/Sugestão) não está vazia
-        linhas_ativas = df[df[col_principal].astype(str).str.strip() != ""]
+    if df_validar is not None and col_alvo in df_validar.columns:
+        # Filtra linhas preenchidas
+        linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
             pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item preenchido.")
@@ -1503,25 +1558,24 @@ for nome_tab, df in dict_tabelas.items():
                 m = extrair_num(row.get("Minutos", "0 min"))
                 freq = str(row.get("Frequência", "")).strip()
 
-                # Validação de Tempo e Frequência (Alta, Normal, Baixa)
+                # Validação para tabelas de Atividade
                 if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
                     if h == 0 and m == 0:
                         pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem tempo (Horas/Minutos).")
                     if freq == "":
                         pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem frequência.")
                 
-                # Validação de Dificuldades
+                # Validação para Dificuldades
                 if nome_tab == "Dificuldades":
-                    setor = str(row.get("Setor/Parceiro Envolvido", "")).strip()
-                    if setor == "":
+                    setor_env = str(row.get("Setor/Parceiro Envolvido", "")).strip()
+                    if setor_env == "":
                         pendencias.append(f"❌ Dificuldades: Linha {i+1} precisa indicar o Setor/Parceiro.")
 
-                # Validação de Sugestões
+                # Validação para Sugestões
                 if nome_tab == "Sugestões e Melhorias":
-                    impacto = str(row.get("Impacto", "")).strip()
-                    if impacto == "":
+                    impacto_env = str(row.get("Impacto", "")).strip()
+                    if impacto_env == "":
                         pendencias.append(f"❌ Sugestões: Linha {i+1} precisa indicar o Impacto.")
-
 
 # --- 3. VALIDAÇÃO DO DISC (AQUI ESTAVA O ERRO) ---
 # Usando 'respostas_disc_atual' que é a variável que você criou no bloco do DISC
