@@ -1076,13 +1076,22 @@ fonte = st.session_state.get("dados_oficiais", {})
 
 st.subheader("👤 Dados de Identificação")
 col1, col2 = st.columns(2)
-with col1:
-    nome_f = st.text_input("Nome do colaborador", value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""), key="f_nome")
-    # Botão para carregar rascunho
-    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
-        if nome_f:  # verifica se o usuário digitou algo
-            rascunho = st.session_state.get("rascunhos", {}).get(nome_f, {})
 
+with col1:
+    nome_f = st.text_input(
+        "Nome do colaborador",
+        value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
+        key="f_nome"
+    )
+
+    # --- 👀 Mostra quais rascunhos foram carregados ---
+    st.write("🗂️ Rascunhos carregados:", st.session_state.get("rascunhos"))
+
+    
+    # --- Botão para carregar rascunho ---
+    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
+        if nome_f:
+            rascunho = st.session_state.get("rascunhos", {}).get(nome_f, {})
             if rascunho:
                 campos = rascunho.get("campos", {})
                 st.session_state["f_cargo_v2"] = campos.get("cargo", "")
@@ -1097,21 +1106,11 @@ with col1:
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
                 st.success("✅ Rascunho carregado com sucesso!")
-                st.rerun()  # força a atualização para os widgets refletirem os valores
+                st.rerun()
             else:
                 st.warning("⚠️ Nenhum rascunho encontrado para este nome.")
         else:
-            st.error("❌ Digite um nome antes de carregar o rascunho.")                
-
-    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
-    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
-    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
-with col2:
-    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("empresa", ""), key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
-
+            st.error("❌ Digite um nome antes de carregar o rascunho.")
 # No SCRIPT 1 - Adicionando a leitura da memória (Session State)
 cursos_f_v2 = st.text_area(
     "Cursos Obrigatórios e Diferenciais", 
