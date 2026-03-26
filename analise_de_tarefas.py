@@ -2051,6 +2051,29 @@ with st.form("meu_formulario"):
     
     submetido = st.form_submit_button("Enviar Dados")
 
+from github import Github
+import json
+import streamlit as st
+
+def salvar_no_github(conteudo_dict, nome_arquivo):
+    try:
+        g = Github(st.secrets["DB_TOKEN"])
+        repo = g.get_repo("lucianohcl/formulario-colaborador")
+        caminho_git = f"dados/{nome_arquivo}"
+        
+        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
+        
+        try:
+            contents = repo.get_contents(caminho_git)
+            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
+        except:
+            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
+        
+        return True
+    except Exception as e:
+        st.error(f"❌ Erro ao conectar com o GitHub: {e}")
+        return False
+
 if submetido:
     if nome_colaborador and tarefa_descricao:
         dados_finais = {
@@ -2061,16 +2084,13 @@ if submetido:
         
         nome_arq = f"tarefa_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
         
-        with st.spinner("Salvando no banco de dados..."):
-            sucesso = salvar_no_github(dados_finais, nome_arq)
-            
-            if sucesso:
-                st.success("✅ Dados enviados com sucesso para o GitHub!")
-                
-            else:
-                st.error("Erro ao salvar os dados.")
-    else:
-        st.warning("⚠️ Por favor, preencha todos os campos antes de enviar.")
+        # ✅ Aqui chamamos a função
+        sucesso = salvar_no_github(dados_finais, nome_arq)
+        
+        if sucesso:
+            st.success("✅ Dados enviados com sucesso para o GitHub!")
+        else:
+            st.error("❌ Erro ao salvar os dados no GitHub.")
 
 
 
