@@ -1378,33 +1378,45 @@ for campo, valor in campos_id.items():
 # =========================================================
 st.markdown("---")
 
-# Recupera a versão para forçar o Streamlit a redesenhar o layout
+# 1. GARANTE QUE AS LISTAS DE OPÇÕES EXISTAM PARA OS SELECTBOXES
+lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
+lista_horas = [f"{i} h" for i in range(25)]
+lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+
+# 2. GARANTE O RASCUNHO E A VERSÃO DO LAYOUT ANTES DE CHAMAR A FUNÇÃO
+if "rascunho_atual" not in st.session_state:
+    st.session_state["rascunho_atual"] = {}
+
+rascunho = st.session_state["rascunho_atual"]
 v_layout = st.session_state.get("v_tab", 0)
 
+# 3. DEFINIÇÃO DA FUNÇÃO DE RENDERIZAÇÃO
 def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_extra=None):
     st.subheader(titulo)
-    # Busca dados do rascunho
-    dados_salvos = rascunho.get("tabelas", {}).get(chave_json, [])
     
-    # Define as colunas EXATAS que o seu validador espera
+    # Busca dados dentro da estrutura 'tabelas' do rascunho
+    dict_tabelas = rascunho.get("tabelas", {}) if isinstance(rascunho, dict) else {}
+    dados_salvos = dict_tabelas.get(chave_json, [])
+    
+    # Define as colunas padrão
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
     if col_extra: 
         colunas.insert(1, col_extra)
     
-    # Garante as 15 linhas para o visual ficar padronizado
+    # Garante as 15 linhas (Usa a função auxiliar da Seção 2)
     df_base = garantir_15_linhas(pd.DataFrame(dados_salvos), colunas)
     
-    # Configuração visual das colunas
+    # Configuração visual das colunas (Selectboxes)
     config_tab = {
         col_principal: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
+        "Frequência": st.column_config.SelectboxColumn("Frequência", options=lista_frequencia, width="small"),
+        "Horas": st.column_config.SelectboxColumn("Horas", options=lista_horas, width="small"),
+        "Minutos": st.column_config.SelectboxColumn("Minutos", options=lista_minutos, width="small"),
     }
     if col_extra: 
         config_tab[col_extra] = st.column_config.TextColumn(label_extra, width="medium")
 
-    # A KEY com "_v{v}" força o layout a atualizar nomes de colunas antigos
+    # O uso de v_layout na Key força o redesenho se o rascunho mudar
     return st.data_editor(
         df_base, 
         key=f"editor_{chave_json}_v{v_layout}", 
@@ -1413,18 +1425,26 @@ def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_
         num_rows="fixed"
     )
 
-# Chamadas das Tabelas
-# --- COLE AQUI (ANTES DAS CHAMADAS) ---
-if "rascunho_atual" not in st.session_state:
-    st.session_state["rascunho_atual"] = {}
-
-rascunho = st.session_state["rascunho_atual"]
-
+# 4. CHAMADAS DAS 5 TABELAS
 e_alta = gerar_tabela_final("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = gerar_tabela_final("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = gerar_tabela_final("⏳ Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+
+e_dif = gerar_tabela_final(
+    "⚠️ Dificuldades e Bloqueios", 
+    "dificuldades", 
+    "Dificuldade", 
+    col_extra="Setor/Parceiro Envolvido", 
+    label_extra="Setor Envolvido"
+)
+
+e_sug = gerar_tabela_final(
+    "💡 Sugestões de Melhoria", 
+    "sugestoes", 
+    "Sugestão", 
+    col_extra="Impacto", 
+    label_extra="Impacto Esperado"
+)
 
 # =========================================================
 # 6. DICIONÁRIO E VALIDAÇÃO (SEM NAMEERROR)
