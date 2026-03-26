@@ -1273,7 +1273,7 @@ with col2:
     dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
 
 cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
-obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
+obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 
 # =========================================================
@@ -2533,7 +2533,7 @@ with col2:
     escolaridade = st.text_input("Escolaridade:", key=f"esc_{v}")
 
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo Principal da Função:", key=f"obj_{v}")
+objetivo = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo:", key=f"obj_{v}")
 
 # =========================================================
 # 5. TABELAS DE TAREFAS
@@ -2597,7 +2597,11 @@ perguntas_disc = [
     "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras",
     "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais",
     "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos",
-    "Como se comunica: Direto, Amigável, Calmo, Técnico"
+    "Como se comunica: Direto, Amigável, Calmo, Técnico",
+    "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos",
+    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos",
+    "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
+
 ]
 
 respostas_disc = {}
