@@ -2068,15 +2068,6 @@ def salvar_no_github(conteudo_dict, nome_arquivo):
 # 3. INTERFACE E LÓGICA DO FORMULÁRIO
 # =========================================================
 
-st.title("📋 Formulário de Análise de Tarefas")
-st.write("Preencha as informações abaixo para processamento.")
-
-with st.form("meu_formulario"):
-    nome_colaborador = st.text_input("Nome do Colaborador:")
-    tarefa_descricao = st.text_area("Descrição da Tarefa:")
-    data_envio = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    submetido = st.form_submit_button("Enviar Dados")
 
 from github import Github
 import json
