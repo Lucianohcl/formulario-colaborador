@@ -1081,26 +1081,33 @@ with col1:
     # Botão para carregar rascunho
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
         if nome_f:  # verifica se o usuário digitou algo
-            rascunho = st.session_state.get("rascunhos", {}).get(nome_f, {})
-        
-            if rascunho:
-                st.session_state["f_cargo_v2"] = rascunho.get("cargo", "")
-                st.session_state["f_depto_v2"] = rascunho.get("departamento", "")
-                st.session_state["f_esc_v2"] = rascunho.get("escolaridade", "")
-                st.session_state["f_setor_v2"] = rascunho.get("setor", "")
-                st.session_state["f_chefe_v2"] = rascunho.get("chefe", "")
-                st.session_state["f_unidade_v2"] = rascunho.get("unidade", "")
-                st.session_state["f_dev_v2"] = rascunho.get("devolucao", "")
-                st.session_state["f_cursos_v2"] = rascunho.get("cursos", "")
-                st.session_state["f_obj_v2"] = rascunho.get("objetivo", "")
+            import os
+            import json
+
+            # caminho do arquivo de rascunho
+            arquivo_rascunho = os.path.join("rascunhos", f"{nome_f}.json")
+
+            if os.path.exists(arquivo_rascunho):
+                with open(arquivo_rascunho, "r", encoding="utf-8") as f:
+                    rascunho = json.load(f)
+
+                st.session_state["f_cargo_v2"] = rascunho.get("campos", {}).get("cargo", "")
+                st.session_state["f_depto_v2"] = rascunho.get("campos", {}).get("departamento", "")
+                st.session_state["f_esc_v2"] = rascunho.get("campos", {}).get("escolaridade", "")
+                st.session_state["f_setor_v2"] = rascunho.get("campos", {}).get("setor", "")
+                st.session_state["f_chefe_v2"] = rascunho.get("campos", {}).get("chefe", "")
+                st.session_state["f_unidade_v2"] = rascunho.get("campos", {}).get("unidade", "")
+                st.session_state["f_dev_v2"] = rascunho.get("campos", {}).get("devolucao", "")
+                st.session_state["f_cursos_v2"] = rascunho.get("campos", {}).get("cursos", "")
+                st.session_state["f_obj_v2"] = rascunho.get("campos", {}).get("objetivo", "")
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
                 st.success("✅ Rascunho carregado com sucesso!")
-                st.rerun()  # <--- força a atualização para os widgets refletirem os valores
+                st.rerun()  # atualiza os widgets
             else:
                 st.warning("⚠️ Nenhum rascunho encontrado para este nome.")
         else:
-            st.error("❌ Digite um nome antes de carregar o rascunho.")    
+            st.error("❌ Digite um nome antes de carregar o rascunho.")        
 
     cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
     depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
