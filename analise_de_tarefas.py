@@ -2455,55 +2455,68 @@ def garantir_15_linhas(df, colunas):
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE LOGIN COM PERSISTÊNCIA "ESTILO COPIAR"
+# 3. FLUXO DE IDENTIFICAÇÃO COM TRAVA DE SEGURANÇA
 # =========================================================
-st.title("📋 Formulário de Colaborador")
+st.title("📋 Análise de Tarefas e Perfil")
 
-nome_digitado = st.text_input("Digite seu NOME COMPLETO:").strip()
+# 1. A Caixinha de Nome
+nome_digitado = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
 
-if nome_digitado:
-    # 1. Se mudou o usuário, resetamos tudo para garantir a nova busca
-    if st.session_state.get("usuario_logado") != nome_digitado:
-        st.session_state["usuario_logado"] = nome_digitado
-        st.session_state["rascunho_carregado"] = False
-        st.session_state["v_tab"] += 1  # Muda a versão das chaves
+if not nome_digitado:
+    st.info("👋 Digite seu nome acima para começar.")
+    st.stop()
+
+# Inicialização de estados
+if "confirmado" not in st.session_state: st.session_state["confirmado"] = False
+if "usuario_logado" not in st.session_state: st.session_state["usuario_logado"] = ""
+if "v_tab" not in st.session_state: st.session_state["v_tab"] = 1
+
+# Se trocar o nome, reseta a confirmação
+if st.session_state["usuario_logado"] != nome_digitado:
+    st.session_state["usuario_logado"] = nome_digitado
+    st.session_state["confirmado"] = False
+    st.rerun()
+
+# 2. A "CAIXINHA" DE CADASTRO/RECUPERAÇÃO
+st.warning(f"Usuário identificado: **{nome_digitado}**")
+confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS E ABRIR O FORMULÁRIO")
+
+if not confirmar:
+    st.info("Aguardando confirmação para liberar o acesso...")
+    st.stop() # O código para aqui até ele marcar a caixa
+
+# 3. BUSCA DE DADOS (Só roda se ele marcou a caixa)
+if not st.session_state.get("rascunho_carregado"):
+    nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
+    
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NOME)
+        conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
+        dados = json.loads(conteudo.decoded_content.decode())
+        
+        # Injeção estilo "Copiar"
+        v = st.session_state["v_tab"]
+        cp = dados.get("campos", {})
+        st.session_state[f"cargo_{v}"] = cp.get("cargo", "")
+        st.session_state[f"dep_{v}"] = cp.get("departamento", "")
+        st.session_state[f"set_{v}"] = cp.get("setor", "")
+        st.session_state[f"chef_{v}"] = cp.get("chefe", "")
+        st.session_state[f"uni_{v}"] = cp.get("unidade", "")
+        st.session_state[f"esc_{v}"] = cp.get("escolaridade", "")
+        st.session_state[f"cursos_{v}"] = cp.get("cursos", "")
+        st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
+        
+        st.session_state["rascunho_atual"] = dados
+        st.session_state["rascunho_carregado"] = True
+        st.toast("✅ Dados recuperados!")
         st.rerun()
 
-    # 2. BUSCA E INJEÇÃO DE DADOS (Persistência Garantida)
-    if not st.session_state.get("rascunho_carregado"):
-        nome_arquivo = f"{nome_digitado.replace(' ','_').upper()}.json"
-        
-        try:
-            g = Github(DB_TOKEN)
-            repo = g.get_repo(REPO_NOME)
-            conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
-            dados_baixados = json.loads(conteudo.decoded_content.decode())
-            
-            # --- INJEÇÃO MANUAL NO SESSION STATE ---
-            v_at = st.session_state["v_tab"]
-            cp = dados_baixados.get("campos", {})
-            
-            # Carregando cada campo nas chaves dinâmicas
-            st.session_state[f"cargo_{v_at}"] = cp.get("cargo", "")
-            st.session_state[f"dep_{v_at}"] = cp.get("departamento", "")
-            st.session_state[f"set_{v_at}"] = cp.get("setor", "")
-            st.session_state[f"chef_{v_at}"] = cp.get("chefe", "")
-            st.session_state[f"uni_{v_at}"] = cp.get("unidade", "")
-            st.session_state[f"esc_{v_at}"] = cp.get("escolaridade", "")
-            st.session_state[f"cursos_{v_at}"] = cp.get("cursos", "")
-            st.session_state[f"obj_{v_at}"] = cp.get("objetivo", "")
-
-            # Guardamos o rascunho completo (importante para as tabelas e DISC)
-            st.session_state["rascunho_atual"] = dados_baixados
-            st.session_state["rascunho_carregado"] = True
-            
-            st.toast("✅ Rascunho carregado com sucesso!")
-            st.rerun() # Essencial para o Streamlit renderizar os campos com os valores injetados
-
-        except Exception:
-            # Se não existir rascunho no GitHub, libera o formulário limpo para uso
-            st.session_state["rascunho_carregado"] = True
-            st.session_state["rascunho_atual"] = {}
+    except:
+        # Se não houver arquivo, libera o formulário limpo
+        st.session_state["rascunho_carregado"] = True
+        st.session_state["rascunho_atual"] = {}
+        st.info("Nenhum rascunho encontrado. Iniciando novo cadastro.")
 
 # =========================================================
 # 4. CAMPOS BÁSICOS
