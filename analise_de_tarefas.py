@@ -2400,7 +2400,7 @@ if primeira_vez:
         "objetivo": st.text_area("Objetivo Principal da Função:")
     }
 
-    # =========================================================
+        # =========================================================
     # 6. CONFIGURAÇÃO DE TABELAS
     # =========================================================
     lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
@@ -2413,35 +2413,86 @@ if primeira_vez:
         "Minutos": st.column_config.SelectboxColumn(options=lista_minutos)
     }
 
-    # --- Tabelas com 15 linhas
+    # 🔥 FUNÇÃO PRA GARANTIR 15 LINHAS
+    def garantir_15_linhas(df, colunas):
+        if df is None or df.empty:
+            df = pd.DataFrame(columns=colunas)
+
+        while len(df) < 15:
+            df.loc[len(df)] = [""] * len(colunas)
+
+        return df.head(15)
+
+    # 🔁 CARREGA DADOS EXISTENTES (SE HOUVER)
+    dados = st.session_state.get("dados_oficiais", {})
+
+    # =========================================================
+    # TABELAS
+    # =========================================================
+
     st.subheader("🚀 Atividades de Alta Complexidade")
+    e_alta_df = garantir_15_linhas(
+        pd.DataFrame(dados.get("atividades_alta", [])),
+        ["Atividade","Horas","Minutos","Frequência"]
+    )
     e_alta = st.data_editor(
-        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-        key="alta", num_rows=15, column_config=config_col, use_container_width=True
+        e_alta_df,
+        key="alta",
+        num_rows="fixed",
+        column_config=config_col,
+        use_container_width=True
     )
 
     st.subheader("📋 Atividades de Nível Normal")
+    e_normal_df = garantir_15_linhas(
+        pd.DataFrame(dados.get("atividades_normal", [])),
+        ["Atividade","Horas","Minutos","Frequência"]
+    )
     e_normal = st.data_editor(
-        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-        key="normal", num_rows=15, column_config=config_col, use_container_width=True
+        e_normal_df,
+        key="normal",
+        num_rows="fixed",
+        column_config=config_col,
+        use_container_width=True
     )
 
     st.subheader("⏳ Atividades de Baixa Complexidade")
+    e_baixa_df = garantir_15_linhas(
+        pd.DataFrame(dados.get("atividades_baixa", [])),
+        ["Atividade","Horas","Minutos","Frequência"]
+    )
     e_baixa = st.data_editor(
-        pd.DataFrame(columns=["Atividade","Horas","Minutos","Frequência"]),
-        key="baixa", num_rows=15, column_config=config_col, use_container_width=True
+        e_baixa_df,
+        key="baixa",
+        num_rows="fixed",
+        column_config=config_col,
+        use_container_width=True
     )
 
     st.subheader("⚠️ Dificuldades e Bloqueios")
+    e_dif_df = garantir_15_linhas(
+        pd.DataFrame(dados.get("dificuldades", [])),
+        ["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]
+    )
     e_dif = st.data_editor(
-        pd.DataFrame(columns=["Dificuldade","Setor/Parceiro Envolvido","Horas","Minutos","Frequência"]),
-        key="dif", num_rows=15, column_config=config_col, use_container_width=True
+        e_dif_df,
+        key="dif",
+        num_rows="fixed",
+        column_config=config_col,
+        use_container_width=True
     )
 
     st.subheader("💡 Sugestões de Melhoria")
+    e_sug_df = garantir_15_linhas(
+        pd.DataFrame(dados.get("sugestoes", [])),
+        ["Sugestão","Impacto","Horas","Minutos","Frequência"]
+    )
     e_sug = st.data_editor(
-        pd.DataFrame(columns=["Sugestão","Impacto","Horas","Minutos","Frequência"]),
-        key="sug", num_rows=15, column_config=config_col, use_container_width=True
+        e_sug_df,
+        key="sug",
+        num_rows="fixed",
+        column_config=config_col,
+        use_container_width=True
     )
 
     # =========================================================
@@ -2511,16 +2562,16 @@ if primeira_vez:
         try:
             # Monta o payload completo com tudo que Script 1 espera
             st.session_state["dados_oficiais"] = {
-                "nome": campos_id["nome"],
-                "cargo": campos_id["cargo"],
-                "departamento": campos_id["departamento"],
-                "escolaridade": campos_id["escolaridade"],
-                "setor": campos_id["setor"],
-                "chefe": campos_id["chefe"],
-                "empresa": campos_id["unidade"],
-                "devolucao": campos_id["devolucao"],
-                "cursos": campos_id["cursos"],
-                "objetivo": campos_id["objetivo"],
+                "nome": campos_id.get("nome", ""),
+                "cargo": campos_id.get("cargo", ""),
+                "departamento": campos_id.get("departamento", ""),
+                "escolaridade": campos_id.get("escolaridade", ""),
+                "setor": campos_id.get("setor", ""),
+                "chefe": campos_id.get("chefe", ""),
+                "empresa": campos_id.get("unidade", ""),
+                "devolucao": campos_id.get("devolucao", ""),
+                "cursos": campos_id.get("cursos", ""),
+                "objetivo": campos_id.get("objetivo", ""),
                 "atividades_alta": e_alta[e_alta["Atividade"] != ""].to_dict("records"),
                 "atividades_normal": e_normal[e_normal["Atividade"] != ""].to_dict("records"),
                 "atividades_baixa": e_baixa[e_baixa["Atividade"] != ""].to_dict("records"),
@@ -2529,7 +2580,11 @@ if primeira_vez:
                 "disc": respostas_disc
             }
 
-            st.success("🎉 Dados enviados! Abra Script 1 na mesma instância para ver preenchido automaticamente.")
+            # 🔥 FORÇA REDIRECIONAMENTO PRA MESMA INSTÂNCIA
+            st.query_params["page"] = "formulario"
+
+            # 🔥 GARANTE RELOAD IMEDIATO
+            st.rerun()
 
         except Exception as e:
             st.error(f"❌ Falha ao enviar: {e}")    
