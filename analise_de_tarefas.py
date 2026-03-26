@@ -115,18 +115,12 @@ import io
 # 📥 1. FUNÇÃO PARA BUSCAR (CARREGAR) RASCUNHOS
 # =========================================================
 def atualizar_rascunhos_do_github():
-    """
-    Busca os arquivos JSON na pasta 'rascunhos' do repositório lucianohcl
-    """
     import requests
     import json
 
-    # Configurações fixas baseadas no seu repositório
     GITHUB_USER = "lucianohcl"
     GITHUB_REPO = "formulario-colaborador"
     FOLDER_PATH = "rascunhos" 
-    
-    # Usa a sua chave exata: DB_TOKEN
     GITHUB_TOKEN = st.secrets["DB_TOKEN"]
 
     url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}"
@@ -140,75 +134,26 @@ def atualizar_rascunhos_do_github():
             
             for arquivo in arquivos:
                 if arquivo["name"].endswith(".json"):
-                    # Pega o conteúdo de cada arquivo individualmente
                     conteudo_res = requests.get(arquivo["download_url"], headers=headers)
                     dados = conteudo_res.json()
                     
-                    # Usa o nome do colaborador como chave para o dicionário
+                    # --- MUDANÇA AQUI: LÓGICA DE COMPATIBILIDADE ---
+                    # Tenta pegar 'colaborador' (novo). Se não achar, tenta 'campos' -> 'nome' (antigo)
                     nome_colaborador = dados.get("colaborador")
+                    if not nome_colaborador:
+                        nome_colaborador = dados.get("campos", {}).get("nome")
+                    
                     if nome_colaborador:
                         rascunhos_temp[nome_colaborador] = dados
             
             st.session_state["rascunhos"] = rascunhos_temp
         else:
-            # Se a pasta estiver vazia ou não existir ainda, apenas inicia vazio
             st.session_state["rascunhos"] = {}
     except Exception as e:
         st.error(f"Falha na conexão com Cloud: {e}")
         st.session_state["rascunhos"] = {}
 
-# =========================================================
-# 📤 2. FUNÇÃO PARA SALVAR (PUSH) RASCUNHOS
-# =========================================================
-def salvar_no_github(conteudo_dict, nome_arquivo):
-    """
-    Faz o Push (Add, Commit e Push) automático para a pasta 'rascunhos'
-    """
-    import requests
-    import base64
-    import json
-
-    GITHUB_USER = "lucianohcl"
-    GITHUB_REPO = "formulario-colaborador"
-    FOLDER_PATH = "rascunhos"
-    GITHUB_TOKEN = st.secrets["DB_TOKEN"]
-
-    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}/{nome_arquivo}"
-    
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-
-    # 1. Tenta verificar se o arquivo já existe (para pegar o SHA e fazer update)
-    res_get = requests.get(url, headers=headers)
-    sha = None
-    if res_get.status_code == 200:
-        sha = res_get.json().get("sha")
-
-    # 2. Prepara o conteúdo (deve ser Base64 para a API do GitHub)
-    json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
-    conteudo_b64 = base64.b64encode(json_string.encode("utf-8")).decode("utf-8")
-
-    # 3. Monta o corpo da mensagem (Commit)
-    payload = {
-        "message": f"Atualização de rascunho: {nome_arquivo}",
-        "content": conteudo_b64,
-        "branch": "main" # Sua branch principal
-    }
-    
-    if sha:
-        payload["sha"] = sha # Necessário para sobrescrever arquivo existente
-
-    # 4. Faz o envio (PUT)
-    res_put = requests.put(url, json=payload, headers=headers)
-
-    if res_put.status_code in [200, 201]:
-        return True
-    else:
-        st.error(f"❌ Erro ao salvar no GitHub: {res_put.json().get('message')}")
-        return False
-
+# A segunda função (salvar_no_github) pode continuar EXATAMENTE como você enviou.
 
 def gerar_word(form):
     doc = Document()
@@ -1147,7 +1092,7 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 # =========================================================
-# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO FINAL)
+# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO COM SUPORTE A ANTIGOS)
 # =========================================================
 st.subheader("👤 Dados de Identificação")
 
@@ -1155,15 +1100,16 @@ fonte = st.session_state.get("dados_oficiais", {})
 col1, col2 = st.columns(2)
 
 with col1:
+    # Mostra os nomes encontrados no GitHub
+    rascunhos_dict = st.session_state.get("rascunhos", {})
+    nomes_disponiveis = list(rascunhos_dict.keys())
+    st.write(f"🗂️ Rascunhos no Cloud: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
+
     nome_f = st.text_input(
         "Nome do colaborador",
         value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
         key="f_nome"
     )
-
-    rascunhos_dict = st.session_state.get("rascunhos", {})
-    nomes_disponiveis = list(rascunhos_dict.keys())
-    st.write(f"🗂️ Rascunhos no Cloud: {', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}")
 
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
         if nome_f:
@@ -1172,17 +1118,41 @@ with col1:
             
             if rascunho:
                 st.session_state["f_nome_v2"] = nome_f
-                campos = rascunho.get("campos", {})
-                st.session_state["f_cargo_v2"] = campos.get("cargo", "")
-                st.session_state["f_depto_v2"] = campos.get("departamento", "")
-                st.session_state["f_esc_v2"] = campos.get("escolaridade", "")
-                st.session_state["f_setor_v2"] = campos.get("setor", "")
-                st.session_state["f_chefe_v2"] = campos.get("chefe", "")
-                st.session_state["f_unidade_v2"] = campos.get("unidade", "")
-                st.session_state["f_dev_v2"] = campos.get("devolucao", "")
-                st.session_state["f_cursos_v2"] = campos.get("cursos", "")
-                st.session_state["f_obj_v2"] = campos.get("objetivo", "")
-                st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
+                
+                # --- LÓGICA DE COMPATIBILIDADE (NOVO vs ANTIGO) ---
+                # Se for antigo, os dados estão dentro de 'campos'. Se for novo, estão na raiz.
+                cp = rascunho.get("campos", {})
+                
+                st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
+                st.session_state["f_depto_v2"] = rascunho.get("departamento") or cp.get("departamento", "")
+                st.session_state["f_esc_v2"] = rascunho.get("escolaridade") or cp.get("escolaridade", "")
+                st.session_state["f_setor_v2"] = rascunho.get("setor") or cp.get("setor", "")
+                st.session_state["f_chefe_v2"] = rascunho.get("chefe") or cp.get("chefe", "")
+                st.session_state["f_unidade_v2"] = rascunho.get("unidade") or cp.get("unidade", "")
+                st.session_state["f_dev_v2"] = rascunho.get("devolucao") or cp.get("devolucao", "")
+                st.session_state["f_cursos_v2"] = rascunho.get("cursos") or cp.get("cursos", "")
+                st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
+
+                # --- CONVERSÃO DA TABELA DE TAREFAS ---
+                if "tabela_tarefas" in rascunho:
+                    # Modelo Novo
+                    st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
+                elif "tabelas" in rascunho:
+                    # Modelo Antigo (Carlos Daniel)
+                    antigas = rascunho.get("tabelas", {})
+                    unificadas = []
+                    # Transforma as listas alta/normal/baixa na tabela nova
+                    for nivel in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+                        for item in antigas.get(nivel, []):
+                            unificadas.append({
+                                "Tarefa": f"[{nivel.upper()}] {item}", 
+                                "Frequência": "Diária", 
+                                "Horas": "0", 
+                                "Minutos": "00"
+                            })
+                    st.session_state["f_tabela_v2"] = unificadas
+
+                # --- DISC ---
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
                 st.success(f"✅ Dados de {nome_f} carregados!")
@@ -1203,9 +1173,8 @@ with col2:
 
 cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
 obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
-
 # =========================================================
-# 📝 TABELA DE ANÁLISE DE TAREFAS
+# 📝 TABELA DE ANÁLISE DE TAREFAS (COM SUPORTE A ANTIGOS)
 # =========================================================
 st.markdown("---")
 st.subheader("📝 Análise de Tarefas")
@@ -1220,7 +1189,9 @@ lista_frequencia = ["Diária", "Semanal", "Quinzenal", "Mensal", "Eventual"]
 lista_horas = [str(i) for i in range(25)]
 lista_minutos = ["00", "15", "30", "45"]
 
+# Pega o que foi carregado no st.session_state (convertido ou direto)
 dados_tabela_existente = st.session_state.get("f_tabela_v2", [])
+
 if not dados_tabela_existente:
     df_inicial = pd.DataFrame([{"Tarefa": "", "Frequência": "Diária", "Horas": "0", "Minutos": "00"} for _ in range(3)])
 else:
@@ -1240,7 +1211,7 @@ tabela_tarefas_editada = st.data_editor(
 )
 
 # =========================================================
-# 📊 QUESTIONÁRIO DISC
+# 📊 QUESTIONÁRIO DISC (COM SUPORTE A ANTIGOS)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Perfil Comportamental (DISC)")
@@ -1250,18 +1221,10 @@ respostas_disc_atual = {}
 rascunho_disc = st.session_state.get("disc_v2", {})
 
 for i, pergunta in enumerate(perguntas_disc):
-    letra_salva = rascunho_disc.get(f"p{i}")
-    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_salva in ["A", "B", "C", "D"] else None
+    # Lógica extra: tenta 'p0' (novo) ou 'q1' (antigo)
+    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
     
-    escolha = st.radio(
-        f"**{i+1}.** {pergunta}",
-        options=["A", "B", "C", "D"],
-        index=idx_selecionado,
-        key=f"disc_q_{i}",
-        horizontal=True
-    )
-    respostas_disc_atual[f"p{i}"] = escolha
-
+    idx_selecionado = ["A", "B", "C", "D"].index(letra_salva) if letra_
 # =========================================================
 # 🚀 BOTÃO FINAL DE SALVAMENTO
 # =========================================================
