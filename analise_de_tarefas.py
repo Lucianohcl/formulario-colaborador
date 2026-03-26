@@ -1112,21 +1112,16 @@ with col1:
     )
 
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
-        st.write(f"🔍 DEBUG: Tentando carregar '{nome_f}'...") 
-        
         if nome_f:
             atualizar_rascunhos_do_github() 
-            # Pega o dicionário de rascunhos e tenta achar o nome digitado
             rascunhos_dict = st.session_state.get("rascunhos", {})
             rascunho = rascunhos_dict.get(nome_f)
             
             if rascunho:
-                st.write("✅ DEBUG: Rascunho encontrado! Processando dados...")
                 st.session_state["f_nome_v2"] = nome_f
                 
-                # --- LÓGICA DE COMPATIBILIDADE ---
+                # --- LÓGICA DE COMPATIBILIDADE (CAMPOS) ---
                 cp = rascunho.get("campos", {})
-                
                 st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
                 st.session_state["f_depto_v2"] = rascunho.get("departamento") or cp.get("departamento", "")
                 st.session_state["f_esc_v2"] = rascunho.get("escolaridade") or cp.get("escolaridade", "")
@@ -1143,18 +1138,6 @@ with col1:
                     if k in st.session_state:
                         del st.session_state[k]
 
-                st.success(f"✅ Dados de {nome_f} carregados!")
-                st.rerun() # <--- ESSENCIAL: Faz a tela atualizar com os dados novos
-            else:
-                st.error(f"❌ DEBUG: O nome '{nome_f}' não foi encontrado na lista do Cloud.")
-                st.write(f"Nomes disponíveis: {list(rascunhos_dict.keys())}")
-        else:
-            st.warning("⚠️ Digite um nome antes de carregar.")
-
-
-                if rascunho:
-                # ... (as linhas de session_state que já estavam lá)
-                
                 # --- CONVERSÃO DA TABELA DE TAREFAS ---
                 if "tabela_tarefas" in rascunho:
                     st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
@@ -1177,21 +1160,16 @@ with col1:
                 st.success(f"✅ Dados de {nome_f} carregados!")
                 st.rerun()
             else:
-                st.warning(f"⚠️ Não encontrei rascunho para '{nome_f}'.")
+                st.error(f"⚠️ Rascunho de '{nome_f}' não encontrado.")
         else:
-            st.error("❌ Digite o nome antes de carregar.")
+            st.warning("⚠️ Digite um nome antes de carregar.")
 
 with col2:
     cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
     depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
-    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
-    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
+    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc
 
-cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
-obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
+
 # =========================================================
 # 📝 TABELA DE ANÁLISE DE TAREFAS (COM SUPORTE A ANTIGOS)
 # =========================================================
