@@ -2457,7 +2457,7 @@ def garantir_15_linhas(df, colunas):
 # =========================================================
 # 3. FLUXO DE IDENTIFICAÇÃO COM TRAVA DE SEGURANÇA
 # =========================================================
-st.title("📋 Análise de Tarefas e Perfil")
+st.subheader("📋 Rascunho")
 
 # 1. A Caixinha de Nome
 nome_digitado = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
