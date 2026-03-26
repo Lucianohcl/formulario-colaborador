@@ -1133,6 +1133,14 @@ with col1:
                 st.session_state["f_cursos_v2"] = rascunho.get("cursos") or cp.get("cursos", "")
                 st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
 
+                # --- LIMPEZA PARA FORÇAR ATUALIZAÇÃO VISUAL ---
+                # Isso deleta o "rastro" manual dos campos para que o 'value=' funcione
+                chaves_widgets = ["f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", "f_cursos_area", "f_obj_area"]
+                for k in chaves_widgets:
+                    if k in st.session_state:
+                        del st.session_state[k]
+
+
                 # --- CONVERSÃO DA TABELA DE TAREFAS ---
                 if "tabela_tarefas" in rascunho:
                     # Modelo Novo
