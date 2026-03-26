@@ -2386,6 +2386,7 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
+
 import streamlit as st
 import pandas as pd
 import json
@@ -2404,15 +2405,13 @@ except Exception as e:
     st.error(f"❌ Erro nos Secrets: {e}")
     st.stop()
 
-# Controle de versão para resetar widgets (Keys Dinâmicas)
+# Controle de estado da sessão
 if "v_tab" not in st.session_state:
     st.session_state["v_tab"] = 0
-if "confirmado" not in st.session_state:
-    st.session_state["confirmado"] = False
 if "rascunho_atual" not in st.session_state:
     st.session_state["rascunho_atual"] = {}
-
-usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves", "Pedro Martins", "CARLOS LUCIANO"]
+if "rascunho_carregado" not in st.session_state:
+    st.session_state["rascunho_carregado"] = False
 
 # =========================================================
 # 2. FUNÇÕES DE SUPORTE
@@ -2440,38 +2439,28 @@ def garantir_15_linhas(df, colunas):
         if col not in df.columns: 
             df[col] = ""
     while len(df) < 15:
-        df.loc[len(df)] = [""] * len(colunas)
+        nova_linha = {col: "" for col in colunas}
+        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE LOGIN E BUSCA DE RASCUNHO (VERSÃO CORRIGIDA)
+# 3. FLUXO DE LOGIN (VERSÃO BLINDADA)
 # =========================================================
 st.title("📋 Formulário de Colaborador")
 
 nome_digitado = st.text_input("Digite seu NOME COMPLETO:").strip()
-nome_f = nome_digitado # Ponte para o botão de salvar
 
 if nome_digitado:
-    # 1. Reset se mudar o usuário para evitar contaminação de dados
+    # 1. Reset total ao trocar de usuário
     if st.session_state.get("usuario_logado") != nome_digitado:
-        st.session_state["confirmado"] = False
-        st.session_state["rascunho_atual"] = {}
         st.session_state["usuario_logado"] = nome_digitado
+        st.session_state["rascunho_atual"] = {}
+        st.session_state["rascunho_carregado"] = False
+        st.session_state["v_tab"] += 1
+        st.rerun()
 
-    # 2. Validação de Cadastro (Manual ou Automática)
-    if nome_digitado.upper() in [u.upper() for u in usuarios_cadastrados]:
-        st.session_state["confirmado"] = True
-    else:
-        if not st.session_state["confirmado"]:
-            st.error("❌ Usuário não cadastrado no sistema!")
-            if st.button(f"Clique aqui para cadastrar '{nome_digitado}'"):
-                st.session_state["confirmado"] = True
-                st.rerun()
-            else:
-                st.stop()
-
-    # 3. Busca e Sincronização Automática de Rascunho do GitHub
-    if st.session_state["confirmado"] and not st.session_state["rascunho_atual"]:
+    # 2. Busca de Rascunho Segura (Executa apenas uma vez por login)
+    if not st.session_state["rascunho_carregado"]:
         nome_arquivo = f"{nome_digitado.replace(' ','_').upper()}.json"
         try:
             g = Github(DB_TOKEN)
@@ -2479,12 +2468,9 @@ if nome_digitado:
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados_baixados = json.loads(conteudo.decoded_content.decode())
             
-            # Salva o rascunho bruto no estado da sessão
             st.session_state["rascunho_atual"] = dados_baixados
             
-            # --- SINCRONIZAÇÃO FORÇADA DOS CAMPOS ---
-            # Injetamos os dados baixados diretamente no dicionário de chaves dos Widgets
-            # Isso garante que o Streamlit ignore o "cache" visual e mostre o dado novo
+            # Injetar dados baixados no Session State para os Widgets
             v_atual = st.session_state["v_tab"]
             cp = dados_baixados.get("campos", {})
             
@@ -2497,32 +2483,28 @@ if nome_digitado:
             st.session_state[f"cursos_{v_atual}"] = cp.get("cursos", "")
             st.session_state[f"obj_{v_atual}"] = cp.get("objetivo", "")
             
-            # Incrementamos a versão das chaves para "forçar" a reconstrução dos campos
-            st.session_state["v_tab"] += 1 
-            st.success(f"✅ Rascunho de {nome_digitado} carregado e sincronizado!")
-            st.rerun() 
+            st.session_state["rascunho_carregado"] = True
+            st.rerun()
             
         except Exception:
-            # Caso o arquivo não exista no GitHub, marcamos como processado para evitar loops
+            # Caso não exista arquivo, inicializa como vazio
             st.session_state["rascunho_atual"] = {"existente": False}
+            st.session_state["rascunho_carregado"] = True
 
-# Se não houver nome, interrompe a execução para não mostrar o formulário vazio
+# Interrompe se o nome estiver vazio
 if not nome_digitado:
     st.stop()
 
-# Variáveis de trabalho globais que as próximas seções usarão
+# Variáveis globais de controle
 v = st.session_state["v_tab"]
 rascunho = st.session_state["rascunho_atual"]
 
 # =========================================================
-# 4. CAMPOS BÁSICOS (AJUSTADO PARA SINCRONIZAÇÃO)
+# 4. CAMPOS BÁSICOS
 # =========================================================
 st.markdown("---")
-# Removido: campos_data = rascunho.get("campos", {}) <- Não precisa mais buscar aqui
-
 col1, col2 = st.columns(2)
 with col1:
-    # Deixamos apenas a KEY. O Streamlit vai ler o valor que injetamos na Seção 3.
     cargo = st.text_input("Cargo:", key=f"cargo_{v}")
     depto = st.text_input("Departamento:", key=f"dep_{v}")
     setor = st.text_input("Setor:", key=f"set_{v}")
@@ -2618,11 +2600,7 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 st.markdown("---")
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    if not nome_f:
-        st.error("❌ Digite seu nome no topo da página.")
-        st.stop()
-
-    nome_arq = f"{nome_f.replace(' ','_').upper()}.json"
+    nome_arq = f"{nome_digitado.replace(' ','_').upper()}.json"
     
     def limpar_para_rascunho(df):
         if df is None or df.empty: return []
@@ -2632,7 +2610,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_f,
+        "colaborador": nome_digitado,
         "campos": {
             "cargo": cargo, "departamento": depto, "setor": setor,
             "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
@@ -2650,7 +2628,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
     with st.spinner("Salvando no GitHub..."):
         if salvar_no_github(payload, nome_arq):
-            st.success(f"✅ Rascunho de {nome_f} salvo!")
-            st.balloons() # O toque final de sucesso!
+            st.success(f"✅ Rascunho de {nome_digitado} salvo com sucesso!")
+            st.balloons()
         else:
-            st.error("❌ Erro ao salvar. Verifique se o DB_TOKEN está correto nas Secrets.")
+            st.error("❌ Erro ao salvar. Verifique sua conexão ou Token.")
