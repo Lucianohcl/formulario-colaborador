@@ -47,9 +47,12 @@ st.set_page_config(
 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
 
-if "pagina" not in st.session_state: st.session_state.pagina = "home"
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "script2"
 
 if "formularios" not in st.session_state: st.session_state["formularios"] = []
+
+       
 
 
 
@@ -2556,22 +2559,24 @@ if primeira_vez:
             st.error(f"❌ Erro inesperado: {e}")
 
     # =========================================================
-    # 9. BOTÃO DE ENVIAR PARA SCRIPT 1 (MESMA INSTÂNCIA)
+    # 9. BOTÕES
     # =========================================================
+
+    # 🚀 BOTÃO 1 - ENVIAR PARA SCRIPT 1
     if st.button("🚀 Enviar para Script 1 (mesma instância)"):
         try:
-            # Monta o payload completo com tudo que Script 1 espera
             st.session_state["dados_oficiais"] = {
-                "nome": campos_id.get("nome", ""),
-                "cargo": campos_id.get("cargo", ""),
-                "departamento": campos_id.get("departamento", ""),
-                "escolaridade": campos_id.get("escolaridade", ""),
-                "setor": campos_id.get("setor", ""),
-                "chefe": campos_id.get("chefe", ""),
-                "empresa": campos_id.get("unidade", ""),
-                "devolucao": campos_id.get("devolucao", ""),
-                "cursos": campos_id.get("cursos", ""),
-                "objetivo": campos_id.get("objetivo", ""),
+                "nome": nome_f,
+                "cargo": cargo_f,
+                "departamento": depto_f,
+                "escolaridade": esc_f,
+                "setor": setor_f,
+                "chefe": chefe_f,
+                "empresa": unidade_f,
+                "devolucao": dev_f,
+                "cursos": cursos_f_v2,
+                "objetivo": obj_f_v2,
+
                 "atividades_alta": e_alta[e_alta["Atividade"] != ""].to_dict("records"),
                 "atividades_normal": e_normal[e_normal["Atividade"] != ""].to_dict("records"),
                 "atividades_baixa": e_baixa[e_baixa["Atividade"] != ""].to_dict("records"),
@@ -2580,11 +2585,58 @@ if primeira_vez:
                 "disc": respostas_disc
             }
 
-            # 🔥 FORÇA REDIRECIONAMENTO PRA MESMA INSTÂNCIA
-            st.query_params["page"] = "formulario"
-
-            # 🔥 GARANTE RELOAD IMEDIATO
+            # 👉 TROCA DE PÁGINA
+            st.session_state["pagina"] = "script1"
             st.rerun()
 
         except Exception as e:
-            st.error(f"❌ Falha ao enviar: {e}")    
+            st.error(f"❌ Falha ao enviar: {e}")
+
+
+    # 📂 BOTÃO 2 - ABRIR RASCUNHO (AJUSTADO)
+    if st.button("📂 Abrir Rascunho"):
+        try:
+            rascunho = carregar_rascunho_do_banco()
+
+            # 🔥 CONVERSÃO DO FORMATO DO RASCUNHO
+            dados_convertidos = {
+                "nome": rascunho.get("campos", {}).get("nome", ""),
+                "cargo": rascunho.get("campos", {}).get("cargo", ""),
+                "departamento": rascunho.get("campos", {}).get("departamento", ""),
+                "escolaridade": rascunho.get("campos", {}).get("escolaridade", ""),
+                "setor": rascunho.get("campos", {}).get("setor", ""),
+                "chefe": rascunho.get("campos", {}).get("chefe", ""),
+                "empresa": rascunho.get("campos", {}).get("unidade", ""),
+                "devolucao": rascunho.get("campos", {}).get("devolucao", ""),
+                "cursos": rascunho.get("campos", {}).get("cursos", ""),
+                "objetivo": rascunho.get("campos", {}).get("objetivo", ""),
+
+                "atividades_alta": rascunho.get("tabelas", {}).get("alta", []),
+                "atividades_normal": rascunho.get("tabelas", {}).get("normal", []),
+                "atividades_baixa": rascunho.get("tabelas", {}).get("baixa", []),
+                "dificuldades": rascunho.get("tabelas", {}).get("dificuldades", []),
+                "sugestoes": rascunho.get("tabelas", {}).get("sugestoes", []),
+
+                "disc": rascunho.get("disc", {})
+            }
+
+            st.session_state["dados_oficiais"] = dados_convertidos
+
+            # 👉 NAVEGA
+            st.session_state["pagina"] = "script1"
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"❌ Erro ao carregar rascunho: {e}")
+
+
+# =========================================================
+# SCRIPT 1 (RECEPTOR)
+# =========================================================
+if st.session_state["pagina"] == "script1":
+
+    fonte = st.session_state.get("dados_oficiais", {})
+
+    st.title("📋 Dados Recebidos")
+
+    st.write(fonte)
