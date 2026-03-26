@@ -1078,6 +1078,30 @@ st.subheader("👤 Dados de Identificação")
 col1, col2 = st.columns(2)
 with col1:
     nome_f = st.text_input("Nome do colaborador", value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""), key="f_nome")
+    # Botão para carregar rascunho
+    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho"):
+        if nome_f:  # verifica se o usuário digitou algo
+            rascunho = st.session_state.get("rascunhos", {}).get(nome_f, {})
+        
+            if rascunho:
+                st.session_state["f_cargo_v2"] = rascunho.get("cargo", "")
+                st.session_state["f_depto_v2"] = rascunho.get("departamento", "")
+                st.session_state["f_esc_v2"] = rascunho.get("escolaridade", "")
+                st.session_state["f_setor_v2"] = rascunho.get("setor", "")
+                st.session_state["f_chefe_v2"] = rascunho.get("chefe", "")
+                st.session_state["f_unidade_v2"] = rascunho.get("unidade", "")
+                st.session_state["f_dev_v2"] = rascunho.get("devolucao", "")
+                st.session_state["f_cursos_v2"] = rascunho.get("cursos", "")
+                st.session_state["f_obj_v2"] = rascunho.get("objetivo", "")
+                st.session_state["disc_v2"] = rascunho.get("disc", {})
+
+                st.success("✅ Rascunho carregado com sucesso!")
+                st.rerun()  # <--- força a atualização para os widgets refletirem os valores
+            else:
+                st.warning("⚠️ Nenhum rascunho encontrado para este nome.")
+        else:
+            st.error("❌ Digite um nome antes de carregar o rascunho.")    
+
     cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
     depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
     esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
