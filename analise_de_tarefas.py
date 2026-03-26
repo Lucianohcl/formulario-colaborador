@@ -1137,7 +1137,7 @@ perguntas_disc = [
 ]
 
 # =========================================================
-# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO COM SUPORTE A ANTIGOS)
+# 👤 DADOS DE IDENTIFICAÇÃO (AJUSTADO PARA 5 TABELAS)
 # =========================================================
 st.subheader("👤 Dados de Identificação")
 
@@ -1163,9 +1163,8 @@ with col1:
             rascunho = rascunhos_dict.get(nome_f)
             
             if rascunho:
+                # 1. Dados Básicos
                 st.session_state["f_nome_v2"] = nome_f
-                
-                # --- LÓGICA DE COMPATIBILIDADE (CAMPOS) ---
                 cp = rascunho.get("campos", {})
                 st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
                 st.session_state["f_depto_v2"] = rascunho.get("departamento") or cp.get("departamento", "")
@@ -1177,32 +1176,28 @@ with col1:
                 st.session_state["f_cursos_v2"] = rascunho.get("cursos") or cp.get("cursos", "")
                 st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
 
-                # --- LIMPEZA PARA FORÇAR ATUALIZAÇÃO VISUAL ---
-                chaves_widgets = ["f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", "f_cursos_area", "f_obj_area"]
-                for k in chaves_widgets:
+                # 2. ALIMENTAÇÃO DAS 5 TABELAS (O PONTO CHAVE)
+                # Tenta formato novo primeiro, se não houver, tenta o antigo 'tabelas'
+                st.session_state["f_alta_v2"] = rascunho.get("atividades_alta") or rascunho.get("tabelas", {}).get("alta", [])
+                st.session_state["f_normal_v2"] = rascunho.get("atividades_normal") or rascunho.get("tabelas", {}).get("normal", [])
+                st.session_state["f_baixa_v2"] = rascunho.get("atividades_baixa") or rascunho.get("tabelas", {}).get("baixa", [])
+                st.session_state["f_dif_v2"] = rascunho.get("dificuldades") or rascunho.get("tabelas", {}).get("dificuldades", [])
+                st.session_state["f_sug_v2"] = rascunho.get("sugestoes") or rascunho.get("tabelas", {}).get("sugestoes", [])
+
+                # 3. LIMPEZA TOTAL DE CACHE (Para os widgets atualizarem na tela)
+                chaves_para_limpar = [
+                    "f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", 
+                    "f_cursos_area", "f_obj_area", "ed_alta_v3", "ed_norm_v3", "ed_baix_v3", 
+                    "ed_dif_v3", "ed_sug_v3"
+                ]
+                for k in chaves_para_limpar:
                     if k in st.session_state:
                         del st.session_state[k]
 
-                # --- CONVERSÃO DA TABELA DE TAREFAS ---
-                if "tabela_tarefas" in rascunho:
-                    st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
-                elif "tabelas" in rascunho:
-                    antigas = rascunho.get("tabelas", {})
-                    unificadas = []
-                    for nivel in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-                        for item in antigas.get(nivel, []):
-                            unificadas.append({
-                                "Tarefa": f"[{nivel.upper()}] {item}", 
-                                "Frequência": "Diária", 
-                                "Horas": "0", 
-                                "Minutos": "00"
-                            })
-                    st.session_state["f_tabela_v2"] = unificadas
-
-                # --- DISC ---
+                # 4. DISC
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
-                st.success(f"✅ Dados de {nome_f} carregados!")
+                st.success(f"✅ Dados de {nome_f} carregados com sucesso!")
                 st.rerun()
             else:
                 st.error(f"⚠️ Rascunho de '{nome_f}' não encontrado.")
@@ -1220,7 +1215,6 @@ with col2:
 
 cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
 obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
-
 
 # =========================================================
 # 📝 TABELA DE ANÁLISE DE TAREFAS (COM SUPORTE A ANTIGOS)
