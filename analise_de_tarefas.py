@@ -2412,7 +2412,7 @@ if "confirmado" not in st.session_state:
 if "rascunho_atual" not in st.session_state:
     st.session_state["rascunho_atual"] = {}
 
-usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves", "Pedro Martins"]
+usuarios_cadastrados = ["Maria Silva", "João Souza", "Luciano Chaves", "Pedro Martins", "CARLOS LUCIANO"]
 
 # =========================================================
 # 2. FUNÇÕES DE SUPORTE
@@ -2437,20 +2437,21 @@ def garantir_15_linhas(df, colunas):
     if df is None or df.empty:
         df = pd.DataFrame(columns=colunas)
     for col in colunas:
-        if col not in df.columns: df[col] = ""
+        if col not in df.columns: 
+            df[col] = ""
     while len(df) < 15:
         df.loc[len(df)] = [""] * len(colunas)
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE LOGIN E VALIDAÇÃO DE CADASTRO
+# 3. FLUXO DE LOGIN E BUSCA DE RASCUNHO
 # =========================================================
 st.title("📋 Formulário de Colaborador")
 
 nome_digitado = st.text_input("Digite seu NOME COMPLETO:").strip()
+nome_f = nome_digitado # Ponte para o botão de salvar
 
 if nome_digitado:
-    # Se mudar o nome, resetamos a validação
     if st.session_state.get("usuario_logado") != nome_digitado:
         st.session_state["confirmado"] = False
         st.session_state["rascunho_atual"] = {}
@@ -2463,12 +2464,11 @@ if nome_digitado:
             st.error("❌ Usuário não cadastrado no sistema!")
             if st.button(f"Clique aqui para cadastrar '{nome_digitado}'"):
                 st.session_state["confirmado"] = True
-                st.success("✨ Cadastro realizado! Carregando formulário...")
                 st.rerun()
             else:
                 st.stop()
 
-    # Se confirmado, tenta buscar rascunho (apenas uma vez)
+    # Busca rascunho automaticamente se logado
     if st.session_state["confirmado"] and not st.session_state["rascunho_atual"]:
         nome_arquivo = f"{nome_digitado.replace(' ','_').upper()}.json"
         try:
@@ -2476,15 +2476,14 @@ if nome_digitado:
             repo = g.get_repo(REPO_NOME)
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             st.session_state["rascunho_atual"] = json.loads(conteudo.decoded_content.decode())
-            st.session_state["v_tab"] += 1 # Força reset das tabelas com dados novos
-            st.success("✅ Rascunho carregado automaticamente!")
+            st.session_state["v_tab"] += 1 
+            st.success("✅ Rascunho carregado com sucesso!")
         except:
             st.session_state["rascunho_atual"] = {"existente": False}
 
 if not nome_digitado:
     st.stop()
 
-# Variáveis de trabalho
 v = st.session_state["v_tab"]
 rascunho = st.session_state["rascunho_atual"]
 
@@ -2508,14 +2507,17 @@ cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=campos_data.
 objetivo = st.text_area("Objetivo Principal da Função:", value=campos_data.get("objetivo",""), key=f"obj_{v}")
 
 # =========================================================
-# 5. TABELAS DE TAREFAS (CONFIGURAÇÃO DAS COLUNAS)
+# 5. TABELAS DE TAREFAS
 # =========================================================
+st.markdown("---")
+st.subheader("📋 Tabelas de Atividades")
+
 lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
-    st.subheader(titulo)
+    st.write(f"**{titulo}**")
     dados = rascunho.get("tabelas", {}).get(chave_rascunho, [])
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
     if col_extra: colunas.insert(1, col_extra)
@@ -2538,21 +2540,13 @@ e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Ativida
 e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
 e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
-
 # =========================================================
 # 6. PERFIL DISC
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário")
+st.subheader("📊 Questionário Comportamental")
 
-# --- Controle de Versão para evitar NameError e conflitos de estado ---
-if "v_tab" not in st.session_state: 
-    st.session_state["v_tab"] = 0
-v = st.session_state["v_tab"]
-
-# Recupera dados do rascunho
 disc_data = rascunho.get("disc", {})
-
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza",
     "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes",
@@ -2578,16 +2572,11 @@ perguntas_disc = [
 ]
 
 respostas_disc = {}
-
 for i, pergunta in enumerate(perguntas_disc):
-    # Tenta buscar o valor salvo; se não existir, define como None para vir desmarcado
     valor_salvo = disc_data.get(str(i), None)
-    
-    # Mapeia a letra para o índice do radio button (A=0, B=1, C=2, D=3)
     opcoes = ["A", "B", "C", "D"]
     idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
     
-    # Renderiza a pergunta
     respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}", 
         options=opcoes, 
@@ -2597,46 +2586,43 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (VERSÃO CORRIGIDA)
+# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
 # =========================================================
 st.markdown("---")
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    nome_arq = f"{nome_digitado.replace(' ','_').upper()}.json"
+    if not nome_f:
+        st.error("❌ Digite seu nome no topo da página.")
+        st.stop()
+
+    nome_arq = f"{nome_f.replace(' ','_').upper()}.json"
     
-    # Função auxiliar interna para limpar as tabelas antes de salvar
-    def limpar_df(df, col_principal):
-        if df is None or df.empty:
-            return []
-        # Garante que estamos filtrando apenas linhas onde a coluna principal tem texto real
+    def limpar_para_rascunho(df):
+        if df is None or df.empty: return []
+        col_principal = df.columns[0]
         mask = df[col_principal].astype(str).str.strip() != ""
-        mask &= df[col_principal].notna()
         return df[mask].to_dict("records")
 
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_digitado,
+        "colaborador": nome_f,
         "campos": {
-            "cargo": cargo, 
-            "departamento": depto, 
-            "setor": setor, 
-            "chefe": chefe, 
-            "unidade": unidade, 
-            "escolaridade": escolaridade, 
-            "objetivo": objetivo
+            "cargo": cargo, "departamento": depto, "setor": setor,
+            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+            "cursos": cursos, "objetivo": objetivo
         },
         "tabelas": {
-            "alta": limpar_df(e_alta, "Atividade"),
-            "normal": limpar_df(e_normal, "Atividade"),
-            "baixa": limpar_df(e_baixa, "Atividade"),
-            "dificuldades": limpar_df(e_dif, "Dificuldade"),
-            "sugestoes": limpar_df(e_sug, "Sugestão")
+            "alta": limpar_para_rascunho(e_alta),
+            "normal": limpar_para_rascunho(e_normal),
+            "baixa": limpar_para_rascunho(e_baixa),
+            "dificuldades": limpar_para_rascunho(e_dif),
+            "sugestoes": limpar_para_rascunho(e_sug)
         },
         "disc": respostas_disc
     }
     
-    with st.spinner("Sincronizando com GitHub..."):
+    with st.spinner("Salvando no GitHub..."):
         if salvar_no_github(payload, nome_arq):
-            st.success(f"✅ Rascunho de {nome_digitado} salvo com sucesso!")
-            st.balloons()
+            st.success(f"✅ Rascunho de {nome_f} salvo!")
+            st.balloons() # O toque final de sucesso!
         else:
-            st.error("❌ Falha ao salvar. Verifique sua conexão ou Token.")        
+            st.error("❌ Erro ao salvar. Verifique se o DB_TOKEN está correto nas Secrets.")
