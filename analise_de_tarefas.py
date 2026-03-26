@@ -111,6 +111,50 @@ from fpdf import FPDF
 import io
 
 
+
+# ============================================================
+# FUNÇÃO DE SUPORTE PARA AS TABELAS (O QUE ESTAVA FALTANDO)
+# ============================================================
+def preparar_df(chave_rascunho, colunas, fonte_dict):
+    """
+    Esta função verifica se existe um rascunho carregado.
+    Se não, usa os dados oficiais. Se não, cria linhas vazias.
+    """
+    # 1. Tenta pegar do rascunho carregado no session_state (f_alta_v2, etc)
+    # Mapeamento das chaves de rascunho para os nomes das tabelas
+    mapa_chaves = {
+        "atividades_alta": "f_alta_v2",
+        "atividades_normal": "f_normal_v2",
+        "atividades_baixa": "f_baixa_v2",
+        "dificuldades": "f_dif_v2",
+        "sugestoes": "f_sug_v2"
+    }
+    
+    chave_sessao = mapa_chaves.get(chave_rascunho)
+    dados_v2 = st.session_state.get(chave_sessao)
+
+    if dados_v2 is not None and len(dados_v2) > 0:
+        return pd.DataFrame(dados_v2)
+
+    # 2. Se não tem rascunho, tenta nos dados oficiais (fonte)
+    dados_fonte = fonte_dict.get(chave_rascunho, [])
+    if dados_fonte:
+        # Converte lista simples em DataFrame se necessário
+        if isinstance(dados_fonte[0], str):
+            return pd.DataFrame([{colunas[0]: item} for item in dados_fonte])
+        return pd.DataFrame(dados_fonte)
+
+    # 3. Fallback: Retorna 3 linhas vazias
+    return pd.DataFrame([{colunas[0]: ""} for _ in range(3)])
+
+# Configurações de colunas para os editores
+col_atv = ["Tarefa"]
+col_dif = ["Dificuldade"]
+col_sug = ["Sugestão"]
+config_col = {"Tarefa": st.column_config.TextColumn("Descrição", width="large")}
+
+
+
 # =========================================================
 # 📥 1. FUNÇÃO PARA BUSCAR (CARREGAR) RASCUNHOS
 # =========================================================
