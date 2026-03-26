@@ -2631,12 +2631,71 @@ if primeira_vez:
 
 
 # =========================================================
-# SCRIPT 1 (RECEPTOR)
+# SCRIPT 1 (RECEPTOR) COM DEBUG E POVOAMENTO AUTOMÁTICO
 # =========================================================
+
+import streamlit as st
+
+# --- Garantir que a página está correta ---
+if "pagina" not in st.session_state:
+    st.session_state["pagina"] = "formulario"  # valor default
+
 if st.session_state["pagina"] == "script1":
+    st.header("📋 Dados Recebidos - Debug")
 
+    # --- Debug: mostrar se o session_state está ok ---
+    st.subheader("🛠️ Session State Antes")
+    st.write(st.session_state)
+
+    # --- Pegar dados enviados ou do rascunho ---
     fonte = st.session_state.get("dados_oficiais", {})
-
-    st.title("📋 Dados Recebidos")
-
+    st.subheader("🛠️ Conteúdo recebido (fonte)")
     st.write(fonte)
+
+    # --- Atualizar session_state para povoar os inputs ---
+    for campo in ["nome", "cargo", "departamento", "escolaridade",
+                  "setor", "chefe", "empresa", "devolucao",
+                  "cursos", "objetivo"]:
+        if campo in fonte:
+            st.session_state[campo] = fonte.get(campo, "")
+
+    # --- Debug: mostrar session_state após update ---
+    st.subheader("🛠️ Session State Atualizado")
+    st.write({k: st.session_state.get(k, "") for k in fonte.keys()})
+
+    # --- Inputs povoados com debug ---
+    st.subheader("📝 Formulário Povoado")
+    nome_f = st.text_input("Nome", value=st.session_state.get("nome", ""), key="nome")
+    cargo_f = st.text_input("Cargo", value=st.session_state.get("cargo", ""), key="cargo")
+    departamento_f = st.text_input("Departamento", value=st.session_state.get("departamento", ""), key="departamento")
+    escolaridade_f = st.text_input("Escolaridade", value=st.session_state.get("escolaridade", ""), key="escolaridade")
+    setor_f = st.text_input("Setor", value=st.session_state.get("setor", ""), key="setor")
+    chefe_f = st.text_input("Chefe", value=st.session_state.get("chefe", ""), key="chefe")
+    empresa_f = st.text_input("Empresa/Unidade", value=st.session_state.get("empresa", ""), key="empresa")
+    devolucao_f = st.text_input("Devolução", value=st.session_state.get("devolucao", ""), key="devolucao")
+    cursos_f = st.text_area("Cursos", value=st.session_state.get("cursos", ""), key="cursos")
+    objetivo_f = st.text_area("Objetivo", value=st.session_state.get("objetivo", ""), key="objetivo")
+
+    # --- Debug: mostrar valores capturados pelos inputs ---
+    st.subheader("🛠️ Valores Capturados pelos Inputs")
+    st.write({
+        "nome_f": nome_f,
+        "cargo_f": cargo_f,
+        "departamento_f": departamento_f,
+        "escolaridade_f": escolaridade_f,
+        "setor_f": setor_f,
+        "chefe_f": chefe_f,
+        "empresa_f": empresa_f,
+        "devolucao_f": devolucao_f,
+        "cursos_f": cursos_f,
+        "objetivo_f": objetivo_f
+    })
+
+    # --- Tabelas e DISC (se necessário) ---
+    st.subheader("📊 Atividades / DISC")
+    st.write("Alta:", fonte.get("atividades_alta", []))
+    st.write("Normal:", fonte.get("atividades_normal", []))
+    st.write("Baixa:", fonte.get("atividades_baixa", []))
+    st.write("Dificuldades:", fonte.get("dificuldades", []))
+    st.write("Sugestões:", fonte.get("sugestoes", []))
+    st.write("DISC:", fonte.get("disc", {}))
