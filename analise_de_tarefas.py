@@ -1042,7 +1042,6 @@ perguntas_disc = [
 st.set_page_config(page_title="Formulário do Colaborador", layout="wide")
 st.title("📋 Formulário Completo do Colaborador")
 
-fonte = st.session_state.get("dados_oficiais", {})
 
 st.subheader("👤 Dados de Identificação")
 col1, col2 = st.columns(2)
@@ -2456,8 +2455,9 @@ if primeira_vez:
     # =========================================================
     # 9. BOTÃO DE ENVIAR PARA SCRIPT 1 (MESMA INSTÂNCIA)
     # =========================================================
-    if st.button("🚀 Enviar para Formulário"):
+    if st.button("🚀 Enviar para Script 1 (mesma instância)"):
         try:
+            # Monta o payload completo com tudo que Script 1 espera
             st.session_state["dados_oficiais"] = {
                 "nome": campos_id["nome"],
                 "cargo": campos_id["cargo"],
@@ -2469,13 +2469,15 @@ if primeira_vez:
                 "devolucao": campos_id["devolucao"],
                 "cursos": campos_id["cursos"],
                 "objetivo": campos_id["objetivo"],
-                "atividades_alta": e_alta.to_dict("records"),
-                "atividades_normal": e_normal.to_dict("records"),
-                "atividades_baixa": e_baixa.to_dict("records"),
-                "dificuldades": e_dif.to_dict("records"),
-                "sugestoes": e_sug.to_dict("records"),
+                "atividades_alta": e_alta[e_alta["Atividade"] != ""].to_dict("records"),
+                "atividades_normal": e_normal[e_normal["Atividade"] != ""].to_dict("records"),
+                "atividades_baixa": e_baixa[e_baixa["Atividade"] != ""].to_dict("records"),
+                "dificuldades": e_dif[e_dif.iloc[:, 0] != ""].to_dict("records"),
+                "sugestoes": e_sug[e_sug.iloc[:, 0] != ""].to_dict("records"),
                 "disc": respostas_disc
             }
-            st.success("🎉 Dados enviados para Script 1! Abra o Script 1 na mesma instância para ver preenchido automaticamente.")
+
+            st.success("🎉 Dados enviados! Abra Script 1 na mesma instância para ver preenchido automaticamente.")
+
         except Exception as e:
-            st.error(f"❌ Falha ao enviar dados para Script 1: {e}")
+            st.error(f"❌ Falha ao enviar: {e}")    
