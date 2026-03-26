@@ -2459,7 +2459,7 @@ if nome_digitado:
         st.session_state["usuario_logado"] = nome_digitado
 
     # 2. Validação de Cadastro (Manual ou Automática)
-    if nome_digitado in usuarios_cadastrados:
+    if nome_digitado.upper() in [u.upper() for u in usuarios_cadastrados]:
         st.session_state["confirmado"] = True
     else:
         if not st.session_state["confirmado"]:
@@ -2515,23 +2515,24 @@ v = st.session_state["v_tab"]
 rascunho = st.session_state["rascunho_atual"]
 
 # =========================================================
-# 4. CAMPOS BÁSICOS
+# 4. CAMPOS BÁSICOS (AJUSTADO PARA SINCRONIZAÇÃO)
 # =========================================================
 st.markdown("---")
-campos_data = rascunho.get("campos", {})
+# Removido: campos_data = rascunho.get("campos", {}) <- Não precisa mais buscar aqui
 
 col1, col2 = st.columns(2)
 with col1:
-    cargo = st.text_input("Cargo:", value=campos_data.get("cargo",""), key=f"cargo_{v}")
-    depto = st.text_input("Departamento:", value=campos_data.get("departamento",""), key=f"dep_{v}")
-    setor = st.text_input("Setor:", value=campos_data.get("setor",""), key=f"set_{v}")
+    # Deixamos apenas a KEY. O Streamlit vai ler o valor que injetamos na Seção 3.
+    cargo = st.text_input("Cargo:", key=f"cargo_{v}")
+    depto = st.text_input("Departamento:", key=f"dep_{v}")
+    setor = st.text_input("Setor:", key=f"set_{v}")
 with col2:
-    chefe = st.text_input("Chefe imediato:", value=campos_data.get("chefe",""), key=f"chef_{v}")
-    unidade = st.text_input("Empresa / Unidade:", value=campos_data.get("unidade",""), key=f"uni_{v}")
-    escolaridade = st.text_input("Escolaridade:", value=campos_data.get("escolaridade",""), key=f"esc_{v}")
+    chefe = st.text_input("Chefe imediato:", key=f"chef_{v}")
+    unidade = st.text_input("Empresa / Unidade:", key=f"uni_{v}")
+    escolaridade = st.text_input("Escolaridade:", key=f"esc_{v}")
 
-cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=campos_data.get("cursos",""), key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo Principal da Função:", value=campos_data.get("objetivo",""), key=f"obj_{v}")
+cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", key=f"cursos_{v}")
+objetivo = st.text_area("Objetivo Principal da Função:", key=f"obj_{v}")
 
 # =========================================================
 # 5. TABELAS DE TAREFAS
