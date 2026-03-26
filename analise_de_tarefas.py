@@ -1265,67 +1265,6 @@ cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_
 obj_f = st.text_area("Objetivo Principal da Função", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 
-
-
-# =========================================================
-# 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
-# =========================================================
-st.markdown("---")
-st.subheader("📊 Perfil Comportamental (DISC)")
-
-# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
-v = st.session_state.get("v_tab", 0) 
-
-respostas_disc_atual = {}
-rascunho_disc = st.session_state.get("disc_v2", {})
-
-# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
-for i, pergunta in enumerate(perguntas_disc):
-    # Tenta carregar a letra do rascunho
-    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
-    
-    # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
-    opcoes = ["A", "B", "C", "D"]
-    idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
-    
-    escolha = st.radio(
-        f"**{i+1}.** {pergunta}",
-        options=opcoes,
-        index=idx_selecionado,
-        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
-        horizontal=True
-    )
-    respostas_disc_atual[f"p{i}"] = escolha
-
-
-# =========================================================
-# 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS (SINCRONIZADO)
-# =========================================================
-st.markdown("---")
-st.subheader("✅ Status de Validação do Formulário")
-
-pendencias = []
-
-# --- 1. VALIDAÇÃO DE CABEÇALHO ---
-# Ajustado para usar as variáveis exatas que definimos no Step 1
-campos_id = {
-    "Nome": nome_f,
-    "Cargo": cargo_f,
-    "Departamento": depto_f,
-    "Escolaridade": esc_f,
-    "Setor": setor_f,
-    "Chefe Imediato": chefe_f,
-    "Empresa/Unidade": unidade_f,
-    "Devolver em": dev_f,
-    "Cursos": cursos_f, 
-    "Objetivo": obj_f
-}
-
-for campo, valor in campos_id.items():
-    if not valor or str(valor).strip() == "":
-        pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
-
-
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
 # =========================================================
@@ -1389,160 +1328,173 @@ e_baixa = gerar_tabela_final("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
 e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
+
 # =========================================================
-# 6. DICIONÁRIO E VALIDAÇÃO (SEM NAMEERROR)
+# 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
 # =========================================================
-dict_tabelas = {
-    "Alta Complexidade": e_alta,
-    "Complexidade Normal": e_normal,
-    "Baixa Complexidade": e_baixa,
-    "Dificuldades": e_dif,
-    "Sugestões e Melhorias": e_sug
-}
+st.markdown("---")
+st.subheader("📊 Perfil Comportamental (DISC)")
+
+# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
+v = st.session_state.get("v_tab", 0) 
+
+respostas_disc_atual = {}
+rascunho_disc = st.session_state.get("disc_v2", {})
+
+# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
+for i, pergunta in enumerate(perguntas_disc):
+    # Tenta carregar a letra do rascunho
+    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
+    
+    # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
+    opcoes = ["A", "B", "C", "D"]
+    idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
+    
+    escolha = st.radio(
+        f"**{i+1}.** {pergunta}",
+        options=opcoes,
+        index=idx_selecionado,
+        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
+        horizontal=True
+    )
+    respostas_disc_atual[f"p{i}"] = escolha
+
+
+
+# =========================================================
+# 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
+# =========================================================
+st.markdown("---")
+st.subheader("✅ Status de Validação do Formulário")
 
 pendencias = []
 
+# --- 1. VALIDAÇÃO DE CABEÇALHO ---
+campos_id = {
+    "Nome": nome_f, "Cargo": cargo_f, "Departamento": depto_f,
+    "Escolaridade": esc_f, "Setor": setor_f, "Chefe Imediato": chefe_f,
+    "Empresa/Unidade": unidade_f, "Devolver em": dev_f,
+    "Cursos": cursos_f, "Objetivo": obj_f
+}
+for campo, valor in campos_id.items():
+    if not valor or str(valor).strip() == "":
+        pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
+
+# --- 2. VALIDAÇÃO DAS TABELAS ---
+dict_tabelas = {
+    "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
+    "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
+    "Sugestões e Melhorias": e_sug
+}
+
 regras_colunas = {
-    "Alta Complexidade": "Atividade",
-    "Complexidade Normal": "Atividade",
-    "Baixa Complexidade": "Atividade",
-    "Dificuldades": "Dificuldade",
+    "Alta Complexidade": "Atividade", "Complexidade Normal": "Atividade",
+    "Baixa Complexidade": "Atividade", "Dificuldades": "Dificuldade",
     "Sugestões e Melhorias": "Sugestão"
 }
 
-def extrair_num(valor_campo):
-    if not valor_campo: return 0
-    texto = str(valor_campo).replace("h", "").replace("min", "").strip()
-    try: return int(float(texto))
-    except: return 0
-
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
-    
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Filtra linhas preenchidas
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
-        
         if len(linhas_ativas) == 0:
-            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item preenchido.")
+            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
                 h = extrair_num(row.get("Horas", "0 h"))
                 m = extrair_num(row.get("Minutos", "0 min"))
                 freq = str(row.get("Frequência", "")).strip()
-
-                # Validação para tabelas de Atividade
                 if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                    if h == 0 and m == 0:
-                        pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem tempo (Horas/Minutos).")
-                    if freq == "":
-                        pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem frequência.")
-                
-                # Validação para Dificuldades
-                if nome_tab == "Dificuldades":
-                    setor_env = str(row.get("Setor/Parceiro Envolvido", "")).strip()
-                    if setor_env == "":
-                        pendencias.append(f"❌ Dificuldades: Linha {i+1} precisa indicar o Setor/Parceiro.")
+                    if h == 0 and m == 0: pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem tempo.")
+                    if freq == "": pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem frequência.")
 
-                # Validação para Sugestões
-                if nome_tab == "Sugestões e Melhorias":
-                    impacto_env = str(row.get("Impacto", "")).strip()
-                    if impacto_env == "":
-                        pendencias.append(f"❌ Sugestões: Linha {i+1} precisa indicar o Impacto.")
-
-# --- 3. VALIDAÇÃO DO DISC (AQUI ESTAVA O ERRO) ---
-# Usando 'respostas_disc_atual' que é a variável que você criou no bloco do DISC
+# --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
-
 if len(respostas_vazias) > 0:
     pendencias.append(f"DISC: Faltam responder **{len(respostas_vazias)} questões**.")
 
-# --- EXIBIÇÃO DO STATUS ---
+# --- EXIBIÇÃO FINAL DO STATUS ---
 if pendencias:
     st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
     for p in pendencias:
         st.write(f"• {p}")
-    # Resetamos a confirmação para obrigar o usuário a clicar de novo após corrigir
     st.session_state["confirmacao_final"] = False
 else:
     st.success("🎉 **Perfeito! Tudo preenchido corretamente. O envio está liberado.**")
 
-
 # =========================================================
 # 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
 # =========================================================
-if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True):
-    if pendencias:
-        st.error("❌ Corrija as pendências antes de enviar.")
-        st.stop()
-    
-    if not st.session_state.get("confirmacao_final", False):
-        st.warning(f"⚠️ **{nome_f}**, clique novamente para confirmar o envio definitivo.")
-        st.session_state["confirmacao_final"] = True
-        st.stop()
 
-    try:
-        from datetime import datetime
-        import json
-        import os
+# Centralizando o botão para dar mais destaque
+col_btn, _ = st.columns([2, 1])
 
-        # Função auxiliar: Usa 'Tarefa' que é o nome real da sua coluna agora
-        def preparar_dados(df):
-            if df is None or df.empty: return []
-            # Filtra linhas onde a descrição da tarefa não está vazia
-            return df[df["Tarefa"].astype(str).str.strip() != ""].to_dict("records")
-
-        # Estrutura Unificada (CORRIGIDA: usa cursos_f e obj_f que definimos antes)
-        payload = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": {
-                "nome": nome_f, 
-                "cargo": cargo_f, 
-                "departamento": depto_f,
-                "escolaridade": esc_f, 
-                "setor": setor_f, 
-                "chefe": chefe_f,
-                "unidade": unidade_f, 
-                "devolucao": dev_f,
-                "cursos": cursos_f, 
-                "objetivo": obj_f
-            },
-            "tabelas": {
-                "alta": preparar_dados(e_alta),
-                "normal": preparar_dados(e_normal),
-                "baixa": preparar_dados(e_baixa),
-                "dificuldades": preparar_dados(e_dif),
-                "sugestoes": preparar_dados(e_sug)
-            },
-            "perfil_disc": respostas_disc_atual
-        }
-
-        # Nome do arquivo padronizado
-        nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
+with col_btn:
+    if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_container_width=True):
+        if pendencias:
+            st.error("❌ Corrija as pendências listadas acima antes de enviar.")
+            st.stop()
         
-        with st.spinner("Sincronizando com o Cloud..."):
-            # 1. Tenta salvar no GitHub
-            sucesso = salvar_no_github(payload, nome_arquivo)
+        # Sistema de confirmação dupla
+        if not st.session_state.get("confirmacao_final", False):
+            st.warning(f"⚠️ **{nome_f}**, clique novamente para confirmar o envio definitivo ao RH.")
+            st.session_state["confirmacao_final"] = True
+            st.stop()
 
-            if sucesso:
-                st.success(f"✅ Formulário de {nome_f} enviado e sincronizado!")
-                
-                st.session_state["confirmacao_final"] = False
-            else:
-                st.error("⚠️ Erro ao sincronizar com GitHub. O arquivo foi gerado apenas para baixar.")
+        try:
+            from datetime import datetime
+            import json
 
-            # 2. Oferece o botão de download (Segurança total)
-            st.download_button(
-                label="📥 Baixar Comprovante (JSON)",
-                data=json.dumps(payload, indent=4, ensure_ascii=False),
-                file_name=nome_arquivo,
-                mime="application/json"
-            )
+            def preparar_dados(df):
+                if df is None or df.empty: return []
+                # Pega dinamicamente a coluna de Descrição (Atividade, Dificuldade ou Sugestão)
+                col_principal = df.columns[0] 
+                return df[df[col_principal].astype(str).str.strip() != ""].to_dict("records")
 
-    except Exception as e:
-        st.error(f"❌ Erro crítico no salvamento: {e}")
-                
+            payload = {
+                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                "colaborador": {
+                    "nome": nome_f, "cargo": cargo_f, "departamento": depto_f,
+                    "escolaridade": esc_f, "setor": setor_f, "chefe": chefe_f,
+                    "unidade": unidade_f, "devolucao": dev_f,
+                    "cursos": cursos_f, "objetivo": obj_f
+                },
+                "tabelas": {
+                    "alta": preparar_dados(e_alta),
+                    "normal": preparar_dados(e_normal),
+                    "baixa": preparar_dados(e_baixa),
+                    "dificuldades": preparar_dados(e_dif),
+                    "sugestoes": preparar_dados(e_sug)
+                },
+                "perfil_disc": respostas_disc_atual
+            }
 
+            nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
+            
+            with st.spinner("Sincronizando com o Cloud do RH..."):
+                sucesso = salvar_no_github(payload, nome_arquivo)
+
+                if sucesso:
+                    st.balloons() # Efeito visual de sucesso
+                    st.success(f"✅ Formulário de {nome_f} enviado com sucesso!")
+                    
+                    # Limpa os estados de controle
+                    st.session_state["confirmacao_final"] = False
+                    # Opcional: st.session_state["rascunho_atual"] = {} 
+                else:
+                    st.error("⚠️ O GitHub não respondeu. Mas não se preocupe! Baixe o arquivo abaixo e envie por e-mail/WhatsApp.")
+
+                # Botão de download sempre visível após tentativa de envio (Backup)
+                st.download_button(
+                    label="📥 Baixar Cópia de Segurança (JSON)",
+                    data=json.dumps(payload, indent=4, ensure_ascii=False),
+                    file_name=nome_arquivo,
+                    mime="application/json",
+                    use_container_width=True
+                )
+
+        except Exception as e:
+            st.error(f"❌ Erro crítico ao processar o envio: {e}")
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
@@ -2643,28 +2595,46 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR
+# 7. BOTÃO SALVAR (VERSÃO CORRIGIDA)
 # =========================================================
 st.markdown("---")
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     nome_arq = f"{nome_digitado.replace(' ','_').upper()}.json"
+    
+    # Função auxiliar interna para limpar as tabelas antes de salvar
+    def limpar_df(df, col_principal):
+        if df is None or df.empty:
+            return []
+        # Garante que estamos filtrando apenas linhas onde a coluna principal tem texto real
+        mask = df[col_principal].astype(str).str.strip() != ""
+        mask &= df[col_principal].notna()
+        return df[mask].to_dict("records")
+
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
         "campos": {
-            "cargo": cargo, "departamento": depto, "setor": setor, 
-            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade, "objetivo": objetivo
+            "cargo": cargo, 
+            "departamento": depto, 
+            "setor": setor, 
+            "chefe": chefe, 
+            "unidade": unidade, 
+            "escolaridade": escolaridade, 
+            "objetivo": objetivo
         },
         "tabelas": {
-            "alta": e_alta[e_alta["Atividade"] != ""].to_dict("records"),
-            "normal": e_normal[e_normal["Atividade"] != ""].to_dict("records"),
-            "baixa": e_baixa[e_baixa["Atividade"] != ""].to_dict("records"),
-            "dificuldades": e_dif[e_dif["Dificuldade"] != ""].to_dict("records"),
-            "sugestoes": e_sug[e_sug["Sugestão"] != ""].to_dict("records")
+            "alta": limpar_df(e_alta, "Atividade"),
+            "normal": limpar_df(e_normal, "Atividade"),
+            "baixa": limpar_df(e_baixa, "Atividade"),
+            "dificuldades": limpar_df(e_dif, "Dificuldade"),
+            "sugestoes": limpar_df(e_sug, "Sugestão")
         },
         "disc": respostas_disc
     }
     
-    if salvar_no_github(payload, nome_arq):
-        st.success("✅ Rascunho salvo com sucesso no GitHub!")
-        
+    with st.spinner("Sincronizando com GitHub..."):
+        if salvar_no_github(payload, nome_arq):
+            st.success(f"✅ Rascunho de {nome_digitado} salvo com sucesso!")
+            st.balloons()
+        else:
+            st.error("❌ Falha ao salvar. Verifique sua conexão ou Token.")        
