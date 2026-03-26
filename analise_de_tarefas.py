@@ -1297,54 +1297,6 @@ for i, pergunta in enumerate(perguntas_disc):
     )
     respostas_disc_atual[f"p{i}"] = escolha
 
-# =========================================================
-# 🚀 BOTÃO FINAL DE SALVAMENTO (CORRIGIDO PARA 5 TABELAS)
-# =========================================================
-st.markdown("---")
-if st.button("💾 FINALIZAR E SALVAR TUDO", use_container_width=True, type="primary"):
-    if nome_f:
-        # Criamos o dicionário unificando todos os dados coletados
-        dados_finais = {
-            "colaborador": nome_f,
-            "campos": {
-                "cargo": cargo_f, 
-                "departamento": depto_f, 
-                "escolaridade": esc_f,
-                "setor": setor_f, 
-                "chefe": chefe_f, 
-                "unidade": unidade_f,
-                "devolucao": dev_f, 
-                "cursos": cursos_f, 
-                "objetivo": obj_f
-            },
-            # 💡 Aqui está a correção: mapeamos cada tabela individualmente
-            "atividades_alta": e_alta.to_dict('records'),
-            "atividades_normal": e_normal.to_dict('records'),
-            "atividades_baixa": e_baixa.to_dict('records'),
-            "dificuldades": e_dif.to_dict('records'),
-            "sugestoes": e_sug.to_dict('records'),
-            
-            "disc": respostas_disc_atual,
-            "data_atualizacao": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        }
-        
-        # Define o nome do arquivo (Ex: JOAO_SILVA.json)
-        nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
-        
-        with st.spinner("Salvando no Cloud..."):
-            # Chama a sua função de integração com GitHub
-            if salvar_no_github(dados_finais, nome_arquivo):
-                st.success(f"✅ Formulário de **{nome_f}** enviado com sucesso!")
-                
-                # Força a atualização da lista para que o novo arquivo apareça no "Carregar"
-                atualizar_rascunhos_do_github()
-                
-                st.balloons()
-            else:
-                st.error("❌ Erro ao salvar no GitHub. Verifique sua conexão ou Token.")
-    else:
-        st.error("❌ O nome do colaborador é obrigatório para salvar.")
-
 
 # =========================================================
 # 3. TRAVAMENTO TOTAL E CHECKLIST DE PENDÊNCIAS (SINCRONIZADO)
@@ -1574,7 +1526,7 @@ if st.button("🚀 FINALIZAR E ENVIAR FORMULÁRIO", type="primary", use_containe
 
             if sucesso:
                 st.success(f"✅ Formulário de {nome_f} enviado e sincronizado!")
-                st.balloons()
+                
                 st.session_state["confirmacao_final"] = False
             else:
                 st.error("⚠️ Erro ao sincronizar com GitHub. O arquivo foi gerado apenas para baixar.")
