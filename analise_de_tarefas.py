@@ -1152,15 +1152,15 @@ with col1:
             st.warning("⚠️ Digite um nome antes de carregar.")
 
 
+                if rascunho:
+                # ... (as linhas de session_state que já estavam lá)
+                
                 # --- CONVERSÃO DA TABELA DE TAREFAS ---
                 if "tabela_tarefas" in rascunho:
-                    # Modelo Novo
                     st.session_state["f_tabela_v2"] = rascunho.get("tabela_tarefas", [])
                 elif "tabelas" in rascunho:
-                    # Modelo Antigo (Carlos Daniel)
                     antigas = rascunho.get("tabelas", {})
                     unificadas = []
-                    # Transforma as listas alta/normal/baixa na tabela nova
                     for nivel in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
                         for item in antigas.get(nivel, []):
                             unificadas.append({
