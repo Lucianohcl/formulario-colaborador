@@ -2679,7 +2679,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     # 4. Execução do salvamento
     with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
         try:
-            sucesso = salvar_no_github(payload, nome_arq, pasta="rascunhos")  # <-- salva em rascunhos
+            sucesso = salvar_no_github(payload, nome_arq)
         except Exception as e:
             st.error(f"❌ Erro crítico ao processar o envio: {e}")
             sucesso = False
