@@ -367,6 +367,20 @@ def gerar_pdf(form):
         elementos.append(Paragraph(f"<b>{i}. {pergunta}</b>", styles['Normal']))
         elementos.append(Paragraph(f"Resposta: {valor_resposta}", styles['Italic']))
         elementos.append(Spacer(1, 6))
+
+import requests
+
+def enviar_para_sheets(payload):
+    url = st.secrets["SHEETS_WEBHOOK"]
+
+    try:
+        response = requests.post(url, json=payload)
+        return response.status_code == 200
+    except Exception as e:
+        st.error(f"Erro ao enviar para Sheets: {e}")
+        return False
+
+
 # ============================================================
 # IMPORTS
 # ============================================================
@@ -1488,9 +1502,17 @@ with col_btn:
                 sucesso = salvar_no_github(payload, nome_arquivo)
 
                 if sucesso:
-                    st.balloons() # Efeito visual de sucesso
-                    st.success(f"✅ Formulário de {nome_f} enviado com sucesso!")
                     
+                    st.success(f"✅ Formulário de {nome_f} enviado com sucesso!")
+                    enviado = enviar_para_sheets(payload)
+
+                    if enviado:
+                        st.toast("📊 Enviado para Google Sheets!")
+                    else:
+                        st.warning("⚠️ Salvou, mas não enviou para o Sheets")
+
+
+
                     # Limpa os estados de controle
                     st.session_state["confirmacao_final"] = False
                     # Opcional: st.session_state["rascunho_atual"] = {} 
