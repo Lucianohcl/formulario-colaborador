@@ -493,6 +493,27 @@ from docx import Document
 from fpdf import FPDF
 import io
 
+def salvar_no_github(payload, nome_arquivo, pasta="rascunhos"):
+    from github import Github
+    import json
+
+    g = Github(DB_TOKEN)
+    repo = g.get_repo(REPO_NOME)
+
+    caminho = f"{pasta}/{nome_arquivo}"  # junta a pasta + nome do arquivo
+    try:
+        conteudo = json.dumps(payload, indent=4, ensure_ascii=False)
+        try:
+            file = repo.get_contents(caminho)
+            repo.update_file(caminho, f"Atualizando {nome_arquivo}", conteudo, file.sha)
+        except:
+            repo.create_file(caminho, f"Criando {nome_arquivo}", conteudo)
+        return True
+    except Exception as e:
+        st.error(f"❌ Erro ao salvar no GitHub: {e}")
+        return False
+
+
 def gerar_word(form):
     doc = Document()
     doc.add_heading(f"Relatório: {form.get('Nome', 'Colaborador')}", 0)
@@ -1504,7 +1525,7 @@ with col_btn:
 
             nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
             
-            with st.spinner("Sincronizando com o Cloud do RH..."):
+            with st.spinner("Sincronizando..."):
                 sucesso = salvar_no_github(payload, nome_arquivo, pasta="dados")
 
                 if sucesso:
