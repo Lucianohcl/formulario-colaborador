@@ -370,16 +370,22 @@ def gerar_pdf(form):
 
 import requests
 
+import requests
+
 def enviar_para_sheets(payload):
     url = st.secrets["SHEETS_WEBHOOK"]
 
     try:
         response = requests.post(url, json=payload)
-        return response.status_code == 200
-    except Exception as e:
-        st.error(f"Erro ao enviar para Sheets: {e}")
-        return False
 
+        st.write("STATUS:", response.status_code)
+        st.write("RESPOSTA:", response.text)
+
+        return response.status_code == 200
+
+    except Exception as e:
+        st.error(f"Erro ao enviar: {e}")
+        return False
 
 # ============================================================
 # IMPORTS
@@ -1464,7 +1470,7 @@ with col_btn:
         
         # Sistema de confirmação dupla
         if not st.session_state.get("confirmacao_final", False):
-            st.warning(f"⚠️ **{nome_f}**, clique novamente para confirmar o envio definitivo ao RH.")
+            st.warning(f"⚠️ **{nome_f}**, clique novamente para confirmar o envio definitivo.")
             st.session_state["confirmacao_final"] = True
             st.stop()
 
@@ -2696,6 +2702,6 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
             st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
-            st.balloons()
+            
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
