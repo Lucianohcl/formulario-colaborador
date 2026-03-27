@@ -2634,14 +2634,13 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
     # 1. Verificação de segurança: Nome não pode estar vazio
     nome_validado = nome_digitado.strip().upper()
-
     if not nome_validado or len(nome_validado) < 3:
         st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
         st.stop()
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # Função interna para limpar linhas vazias das tabelas antes de enviar
+    # 2. Função interna para limpar linhas vazias das tabelas
     def limpar_para_rascunho(df):
         if df is None or df.empty: 
             return []
@@ -2649,7 +2648,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 2. Montagem do Payload
+    # 3. Montagem do Payload
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
@@ -2672,10 +2671,18 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         },
         "disc": respostas_disc
     }
-    
-    # 3. Execução do salvamento
+
+    # 🔹 Normalização para evitar TypeError
+    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
+    payload["disc"] = payload.get("disc", [])
+
+    # 4. Execução do salvamento
     with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
-        sucesso = salvar_no_github(payload, nome_arq, pasta="rascunhos")  # <-- salva em rascunhos
+        try:
+            sucesso = salvar_no_github(payload, nome_arq, pasta="rascunhos")  # <-- salva em rascunhos
+        except Exception as e:
+            st.error(f"❌ Erro crítico ao processar o envio: {e}")
+            sucesso = False
         
         if sucesso:
             # Persistência imediata no session_state
@@ -2684,10 +2691,13 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
 
             # 🔹 Enviar para Sheets também
-            enviado_sheets = enviar_para_sheets(payload)
-            if enviado_sheets:
-                st.toast("📊 Rascunho enviado para Google Sheets!")
-            else:
-                st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
+            try:
+                enviado_sheets = enviar_para_sheets(payload)
+                if enviado_sheets:
+                    st.toast("📊 Rascunho enviado para Google Sheets!")
+                else:
+                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
+            except Exception as e_sheets:
+                st.warning(f"⚠️ Rascunho salvo no GitHub, mas falha ao enviar para Sheets: {e_sheets}")
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
