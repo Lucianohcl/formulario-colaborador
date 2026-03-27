@@ -123,52 +123,6 @@ def extrair_num(texto):
     except:
         return 0
 
-# =========================================================
-# 📤 FUNÇÃO PARA SALVAR NO GITHUB (COLE AQUI NO TOPO)
-# =========================================================
-def salvar_no_github(conteudo_dict, nome_arquivo):
-    import requests
-    import json
-    import base64
-
-    GITHUB_USER = "lucianohcl"
-    GITHUB_REPO = "formulario-colaborador"
-    FOLDER_PATH = "rascunhos"
-    GITHUB_TOKEN = st.secrets["DB_TOKEN"]
-
-    url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}/{nome_arquivo}"
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
-
-    # 1. Verifica se o arquivo já existe para obter o SHA
-    sha = None
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            sha = response.json()["sha"]
-    except:
-        pass
-
-    # 2. Prepara o conteúdo em Base64
-    conteudo_json = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
-    conteudo_bytes = conteudo_json.encode("utf-8")
-    conteudo_base64 = base64.b64encode(conteudo_bytes).decode("utf-8")
-
-    data = {
-        "message": f"Backup rascunho: {nome_arquivo}",
-        "content": conteudo_base64
-    }
-    if sha:
-        data["sha"] = sha
-
-    # 3. Envia para o GitHub
-    res = requests.put(url, headers=headers, json=data)
-    
-    return res.status_code in [200, 201]
-
-
 
 # ============================================================
 # FUNÇÃO DE SUPORTE PARA AS TABELAS (O QUE ESTAVA FALTANDO)
@@ -497,7 +451,11 @@ def salvar_no_github(payload, nome_arquivo, pasta="rascunhos"):
     from github import Github
     import json
 
-    g = Github(DB_TOKEN)
+    # ✅ Usa o token corretamente do st.secrets
+    GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+    REPO_NOME = "lucianohcl/formulario-colaborador"
+
+    g = Github(GITHUB_TOKEN)
     repo = g.get_repo(REPO_NOME)
 
     caminho = f"{pasta}/{nome_arquivo}"  # junta a pasta + nome do arquivo
@@ -512,7 +470,6 @@ def salvar_no_github(payload, nome_arquivo, pasta="rascunhos"):
     except Exception as e:
         st.error(f"❌ Erro ao salvar no GitHub: {e}")
         return False
-
 
 def gerar_word(form):
     doc = Document()
@@ -2686,13 +2643,13 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
     # Função interna para limpar linhas vazias das tabelas antes de enviar
     def limpar_para_rascunho(df):
-        if df is None or df.empty: return []
+        if df is None or df.empty: 
+            return []
         col_principal = df.columns[0]
-        # Remove linhas onde a descrição da atividade está em branco
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 2. Montagem do Payload (O pacote de dados que vai pro GitHub)
+    # 2. Montagem do Payload
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
@@ -2718,13 +2675,19 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
     # 3. Execução do salvamento
     with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
-        sucesso = salvar_no_github(payload, nome_arq)
+        sucesso = salvar_no_github(payload, nome_arq, pasta="rascunhos")  # <-- salva em rascunhos
         
         if sucesso:
-            # Atualizamos o estado local para garantir persistência imediata
+            # Persistência imediata no session_state
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
             st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
-            
+
+            # 🔹 Enviar para Sheets também
+            enviado_sheets = enviar_para_sheets(payload)
+            if enviado_sheets:
+                st.toast("📊 Rascunho enviado para Google Sheets!")
+            else:
+                st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
