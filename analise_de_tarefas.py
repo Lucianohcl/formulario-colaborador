@@ -1505,7 +1505,7 @@ with col_btn:
             nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
             
             with st.spinner("Sincronizando com o Cloud do RH..."):
-                sucesso = salvar_no_github(payload, nome_arquivo)
+                sucesso = salvar_no_github(payload, nome_arquivo, pasta="dados")
 
                 if sucesso:
                     
@@ -2655,11 +2655,13 @@ st.markdown("---")
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
     # 1. Verificação de segurança: Nome não pode estar vazio
-    if not nome_digitado or len(nome_digitado) < 3:
+    nome_validado = nome_digitado.strip().upper()
+
+    if not nome_validado or len(nome_validado) < 3:
         st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
         st.stop()
 
-    nome_arq = f"{nome_digitado.replace(' ','_').upper()}.json"
+    nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
     # Função interna para limpar linhas vazias das tabelas antes de enviar
     def limpar_para_rascunho(df):
