@@ -1,0 +1,85 @@
+{
+    "timestamp": "27/03/2026 13:27:26",
+    "colaborador": {
+        "nome": "FRANCISO JOSE",
+        "cargo": "Analista de Custos",
+        "departamento": "Controladoria",
+        "escolaridade": "Graduação em Ciências Contábeis",
+        "setor": "Setor de Custos",
+        "chefe": "José de Souza",
+        "unidade": "Empresa Y",
+        "devolucao": "25/03/2026",
+        "cursos": "XSCSCAC",
+        "objetivo": "CACdc"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "D",
+                "Horas": "4 h",
+                "Minutos": "25 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "D",
+                "Horas": "3 h",
+                "Minutos": "20 min",
+                "Frequência": "Q"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "D",
+                "Horas": "3 h",
+                "Minutos": "25 min",
+                "Frequência": "S"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "D",
+                "Setor/Parceiro Envolvido": "D",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "W",
+                "Impacto": "W",
+                "Horas": "1 h",
+                "Minutos": "15 min",
+                "Frequência": "Q"
+            }
+        ]
+    },
+    "perfil_disc": {
+        "p0": "A",
+        "p1": "A",
+        "p2": "B",
+        "p3": "C",
+        "p4": "C",
+        "p5": "B",
+        "p6": "B",
+        "p7": "B",
+        "p8": "B",
+        "p9": "C",
+        "p10": "A",
+        "p11": "D",
+        "p12": "B",
+        "p13": "C",
+        "p14": "B",
+        "p15": "D",
+        "p16": "B",
+        "p17": "B",
+        "p18": "C",
+        "p19": "B",
+        "p20": "B",
+        "p21": "D",
+        "p22": "B",
+        "p23": "D"
+    }
+}
