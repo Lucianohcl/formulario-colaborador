@@ -2454,11 +2454,10 @@ from datetime import datetime
 from github import Github
 
 # =========================================================
-# 1. CONFIGURAÇÕES E ESTADOS INICIAIS
+# ⚙️ 1. CONFIGURAÇÕES E MOTORES (TOPO ABSOLUTO)
 # =========================================================
 st.set_page_config(page_title="Formulário de Análise de Tarefas", layout="wide")
 
-# Inicializa as variáveis de controle para evitar erros de "Variable not defined"
 if "v_tab" not in st.session_state: st.session_state["v_tab"] = 1
 if "rascunho_atual" not in st.session_state: st.session_state["rascunho_atual"] = {}
 if "rascunho_carregado" not in st.session_state: st.session_state["rascunho_carregado"] = False
@@ -2467,45 +2466,44 @@ if "nome_estatico" not in st.session_state: st.session_state["nome_estatico"] = 
 
 v = st.session_state["v_tab"]
 
+def val(id_campo, default=""):
+    form = st.session_state.get("rascunho_atual", {})
+    if not form: return default
+    return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
 
-
-# =========================================================
-# 🔍 2. IDENTIFICAÇÃO (CORREÇÃO DE DUPLICIDADE)
-# =========================================================
-st.subheader("📋 Identificação")
-
-# 1. Definição da função (PRECISA VIR ANTES)
 def atualizar_nome():
-    # Usamos o nome da key fixo aqui para evitar o erro de duplicidade
+    """ Trava o nome na memória para não sumir no Enter """
     if "f_nome_input_fixo" in st.session_state:
         st.session_state["nome_estatico"] = st.session_state["f_nome_input_fixo"].strip().upper()
 
-# 2. Inicializa a variável de memória se ela não existir
-if "nome_estatico" not in st.session_state:
-    st.session_state["nome_estatico"] = val("colaborador")
-
-# 3. O Campo de Texto (Usando uma KEY ÚNICA que não conflita com as outras)
-nome_digitado = st.text_input(
-    "DIGITE SEU NOME COMPLETO:", 
-    value=st.session_state["nome_estatico"], 
-    key="f_nome_input_fixo", # Mudamos para uma key fixa para matar o erro de duplicidade
-    on_change=atualizar_nome
-).strip().upper()
-
-if not nome_digitado:
-    st.info("👋 Digite seu nome e aperte ENTER.")
-    st.stop()
+def salvar_no_github(conteudo_dict, nome_arquivo):
+    try:
+        g = Github(st.secrets["DB_TOKEN"])
+        repo = g.get_repo("lucianohcl/formulario-colaborador")
+        caminho_git = f"rascunhos/{nome_arquivo}"
+        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
+        try:
+            contents = repo.get_contents(caminho_git)
+            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
+        except:
+            repo.create_file(caminho_git, f"Novo: {nome_arquivo}", json_string)
+        return True
+    except Exception as e:
+        st.error(f"Erro GitHub: {e}")
+        return False
 
 # =========================================================
-# 3. FLUXO DE IDENTIFICAÇÃO (DANIEL GUERRA)
+# 🔍 2. IDENTIFICAÇÃO ÚNICA (SEM REPETIÇÃO)
 # =========================================================
 st.subheader("📋 Identificação")
 
-# O input busca o valor da 'nome_estatico' para não sumir no Enter
+if not st.session_state["nome_estatico"]:
+    st.session_state["nome_estatico"] = val("colaborador")
+
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
     value=st.session_state["nome_estatico"], 
-    key=f"f_nome_input_{v}",
+    key="f_nome_input_fixo", 
     on_change=atualizar_nome
 ).strip().upper()
 
@@ -2513,7 +2511,7 @@ if not nome_digitado:
     st.info("👋 Digite seu nome e aperte ENTER para começar.")
     st.stop()
 
-# Se trocar o nome, reseta o carregamento para buscar o novo arquivo
+# Lógica de troca de rascunho
 if st.session_state["usuario_logado"] != nome_digitado:
     st.session_state["usuario_logado"] = nome_digitado
     st.session_state["rascunho_carregado"] = False
@@ -2522,10 +2520,9 @@ st.warning(f"Usuário identificado: **{nome_digitado}**")
 confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS", key=f"check_confirmar_{v}")
 
 if not confirmar:
-    st.info("Aguardando confirmação para liberar o acesso...")
     st.stop()
 
-# Busca automática no GitHub
+# Carregamento do GitHub
 if not st.session_state["rascunho_carregado"]:
     nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
     with st.spinner("Buscando rascunho..."):
@@ -2534,67 +2531,45 @@ if not st.session_state["rascunho_carregado"]:
             repo = g.get_repo("lucianohcl/formulario-colaborador")
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados = json.loads(conteudo.decoded_content.decode())
-            
             st.session_state["rascunho_atual"] = dados
-            st.session_state["nome_estatico"] = nome_digitado
             st.session_state["rascunho_carregado"] = True
             st.session_state["v_tab"] += 1 
             st.rerun()
         except:
             st.session_state["rascunho_carregado"] = True
             st.session_state["rascunho_atual"] = {"campos": {"colaborador": nome_digitado}}
-            st.info("Nenhum rascunho encontrado. Iniciando novo formulário.")
 
 # =========================================================
-# 4. FORMULÁRIO (DADOS BÁSICOS)
+# 3. FORMULÁRIO E TABELAS (O RESTO DO CÓDIGO)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
-
 with col1:
     cargo = st.text_input("Cargo:", value=val("cargo"), key=f"cargo_{v}")
     depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
     setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
-
 with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
 
-cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo do seu Trabalho:", value=val("objetivo"), key=f"obj_{v}")
+cursos = st.text_area("Cursos:", value=val("cursos"), key=f"cursos_{v}")
+objetivo = st.text_area("Objetivo:", value=val("objetivo"), key=f"obj_{v}")
 
-# =========================================================
-# 5. TABELAS DE ATIVIDADES
-# =========================================================
-st.markdown("---")
 st.subheader("📋 Tabelas de Atividades")
-
 def gerar_editor(titulo, chave_json, col_nome):
     st.write(f"**{titulo}**")
-    # Busca dados da tabela no rascunho
     dados = st.session_state["rascunho_atual"].get("tabelas", {}).get(chave_json, [])
     df = pd.DataFrame(dados)
-    if df.empty:
-        df = pd.DataFrame(columns=[col_nome, "Horas", "Minutos", "Frequência"])
-    
-    return st.data_editor(
-        df, 
-        key=f"editor_{chave_json}_{v}", 
-        use_container_width=True, 
-        num_rows="dynamic"
-    )
+    if df.empty: df = pd.DataFrame(columns=[col_nome, "Horas", "Minutos", "Frequência"])
+    return st.data_editor(df, key=f"editor_{chave_json}_{v}", use_container_width=True, num_rows="dynamic")
 
 e_alta = gerar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = gerar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = gerar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 
-# =========================================================
-# 6. BOTÃO SALVAR
-# =========================================================
 if st.button("💾 SALVAR MEU RASCUNHO", use_container_width=True):
     def limpar(df): return df[df.iloc[:, 0].astype(str).str.strip() != ""].to_dict("records")
-
     payload = {
         "campos": {
             "colaborador": nome_digitado, "cargo": cargo, "departamento": depto,
@@ -2605,7 +2580,6 @@ if st.button("💾 SALVAR MEU RASCUNHO", use_container_width=True):
             "alta": limpar(e_alta), "normal": limpar(e_normal), "baixa": limpar(e_baixa)
         }
     }
-    
     if salvar_no_github(payload, f"{nome_digitado.replace(' ','_')}.json"):
         st.success("✅ Salvo com sucesso!")
         st.session_state["rascunho_atual"] = payload
