@@ -1174,6 +1174,29 @@ col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "H
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
 # =========================================================
+# 🎨 TÍTULO E CABEÇALHO DO FORMULÁRIO
+# =========================================================
+
+# Define o nome que aparecerá no navegador e o ícone
+st.set_page_config(page_title="Formulário de Desempenho", page_icon="📝")
+
+# Resgata o nome do colaborador carregado (se houver)
+resgate = st.session_state.get("rascunho_atual", {})
+nome_titulo = resgate.get("colaborador", "Novo Formulário")
+
+# Exibição do Título Principal
+st.title("📋 Formulário de Acompanhamento")
+
+if nome_titulo != "Novo Formulário":
+    st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
+else:
+    st.success("📝 **Criando Novo Registro**")
+
+st.markdown("---")
+
+
+
+# =========================================================
 # Perguntas DISC
 # =========================================================
 perguntas_disc = [
