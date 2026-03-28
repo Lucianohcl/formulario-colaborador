@@ -2613,13 +2613,22 @@ lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
 lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
+# =========================================================
+# ⚙️ MOTOR DE TABELAS (PERSISTÊNCIA GARANTIDA)
+# =========================================================
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
     st.write(f"**{titulo}**")
-    dados = rascunho.get("tabelas", {}).get(chave_rascunho, [])
-    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: colunas.insert(1, col_extra)
     
-    df = garantir_15_linhas(pd.DataFrame(dados), colunas)
+    # Busca dados direto do rascunho atual carregado do GitHub
+    dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
+    
+    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
+    if col_extra: 
+        colunas.insert(1, col_extra)
+    
+    # Converte para DataFrame e garante que sempre tenha as 15 linhas
+    df_base = pd.DataFrame(dados_salvos)
+    df = garantir_15_linhas(df_base, colunas)
     
     config = {
         col_principal: st.column_config.TextColumn("Descrição", width="large"),
@@ -2627,10 +2636,19 @@ def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_ext
         "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
         "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
     }
-    if col_extra: config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
+    if col_extra: 
+        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
 
-    return st.data_editor(df, key=f"editor_{chave_rascunho}_{v}", column_config=config, use_container_width=True, num_rows="fixed")
+    # O uso da key com 'v' força o reset do componente quando os dados mudam
+    return st.data_editor(
+        df, 
+        key=f"editor_{chave_rascunho}_{v}", 
+        column_config=config, 
+        use_container_width=True, 
+        num_rows="fixed"
+    )
 
+# Chamadas das tabelas (Mantenha estas chaves, elas batem com o Botão Salvar)
 e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
 e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
 e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
@@ -2638,12 +2656,14 @@ e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificul
 e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
 # =========================================================
-# 6. PERFIL DISC
+# 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário")
 
-disc_data = rascunho.get("disc", {})
+# Recupera o dicionário de respostas salvo (se houver)
+disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
+
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza",
     "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes",
@@ -2669,13 +2689,16 @@ perguntas_disc = [
     "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos",
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos",
     "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
-
 ]
 
 respostas_disc = {}
+opcoes = ["A", "B", "C", "D"]
+
 for i, pergunta in enumerate(perguntas_disc):
-    valor_salvo = disc_data.get(str(i), None)
-    opcoes = ["A", "B", "C", "D"]
+    # Busca qual letra (A, B, C ou D) foi salva para esta pergunta específica
+    valor_salvo = disc_data.get(str(i))
+    
+    # Descobre a posição (0, 1, 2 ou 3) para o rádio botão nascer marcado
     idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
     
     respostas_disc[str(i)] = st.radio(
@@ -2731,17 +2754,19 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 4. Execução do salvamento
+   # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
         if salvar_no_github(payload, nome_arq):
-            # Atualiza o estado da sessão para manter os dados na tela
+            # 1. Atualiza o estado da sessão
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
             
-            st.success(f"✅ Sucesso! Os dados de {nome_validado} estão na nuvem.")
-            st.toast("Sincronização concluída!")
+            # 2. Mensagens de Sucesso
+            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso na nuvem!")
+            st.toast("Dados sincronizados!")
             
-            # Recarrega o app para garantir que os campos mostrem o que foi salvo
+            # 3. Recarrega a página
             st.rerun()
         else:
             st.error("❌ Falha ao salvar. Verifique sua conexão ou o Token do GitHub.")
+   
