@@ -192,7 +192,15 @@ def atualizar_rascunhos_do_github():
                 if arquivo["name"].endswith(".json"):
                     try:
                         conteudo_res = requests.get(arquivo["download_url"], headers=headers)
+
+                        if conteudo_res.status_code != 200:
+                            continue
+
                         dados = conteudo_res.json()
+
+                        # 🔥 GARANTE QUE É DICT
+                        if not isinstance(dados, dict):
+                            continue
 
                         # 🔥 PEGA NOME
                         nome_colaborador = dados.get("colaborador")
@@ -2648,7 +2656,7 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
+# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO - VERSÃO FINAL)
 # =========================================================
 import streamlit as st
 from datetime import datetime
@@ -2669,14 +2677,19 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
     # =====================================================
-    # 2. FUNÇÃO PARA LIMPAR TABELAS
+    # 2. FUNÇÃO PARA LIMPAR TABELAS (CORRIGIDA)
     # =====================================================
     def limpar_para_rascunho(df):
-        if df is None or df.empty:
+        if df is None:
             return []
-        
+
         col_principal = df.columns[0]
         mask = df[col_principal].astype(str).str.strip() != ""
+
+        # 🔥 se nenhuma linha preenchida → retorna vazio
+        if mask.sum() == 0:
+            return []
+
         return df[mask].to_dict("records")
 
     # =====================================================
@@ -2684,7 +2697,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     # =====================================================
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_digitado,
+        "colaborador": nome_validado,  # 🔥 CORRIGIDO
         "campos": {
             "cargo": cargo,
             "departamento": depto,
@@ -2702,9 +2715,12 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        # ✅ DISC NO FORMATO CORRETO (0 a 23)
+        # 🔥 DISC PADRONIZADO
         "disc": {
-            str(i): respostas_disc.get(f"p{i}") 
+            str(i): (
+                str(respostas_disc.get(f"p{i}"))
+                if respostas_disc.get(f"p{i}") is not None else None
+            )
             for i in range(24)
         }
     }
@@ -2720,7 +2736,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     # =====================================================
     # 5. SALVAMENTO
     # =====================================================
-    with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
+    with st.spinner(f"📦 Enviando rascunho de {nome_validado} para a nuvem..."):
         try:
             sucesso = salvar_no_github(payload, nome_arq)
         except Exception as e:
@@ -2728,11 +2744,11 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             sucesso = False
 
         if sucesso:
-            # Persistência local
+            # 🔥 Persistência local imediata
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
 
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
+            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_validado} salvo com sucesso!")
 
             # =====================================================
             # 6. ENVIO PARA GOOGLE SHEETS
