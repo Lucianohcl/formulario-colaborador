@@ -721,7 +721,7 @@ btn_produtividade = st.sidebar.button("🚀 Produtividade", key="side_btn_produt
 
 st.sidebar.markdown("---")
 
-btn_logout = st.sidebar.button("🚪 Logout")
+btn_logout = st.sidebar.button("🚪 Logout", key="side_logout_final_3416")
 
 pagina_anterior = st.session_state.pagina
 
