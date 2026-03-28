@@ -2486,32 +2486,32 @@ def val(id_campo, default=""):
     return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
 
 # =========================================================
-# 🔍 2. IDENTIFICAÇÃO E RECUPERAÇÃO DE RASCUNHO
+# 🔍 2. IDENTIFICAÇÃO COM SINCRONIZAÇÃO IMEDIATA
 # =========================================================
 st.subheader("📋 Identificação do Colaborador")
 
-# 1. Tenta recuperar o nome de onde quer que ele esteja (Memória ou Rascunho)
+# 1. Função de retorno para travar o nome na memória assim que digitar
+def atualizar_nome():
+    st.session_state["nome_estatico"] = st.session_state[f"f_nome_input_{v}"].strip().upper()
+
+# 2. Garante que a variável exista
 if "nome_estatico" not in st.session_state:
     st.session_state["nome_estatico"] = val("colaborador")
 
-# 2. O campo de nome agora usa a chave estática como padrão
+# 3. O campo de nome com 'on_change' (Isso impede que suma ao dar Enter)
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
     value=st.session_state["nome_estatico"], 
-    key=f"f_nome_input_{v}"
+    key=f"f_nome_input_{v}",
+    on_change=atualizar_nome # <--- O PULO DO GATO ESTÁ AQUI
 ).strip().upper()
 
-# Atualiza a memória estática sempre que o usuário digita
-if nome_digitado:
-    st.session_state["nome_estatico"] = nome_digitado
-
 if not nome_digitado:
-    st.info("👋 Digite seu nome acima para começar.")
-    st.session_state["rascunho_carregado"] = False 
+    st.info("👋 Digite seu nome completo e aperte ENTER para começar.")
     st.stop()
 
-# Detecta troca de usuário para resetar o rascunho antigo
-if st.session_state["usuario_logado"] != nome_digitado:
+# Detecta se mudou o usuário para resetar rascunhos antigos
+if st.session_state.get("usuario_logado") != nome_digitado:
     st.session_state["usuario_logado"] = nome_digitado
     st.session_state["rascunho_carregado"] = False
 
@@ -2522,7 +2522,7 @@ if not confirmar:
     st.info("Aguardando confirmação para liberar o formulário...")
     st.stop()
 
-# 3. BUSCA DE DADOS (Agora com persistência de nome)
+# 4. BUSCA DE DADOS (Roda após o Checkbox)
 if not st.session_state.get("rascunho_carregado"):
     nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
     with st.spinner("Buscando rascunho..."):
@@ -2532,12 +2532,7 @@ if not st.session_state.get("rascunho_carregado"):
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados = json.loads(conteudo.decoded_content.decode())
             
-            # Injeta o nome em todos os lugares possíveis do payload
-            dados["colaborador"] = nome_digitado
-            if "campos" not in dados: dados["campos"] = {}
-            dados["campos"]["colaborador"] = nome_digitado
-            
-            # SALVA NA MEMÓRIA ANTES DO RERUN
+            # Sincroniza tudo
             st.session_state["nome_estatico"] = nome_digitado
             st.session_state["rascunho_atual"] = dados
             st.session_state["rascunho_carregado"] = True
@@ -2549,6 +2544,7 @@ if not st.session_state.get("rascunho_carregado"):
             st.session_state["rascunho_carregado"] = True
             st.session_state["rascunho_atual"] = {"colaborador": nome_digitado}
             st.info("Iniciando novo formulário em branco.")
+
 
 # =========================================================
 # 📝 3. FORMULÁRIO PREENCHIDO (CAMPOS E TABELAS)
