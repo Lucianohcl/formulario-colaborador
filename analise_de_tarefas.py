@@ -2852,48 +2852,42 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
 
 # =========================================================
-# 🔄 MOTOR DE HIDRATAÇÃO "INVISÍVEL" (VERSÃO DEFINITIVA)
+# 🔄 MOTOR DE HIDRATAÇÃO "CAÇADOR" (FINAL DO ARQUIVO)
 # =========================================================
 
-def motor_final_mapeamento():
-    # 1. Só age se o rascunho estiver carregado no state
-    if "rascunho_atual" not in st.session_state or not st.session_state["rascunho_atual"]:
-        return
+def motor_final_v100():
+    # 1. PEGA O NOME QUE ESTÁ NO INPUT
+    nome_digitado = st.session_state.get("f_nome")
+    rascunhos_na_memoria = st.session_state.get("rascunhos", {})
 
-    r = st.session_state["rascunho_atual"]
-    c = r.get("campos", {})
-    t = r.get("tabelas", {})
-    d = r.get("disc", {})
-    v = st.session_state.get("v_tab", 0)
+    # 2. TENTA LOCALIZAR O CONTEÚDO DO JSON
+    # Se o rascunho_atual não existe, tentamos pegar do dicionário de rascunhos
+    if "rascunho_atual" not in st.session_state:
+        if nome_digitado in rascunhos_na_memoria:
+            st.session_state["rascunho_atual"] = rascunhos_na_memoria[nome_digitado]
 
-    # 2. MAPEAMENTO DE TEXTO (JSON -> KEYS QUE VOCÊ JÁ TEM)
-    # Aqui o motor escreve direto nos IDs dos seus campos
-    st.session_state["f_nome"] = r.get("colaborador", "")
-    st.session_state["f_cargo"] = c.get("cargo", "")
-    st.session_state["f_depto"] = c.get("departamento", "")
-    st.session_state["f_setor"] = c.get("setor", "")
-    st.session_state["f_chefe"] = c.get("chefe", "")
-    st.session_state["f_unidade"] = c.get("unidade", "")
-    st.session_state["f_esc"] = c.get("escolaridade", "")
-    st.session_state["f_cursos_area"] = c.get("cursos", "")
-    st.session_state["f_obj_area"] = c.get("objetivo", "")
-    st.session_state["f_dev"] = c.get("devolucao", "")
+    # 3. SE ACHOU, DISTRIBUI OS DADOS
+    if st.session_state.get("rascunho_atual"):
+        r = st.session_state["rascunho_atual"]
+        c = r.get("campos", {})
+        v = st.session_state.get("v_tab", 0)
 
-    # 3. MAPEAMENTO DE TABELAS
-    for nome_t in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-        if nome_t in t:
-            key_tab = f"editor_{nome_t}_v{v}"
-            st.session_state[key_tab] = pd.DataFrame(t[nome_t])
+        # Injeta nas chaves que o DEBUG e os Inputs usam
+        st.session_state["f_nome"] = r.get("colaborador", nome_digitado)
+        st.session_state["f_cargo"] = c.get("cargo", "")
+        st.session_state["f_depto"] = c.get("departamento", "")
+        st.session_state["f_chefe"] = c.get("chefe", "")
+        
+        # Injeta também nas chaves _v2 que o seu código usa no 'value='
+        st.session_state["f_nome_v2"] = r.get("colaborador", nome_digitado)
+        st.session_state["f_cargo_v2"] = c.get("cargo", "")
+        st.session_state["f_chefe_v2"] = c.get("chefe", "")
 
-    # 4. MAPEAMENTO DO DISC (Trata chaves "0", "1", "2"...)
-    for i in range(24):
-        letra = d.get(str(i))
-        if letra:
-            st.session_state[f"disc_radio_{i}_{v}"] = letra
+        # Injeta Tabelas
+        tabs = r.get("tabelas", {})
+        for t_nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+            if t_nome in tabs:
+                st.session_state[f"editor_{t_nome}_v{v}"] = pd.DataFrame(tabs[t_nome])
 
-# --- EXECUÇÃO ---
-try:
-    motor_final_mapeamento()
-except Exception as e:
-    # Log silencioso no terminal se algo falhar
-    print(f"Erro no mapeamento: {e}")
+# Executa
+motor_final_v100()
