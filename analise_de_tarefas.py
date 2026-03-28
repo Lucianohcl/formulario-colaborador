@@ -1242,10 +1242,11 @@ with col1:
     nomes_disponiveis = list(rascunhos_dict.keys())
     st.write(f"🗂️ Rascunhos na Nuvem: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
 
+    v = st.session_state.get("v_tab", 0)
     nome_f = st.text_input(
         "Nome do colaborador",
         value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
-        key="f_nome"
+        key=f"f_nome_{v}"
     )
 
     if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
@@ -1259,8 +1260,9 @@ with col1:
             
             if rascunho:
                 # 1. SALVA O NOME PARA ELE NÃO SUMIR
-                st.session_state["f_nome"] = nome_busca
+                
                 st.session_state["f_nome_v2"] = nome_busca
+                st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
                 
                 # 2. DADOS BÁSICOS (Injeta direto nas chaves que os widgets usam)
                 cp = rascunho.get("campos", {})
@@ -2697,12 +2699,17 @@ st.subheader("👤 Dados de Identificação")
 rascunhos_dict = st.session_state.get("rascunhos", {})
 nomes_disponiveis = list(rascunhos_dict.keys())
 
+# 1. Garante que a versão v_tab exista para controlar o reset do campo
+# 1. Pega a versão atual (que o botão aumenta lá embaixo)
+v_id = st.session_state.get("v_tab", 0)
+
 col_busca, col_status = st.columns([3, 1])
 with col_busca:
+    # 2. A única mudança real é o f"f_nome_input_{v_id}"
     nome_f = st.text_input(
         "Digite o nome para buscar ou iniciar", 
-        value=v("colaborador"), # ID usado na sua função do GitHub
-        key="f_nome_input"
+        value=v("colaborador"), 
+        key=f"f_nome_input_{v_id}" 
     )
 
 with col_status:
@@ -2712,6 +2719,7 @@ with col_status:
             rascunho = st.session_state.get("rascunhos", {}).get(nome_f.strip().upper())
             if rascunho:
                 st.session_state["rascunho_atual"] = rascunho
+                st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
                 st.success("Carregado!")
                 st.rerun()
             else:
@@ -2753,7 +2761,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     # =====================================================
     # 1. VALIDAÇÃO DO NOME
     # =====================================================
-    nome_validado = nome_digitado.strip().upper()
+    nome_validado = nome_f.strip().upper()
 
     if not nome_validado or len(nome_validado) < 3:
         st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
