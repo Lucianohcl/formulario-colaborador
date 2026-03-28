@@ -2850,78 +2850,64 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
 
 # =========================================================
-# 🔄 MOTOR DE HIDRATAÇÃO COM DEBUG (COLE NO FINAL DO .PY)
+# 🎯 MOTOR ULTRA-SIMPLIFICADO (O FIM DO LABIRINTO)
 # =========================================================
 
-def sincronizar_com_debug():
-    # 1. Verifica se existe rascunho
-    if "rascunho_atual" not in st.session_state or not st.session_state["rascunho_atual"]:
-        # Isso aparece no seu terminal (preto) onde o streamlit roda
-        print("DEBUG: [Vazio] Nenhum rascunho ativo no session_state.")
+def hidratacao_definitiva():
+    # 1. Só roda se houver rascunho
+    if "rascunho_atual" not in st.session_state:
         return
 
+    # 2. "Achata" o rascunho (Transforma tudo em uma tabela simples de chave:valor)
+    resumo = {}
     rascunho = st.session_state["rascunho_atual"]
-    fonte = rascunho.get("campos", {})
-    
-    # Aviso visual na tela do app (canto inferior)
-    st.toast("🔍 Iniciando Verificação de Dados...", icon="⚙️")
 
-    # 2. Mapeamento de campos de texto
-    mapeamento = {
+    # Pega o que está na raiz
+    resumo.update({k: v for k, v in rascunho.items() if not isinstance(v, dict)})
+    
+    # Pega o que está dentro de 'campos'
+    if "campos" in rascunho:
+        resumo.update(rascunho["campos"])
+
+    # 3. Mapeamento Direto (Onde o dado vai morar na tela)
+    # Formato: "Nome no JSON": "Key do seu Widget"
+    mapa = {
         "colaborador": "f_nome",
         "cargo": "f_cargo",
-        "departamento": "f_depto",
-        "escolaridade": "f_esc",
         "setor": "f_setor",
+        "departamento": "f_depto",
         "chefe": "f_chefe",
         "unidade": "f_unidade",
+        "escolaridade": "f_esc",
         "devolucao": "f_dev",
         "cursos": "f_cursos_area",
         "objetivo": "f_obj_area"
     }
 
-    print(f"--- DEBUG CARREGAMENTO: {rascunho.get('colaborador', 'DESCONHECIDO')} ---")
+    # 4. Injeção na veia
+    for campo_json, key_widget in mapa.items():
+        if campo_json in resumo:
+            st.session_state[key_widget] = resumo[campo_json]
 
-    for json_k, ui_k in mapeamento.items():
-        valor = fonte.get(json_k) or rascunho.get(json_k)
-        if valor:
-            st.session_state[ui_k] = valor
-            print(f"✅ SUCESSO: Campo '{ui_k}' recebeu '{valor}'")
-        else:
-            print(f"⚠️ AVISO: Campo '{json_k}' veio vazio do JSON.")
+    # 5. Tabelas (Busca direta pelo nome)
+    v = st.session_state.get("v_tab", 0)
+    tabelas = rascunho.get("tabelas", {})
+    for nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+        if nome in tabelas:
+            st.session_state[f"editor_{nome}_v{v}"] = pd.DataFrame(tabelas[nome])
 
-    # 3. Debug de Tabelas
-    v_tab = st.session_state.get("v_tab", 0)
-    tabelas_f = rascunho.get("tabelas", {})
-    
-    for tab_nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-        ui_key_tabela = f"editor_{tab_nome}_v{v_tab}"
-        if tab_nome in tabelas_f:
-            st.session_state[ui_key_tabela] = pd.DataFrame(tabelas_f[tab_nome])
-            print(f"✅ TABELA: '{ui_key_tabela}' carregada com {len(tabelas_f[tab_nome])} linhas.")
-        else:
-            print(f"❌ TABELA: '{tab_nome}' não encontrada no JSON.")
-
-    # 4. Debug do DISC
-    disc_f = rascunho.get("disc", {})
+    # 6. DISC (Busca por p0, p1... ou q1, q2...)
+    disc = rascunho.get("disc", {})
     for i in range(24):
-        json_key = f"p{i}"
-        ui_key_disc = f"disc_radio_{i}_{v_tab}"
-        if json_key in disc_f:
-            st.session_state[ui_key_disc] = disc_f[json_key]
-        else:
-            # Se não achar p0, p1... tenta q1, q2... (conforme seu código anterior)
-            alt_key = f"q{i+1}"
-            if alt_key in disc_f:
-                st.session_state[ui_key_disc] = disc_f[alt_key]
+        val = disc.get(f"p{i}") or disc.get(f"q{i+1}")
+        if val:
+            st.session_state[f"disc_radio_{i}_{v}"] = val
 
-    st.toast("✅ Sincronização concluída!", icon="👍")
-    print("--- FIM DO DEBUG ---")
-
-# --- EXECUÇÃO FINAL ---
+# --- EXECUÇÃO ---
 try:
-    sinconizar_com_debug()
+    hidratacao_definitiva()
+    # Força um aviso visual para você saber que funcionou
+    if "rascunho_atual" in st.session_state:
+        st.toast("✅ Formulário Sincronizado!", icon="🚀")
 except Exception as e:
-    # Se der erro grave, avisa na tela e no log
-    st.error(f"Erro no Motor de Hidratação: {e}")
-    print(f"DEBUG ERRO CRÍTICO: {e}")
+    st.error(f"Erro na sincronização: {e}")
