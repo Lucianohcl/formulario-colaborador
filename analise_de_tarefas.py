@@ -190,17 +190,34 @@ def atualizar_rascunhos_do_github():
             
             for arquivo in arquivos:
                 if arquivo["name"].endswith(".json"):
-                    conteudo_res = requests.get(arquivo["download_url"], headers=headers)
-                    dados = conteudo_res.json()
-                    
-                    # --- MUDANÇA AQUI: LÓGICA DE COMPATIBILIDADE ---
-                    # Tenta pegar 'colaborador' (novo). Se não achar, tenta 'campos' -> 'nome' (antigo)
-                    nome_colaborador = dados.get("colaborador")
-                    if not nome_colaborador:
-                        nome_colaborador = dados.get("campos", {}).get("nome")
-                    
-                    if nome_colaborador:
-                        rascunhos_temp[nome_colaborador] = dados
+                    try:
+                        conteudo_res = requests.get(arquivo["download_url"], headers=headers)
+                        dados = conteudo_res.json()
+
+                        # 🔥 PEGA NOME
+                        nome_colaborador = dados.get("colaborador")
+
+                        # 🔥 CORREÇÃO 1: se vier dict
+                        if isinstance(nome_colaborador, dict):
+                            nome_colaborador = nome_colaborador.get("nome")
+
+                        # 🔥 CORREÇÃO 2: fallback
+                        if not nome_colaborador:
+                            nome_colaborador = dados.get("campos", {}).get("nome")
+
+                        # 🔥 CORREÇÃO 3: garante string
+                        if isinstance(nome_colaborador, str):
+                            nome_colaborador = nome_colaborador.strip().upper()
+                        else:
+                            nome_colaborador = None
+
+                        # 🔥 CORREÇÃO 4: só salva se válido
+                        if nome_colaborador:
+                            rascunhos_temp[nome_colaborador] = dados
+
+                    except Exception as e:
+                        # 🔥 IGNORA ARQUIVO PROBLEMÁTICO
+                        continue
             
             st.session_state["rascunhos"] = rascunhos_temp
         else:
