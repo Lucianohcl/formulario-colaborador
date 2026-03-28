@@ -2670,6 +2670,80 @@ for i, pergunta in enumerate(perguntas_disc):
 import streamlit as st
 from datetime import datetime
 
+# =========================================================
+# 🎯 MOTOR DE POVOAMENTO (UNIFICADO)
+# =========================================================
+
+# 1. Tenta pegar o rascunho que acabou de ser salvo ou carregado
+form = st.session_state.get("rascunho_atual", {})
+
+def v(id_campo, default=""):
+    """ 
+    Busca o valor no rascunho. 
+    Lógica 'De-Para': Se o ID existe no JSON, ele preenche o campo.
+    """
+    if not form: return default
+    # Busca na raiz (como na sua visualização) ou dentro de 'campos'
+    return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
+
+# =========================================================
+# 👤 CABEÇALHO DE IDENTIFICAÇÃO (AJUSTADO)
+# =========================================================
+st.subheader("👤 Dados de Identificação")
+
+# Mostra os rascunhos disponíveis na lateral ou topo (opcional)
+rascunhos_dict = st.session_state.get("rascunhos", {})
+nomes_disponiveis = list(rascunhos_dict.keys())
+
+col_busca, col_status = st.columns([3, 1])
+with col_busca:
+    nome_f = st.text_input(
+        "Digite o nome para buscar ou iniciar", 
+        value=v("colaborador"), # ID usado na sua função do GitHub
+        key="f_nome_input"
+    )
+
+with col_status:
+    if st.button("📥 Carregar", use_container_width=True):
+        if nome_f:
+            atualizar_rascunhos_do_github()
+            rascunho = st.session_state.get("rascunhos", {}).get(nome_f.strip().upper())
+            if rascunho:
+                st.session_state["rascunho_atual"] = rascunho
+                st.success("Carregado!")
+                st.rerun()
+            else:
+                st.error("Não encontrado.")
+
+st.markdown("---")
+
+# --- CAMPOS AUTO-PREENCHÍVEIS ---
+col1, col2 = st.columns(2)
+
+with col1:
+    # O 'value' chama a função 'v' com o ID exato que o seu Word/PDF esperam
+    cargo_f = st.text_input("Cargo", value=v("cargo"), key="f_cargo")
+    depto_f = st.text_input("Departamento", value=v("departamento"), key="f_depto")
+    setor_f = st.text_input("Setor", value=v("setor"), key="f_setor")
+    esc_f = st.text_input("Escolaridade", value=v("escolaridade"), key="f_esc")
+
+with col2:
+    chefe_f = st.text_input("Chefe imediato", value=v("chefe"), key="f_chefe")
+    unidade_f = st.text_input("Empresa / Unidade", value=v("empresa"), key="f_unidade")
+    dev_f = st.text_input("Devolver preenchido em", value=v("devolucao"), key="f_dev")
+    # Campo extra se houver
+    data_envio = st.text_input("Data de Envio", value=v("data_envio"), key="f_data", disabled=True)
+
+st.markdown("---")
+cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=v("cursos"), key="f_cursos_area")
+obj_f = st.text_area("Objetivo do Trabalho", value=v("objetivo"), key="f_obj_area")
+
+# =========================================================
+# 📊 QUESTIONÁRIO DISC (INTEGRADO AO MOTOR)
+# =========================================================
+# No seu loop do DISC, use a mesma lógica:
+# resposta_salva = form.get("disc", {}).get(f"disc_{i}")
+
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
@@ -2702,36 +2776,27 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         return df[mask].to_dict("records")
 
     # =====================================================
-    # 3. MONTAGEM DO PAYLOAD (PADRÃO BANCO)
+    # 3. MONTAGEM DO PAYLOAD (PADRÃO BANCO - NOMES AJUSTADOS)
     # =====================================================
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_validado,  # 🔥 CORRIGIDO
+        "colaborador": nome_validado,  
         "campos": {
-            "cargo": cargo,
-            "departamento": depto,
-            "setor": setor,
-            "chefe": chefe,
-            "unidade": unidade,
-            "escolaridade": escolaridade,
-            "cursos": cursos,
-            "objetivo": objetivo
+            "cargo": cargo_f,         # 🔥 Antes estava só 'cargo'
+            "departamento": depto_f,  # 🔥 Antes estava só 'depto'
+            "setor": setor_f,         # 🔥 Antes estava só 'setor'
+            "chefe": chefe_f,         # 🔥 Antes estava só 'chefe'
+            "unidade": unidade_f,     # 🔥 Antes estava só 'unidade'
+            "escolaridade": esc_f,    # 🔥 Antes estava só 'escolaridade'
+            "cursos": cursos_f,       # 🔥 Antes estava só 'cursos'
+            "objetivo": obj_f         # 🔥 Antes estava só 'objetivo'
         },
         "tabelas": {
-            "alta": limpar_para_rascunho(e_alta),
-            "normal": limpar_para_rascunho(e_normal),
-            "baixa": limpar_para_rascunho(e_baixa),
-            "dificuldades": limpar_para_rascunho(e_dif),
-            "sugestoes": limpar_para_rascunho(e_sug)
+            "atividades_alta": limpar_para_rascunho(e_alta),
+            "atividades_normal": limpar_para_rascunho(e_norm),
+            "dificuldades": limpar_para_rascunho(e_dif)
         },
-        # 🔥 DISC PADRONIZADO
-        "disc": {
-            str(i): (
-                str(respostas_disc.get(f"p{i}"))
-                if respostas_disc.get(f"p{i}") is not None else None
-            )
-            for i in range(24)
-        }
+        "disc": respostas_atualmente_selecionadas # 🔥 Usa o dicionário que você criou no loop do DISC
     }
 
     # =====================================================
