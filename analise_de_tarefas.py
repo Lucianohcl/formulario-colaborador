@@ -2852,42 +2852,37 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
 
 # =========================================================
-# 🔄 MOTOR DE HIDRATAÇÃO "CAÇADOR" (FINAL DO ARQUIVO)
+# 🔄 MOTOR DE SINCRONIZAÇÃO "FORÇA BRUTA"
 # =========================================================
 
-def motor_final_v100():
-    # 1. PEGA O NOME QUE ESTÁ NO INPUT
-    nome_digitado = st.session_state.get("f_nome")
-    rascunhos_na_memoria = st.session_state.get("rascunhos", {})
+# 1. Tenta recuperar o rascunho se o nome bater com a lista da nuvem
+nome_no_campo = st.session_state.get("f_nome")
+dicionario_nuvem = st.session_state.get("rascunhos", {})
 
-    # 2. TENTA LOCALIZAR O CONTEÚDO DO JSON
-    # Se o rascunho_atual não existe, tentamos pegar do dicionário de rascunhos
-    if "rascunho_atual" not in st.session_state:
-        if nome_digitado in rascunhos_na_memoria:
-            st.session_state["rascunho_atual"] = rascunhos_na_memoria[nome_digitado]
+if nome_no_campo in dicionario_nuvem:
+    # Se o rascunho existe mas não foi "ativado", a gente ativa agora
+    if "rascunho_atual" not in st.session_state or st.session_state["rascunho_atual"] is None:
+        st.session_state["rascunho_atual"] = dicionario_nuvem[nome_no_campo]
 
-    # 3. SE ACHOU, DISTRIBUI OS DADOS
-    if st.session_state.get("rascunho_atual"):
-        r = st.session_state["rascunho_atual"]
-        c = r.get("campos", {})
-        v = st.session_state.get("v_tab", 0)
+# 2. Se temos um rascunho ativo, forçamos a injeção em TODAS as chaves possíveis
+if st.session_state.get("rascunho_atual"):
+    r = st.session_state["rascunho_atual"]
+    c = r.get("campos", {})
+    v = st.session_state.get("v_tab", 0)
 
-        # Injeta nas chaves que o DEBUG e os Inputs usam
-        st.session_state["f_nome"] = r.get("colaborador", nome_digitado)
-        st.session_state["f_cargo"] = c.get("cargo", "")
-        st.session_state["f_depto"] = c.get("departamento", "")
-        st.session_state["f_chefe"] = c.get("chefe", "")
-        
-        # Injeta também nas chaves _v2 que o seu código usa no 'value='
-        st.session_state["f_nome_v2"] = r.get("colaborador", nome_digitado)
-        st.session_state["f_cargo_v2"] = c.get("cargo", "")
-        st.session_state["f_chefe_v2"] = c.get("chefe", "")
+    # Injeta nas Keys (para o DEBUG e Widgets)
+    st.session_state["f_cargo"] = c.get("cargo", "")
+    st.session_state["f_chefe"] = c.get("chefe", "")
+    st.session_state["f_depto"] = c.get("departamento", "")
+    st.session_state["f_setor"] = c.get("setor", "")
 
-        # Injeta Tabelas
-        tabs = r.get("tabelas", {})
-        for t_nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-            if t_nome in tabs:
-                st.session_state[f"editor_{t_nome}_v{v}"] = pd.DataFrame(tabs[t_nome])
+    # Injeta nas chaves _v2 (caso seu código as use no parâmetro 'value')
+    st.session_state["f_cargo_v2"] = c.get("cargo", "")
+    st.session_state["f_chefe_v2"] = c.get("chefe", "")
+    st.session_state["f_nome_v2"] = r.get("colaborador", "")
 
-# Executa
-motor_final_v100()
+    # Injeta Tabelas (Garante que o editor mostre os dados)
+    tabs = r.get("tabelas", {})
+    for t_nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+        if t_nome in tabs:
+            st.session_state[f"editor_{t_nome}_v{v}"] = pd.DataFrame(tabs[t_nome])
