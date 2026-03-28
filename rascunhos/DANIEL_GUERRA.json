@@ -1,5 +1,5 @@
 {
-    "timestamp": "28/03/2026 21:12:28",
+    "timestamp": "28/03/2026 21:56:42",
     "colaborador": "DANIEL GUERRA",
     "campos": {
         "cargo": "Financeiro",
@@ -8,16 +8,17 @@
         "chefe": "José da Silva",
         "unidade": "Empresa Exemplo",
         "escolaridade": "Graduação e Ciências Contábeis",
+        "devolver_em": "25/03/2026",
         "cursos": "Graduação em Ciências Contábeis",
         "objetivo": "Apurar e Controlar os Custos da Empresa"
     },
     "tabelas": {
         "alta": [
             {
-                "Atividade": "kcbcbdjcbdcjddd",
-                "Horas": "3 h",
-                "Minutos": "5 min",
-                "Frequência": "D"
+                "Atividade": "cccccccc",
+                "Horas": "4 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
             }
         ],
         "normal": [],
