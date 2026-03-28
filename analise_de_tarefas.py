@@ -2599,6 +2599,8 @@ with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
+    devolver_em = st.text_input("Devolver em:", value=val("devolver_em"), key=f"dev_{v}") # <-- ADICIONADO AQUI
+
 
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
 objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
@@ -2725,34 +2727,38 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
     # 2. Função interna para limpar linhas vazias das tabelas
-    def limpar_para_rascunho(df):
-        if df is None or df.empty: return []
-        mask = df.iloc[:, 0].astype(str).str.strip() != ""
-        return df[mask].to_dict("records") if mask.sum() > 0 else []
+        def limpar_para_rascunho(df):
+            if df is None or df.empty:
+                return []
+            # Converte para DataFrame por segurança e remove linhas onde a 1ª coluna está vazia
+            df_temp = pd.DataFrame(df)
+            mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
+            return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # 3. Montagem do Payload (Dados que vão para o GitHub)
-    payload = {
-        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_validado,
-        "campos": {
-            "cargo": cargo, 
-            "departamento": depto, 
-            "setor": setor,
-            "chefe": chefe, 
-            "unidade": unidade, 
-            "escolaridade": escolaridade,
-            "cursos": cursos, 
-            "objetivo": objetivo
-        },
-        "tabelas": {
-            "alta": limpar_para_rascunho(e_alta),
-            "normal": limpar_para_rascunho(e_normal),
-            "baixa": limpar_para_rascunho(e_baixa),
-            "dificuldades": limpar_para_rascunho(e_dif),
-            "sugestoes": limpar_para_rascunho(e_sug)
-        },
-        "disc": respostas_disc
-    }
+        # 3. Montagem do Payload (Dados que vão para o GitHub)
+        payload = {
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "colaborador": nome_validado,
+            "campos": {
+                "cargo": cargo, 
+                "departamento": depto, 
+                "setor": setor,
+                "chefe": chefe, 
+                "unidade": unidade, 
+                "escolaridade": escolaridade,
+                "devolver_em": devolver_em,
+                "cursos": cursos, 
+                "objetivo": objetivo
+            },
+            "tabelas": {
+                "alta": limpar_para_rascunho(e_alta),
+                "normal": limpar_para_rascunho(e_normal),
+                "baixa": limpar_para_rascunho(e_baixa),
+                "dificuldades": limpar_para_rascunho(e_dif),
+                "sugestoes": limpar_para_rascunho(e_sug)
+            },
+            "disc": respostas_disc
+        }
 
    # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
