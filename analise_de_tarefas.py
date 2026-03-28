@@ -1386,65 +1386,95 @@ for i, pergunta in enumerate(perguntas_disc):
 
 
 # =========================================================
-# 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
+# 6. VALIDAÇÃO UNIFICADA (CORRIGIDA)
 # =========================================================
 st.markdown("---")
 st.subheader("✅ Status de Validação do Formulário")
 
 pendencias = []
 
-# --- 1. VALIDAÇÃO DE CABEÇALHO ---
+# --- 1. VALIDAÇÃO DE CABEÇALHO (Usando session_state para evitar NameError) ---
 campos_id = {
-    "Nome": nome_f, "Cargo": cargo_f, "Departamento": depto_f,
-    "Escolaridade": esc_f, "Setor": setor_f, "Chefe Imediato": chefe_f,
-    "Empresa/Unidade": unidade_f, "Devolver em": dev_f,
-    "Cursos": cursos_f, "Objetivo": obj_f
+    "Nome": st.session_state.get(f"f_nome_input_new_{st.session_state.get('v_tab', 0)}"),
+    "Cargo": st.session_state.get("f_cargo"),
+    "Departamento": st.session_state.get("f_depto"),
+    "Escolaridade": st.session_state.get("f_esc"),
+    "Setor": st.session_state.get("f_setor"),
+    "Chefe Imediato": st.session_state.get("f_chefe"),
+    "Empresa/Unidade": st.session_state.get("f_unidade"),
+    "Devolver em": st.session_state.get("f_dev"),
+    "Cursos": st.session_state.get("f_cursos_area"),
+    "Objetivo": st.session_state.get("f_obj_area")
 }
+
 for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS ---
+# --- 2. VALIDAÇÃO DAS TABELAS (Incluindo todos os campos de Dificuldades/Sugestões) ---
 dict_tabelas = {
-    "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
-    "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
+    "Alta Complexidade": e_alta, 
+    "Complexidade Normal": e_normal,
+    "Baixa Complexidade": e_baixa, 
+    "Dificuldades": e_dif,
     "Sugestões e Melhorias": e_sug
 }
 
-regras_colunas = {
-    "Alta Complexidade": "Atividade", "Complexidade Normal": "Atividade",
-    "Baixa Complexidade": "Atividade", "Dificuldades": "Dificuldade",
-    "Sugestões e Melhorias": "Sugestão"
-}
-
 for nome_tab, df_validar in dict_tabelas.items():
-    col_alvo = regras_colunas.get(nome_tab)
-    if df_validar is not None and col_alvo in df_validar.columns:
-        linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
-        if len(linhas_ativas) == 0:
-            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item.")
-        else:
-            for i, row in linhas_ativas.iterrows():
-                h = extrair_num(row.get("Horas", "0 h"))
-                m = extrair_num(row.get("Minutos", "0 min"))
+    if df_validar is None:
+        continue
+        
+    # Identifica a coluna principal de cada tabela
+    col_principal = "Atividade"
+    if nome_tab == "Dificuldades": col_principal = "Dificuldade"
+    if nome_tab == "Sugestões e Melhorias": col_principal = "Sugestão"
+    
+    # Filtra apenas linhas que têm texto na coluna principal
+    linhas_ativas = df_validar[df_validar[col_principal].astype(str).str.strip() != ""]
+    
+    if len(linhas_ativas) == 0:
+        pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item preenchido.")
+    else:
+        for i, row in linhas_ativas.iterrows():
+            # Validação específica para Tabelas de Atividades (Tempo e Frequência)
+            if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
+                h = extrair_num(row.get("Horas", "0"))
+                m = extrair_num(row.get("Minutos", "0"))
                 freq = str(row.get("Frequência", "")).strip()
-                if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                    if h == 0 and m == 0: pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem tempo.")
-                    if freq == "": pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem frequência.")
+                if h == 0 and m == 0: 
+                    pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem o tempo gasto.")
+                if freq == "" or freq == "None": 
+                    pendencias.append(f"❌ {nome_tab}: Linha {i+1} está sem a frequência.")
+            
+            # Validação para Dificuldades e Sugestões (Campos Adicionais)
+            elif nome_tab == "Dificuldades":
+                causa = str(row.get("Causa", "")).strip()
+                solucao = str(row.get("Sugestão de Solução", "")).strip()
+                if causa == "" or solucao == "":
+                    pendencias.append(f"❌ Dificuldades: Linha {i+1} precisa de Causa e Solução preenchidas.")
+            
+            elif nome_tab == "Sugestões e Melhorias":
+                resultado = str(row.get("Resultado Esperado", "")).strip()
+                if resultado == "":
+                    pendencias.append(f"❌ Sugestões: Linha {i+1} precisa do Resultado Esperado.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
-respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
+# Usamos o .get para evitar NameError caso a variável não exista
+disc_data = st.session_state.get("respostas_disc_atual", {})
+respostas_vazias = [k for k, v in disc_data.items() if v is None]
 if len(respostas_vazias) > 0:
-    pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
+    pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões** do Perfil DISC.")
 
-# --- EXIBIÇÃO FINAL DO STATUS ---
+# --- EXIBIÇÃO FINAL ---
 if pendencias:
-    st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
+    st.warning(f"⚠️ **Existem {len(pendencias)} pendências para correção:**")
     for p in pendencias:
         st.write(f"• {p}")
     st.session_state["confirmacao_final"] = False
 else:
-    st.success("🎉 **Perfeito! Tudo preenchido corretamente. O envio está liberado.**")
+    st.success("🎉 **Tudo pronto! O Daniel Guerra (ou qualquer colaborador) agora pode enviar.**")
+    st.session_state["confirmacao_final"] = True
+
 
 # =========================================================
 # 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
