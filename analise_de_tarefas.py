@@ -1231,6 +1231,8 @@ perguntas_disc = [
 # =========================================================
 st.subheader("👤 Dados de Identificação")
 
+st.write("DEBUG - O que tem no state agora:", st.session_state.get("f_cargo"))
+
 fonte = st.session_state.get("dados_oficiais", {})
 col1, col2 = st.columns(2)
 
