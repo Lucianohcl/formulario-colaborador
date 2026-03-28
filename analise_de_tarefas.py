@@ -2732,7 +2732,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     # O 'value' chama a função 'v' com o ID exato que o seu Word/PDF esperam
-    cargo_f = st.text_input("Cargo", value=v("cargo"), key="f_cargo")
+    cargo_f = st.text_input("Cargo", key="f_cargo")
     depto_f = st.text_input("Departamento", value=v("departamento"), key="f_depto")
     setor_f = st.text_input("Setor", value=v("setor"), key="f_setor")
     esc_f = st.text_input("Escolaridade", value=v("escolaridade"), key="f_esc")
