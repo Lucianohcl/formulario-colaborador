@@ -2490,19 +2490,27 @@ def val(id_campo, default=""):
 # =========================================================
 st.subheader("📋 Identificação do Colaborador")
 
-# O campo de nome agora 'bebe' da função val() e usa a key dinâmica 'v'
+# 1. Tenta recuperar o nome de onde quer que ele esteja (Memória ou Rascunho)
+if "nome_estatico" not in st.session_state:
+    st.session_state["nome_estatico"] = val("colaborador")
+
+# 2. O campo de nome agora usa a chave estática como padrão
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
-    value=val("colaborador"), 
+    value=st.session_state["nome_estatico"], 
     key=f"f_nome_input_{v}"
 ).strip().upper()
+
+# Atualiza a memória estática sempre que o usuário digita
+if nome_digitado:
+    st.session_state["nome_estatico"] = nome_digitado
 
 if not nome_digitado:
     st.info("👋 Digite seu nome acima para começar.")
     st.session_state["rascunho_carregado"] = False 
     st.stop()
 
-# Detecta troca de usuário
+# Detecta troca de usuário para resetar o rascunho antigo
 if st.session_state["usuario_logado"] != nome_digitado:
     st.session_state["usuario_logado"] = nome_digitado
     st.session_state["rascunho_carregado"] = False
@@ -2514,7 +2522,7 @@ if not confirmar:
     st.info("Aguardando confirmação para liberar o formulário...")
     st.stop()
 
-# Executa a busca no GitHub se ainda não foi carregado
+# 3. BUSCA DE DADOS (Agora com persistência de nome)
 if not st.session_state.get("rascunho_carregado"):
     nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
     with st.spinner("Buscando rascunho..."):
@@ -2524,12 +2532,13 @@ if not st.session_state.get("rascunho_carregado"):
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados = json.loads(conteudo.decoded_content.decode())
             
-            # Garante que o nome do Daniel Guerra esteja no payload
-            if "campos" not in dados: dados["campos"] = {}
+            # Injeta o nome em todos os lugares possíveis do payload
             dados["colaborador"] = nome_digitado
+            if "campos" not in dados: dados["campos"] = {}
             dados["campos"]["colaborador"] = nome_digitado
             
-            # Atualiza memória e sobe a versão das chaves (v_tab)
+            # SALVA NA MEMÓRIA ANTES DO RERUN
+            st.session_state["nome_estatico"] = nome_digitado
             st.session_state["rascunho_atual"] = dados
             st.session_state["rascunho_carregado"] = True
             st.session_state["v_tab"] += 1 
@@ -2540,7 +2549,6 @@ if not st.session_state.get("rascunho_carregado"):
             st.session_state["rascunho_carregado"] = True
             st.session_state["rascunho_atual"] = {"colaborador": nome_digitado}
             st.info("Iniciando novo formulário em branco.")
-
 
 # =========================================================
 # 📝 3. FORMULÁRIO PREENCHIDO (CAMPOS E TABELAS)
