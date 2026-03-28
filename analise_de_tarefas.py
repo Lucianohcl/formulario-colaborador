@@ -2455,66 +2455,125 @@ from datetime import datetime
 from github import Github
 
 # =========================================================
-# 1. CONFIGURAÇÕES E INICIALIZAÇÃO
+# 👤 1. CONFIGURAÇÕES E MOTOR DE BUSCA (ESTRUTURA BASE)
 # =========================================================
+import streamlit as st
+import pandas as pd
+import json
+from datetime import datetime
+from github import Github
+
 st.set_page_config(page_title="Formulário de Análise de Tarefas", layout="wide")
 
-try:
-    DB_TOKEN = st.secrets["DB_TOKEN"]
-    REPO_NOME = "lucianohcl/formulario-colaborador"
-except Exception as e:
-    st.error(f"❌ Erro nos Secrets: {e}")
-    st.stop()
-
-# Controle de estado da sessão
+# Inicialização do Estado da Sessão
 if "v_tab" not in st.session_state:
     st.session_state["v_tab"] = 1
 if "rascunho_atual" not in st.session_state:
     st.session_state["rascunho_atual"] = {}
 if "rascunho_carregado" not in st.session_state:
     st.session_state["rascunho_carregado"] = False
+if "usuario_logado" not in st.session_state: 
+    st.session_state["usuario_logado"] = ""
 
-v = st.session_state["v_tab"] # Versão das chaves (Keys)
+# Versão atual das Keys (IDs dos campos)
+v = st.session_state["v_tab"]
 
-# =========================================================
-# 2. MOTOR DE POVOAMENTO (UNIFICADO)
-# =========================================================
 def val(id_campo, default=""):
-    """ Busca o valor no rascunho carregado """
+    """ Função que recupera os dados do Daniel Guerra na memória """
     form = st.session_state.get("rascunho_atual", {})
     if not form: return default
-    # Busca na raiz ou dentro de 'campos'
+    # Busca o campo na raiz ou dentro do dicionário 'campos'
     return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
 
 # =========================================================
-# 3. FUNÇÕES DE SUPORTE
+# 🔍 2. IDENTIFICAÇÃO E RECUPERAÇÃO DE RASCUNHO
 # =========================================================
-def salvar_no_github(conteudo_dict, nome_arquivo):
-    try:
-        g = Github(DB_TOKEN)
-        repo = g.get_repo(REPO_NOME)
-        caminho_git = f"rascunhos/{nome_arquivo}"
-        json_string = json.dumps(conteudo_dict, ensure_ascii=False, indent=4)
-        try:
-            contents = repo.get_contents(caminho_git)
-            repo.update_file(contents.path, f"Update: {nome_arquivo}", json_string, contents.sha)
-        except:
-            repo.create_file(caminho_git, f"Novo envio: {nome_arquivo}", json_string)
-        return True
-    except Exception as e:
-        st.error(f"❌ Erro GitHub: {e}")
-        return False
+st.subheader("📋 Identificação do Colaborador")
 
-def garantir_15_linhas(df, colunas):
-    if df is None or df.empty:
-        df = pd.DataFrame(columns=colunas)
-    for col in colunas:
-        if col not in df.columns: 
-            df[col] = ""
-    while len(df) < 15:
-        nova_linha = {col: "" for col in colunas}
-        df = pd.concat([df, pd.DataFrame([nova_linha])], ignore_index=True)
-    return df.head(15)
+# O campo de nome agora 'bebe' da função val() e usa a key dinâmica 'v'
+nome_digitado = st.text_input(
+    "DIGITE SEU NOME COMPLETO:", 
+    value=val("colaborador"), 
+    key=f"f_nome_input_{v}"
+).strip().upper()
+
+if not nome_digitado:
+    st.info("👋 Digite seu nome acima para começar.")
+    st.session_state["rascunho_carregado"] = False 
+    st.stop()
+
+# Detecta troca de usuário
+if st.session_state["usuario_logado"] != nome_digitado:
+    st.session_state["usuario_logado"] = nome_digitado
+    st.session_state["rascunho_carregado"] = False
+
+st.warning(f"Usuário identificado: **{nome_digitado}**")
+confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS", key=f"check_confirmar_{v}")
+
+if not confirmar:
+    st.info("Aguardando confirmação para liberar o formulário...")
+    st.stop()
+
+# Executa a busca no GitHub se ainda não foi carregado
+if not st.session_state.get("rascunho_carregado"):
+    nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
+    with st.spinner("Buscando rascunho..."):
+        try:
+            g = Github(st.secrets["DB_TOKEN"])
+            repo = g.get_repo("lucianohcl/formulario-colaborador")
+            conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
+            dados = json.loads(conteudo.decoded_content.decode())
+            
+            # Garante que o nome do Daniel Guerra esteja no payload
+            if "campos" not in dados: dados["campos"] = {}
+            dados["colaborador"] = nome_digitado
+            dados["campos"]["colaborador"] = nome_digitado
+            
+            # Atualiza memória e sobe a versão das chaves (v_tab)
+            st.session_state["rascunho_atual"] = dados
+            st.session_state["rascunho_carregado"] = True
+            st.session_state["v_tab"] += 1 
+            
+            st.toast(f"✅ Rascunho de {nome_digitado} carregado!")
+            st.rerun()
+        except:
+            st.session_state["rascunho_carregado"] = True
+            st.session_state["rascunho_atual"] = {"colaborador": nome_digitado}
+            st.info("Iniciando novo formulário em branco.")
+
+
+# =========================================================
+# 📝 3. FORMULÁRIO PREENCHIDO (CAMPOS E TABELAS)
+# =========================================================
+st.markdown("---")
+col1, col2 = st.columns(2)
+
+with col1:
+    cargo = st.text_input("Cargo:", value=val("cargo"), key=f"cargo_{v}")
+    depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
+    setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
+
+with col2:
+    chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
+    unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
+    escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
+
+cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"), key=f"cursos_{v}")
+objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
+
+# Exemplo de função para as Tabelas usando a memória correta
+def gerar_editor(chave_rascunho, col_principal):
+    dados = st.session_state["rascunho_atual"].get("tabelas", {}).get(chave_rascunho, [])
+    df = pd.DataFrame(dados)
+    if df.empty:
+        df = pd.DataFrame(columns=[col_principal, "Horas", "Minutos", "Frequência"])
+    
+    return st.data_editor(df, key=f"editor_{chave_rascunho}_{v}", use_container_width=True)
+
+st.subheader("📋 Atividades")
+e_alta = gerar_editor("alta", "Atividade de Alta Complexidade")
+# ... repita para as outras tabelas
+
 
 # =========================================================
 # 4. FLUXO DE IDENTIFICAÇÃO
