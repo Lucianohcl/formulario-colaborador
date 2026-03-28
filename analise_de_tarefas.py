@@ -2850,64 +2850,48 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
 
 # =========================================================
-# 🎯 MOTOR ULTRA-SIMPLIFICADO (O FIM DO LABIRINTO)
+# 🔄 MOTOR DE HIDRATAÇÃO "INVISÍVEL" (VERSÃO DEFINITIVA)
 # =========================================================
 
-def hidratacao_definitiva():
-    # 1. Só roda se houver rascunho
-    if "rascunho_atual" not in st.session_state:
+def motor_final_mapeamento():
+    # 1. Só age se o rascunho estiver carregado no state
+    if "rascunho_atual" not in st.session_state or not st.session_state["rascunho_atual"]:
         return
 
-    # 2. "Achata" o rascunho (Transforma tudo em uma tabela simples de chave:valor)
-    resumo = {}
-    rascunho = st.session_state["rascunho_atual"]
-
-    # Pega o que está na raiz
-    resumo.update({k: v for k, v in rascunho.items() if not isinstance(v, dict)})
-    
-    # Pega o que está dentro de 'campos'
-    if "campos" in rascunho:
-        resumo.update(rascunho["campos"])
-
-    # 3. Mapeamento Direto (Onde o dado vai morar na tela)
-    # Formato: "Nome no JSON": "Key do seu Widget"
-    mapa = {
-        "colaborador": "f_nome",
-        "cargo": "f_cargo",
-        "setor": "f_setor",
-        "departamento": "f_depto",
-        "chefe": "f_chefe",
-        "unidade": "f_unidade",
-        "escolaridade": "f_esc",
-        "devolucao": "f_dev",
-        "cursos": "f_cursos_area",
-        "objetivo": "f_obj_area"
-    }
-
-    # 4. Injeção na veia
-    for campo_json, key_widget in mapa.items():
-        if campo_json in resumo:
-            st.session_state[key_widget] = resumo[campo_json]
-
-    # 5. Tabelas (Busca direta pelo nome)
+    r = st.session_state["rascunho_atual"]
+    c = r.get("campos", {})
+    t = r.get("tabelas", {})
+    d = r.get("disc", {})
     v = st.session_state.get("v_tab", 0)
-    tabelas = rascunho.get("tabelas", {})
-    for nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-        if nome in tabelas:
-            st.session_state[f"editor_{nome}_v{v}"] = pd.DataFrame(tabelas[nome])
 
-    # 6. DISC (Busca por p0, p1... ou q1, q2...)
-    disc = rascunho.get("disc", {})
+    # 2. MAPEAMENTO DE TEXTO (JSON -> KEYS QUE VOCÊ JÁ TEM)
+    # Aqui o motor escreve direto nos IDs dos seus campos
+    st.session_state["f_nome"] = r.get("colaborador", "")
+    st.session_state["f_cargo"] = c.get("cargo", "")
+    st.session_state["f_depto"] = c.get("departamento", "")
+    st.session_state["f_setor"] = c.get("setor", "")
+    st.session_state["f_chefe"] = c.get("chefe", "")
+    st.session_state["f_unidade"] = c.get("unidade", "")
+    st.session_state["f_esc"] = c.get("escolaridade", "")
+    st.session_state["f_cursos_area"] = c.get("cursos", "")
+    st.session_state["f_obj_area"] = c.get("objetivo", "")
+    st.session_state["f_dev"] = c.get("devolucao", "")
+
+    # 3. MAPEAMENTO DE TABELAS
+    for nome_t in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+        if nome_t in t:
+            key_tab = f"editor_{nome_t}_v{v}"
+            st.session_state[key_tab] = pd.DataFrame(t[nome_t])
+
+    # 4. MAPEAMENTO DO DISC (Trata chaves "0", "1", "2"...)
     for i in range(24):
-        val = disc.get(f"p{i}") or disc.get(f"q{i+1}")
-        if val:
-            st.session_state[f"disc_radio_{i}_{v}"] = val
+        letra = d.get(str(i))
+        if letra:
+            st.session_state[f"disc_radio_{i}_{v}"] = letra
 
 # --- EXECUÇÃO ---
 try:
-    hidratacao_definitiva()
-    # Força um aviso visual para você saber que funcionou
-    if "rascunho_atual" in st.session_state:
-        st.toast("✅ Formulário Sincronizado!", icon="🚀")
+    motor_final_mapeamento()
 except Exception as e:
-    st.error(f"Erro na sincronização: {e}")
+    # Log silencioso no terminal se algo falhar
+    print(f"Erro no mapeamento: {e}")
