@@ -1226,90 +1226,66 @@ perguntas_disc = [
 ]
 
 # =========================================================
-# 👤 DADOS DE IDENTIFICAÇÃO (AJUSTADO PARA 5 TABELAS)
+# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO FINAL SEM CONFLITOS)
 # =========================================================
 st.subheader("👤 Dados de Identificação")
 
-st.write("DEBUG - O que tem no state agora:", st.session_state.get("f_cargo"))
-
-fonte = st.session_state.get("dados_oficiais", {})
+# 1. MOTOR DE BUSCA (COLUNA 1)
 col1, col2 = st.columns(2)
 
 with col1:
-    # Mostra os nomes encontrados no GitHub
-    rascunhos_dict = st.session_state.get("rascunhos", {})
-    nomes_disponiveis = list(rascunhos_dict.keys())
-    st.write(f"🗂️ Rascunhos na Nuvem: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
-
     v = st.session_state.get("v_tab", 0)
+    
+    # Campo de busca com ID dinâmico para evitar o erro da linha 3937
     nome_f = st.text_input(
         "Nome do colaborador",
-        value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
-        key=f"f_nome_{v}"
+        key=f"f_nome_input_new_{v}" 
     )
 
-    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
+    if st.button("📥 Carregar Rascunho", key="btn_load_v4"):
         if nome_f:
-            atualizar_rascunhos_do_github() 
-            rascunhos_dict = st.session_state.get("rascunhos", {})
-            
-            # Força o nome para MAIÚSCULO para bater com o que vem da nuvem
+            atualizar_rascunhos_do_github()
             nome_busca = nome_f.strip().upper()
-            rascunho = rascunhos_dict.get(nome_busca)
+            rascunho = st.session_state.get("rascunhos", {}).get(nome_busca)
             
             if rascunho:
-                # 1. SALVA O NOME PARA ELE NÃO SUMIR
+                # INJETANDO OS DADOS NO ESTADO (O Motor)
+                cp = rascunho.get("campos", rascunho) # Garante compatibilidade
                 
-                st.session_state["f_nome_v2"] = nome_busca
-                st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
+                # Mapeamento exato das keys que os widgets abaixo usam
+                st.session_state["f_cargo"] = cp.get("cargo", "")
+                st.session_state["f_depto"] = cp.get("departamento", "")
+                st.session_state["f_esc"] = cp.get("escolaridade", "")
+                st.session_state["f_setor"] = cp.get("setor", "")
+                st.session_state["f_chefe"] = cp.get("chefe", "")
+                st.session_state["f_unidade"] = cp.get("unidade", "")
+                st.session_state["f_dev"] = cp.get("devolucao", "")
+                st.session_state["f_cursos_area"] = cp.get("cursos", "")
+                st.session_state["f_obj_area"] = cp.get("objetivo", "")
                 
-                # 2. DADOS BÁSICOS (Injeta direto nas chaves que os widgets usam)
-                cp = rascunho.get("campos", {})
-                
-                # Injetamos tanto na f_cargo quanto na f_cargo_v2 para não ter erro
-                campos_map = {
-                    "f_cargo": "cargo",
-                    "f_depto": "departamento",
-                    "f_esc": "escolaridade",
-                    "f_setor": "setor",
-                    "f_chefe": "chefe",
-                    "f_unidade": "unidade",
-                    "f_dev": "devolucao",
-                    "f_cursos_area": "cursos",
-                    "f_obj_area": "objetivo"
-                }
-                
-                for key_ui, key_json in campos_map.items():
-                    valor = rascunho.get(key_json) or cp.get(key_json, "")
-                    st.session_state[key_ui] = valor
-                    st.session_state[f"{key_ui}_v2"] = valor
-
-                # 3. TABELAS (O ponto chave)
-                # Salvamos na 'rascunho_atual' para o seu motor de baixo ler
+                # Tabelas e DISC
                 st.session_state["rascunho_atual"] = rascunho
+                st.session_state["v_tab"] = v + 1
                 
-                # 4. DISC
-                st.session_state["disc_v2"] = rascunho.get("disc", {})
-
-                st.success(f"✅ Dados de {nome_busca} carregados!")
+                st.success(f"✅ {nome_busca} carregado!")
                 st.rerun()
             else:
-                st.error(f"⚠️ Rascunho de '{nome_busca}' não encontrado.")
-        else:
-            st.warning("⚠️ Digite um nome antes de carregar.")
+                st.error("Não encontrado.")
 
+# 2. CAMPOS DE EXIBIÇÃO (COLUNA 2)
 with col2:
-    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
-    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
-    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
-    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
+    # IMPORTANTE: Sem o parâmetro 'value'. A 'key' faz o trabalho.
+    st.text_input("Cargo", key="f_cargo")
+    st.text_input("Departamento", key="f_depto")
+    st.text_input("Escolaridade", key="f_esc")
+    st.text_input("Setor", key="f_setor")
+    st.text_input("Chefe imediato", key="f_chefe")
+    st.text_input("Empresa / Unidade", key="f_unidade")
+    st.text_input("Devolver preenchido em", key="f_dev")
 
-cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
-obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
-
+# 3. ÁREAS DE TEXTO
+st.text_area("Cursos Obrigatórios e Diferenciais", key="f_cursos_area")
+st.text_area("Objetivo do Trabalho", key="f_obj_area")
 
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
