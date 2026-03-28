@@ -2850,72 +2850,78 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
 
 # =========================================================
-# 🔄 MOTOR FINAL DE HIDRATAÇÃO COM DEBUG
+# 🔄 MOTOR DE HIDRATAÇÃO COM DEBUG (COLE NO FINAL DO .PY)
 # =========================================================
 
-def sincronizar_rascunho_com_interface_debug():
-    """
-    Injeta os dados do rascunho no session_state e exibe logs de debug.
-    """
-    # 1. Verifica se há rascunho
+def sincronizar_com_debug():
+    # 1. Verifica se existe rascunho
     if "rascunho_atual" not in st.session_state or not st.session_state["rascunho_atual"]:
-        print("DEBUG: Nenhum rascunho encontrado no session_state.")
+        # Isso aparece no seu terminal (preto) onde o streamlit roda
+        print("DEBUG: [Vazio] Nenhum rascunho ativo no session_state.")
         return
 
     rascunho = st.session_state["rascunho_atual"]
-    print(f"DEBUG: Iniciando hidratação para: {rascunho.get('colaborador', 'Desconhecido')}")
-    st.toast("⚙️ Sincronizando campos...")
+    fonte = rascunho.get("campos", {})
+    
+    # Aviso visual na tela do app (canto inferior)
+    st.toast("🔍 Iniciando Verificação de Dados...", icon="⚙️")
 
-    # 2. Sincroniza Campos de Texto
-    mapeamento_campos = {
+    # 2. Mapeamento de campos de texto
+    mapeamento = {
         "colaborador": "f_nome",
         "cargo": "f_cargo",
-        "setor": "f_setor",
         "departamento": "f_depto",
-        "chefe": "f_chefe",
-        "empresa": "f_unidade",
         "escolaridade": "f_esc",
+        "setor": "f_setor",
+        "chefe": "f_chefe",
+        "unidade": "f_unidade",
         "devolucao": "f_dev",
         "cursos": "f_cursos_area",
         "objetivo": "f_obj_area"
     }
 
-    for json_key, ui_key in mapeamento_campos.items():
-        valor = rascunho.get(json_key) or rascunho.get("campos", {}).get(json_key)
-        if valor is not None:
-            st.session_state[ui_key] = valor
-            print(f"DEBUG: Campo [{ui_key}] preenchido com: {valor}")
+    print(f"--- DEBUG CARREGAMENTO: {rascunho.get('colaborador', 'DESCONHECIDO')} ---")
 
-    # 3. Sincroniza Tabelas
+    for json_k, ui_k in mapeamento.items():
+        valor = fonte.get(json_k) or rascunho.get(json_k)
+        if valor:
+            st.session_state[ui_k] = valor
+            print(f"✅ SUCESSO: Campo '{ui_k}' recebeu '{valor}'")
+        else:
+            print(f"⚠️ AVISO: Campo '{json_k}' veio vazio do JSON.")
+
+    # 3. Debug de Tabelas
+    v_tab = st.session_state.get("v_tab", 0)
     tabelas_f = rascunho.get("tabelas", {})
-    mapa_tabelas = {
-        "atividades_alta": "ed_atividades_alta",
-        "atividades_normal": "ed_atividades_normal",
-        "dificuldades": "ed_dificuldades"
-    }
-
-    for json_t, ui_t in mapa_tabelas.items():
-        if json_t in tabelas_f and tabelas_f[json_t]:
-            st.session_state[ui_t] = pd.DataFrame(tabelas_f[json_t])
-            print(f"DEBUG: Tabela [{ui_t}] hidratada com {len(tabelas_f[json_t])} linhas.")
-
-    # 4. Sincroniza DISC
-    disc_f = rascunho.get("disc", {})
-    count_disc = 0
-    for i in range(1, 25):
-        key_json = f"disc_{i}"
-        if key_json in disc_f:
-            st.session_state[f"rd_{i}"] = disc_f[key_json]
-            count_disc += 1
     
-    if count_disc > 0:
-        print(f"DEBUG: {count_disc} respostas do DISC sincronizadas.")
+    for tab_nome in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+        ui_key_tabela = f"editor_{tab_nome}_v{v_tab}"
+        if tab_nome in tabelas_f:
+            st.session_state[ui_key_tabela] = pd.DataFrame(tabelas_f[tab_nome])
+            print(f"✅ TABELA: '{ui_key_tabela}' carregada com {len(tabelas_f[tab_nome])} linhas.")
+        else:
+            print(f"❌ TABELA: '{tab_nome}' não encontrada no JSON.")
 
-    st.toast("✅ Interface atualizada!")
+    # 4. Debug do DISC
+    disc_f = rascunho.get("disc", {})
+    for i in range(24):
+        json_key = f"p{i}"
+        ui_key_disc = f"disc_radio_{i}_{v_tab}"
+        if json_key in disc_f:
+            st.session_state[ui_key_disc] = disc_f[json_key]
+        else:
+            # Se não achar p0, p1... tenta q1, q2... (conforme seu código anterior)
+            alt_key = f"q{i+1}"
+            if alt_key in disc_f:
+                st.session_state[ui_key_disc] = disc_f[alt_key]
+
+    st.toast("✅ Sincronização concluída!", icon="👍")
+    print("--- FIM DO DEBUG ---")
 
 # --- EXECUÇÃO FINAL ---
 try:
-    sincronizar_rascunho_com_interface_debug()
+    sinconizar_com_debug()
 except Exception as e:
-    print(f"ERRO CRÍTICO NO MOTOR: {e}")
-    st.error(f"Erro ao sincronizar rascunho: {e}")
+    # Se der erro grave, avisa na tela e no log
+    st.error(f"Erro no Motor de Hidratação: {e}")
+    print(f"DEBUG ERRO CRÍTICO: {e}")
