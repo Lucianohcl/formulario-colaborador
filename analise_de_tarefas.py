@@ -1252,48 +1252,48 @@ with col1:
         if nome_f:
             atualizar_rascunhos_do_github() 
             rascunhos_dict = st.session_state.get("rascunhos", {})
-            rascunho = rascunhos_dict.get(nome_f)
+            
+            # Força o nome para MAIÚSCULO para bater com o que vem da nuvem
+            nome_busca = nome_f.strip().upper()
+            rascunho = rascunhos_dict.get(nome_busca)
             
             if rascunho:
-                # 1. Dados Básicos
-                st.session_state["f_nome_v2"] = nome_f
+                # 1. SALVA O NOME PARA ELE NÃO SUMIR
+                st.session_state["f_nome"] = nome_busca
+                st.session_state["f_nome_v2"] = nome_busca
+                
+                # 2. DADOS BÁSICOS (Injeta direto nas chaves que os widgets usam)
                 cp = rascunho.get("campos", {})
-                st.session_state["f_cargo_v2"] = rascunho.get("cargo") or cp.get("cargo", "")
-                st.session_state["f_depto_v2"] = rascunho.get("departamento") or cp.get("departamento", "")
-                st.session_state["f_esc_v2"] = rascunho.get("escolaridade") or cp.get("escolaridade", "")
-                st.session_state["f_setor_v2"] = rascunho.get("setor") or cp.get("setor", "")
-                st.session_state["f_chefe_v2"] = rascunho.get("chefe") or cp.get("chefe", "")
-                st.session_state["f_unidade_v2"] = rascunho.get("unidade") or cp.get("unidade", "")
-                st.session_state["f_dev_v2"] = rascunho.get("devolucao") or cp.get("devolucao", "")
-                st.session_state["f_cursos_v2"] = rascunho.get("cursos") or cp.get("cursos", "")
-                st.session_state["f_obj_v2"] = rascunho.get("objetivo") or cp.get("objetivo", "")
+                
+                # Injetamos tanto na f_cargo quanto na f_cargo_v2 para não ter erro
+                campos_map = {
+                    "f_cargo": "cargo",
+                    "f_depto": "departamento",
+                    "f_esc": "escolaridade",
+                    "f_setor": "setor",
+                    "f_chefe": "chefe",
+                    "f_unidade": "unidade",
+                    "f_dev": "devolucao",
+                    "f_cursos_area": "cursos",
+                    "f_obj_area": "objetivo"
+                }
+                
+                for key_ui, key_json in campos_map.items():
+                    valor = rascunho.get(key_json) or cp.get(key_json, "")
+                    st.session_state[key_ui] = valor
+                    st.session_state[f"{key_ui}_v2"] = valor
 
-                # 2. ALIMENTAÇÃO DAS 5 TABELAS (O PONTO CHAVE)
-                # Tenta formato novo primeiro, se não houver, tenta o antigo 'tabelas'
-                st.session_state["f_alta_v2"] = rascunho.get("atividades_alta") or rascunho.get("tabelas", {}).get("alta", [])
-                st.session_state["f_normal_v2"] = rascunho.get("atividades_normal") or rascunho.get("tabelas", {}).get("normal", [])
-                st.session_state["f_baixa_v2"] = rascunho.get("atividades_baixa") or rascunho.get("tabelas", {}).get("baixa", [])
-                st.session_state["f_dif_v2"] = rascunho.get("dificuldades") or rascunho.get("tabelas", {}).get("dificuldades", [])
-                st.session_state["f_sug_v2"] = rascunho.get("sugestoes") or rascunho.get("tabelas", {}).get("sugestoes", [])
-
-                # 3. LIMPEZA TOTAL E FORÇADA DE CACHE
-                # Mudamos o nome das chaves para garantir que o Streamlit ignore o que tinha antes
-                chaves_para_limpar = [
-                    "f_cargo", "f_depto", "f_esc", "f_setor", "f_chefe", "f_unidade", "f_dev", 
-                    "f_cursos_area", "f_obj_area", "ed_alta_v3", "ed_norm_v3", "ed_baix_v3", 
-                    "ed_dif_v3", "ed_sug_v3", "ed_alta", "ed_norm", "ed_baix", "ed_dif", "ed_sug"
-                ]
-                for k in chaves_para_limpar:
-                    if k in st.session_state:
-                        del st.session_state[k]
-
+                # 3. TABELAS (O ponto chave)
+                # Salvamos na 'rascunho_atual' para o seu motor de baixo ler
+                st.session_state["rascunho_atual"] = rascunho
+                
                 # 4. DISC
                 st.session_state["disc_v2"] = rascunho.get("disc", {})
 
-                st.success(f"✅ Dados de {nome_f} carregados com sucesso!")
+                st.success(f"✅ Dados de {nome_busca} carregados!")
                 st.rerun()
             else:
-                st.error(f"⚠️ Rascunho de '{nome_f}' não encontrado.")
+                st.error(f"⚠️ Rascunho de '{nome_busca}' não encontrado.")
         else:
             st.warning("⚠️ Digite um nome antes de carregar.")
 
