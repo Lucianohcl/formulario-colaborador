@@ -2447,7 +2447,6 @@ if st.session_state.get("pagina") == "disc":
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
 
-
 import streamlit as st
 import pandas as pd
 import json
@@ -2455,63 +2454,66 @@ from datetime import datetime
 from github import Github
 
 # =========================================================
-# 👤 1. CONFIGURAÇÕES E MOTOR DE BUSCA (ESTRUTURA BASE)
+# 1. CONFIGURAÇÕES E ESTADOS INICIAIS
 # =========================================================
-import streamlit as st
-import pandas as pd
-import json
-from datetime import datetime
-from github import Github
-
 st.set_page_config(page_title="Formulário de Análise de Tarefas", layout="wide")
 
-# Inicialização do Estado da Sessão
-if "v_tab" not in st.session_state:
-    st.session_state["v_tab"] = 1
-if "rascunho_atual" not in st.session_state:
-    st.session_state["rascunho_atual"] = {}
-if "rascunho_carregado" not in st.session_state:
-    st.session_state["rascunho_carregado"] = False
-if "usuario_logado" not in st.session_state: 
-    st.session_state["usuario_logado"] = ""
+# Inicializa as variáveis de controle para evitar erros de "Variable not defined"
+if "v_tab" not in st.session_state: st.session_state["v_tab"] = 1
+if "rascunho_atual" not in st.session_state: st.session_state["rascunho_atual"] = {}
+if "rascunho_carregado" not in st.session_state: st.session_state["rascunho_carregado"] = False
+if "usuario_logado" not in st.session_state: st.session_state["usuario_logado"] = ""
+if "nome_estatico" not in st.session_state: st.session_state["nome_estatico"] = ""
 
-# Versão atual das Keys (IDs dos campos)
 v = st.session_state["v_tab"]
 
-def val(id_campo, default=""):
-    """ Função que recupera os dados do Daniel Guerra na memória """
-    form = st.session_state.get("rascunho_atual", {})
-    if not form: return default
-    # Busca o campo na raiz ou dentro do dicionário 'campos'
-    return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
+
 
 # =========================================================
-# 🔍 2. IDENTIFICAÇÃO COM SINCRONIZAÇÃO IMEDIATA
+# 🔍 2. IDENTIFICAÇÃO (FOCO EXCLUSIVO NA CORREÇÃO DO NOME)
 # =========================================================
-st.subheader("📋 Identificação do Colaborador")
+st.subheader("📋 Identificação")
 
-# 1. Função de retorno para travar o nome na memória assim que digitar
-def atualizar_nome():
+# 1. Cria a função de trava (Callback) para o Enter não limpar o campo
+def trava_nome():
     st.session_state["nome_estatico"] = st.session_state[f"f_nome_input_{v}"].strip().upper()
 
-# 2. Garante que a variável exista
+# 2. Garante que a variável exista na memória
 if "nome_estatico" not in st.session_state:
     st.session_state["nome_estatico"] = val("colaborador")
 
-# 3. O campo de nome com 'on_change' (Isso impede que suma ao dar Enter)
+# 3. O CAMPO COM A TRAVA (on_change)
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
     value=st.session_state["nome_estatico"], 
     key=f"f_nome_input_{v}",
-    on_change=atualizar_nome # <--- O PULO DO GATO ESTÁ AQUI
+    on_change=trava_nome  # <-- Isso impede o sumiço ao dar Enter
 ).strip().upper()
 
 if not nome_digitado:
-    st.info("👋 Digite seu nome completo e aperte ENTER para começar.")
+    st.info("👋 Digite seu nome e aperte ENTER.")
     st.stop()
 
-# Detecta se mudou o usuário para resetar rascunhos antigos
-if st.session_state.get("usuario_logado") != nome_digitado:
+
+# =========================================================
+# 3. FLUXO DE IDENTIFICAÇÃO (DANIEL GUERRA)
+# =========================================================
+st.subheader("📋 Identificação")
+
+# O input busca o valor da 'nome_estatico' para não sumir no Enter
+nome_digitado = st.text_input(
+    "DIGITE SEU NOME COMPLETO:", 
+    value=st.session_state["nome_estatico"], 
+    key=f"f_nome_input_{v}",
+    on_change=atualizar_nome
+).strip().upper()
+
+if not nome_digitado:
+    st.info("👋 Digite seu nome e aperte ENTER para começar.")
+    st.stop()
+
+# Se trocar o nome, reseta o carregamento para buscar o novo arquivo
+if st.session_state["usuario_logado"] != nome_digitado:
     st.session_state["usuario_logado"] = nome_digitado
     st.session_state["rascunho_carregado"] = False
 
@@ -2519,11 +2521,11 @@ st.warning(f"Usuário identificado: **{nome_digitado}**")
 confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS", key=f"check_confirmar_{v}")
 
 if not confirmar:
-    st.info("Aguardando confirmação para liberar o formulário...")
+    st.info("Aguardando confirmação para liberar o acesso...")
     st.stop()
 
-# 4. BUSCA DE DADOS (Roda após o Checkbox)
-if not st.session_state.get("rascunho_carregado"):
+# Busca automática no GitHub
+if not st.session_state["rascunho_carregado"]:
     nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
     with st.spinner("Buscando rascunho..."):
         try:
@@ -2532,22 +2534,18 @@ if not st.session_state.get("rascunho_carregado"):
             conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
             dados = json.loads(conteudo.decoded_content.decode())
             
-            # Sincroniza tudo
-            st.session_state["nome_estatico"] = nome_digitado
             st.session_state["rascunho_atual"] = dados
+            st.session_state["nome_estatico"] = nome_digitado
             st.session_state["rascunho_carregado"] = True
             st.session_state["v_tab"] += 1 
-            
-            st.toast(f"✅ Rascunho de {nome_digitado} carregado!")
             st.rerun()
         except:
             st.session_state["rascunho_carregado"] = True
-            st.session_state["rascunho_atual"] = {"colaborador": nome_digitado}
-            st.info("Iniciando novo formulário em branco.")
-
+            st.session_state["rascunho_atual"] = {"campos": {"colaborador": nome_digitado}}
+            st.info("Nenhum rascunho encontrado. Iniciando novo formulário.")
 
 # =========================================================
-# 📝 3. FORMULÁRIO PREENCHIDO (CAMPOS E TABELAS)
+# 4. FORMULÁRIO (DADOS BÁSICOS)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
@@ -2557,168 +2555,57 @@ with col1:
     depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
     setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
 
-with col2:
-    chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
-    unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
-    escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
-
-cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"), key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
-
-# Exemplo de função para as Tabelas usando a memória correta
-def gerar_editor(chave_rascunho, col_principal):
-    dados = st.session_state["rascunho_atual"].get("tabelas", {}).get(chave_rascunho, [])
-    df = pd.DataFrame(dados)
-    if df.empty:
-        df = pd.DataFrame(columns=[col_principal, "Horas", "Minutos", "Frequência"])
-    
-    return st.data_editor(df, key=f"editor_{chave_rascunho}_{v}", use_container_width=True)
-
-st.subheader("📋 Atividades")
-e_alta = gerar_editor("alta", "Atividade de Alta Complexidade")
-# ... repita para as outras tabelas
-
-
-# =========================================================
-# 4. FLUXO DE IDENTIFICAÇÃO
-# =========================================================
-st.subheader("📋 Rascunho")
-
-nome_digitado = st.text_input("DIGITE SEU NOME COMPLETO:", value=val("colaborador")).strip().upper()
-
-if not nome_digitado:
-    st.info("👋 Digite seu nome acima para começar.")
-    st.stop()
-
-if "usuario_logado" not in st.session_state: 
-    st.session_state["usuario_logado"] = ""
-
-# Se trocar o nome, reseta para buscar o rascunho do novo nome
-if st.session_state["usuario_logado"] != nome_digitado:
-    st.session_state["usuario_logado"] = nome_digitado
-    st.session_state["rascunho_carregado"] = False
-    st.rerun()
-
-st.warning(f"Usuário identificado: **{nome_digitado}**")
-confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS E ABRIR O FORMULÁRIO")
-
-if not confirmar:
-    st.info("Aguardando confirmação para liberar o acesso...")
-    st.stop()
-
-# Busca de dados automática ao confirmar
-if not st.session_state["rascunho_carregado"]:
-    nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
-    try:
-        g = Github(DB_TOKEN)
-        repo = g.get_repo(REPO_NOME)
-        conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
-        dados = json.loads(conteudo.decoded_content.decode())
-        
-        st.session_state["rascunho_atual"] = dados
-        st.session_state["rascunho_carregado"] = True
-        st.session_state["v_tab"] += 1 # Muda a Key para forçar o preenchimento
-        st.toast("✅ Dados recuperados!")
-        st.rerun()
-    except:
-        st.session_state["rascunho_carregado"] = True
-        st.session_state["rascunho_atual"] = {}
-        st.info("Nenhum rascunho encontrado. Iniciando novo cadastro.")
-
-# =========================================================
-# 5. CAMPOS DO FORMULÁRIO
-# =========================================================
-st.markdown("---")
-col1, col2 = st.columns(2)
-with col1:
-    cargo = st.text_input("Cargo:", value=val("cargo"), key=f"cargo_{v}")
-    depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
-    setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
 with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
 
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
+objetivo = st.text_area("Objetivo do seu Trabalho:", value=val("objetivo"), key=f"obj_{v}")
 
 # =========================================================
-# 6. TABELAS DE TAREFAS
+# 5. TABELAS DE ATIVIDADES
 # =========================================================
 st.markdown("---")
 st.subheader("📋 Tabelas de Atividades")
 
-lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
-lista_horas = [f"{i} h" for i in range(25)]
-lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
-
-def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
+def gerar_editor(titulo, chave_json, col_nome):
     st.write(f"**{titulo}**")
-    # Busca dados dentro do rascunho carregado
-    dados = st.session_state["rascunho_atual"].get("tabelas", {}).get(chave_rascunho, [])
-    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: colunas.insert(1, col_extra)
+    # Busca dados da tabela no rascunho
+    dados = st.session_state["rascunho_atual"].get("tabelas", {}).get(chave_json, [])
+    df = pd.DataFrame(dados)
+    if df.empty:
+        df = pd.DataFrame(columns=[col_nome, "Horas", "Minutos", "Frequência"])
     
-    df = garantir_15_linhas(pd.DataFrame(dados), colunas)
-    
-    config = {
-        col_principal: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
-    }
-    if col_extra: config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
-
-    return st.data_editor(df, key=f"editor_{chave_rascunho}_{v}", column_config=config, use_container_width=True, num_rows="fixed")
+    return st.data_editor(
+        df, 
+        key=f"editor_{chave_json}_{v}", 
+        use_container_width=True, 
+        num_rows="dynamic"
+    )
 
 e_alta = gerar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = gerar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = gerar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
 # =========================================================
-# 7. PERFIL DISC
+# 6. BOTÃO SALVAR
 # =========================================================
-st.markdown("---")
-st.subheader("📊 Questionário DISC")
-
-disc_data = st.session_state["rascunho_atual"].get("disc", {})
-perguntas_disc = ["Lidera, Motiva, Apoia, Organiza", "Vai direto ao ponto, Interage, Escuta, Anota detalhes"] # ... (simplificado para o exemplo)
-
-respostas_disc = {}
-for i, pergunta in enumerate(perguntas_disc):
-    valor_salvo = disc_data.get(str(i), None)
-    opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
-    
-    respostas_disc[str(i)] = st.radio(
-        f"**{i+1}.** {pergunta}", options=opcoes, index=idx, key=f"disc_{i}_{v}", horizontal=True
-    )
-
-# =========================================================
-# 8. SALVAR
-# =========================================================
-if st.button("💾 Salvar Rascunho", use_container_width=True):
-    def limpar_df(df):
-        return df[df.iloc[:, 0].astype(str).str.strip() != ""].to_dict("records")
+if st.button("💾 SALVAR MEU RASCUNHO", use_container_width=True):
+    def limpar(df): return df[df.iloc[:, 0].astype(str).str.strip() != ""].to_dict("records")
 
     payload = {
-        "colaborador": nome_digitado,
         "campos": {
-            "cargo": cargo, "departamento": depto, "setor": setor, 
-            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-            "cursos": cursos, "objetivo": objetivo
+            "colaborador": nome_digitado, "cargo": cargo, "departamento": depto,
+            "setor": setor, "chefe": chefe, "unidade": unidade,
+            "escolaridade": escolaridade, "cursos": cursos, "objetivo": objetivo
         },
         "tabelas": {
-            "alta": limpar_df(e_alta), "normal": limpar_df(e_normal), 
-            "baixa": limpar_df(e_baixa), "dificuldades": limpar_df(e_dif),
-            "sugestoes": limpar_df(e_sug)
-        },
-        "disc": respostas_disc
+            "alta": limpar(e_alta), "normal": limpar(e_normal), "baixa": limpar(e_baixa)
+        }
     }
     
     if salvar_no_github(payload, f"{nome_digitado.replace(' ','_')}.json"):
-        st.success("Salvo com sucesso!")
+        st.success("✅ Salvo com sucesso!")
         st.session_state["rascunho_atual"] = payload
         st.rerun()
