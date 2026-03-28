@@ -1226,66 +1226,58 @@ perguntas_disc = [
 ]
 
 # =========================================================
-# 👤 DADOS DE IDENTIFICAÇÃO (VERSÃO FINAL SEM CONFLITOS)
+# 👤 FORMULÁRIO PRINCIPAL (AJUSTADO PARA EVITAR DUPLICIDADE)
 # =========================================================
 st.subheader("👤 Dados de Identificação")
 
-# 1. MOTOR DE BUSCA (COLUNA 1)
 col1, col2 = st.columns(2)
 
 with col1:
     v = st.session_state.get("v_tab", 0)
     
-    # Campo de busca com ID dinâmico para evitar o erro da linha 3937
+    # BUSCA: Chave única para a busca
     nome_f = st.text_input(
         "Nome do colaborador",
-        key=f"f_nome_input_new_{v}" 
+        key=f"f_nome_busca_{v}" # Chave de busca isolada
     )
 
-    if st.button("📥 Carregar Rascunho", key="btn_load_v4"):
+    if st.button("📥 Carregar Rascunho", key=f"btn_load_final_{v}"):
         if nome_f:
             atualizar_rascunhos_do_github()
             nome_busca = nome_f.strip().upper()
             rascunho = st.session_state.get("rascunhos", {}).get(nome_busca)
             
             if rascunho:
-                # INJETANDO OS DADOS NO ESTADO (O Motor)
-                cp = rascunho.get("campos", rascunho) # Garante compatibilidade
+                cp = rascunho.get("campos", rascunho)
                 
-                # Mapeamento exato das keys que os widgets abaixo usam
-                st.session_state["f_cargo"] = cp.get("cargo", "")
-                st.session_state["f_depto"] = cp.get("departamento", "")
-                st.session_state["f_esc"] = cp.get("escolaridade", "")
-                st.session_state["f_setor"] = cp.get("setor", "")
-                st.session_state["f_chefe"] = cp.get("chefe", "")
-                st.session_state["f_unidade"] = cp.get("unidade", "")
-                st.session_state["f_dev"] = cp.get("devolucao", "")
-                st.session_state["f_cursos_area"] = cp.get("cursos", "")
-                st.session_state["f_obj_area"] = cp.get("objetivo", "")
+                # O MOTOR INJETA NAS KEYS DO FORMULÁRIO ABAIXO
+                st.session_state["f_cargo_main"] = cp.get("cargo", "")
+                st.session_state["f_depto_main"] = cp.get("departamento", "")
+                st.session_state["f_esc_main"] = cp.get("escolaridade", "")
+                st.session_state["f_setor_main"] = cp.get("setor", "")
+                st.session_state["f_chefe_main"] = cp.get("chefe", "")
+                st.session_state["f_unidade_main"] = cp.get("unidade", "")
+                st.session_state["f_dev_main"] = cp.get("devolucao", "")
+                st.session_state["f_cursos_main"] = cp.get("cursos", "")
+                st.session_state["f_obj_main"] = cp.get("objetivo", "")
                 
-                # Tabelas e DISC
                 st.session_state["rascunho_atual"] = rascunho
                 st.session_state["v_tab"] = v + 1
-                
-                st.success(f"✅ {nome_busca} carregado!")
                 st.rerun()
-            else:
-                st.error("Não encontrado.")
 
-# 2. CAMPOS DE EXIBIÇÃO (COLUNA 2)
 with col2:
-    # IMPORTANTE: Sem o parâmetro 'value'. A 'key' faz o trabalho.
-    st.text_input("Cargo", key="f_cargo")
-    st.text_input("Departamento", key="f_depto")
-    st.text_input("Escolaridade", key="f_esc")
-    st.text_input("Setor", key="f_setor")
-    st.text_input("Chefe imediato", key="f_chefe")
-    st.text_input("Empresa / Unidade", key="f_unidade")
-    st.text_input("Devolver preenchido em", key="f_dev")
+    # FORMULÁRIO: Usando chaves '_main' para não bater com o rascunho lá de cima
+    st.text_input("Cargo", key="f_cargo_main")
+    st.text_input("Departamento", key="f_depto_main")
+    st.text_input("Escolaridade", key="f_esc_main")
+    st.text_input("Setor", key="f_setor_main")
+    st.text_input("Chefe imediato", key="f_chefe_main")
+    st.text_input("Empresa / Unidade", key="f_unidade_main")
+    st.text_input("Devolver preenchido em", key="f_dev_main")
 
-# 3. ÁREAS DE TEXTO
-st.text_area("Cursos Obrigatórios e Diferenciais", key="f_cursos_area")
-st.text_area("Objetivo do Trabalho", key="f_obj_area")
+st.text_area("Cursos Obrigatórios e Diferenciais", key="f_cursos_main")
+st.text_area("Objetivo do Trabalho", key="f_obj_main")
+
 
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
