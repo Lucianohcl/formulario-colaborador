@@ -2470,26 +2470,25 @@ v = st.session_state["v_tab"]
 
 
 # =========================================================
-# 🔍 2. IDENTIFICAÇÃO (CORREÇÃO DO NAMEERROR)
+# 🔍 2. IDENTIFICAÇÃO (CORREÇÃO DE DUPLICIDADE)
 # =========================================================
 st.subheader("📋 Identificação")
 
-# A FUNÇÃO PRECISA VIR ANTES DO INPUT PARA NÃO DAR NAMEERROR
+# 1. Definição da função (PRECISA VIR ANTES)
 def atualizar_nome():
-    """ Trava o nome na memória no momento do Enter """
-    chave_input = f"f_nome_input_{st.session_state.get('v_tab', 1)}"
-    if chave_input in st.session_state:
-        st.session_state["nome_estatico"] = st.session_state[chave_input].strip().upper()
+    # Usamos o nome da key fixo aqui para evitar o erro de duplicidade
+    if "f_nome_input_fixo" in st.session_state:
+        st.session_state["nome_estatico"] = st.session_state["f_nome_input_fixo"].strip().upper()
 
-# Garante que a variável de apoio exista
+# 2. Inicializa a variável de memória se ela não existir
 if "nome_estatico" not in st.session_state:
     st.session_state["nome_estatico"] = val("colaborador")
 
-# Agora o on_change vai encontrar a função acima
+# 3. O Campo de Texto (Usando uma KEY ÚNICA que não conflita com as outras)
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
     value=st.session_state["nome_estatico"], 
-    key=f"f_nome_input_{v}",
+    key="f_nome_input_fixo", # Mudamos para uma key fixa para matar o erro de duplicidade
     on_change=atualizar_nome
 ).strip().upper()
 
