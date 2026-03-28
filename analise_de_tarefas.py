@@ -711,14 +711,13 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
 
 st.sidebar.title("📌 Menu de Navegação")
 
-btn_home = st.sidebar.button("🏠 Home")
-btn_analise = st.sidebar.button("📊 Análise Inteligente")
-btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
-btn_disc = st.sidebar.button("🧠 Perfil DISC")
-btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
-btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
-btn_produtividade = st.sidebar.button("🚀 Produtividade")
-
+btn_home = st.sidebar.button("🏠 Home", key="side_btn_home")
+btn_analise = st.sidebar.button("📊 Análise Inteligente", key="side_btn_analise")
+btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores", key="side_btn_comparar")
+btn_disc = st.sidebar.button("🧠 Perfil DISC", key="side_btn_disc")
+btn_parecer = st.sidebar.button("📄 Parecer Estratégico", key="side_btn_parecer")
+btn_visualizar = st.sidebar.button("👁️ Visualizar Dados", key="side_btn_visualizar")
+btn_produtividade = st.sidebar.button("🚀 Produtividade", key="side_btn_produtividade")
 
 st.sidebar.markdown("---")
 
