@@ -167,9 +167,6 @@ config_col = {"Tarefa": st.column_config.TextColumn("Descrição", width="large"
 
 
 
-# =========================================================
-# 📥 1. FUNÇÃO PARA BUSCAR (CARREGAR) RASCUNHOS
-# =========================================================
 def atualizar_rascunhos_do_github():
     import requests
     import json
@@ -192,49 +189,38 @@ def atualizar_rascunhos_do_github():
                 if arquivo["name"].endswith(".json"):
                     try:
                         conteudo_res = requests.get(arquivo["download_url"], headers=headers)
-
                         if conteudo_res.status_code != 200:
                             continue
-
+                        
                         dados = conteudo_res.json()
-
-                        # 🔥 GARANTE QUE É DICT
                         if not isinstance(dados, dict):
                             continue
 
-                        # 🔥 PEGA NOME
+                        # Resgate do nome com todas as suas correções
                         nome_colaborador = dados.get("colaborador")
-
-                        # 🔥 CORREÇÃO 1: se vier dict
                         if isinstance(nome_colaborador, dict):
                             nome_colaborador = nome_colaborador.get("nome")
-
-                        # 🔥 CORREÇÃO 2: fallback
                         if not nome_colaborador:
                             nome_colaborador = dados.get("campos", {}).get("nome")
-
-                        # 🔥 CORREÇÃO 3: garante string
+                        
                         if isinstance(nome_colaborador, str):
                             nome_colaborador = nome_colaborador.strip().upper()
-                        else:
-                            nome_colaborador = None
-
-                        # 🔥 CORREÇÃO 4: só salva se válido
-                        if nome_colaborador:
+                            # 🔥 AQUI O PULO DO GATO: Salva os dados no dicionário principal
                             rascunhos_temp[nome_colaborador] = dados
-
-                    except Exception as e:
-                        # 🔥 IGNORA ARQUIVO PROBLEMÁTICO
+                    
+                    except Exception:
                         continue
             
+            # Atualiza o estado global com os novos rascunhos
             st.session_state["rascunhos"] = rascunhos_temp
         else:
             st.session_state["rascunhos"] = {}
+
     except Exception as e:
-        st.error(f"Falha na conexão com Cloud: {e}")
+        st.error(f"Erro na nuvem: {e}")
         st.session_state["rascunhos"] = {}
 
-# A segunda função (salvar_no_github) pode continuar EXATAMENTE como você enviou.
+
 
 def gerar_word(form):
     doc = Document()
@@ -2734,7 +2720,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     }
 
     # =====================================================
-    # 5. SALVAMENTO
+    # 5. SALVAMENTO (VERSÃO COM ATUALIZAÇÃO IMEDIATA)
     # =====================================================
     with st.spinner(f"📦 Enviando rascunho de {nome_validado} para a nuvem..."):
         try:
@@ -2744,25 +2730,32 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             sucesso = False
 
         if sucesso:
-            # 🔥 Persistência local imediata
+            # 1. Garante a persistência no estado atual do app
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
 
+            # 2. 🔥 O PULO DO GATO: Atualiza a lista geral para o novo nome aparecer na sidebar/lista
+            atualizar_rascunhos_do_github()
+
             st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_validado} salvo com sucesso!")
+            
+            # 3. 🔥 RECOMODAÇÃO: Dá um pequeno aviso e recarrega para garantir que os inputs "bebam" o payload
+            st.toast(f"Rascunho de {nome_validado} sincronizado!")
 
             # =====================================================
             # 6. ENVIO PARA GOOGLE SHEETS
             # =====================================================
             try:
                 enviado_sheets = enviar_para_sheets(payload)
-
                 if enviado_sheets:
                     st.toast("📊 Rascunho enviado para Google Sheets!")
                 else:
-                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
-
+                    st.warning("⚠️ Salvo no GitHub, mas falha no Sheets.")
             except Exception as e_sheets:
-                st.warning(f"⚠️ Rascunho salvo no GitHub, mas falha ao enviar para Sheets: {e_sheets}")
+                st.warning(f"⚠️ Erro ao enviar para Sheets: {e_sheets}")
+
+            # 4. FINALIZAÇÃO: Força o rerun para os campos refletirem o que foi salvo
+            st.rerun()
 
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
