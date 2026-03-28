@@ -2716,9 +2716,8 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 st.markdown("---")
 
-# O botão fica na margem principal, sem recuos excessivos
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    # 1. Validação simples
+    # 1. Validação simples (4 espaços de recuo aqui)
     nome_validado = nome_digitado.strip().upper()
     if len(nome_validado) < 3:
         st.error("❌ Digite seu nome completo antes de salvar.")
@@ -2726,53 +2725,46 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna para limpar linhas vazias das tabelas
-        def limpar_para_rascunho(df):
-            if df is None or df.empty:
-                return []
-            # Converte para DataFrame por segurança e remove linhas onde a 1ª coluna está vazia
-            df_temp = pd.DataFrame(df)
-            mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-            return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
+    # 2. Função interna (alinhada com o código acima)
+    def limpar_para_rascunho(df):
+        if df is None or df.empty:
+            return []
+        df_temp = pd.DataFrame(df)
+        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
+        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-        # 3. Montagem do Payload (Dados que vão para o GitHub)
-        payload = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_validado,
-            "campos": {
-                "cargo": cargo, 
-                "departamento": depto, 
-                "setor": setor,
-                "chefe": chefe, 
-                "unidade": unidade, 
-                "escolaridade": escolaridade,
-                "devolver_em": devolver_em,
-                "cursos": cursos, 
-                "objetivo": objetivo
-            },
-            "tabelas": {
-                "alta": limpar_para_rascunho(e_alta),
-                "normal": limpar_para_rascunho(e_normal),
-                "baixa": limpar_para_rascunho(e_baixa),
-                "dificuldades": limpar_para_rascunho(e_dif),
-                "sugestoes": limpar_para_rascunho(e_sug)
-            },
-            "disc": respostas_disc
-        }
+    # 3. Montagem do Payload
+    payload = {
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "colaborador": nome_validado,
+        "campos": {
+            "cargo": cargo, 
+            "departamento": depto, 
+            "setor": setor,
+            "chefe": chefe, 
+            "unidade": unidade, 
+            "escolaridade": escolaridade,
+            "devolver_em": devolver_em,
+            "cursos": cursos, 
+            "objetivo": objetivo
+        },
+        "tabelas": {
+            "alta": limpar_para_rascunho(e_alta),
+            "normal": limpar_para_rascunho(e_normal),
+            "baixa": limpar_para_rascunho(e_baixa),
+            "dificuldades": limpar_para_rascunho(e_dif),
+            "sugestoes": limpar_para_rascunho(e_sug)
+        },
+        "disc": respostas_disc
+    }
 
-   # 4. Execução do salvamento
+    # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
         if salvar_no_github(payload, nome_arq):
-            # 1. Atualiza o estado da sessão
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
-            
-            # 2. Mensagens de Sucesso
-            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso na nuvem!")
+            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
             st.toast("Dados sincronizados!")
-            
-            # 3. Recarrega a página
             st.rerun()
         else:
-            st.error("❌ Falha ao salvar. Verifique sua conexão ou o Token do GitHub.")
-   
+            st.error("❌ Falha ao salvar no GitHub.")
