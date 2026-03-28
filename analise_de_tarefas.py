@@ -2470,30 +2470,32 @@ v = st.session_state["v_tab"]
 
 
 # =========================================================
-# 🔍 2. IDENTIFICAÇÃO (FOCO EXCLUSIVO NA CORREÇÃO DO NOME)
+# 🔍 2. IDENTIFICAÇÃO (CORREÇÃO DO NAMEERROR)
 # =========================================================
 st.subheader("📋 Identificação")
 
-# 1. Cria a função de trava (Callback) para o Enter não limpar o campo
-def trava_nome():
-    st.session_state["nome_estatico"] = st.session_state[f"f_nome_input_{v}"].strip().upper()
+# A FUNÇÃO PRECISA VIR ANTES DO INPUT PARA NÃO DAR NAMEERROR
+def atualizar_nome():
+    """ Trava o nome na memória no momento do Enter """
+    chave_input = f"f_nome_input_{st.session_state.get('v_tab', 1)}"
+    if chave_input in st.session_state:
+        st.session_state["nome_estatico"] = st.session_state[chave_input].strip().upper()
 
-# 2. Garante que a variável exista na memória
+# Garante que a variável de apoio exista
 if "nome_estatico" not in st.session_state:
     st.session_state["nome_estatico"] = val("colaborador")
 
-# 3. O CAMPO COM A TRAVA (on_change)
+# Agora o on_change vai encontrar a função acima
 nome_digitado = st.text_input(
     "DIGITE SEU NOME COMPLETO:", 
     value=st.session_state["nome_estatico"], 
     key=f"f_nome_input_{v}",
-    on_change=trava_nome  # <-- Isso impede o sumiço ao dar Enter
+    on_change=atualizar_nome
 ).strip().upper()
 
 if not nome_digitado:
     st.info("👋 Digite seu nome e aperte ENTER.")
     st.stop()
-
 
 # =========================================================
 # 3. FLUXO DE IDENTIFICAÇÃO (DANIEL GUERRA)
