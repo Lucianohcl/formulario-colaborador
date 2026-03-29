@@ -2766,85 +2766,79 @@ for i, pergunta in enumerate(perguntas_disc):
 
 
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO AJUSTADA: SEM PREFIXO NO NOME)
+# 7. BOTÃO SALVAR (ADAPTADO E FUNCIONAL)
 # =========================================================
 st.markdown("---")
 
-# 1. Inicializa o estado de controle se não existir
-if "rascunho_salvo" not in st.session_state:
-    st.session_state["rascunho_salvo"] = False
+if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
+    
+    # 1. Verificação de segurança
+    nome_validado = nome_digitado.strip().upper()
+    if not nome_validado or len(nome_validado) < 3:
+        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+        st.stop()
 
-if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True):
-    try:
-        # Validação de Nome
-        nome_validado = nome_digitado.strip().upper()
-        if len(nome_validado) < 3:
-            st.error("❌ Digite seu nome completo antes de salvar.")
-            st.stop()
+    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    
+    # 2. Função interna para limpar linhas vazias
+    def limpar_para_rascunho(df):
+        if df is None or df.empty: 
+            return []
+        col_principal = df.columns[0]
+        mask = df[col_principal].astype(str).str.strip() != ""
+        return df[mask].to_dict("records")
 
-        # Função de limpeza das tabelas
-        def limpar_para_rascunho(df):
-            if df is None or df.empty: return []
-            df_temp = pd.DataFrame(df)
-            mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-            return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
+    # 3. Montagem do Payload (ADAPTADO: pegando das variáveis _f)
+    payload = {
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "colaborador": nome_digitado,
+        "campos": {
+            "cargo": cargo_f, 
+            "departamento": depto_f, 
+            "setor": setor_f,
+            "chefe": chefe_f, 
+            "unidade": unidade_f, 
+            "escolaridade": esc_f,
+            "devolver_em": dev_f, 
+            "cursos": cursos_f, 
+            "objetivo": obj_f
+        },
+        "tabelas": {
+            "alta": limpar_para_rascunho(e_alta),
+            "normal": limpar_para_rascunho(e_normal),
+            "baixa": limpar_para_rascunho(e_baixa),
+            "dificuldades": limpar_para_rascunho(e_dif),
+            "sugestoes": limpar_para_rascunho(e_sug)
+        },
+        "disc": respostas_disc
+    }
 
-        # 2. Montagem do Payload
-        payload_rascunho = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_validado,
-            "status": "RASCUNHO",
-            "campos": {
-                "cargo": cargo_f, "departamento": depto_f, "setor": setor_f,
-                "chefe": chefe_f, "unidade": unidade_f, "escolaridade": esc_f,
-                "devolver_em": dev_f, "cursos": cursos_f, "objetivo": obj_f
-            },
-            "tabelas": {
-                "alta": limpar_para_rascunho(e_alta),
-                "normal": limpar_para_rascunho(e_normal),
-                "baixa": limpar_para_rascunho(e_baixa),
-                "dificuldades": limpar_para_rascunho(e_dif),
-                "sugestoes": limpar_para_rascunho(e_sug)
-            },
-            "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
-        }
+    # Normalização
+    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
+    # Removida a linha que resetava o DISC para [] para manter seu dicionário
 
-        # Nome do arquivo SEM o prefixo "RASCUNHO_"
-        nome_arq_final = f"{nome_validado.replace(' ', '_')}.json"
+    # 4. Execução do salvamento
+    with st.spinner(f"📦 Enviando rascunho de {nome_digitado}..."):
+        try:
+            sucesso = salvar_no_github(payload, nome_arq)
+        except Exception as e:
+            st.error(f"❌ Erro crítico ao processar o envio: {e}")
+            sucesso = False
+        
+        if sucesso:
+            # Garante que a memória local saiba que este é o rascunho atual
+            st.session_state["rascunho_atual"] = payload
+            st.session_state["rascunho_carregado"] = True
+            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo!")
 
-        # 3. Sincronização
-        with st.spinner(f"📦 Sincronizando dados de {nome_validado}..."):
-            salvo_github = salvar_no_github(payload_rascunho, nome_arq_final)
-            enviado_sheets = enviar_para_sheets(payload_rascunho)
-
-            if salvo_github:
-                st.session_state["rascunho_atual"] = payload_rascunho
-                st.session_state["rascunho_salvo"] = True 
-                
-                # Mensagem de Sucesso Geral
-                st.success(f"✅ Dados de {nome_validado} sincronizados com sucesso!")
-                
-                # Feedback específico do Sheets (conforme solicitado)
+            # Enviar para Sheets
+            try:
+                enviado_sheets = enviar_para_sheets(payload)
                 if enviado_sheets:
-                    st.toast("📊 Planilha Google atualizada com sucesso!")
-                    st.info("💡 Os dados já constam na Planilha de Controle.")
+                    st.toast("📊 Rascunho enviado para Google Sheets!")
                 else:
-                    st.warning("⚠️ Salvo no GitHub, mas houve um atraso na Planilha.")
-                
-                st.toast("🚀 GitHub Atualizado!")
-            else:
-                st.error("❌ Falha crítica ao salvar no servidor (GitHub).")
-
-    except Exception as e:
-        st.error(f"❌ Erro ao processar salvamento: {e}")
-
-# 4. Botão de Download do JSON (aparece após o sucesso)
-if st.session_state.get("rascunho_salvo"):
-    st.markdown("### 📥 Backup Local")
-    st.download_button(
-        label="📥 BAIXAR ARQUIVO JSON (BACKUP)",
-        data=json.dumps(st.session_state["rascunho_atual"], indent=4, ensure_ascii=False),
-        file_name=f"{nome_digitado.replace(' ', '_').upper()}.json",
-        mime="application/json",
-        use_container_width=True
-    )
+                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi para Sheets.")
+            except Exception as e_sheets:
+                st.warning(f"⚠️ Falha ao enviar para Sheets: {e_sheets}")
+        else:
+            st.error("❌ FALHA NA PERSISTÊNCIA: GitHub não respondeu.")
