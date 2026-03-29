@@ -2762,17 +2762,18 @@ for i, pergunta in enumerate(perguntas_disc):
                     "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
                 }
                 
-                with st.spinner("💾 Gravando progresso..."):
+                with st.spinner("💾 Gravando progresso no GitHub..."):
                     nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
                     if salvar_no_github(payload, nome_arq):
                         st.session_state["rascunho_atual"] = payload
+                        # Reset dos editores para carregar o novo estado
                         for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
                             k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
                             if k in st.session_state: 
                                 del st.session_state[k]
                         
                         st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                        st.toast("✅ EDIÇÃO FEITA COM SUCESSO!")
+                        st.toast(f"✅ PROGRESSO DE {nome_digitado} SALVO!")
                         st.rerun()
 
         with col2:
@@ -2801,24 +2802,23 @@ for i, pergunta in enumerate(perguntas_disc):
                     "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
                 }
 
-                with st.spinner("📦 Sincronizando com GitHub e Planilha..."):
+                with st.spinner("📦 Sincronizando GitHub e Planilha..."):
                     sucesso_git = salvar_no_github(payload, nome_arq)
                     sucesso_sheets = salvar_no_google_sheets(payload)
 
                     if sucesso_git and sucesso_sheets:
                         st.session_state["rascunho_atual"] = payload
-                        st.success("✅ MENSAGEM DE SUCESSO AO SINCRONIZAR COM O GIT HUB E PLANILHA!")
+                        st.success("✅ DADOS ENVIADOS COM SUCESSO PARA O HUB E PLANILHA!")
                         st.balloons()
                         
-                        # Correção: ensure_ascii=False para aceitar acentos no download
+                        # Preparação do Download Final
                         dados_json = json.dumps(payload, indent=4, ensure_ascii=False)
-                        
                         st.download_button(
-                            label="📥 Baixar Cópia do Envio (JSON)",
+                            label="📥 Baixar Cópia Final (JSON)",
                             data=dados_json,
                             file_name=nome_arq,
                             mime="application/json",
                             use_container_width=True
                         )
                     else:
-                        st.error("❌ Erro na sincronização. Verifique sua conexão ou as permissões do GitHub/Google.")
+                        st.error("❌ Erro ao sincronizar. Verifique a conexão.")
