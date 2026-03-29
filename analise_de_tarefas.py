@@ -1410,8 +1410,11 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
+nome_digitado = nome_f  # <--- ADICIONE ESTA LINHA AQUI (Cria o apelido para a variável)
+
 st.markdown("---")
 st.subheader("✅ Status de Validação do Formulário")
+# ... resto do código ...
 
 pendencias = []
 
