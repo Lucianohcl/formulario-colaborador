@@ -1390,8 +1390,6 @@ respostas_disc = {}
 # 🔥 pega direto do rascunho correto
 disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
 
-# 🔍 DEBUG (APAGA DEPOIS)
-st.write("DEBUG DISC:", disc_data)
 
 # 🔥 injeta no session_state (ANTES dos radios)
 for i in range(24):
@@ -1457,7 +1455,7 @@ for nome_tab, df_validar in dict_tabelas.items():
                     if freq == "": pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem frequência.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
-respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
+respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
 if len(respostas_vazias) > 0:
     pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
 
@@ -2627,9 +2625,8 @@ with col2:
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
     devolver_em = st.text_input(
-    "Devolver em:", 
-        value=st.session_state.get(f"dev_{v}", ""), 
-        key=f"dev_input_{v}"
+        "Devolver em:", 
+        key=f"dev_{v}"
     )
 
 
