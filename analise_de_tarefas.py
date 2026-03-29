@@ -221,47 +221,6 @@ def atualizar_rascunhos_do_github():
         st.session_state["rascunhos"] = {}
 
 
-# =========================================================
-# ⚙️ NÚCLEO DE PERSISTÊNCIA E CONTROLE DE VERSÃO (V)
-# =========================================================
-
-# 1. Inicializa a versão dos widgets (o "v" que força o reset visual)
-if "widget_version" not in st.session_state:
-    st.session_state["widget_version"] = 0
-
-# 2. Inicializa o rascunho atual (a "Fonte da Verdade")
-if "rascunho_atual" not in st.session_state:
-    st.session_state["rascunho_atual"] = {}
-
-# 3. Define as variáveis globais que os widgets usarão
-v = st.session_state["widget_version"]
-rascunho = st.session_state["rascunho_atual"]
-
-# 4. Função Mestra para carregar novos dados e "limpar a mesa"
-def aplicar_persistência_total(conteudo_json):
-    """
-    Injeta o JSON no estado, aumenta a versão 'v' e 
-    força o Streamlit a redesenhar todos os campos.
-    """
-    try:
-        if isinstance(conteudo_json, str):
-            dados = json.loads(conteudo_json)
-        else:
-            dados = conteudo_json
-            
-        st.session_state["rascunho_atual"] = dados
-        st.session_state["widget_version"] += 1  # O Pulo do Gato: muda a KEY de todos os campos
-        
-        st.success("✅ Dados sincronizados! Formulário atualizado.")
-        st.rerun() 
-    except Exception as e:
-        st.error(f"Erro no motor de persistência: {e}")
-
-# =========================================================
-
-
-
-
 
 def gerar_word(form):
     doc = Document()
@@ -1340,28 +1299,18 @@ with col1:
         else:
             st.warning("⚠️ Digite um nome antes de carregar.")
 
-# --- 1. Sincroniza a 'fonte' com o Session State antes de criar os widgets ---
-# Isso garante que os dados apareçam no campo sem causar o erro de widget
-for campo_chave, campo_fonte in [
-    ("f_cargo", "cargo"), ("f_depto", "departamento"), ("f_esc", "escolaridade"),
-    ("f_setor", "setor"), ("f_chefe", "chefe"), ("f_unidade", "unidade"),
-    ("f_dev", "devolucao"), ("f_cursos_area", "cursos"), ("f_obj_area", "objetivo")
-]:
-    if st.session_state.get(campo_chave) is None: # Se o campo estiver vazio
-        st.session_state[campo_chave] = fonte.get(campo_fonte, "") # Carrega da fonte (rascunho)
-
-# --- 2. Agora os Widgets ficam limpos, apenas com a KEY ---
 with col2:
-    cargo_f = st.text_input("Cargo", key="f_cargo")
-    depto_f = st.text_input("Departamento", key="f_depto")
-    esc_f = st.text_input("Escolaridade", key="f_esc")
-    setor_f = st.text_input("Setor", key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", key="f_dev")
+    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
+    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
+    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
+    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
+    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
+    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
+    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
 
-cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", key="f_cursos_area")
-obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", key="f_obj_area")
+cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
+obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
+
 
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
@@ -2762,48 +2711,42 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
-
-
-
 # =========================================================
-# 7. BOTÃO SALVAR (ADAPTADO E FUNCIONAL)
+# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
 # =========================================================
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    
-    # 1. Verificação de segurança: Nome
-    # Buscamos direto do session_state usando a versão 'v'
-    nome_atual = st.session_state.get(f"nome_{v}", "").strip().upper()
-    
-    if not nome_atual or len(nome_atual) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo no campo de Identificação antes de salvar.")
+    # 1. Validação simples (4 espaços de recuo aqui)
+    nome_validado = nome_digitado.strip().upper()
+    if len(nome_validado) < 3:
+        st.error("❌ Digite seu nome completo antes de salvar.")
         st.stop()
 
-    nome_arq = f"{nome_atual.replace(' ','_')}.json"
+    nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna para limpar linhas vazias
+    # 2. Função interna (alinhada com o código acima)
     def limpar_para_rascunho(df):
-        if df is None or df.empty: 
+        if df is None or df.empty:
             return []
-        col_principal = df.columns[0]
-        mask = df[col_principal].astype(str).str.strip() != ""
-        return df[mask].to_dict("records")
+        df_temp = pd.DataFrame(df)
+        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
+        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # 3. Montagem do Payload (Busca segura no session_state)
+    # 3. Montagem do Payload
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_atual,
+        "colaborador": nome_validado,
         "campos": {
-            "cargo": st.session_state.get(f"cargo_{v}", ""),
-            "departamento": st.session_state.get(f"depto_{v}", ""),
-            "setor": st.session_state.get(f"setor_{v}", ""),
-            "chefe": st.session_state.get(f"chefe_{v}", ""),
-            "unidade": st.session_state.get(f"unidade_{v}", ""),
-            "escolaridade": st.session_state.get(f"esc_{v}", ""),
-            "devolver_em": st.session_state.get(f"dev_{v}", ""),
-            "cursos": st.session_state.get(f"cursos_{v}", ""),
-            "objetivo": st.session_state.get(f"objetivo_{v}", "")
+            "cargo": cargo, 
+            "departamento": depto, 
+            "setor": setor,
+            "chefe": chefe, 
+            "unidade": unidade, 
+            "escolaridade": escolaridade,
+            "devolver_em": devolver_em,
+            "cursos": cursos, 
+            "objetivo": objetivo
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2812,27 +2755,16 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+        "disc": respostas_disc
     }
 
     # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_atual}..."):
-        try:
-            sucesso = salvar_no_github(payload, nome_arq)
-        except Exception as e:
-            st.error(f"❌ Erro crítico ao processar o envio: {e}")
-            sucesso = False
-        
-        if sucesso:
-            # Atualiza a "fonte da verdade" local
+    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
+        if salvar_no_github(payload, nome_arq):
             st.session_state["rascunho_atual"] = payload
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_atual} salvo com sucesso!")
-
-            # Envio para Sheets
-            try:
-                if enviar_para_sheets(payload):
-                    st.toast("📊 Sincronizado com Google Sheets!")
-            except:
-                pass 
+            st.session_state["rascunho_carregado"] = True
+            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
+            st.toast("Dados sincronizados!")
+            st.rerun()
         else:
-            st.error("❌ O GitHub recusou o salvamento. Verifique o DB_TOKEN.")
+            st.error("❌ Falha ao salvar no GitHub.")v
