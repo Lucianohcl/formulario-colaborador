@@ -1501,28 +1501,28 @@ with col_btn:
                 return df[df[col_principal].astype(str).str.strip() != ""].to_dict("records")
 
             payload = {
-                "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "colaborador": nome_digitado,
-                "campos": {
-                    "cargo": cargo, 
-                    "departamento": depto, 
-                    "setor": setor,
-                    "chefe": chefe, 
-                    "unidade": unidade, 
-                    "escolaridade": escolaridade,
-                    "cursos": cursos, 
-                    "objetivo": objetivo
-                },
-                "tabelas": {
-                    "alta": limpar_para_rascunho(e_alta),
-                    "normal": limpar_para_rascunho(e_normal),
-                    "baixa": limpar_para_rascunho(e_baixa),
-                    "dificuldades": limpar_para_rascunho(e_dif),
-                    "sugestoes": limpar_para_rascunho(e_sug)
-                },
-                # 🔥 CORREÇÃO AQUI
-                "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
-            }
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "colaborador": nome_digitado,
+            "campos": {
+                "cargo": cargo,
+                "departamento": depto,
+                "setor": setor,
+                "chefe": chefe,
+                "unidade": unidade,
+                "escolaridade": escolaridade,
+                "devolver_em": devolver_em,
+                "cursos": cursos,
+                "objetivo": objetivo
+            },
+            "tabelas": {
+                "alta": limpar_para_rascunho(e_alta),
+                "normal": limpar_para_rascunho(e_normal),
+                "baixa": limpar_para_rascunho(e_baixa),
+                "dificuldades": limpar_para_rascunho(e_dif),
+                "sugestoes": limpar_para_rascunho(e_sug)
+            },
+            "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
+        }
 
             nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
             
@@ -2729,67 +2729,90 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
+
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
-# =========================================================
-st.markdown("---")
+        # 💾 7. BOTÕES DE GRAVAÇÃO, PLANILHA E DOWNLOAD
+        # =========================================================
+        st.markdown("---")
+        col1, col2 = st.columns(2)
 
-if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    # 1. Validação simples (4 espaços de recuo aqui)
-    nome_validado = nome_digitado.strip().upper()
-    if len(nome_validado) < 3:
-        st.error("❌ Digite seu nome completo antes de salvar.")
-        st.stop()
+        with col1:
+            # --- BOTÃO 1: APENAS SALVA PROGRESSO (GIT) ---
+            if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
+                payload = {
+                    "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "colaborador": nome_digitado,
+                    "status": "EM_EDICAO",
+                    "campos": {
+                        "cargo": cargo, "departamento": depto, "setor": setor,
+                        "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+                        "devolver_em": st.session_state.get(f"dev_{v}", ""),
+                        "cursos": cursos, "objetivo": objetivo
+                    },
+                    "tabelas": {
+                        "alta": limpar_para_rascunho(e_alta),
+                        "normal": limpar_para_rascunho(e_normal),
+                        "baixa": limpar_para_rascunho(e_baixa),
+                        "dificuldades": limpar_para_rascunho(e_dif),
+                        "sugestoes": limpar_para_rascunho(e_sug)
+                    },
+                    "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+                }
+                
+                with st.spinner("💾 Gravando progresso..."):
+                    nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
+                    if salvar_no_github(payload, nome_arq):
+                        st.session_state["rascunho_atual"] = payload
+                        # Limpa chaves para resetar os editores com o novo dado
+                        for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+                            k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
+                            if k in st.session_state: del st.session_state[k]
+                        
+                        st.session_state["versao"] = st.session_state.get("versao", 0) + 1
+                        st.toast("✅ EDIÇÃO FEITA COM SUCESSO!")
+                        st.rerun()
 
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
-    
-    # 2. Função interna (alinhada com o código acima)
-    def limpar_para_rascunho(df):
-        if df is None or df.empty:
-            return []
-        df_temp = pd.DataFrame(df)
-        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
+        with col2:
+            # --- BOTÃO 2: FINALIZAÇÃO (GIT + SHEETS + DOWNLOAD) ---
+            if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
+                nome_validado = nome_digitado.strip().upper()
+                nome_arq = f"{nome_validado.replace(' ','_')}.json"
+                
+                payload = {
+                    "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                    "colaborador": nome_validado,
+                    "status": "FINALIZADO",
+                    "campos": {
+                        "cargo": cargo, "departamento": depto, "setor": setor,
+                        "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+                        "devolver_em": st.session_state.get(f"dev_{v}", ""),
+                        "cursos": cursos, "objetivo": objetivo
+                    },
+                    "tabelas": {
+                        "alta": limpar_para_rascunho(e_alta),
+                        "normal": limpar_para_rascunho(e_normal),
+                        "baixa": limpar_para_rascunho(e_baixa),
+                        "dificuldades": limpar_para_rascunho(e_dif),
+                        "sugestoes": limpar_para_rascunho(e_sug)
+                    },
+                    "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+                }
 
-    # 3. Montagem do Payload (Verifique os espaços à esquerda)
-    payload = {
-        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_validado,
-        "campos": {
-            "cargo": cargo,
-            "departamento": depto,
-            "setor": setor,
-            "chefe": chefe,
-            "unidade": unidade,
-            "escolaridade": escolaridade,
-            "devolver_em": st.session_state.get(f"dev_{v}", ""),
-            "cursos": cursos,
-            "objetivo": objetivo
-        },
-        "tabelas": {
-            "alta": limpar_para_rascunho(e_alta),
-            "normal": limpar_para_rascunho(e_normal),
-            "baixa": limpar_para_rascunho(e_baixa),
-            "dificuldades": limpar_para_rascunho(e_dif),
-            "sugestoes": limpar_para_rascunho(e_sug)
-        },
-        "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
-    }
+                with st.spinner("📦 Sincronizando com GitHub e Planilha..."):
+                    sucesso_git = salvar_no_github(payload, nome_arq)
+                    sucesso_sheets = salvar_no_google_sheets(payload) # <--- ENVIO PARA SHEETS
 
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload, nome_arq):
-            # 1. Atualiza o rascunho na memória com o que acabou de ser enviado
-            st.session_state["rascunho_atual"] = payload
-            st.session_state["rascunho_carregado"] = True
-            
-            # 2. Incrementa a versão (v) para forçar o reset visual dos campos e tabelas
-            st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-            
-            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
-            st.toast("Dados sincronizados!")
-            
-            # 3. Rerun limpa o cache antigo e reconstrói a tela com os novos dados
-            st.rerun()
-        else:
-            st.error("❌ Falha ao salvar no GitHub.")
+                    if sucesso_git and sucesso_sheets:
+                        st.session_state["rascunho_atual"] = payload
+                        st.success("✅ MENSAGEM DE SUCESSO AO SINCRONIZAR COM O GIT HUB E PLANILHA!")
+                        st.balloons()
+                        
+                        # --- GERAÇÃO DO BOTÃO DE DOWNLOAD DO JSON FINAL ---
+                        json_data = json.dumps(payload, indent=4, ensure_ascii=False)
+                        st.download_button(
+                            label="📥 Baixar Cópia do Envio (JSON)",
+                            data=json_data,
+                            file_name=nome_arq,
+                            mime="application/json",
+                            use_container_width=True
+                        )
