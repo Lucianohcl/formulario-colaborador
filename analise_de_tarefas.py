@@ -1299,18 +1299,28 @@ with col1:
         else:
             st.warning("⚠️ Digite um nome antes de carregar.")
 
+# --- 1. Sincroniza a 'fonte' com o Session State antes de criar os widgets ---
+# Isso garante que os dados apareçam no campo sem causar o erro de widget
+for campo_chave, campo_fonte in [
+    ("f_cargo", "cargo"), ("f_depto", "departamento"), ("f_esc", "escolaridade"),
+    ("f_setor", "setor"), ("f_chefe", "chefe"), ("f_unidade", "unidade"),
+    ("f_dev", "devolucao"), ("f_cursos_area", "cursos"), ("f_obj_area", "objetivo")
+]:
+    if st.session_state.get(campo_chave) is None: # Se o campo estiver vazio
+        st.session_state[campo_chave] = fonte.get(campo_fonte, "") # Carrega da fonte (rascunho)
+
+# --- 2. Agora os Widgets ficam limpos, apenas com a KEY ---
 with col2:
-    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
-    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
-    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
-    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
+    cargo_f = st.text_input("Cargo", key="f_cargo")
+    depto_f = st.text_input("Departamento", key="f_depto")
+    esc_f = st.text_input("Escolaridade", key="f_esc")
+    setor_f = st.text_input("Setor", key="f_setor")
+    chefe_f = st.text_input("Chefe imediato", key="f_chefe")
+    unidade_f = st.text_input("Empresa / Unidade", key="f_unidade")
+    dev_f = st.text_input("Devolver preenchido em", key="f_dev")
 
-cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
-obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
-
+cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", key="f_cursos_area")
+obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", key="f_obj_area")
 
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
