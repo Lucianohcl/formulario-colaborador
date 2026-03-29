@@ -2744,14 +2744,14 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 3. BOTÕES DE GRAVAÇÃO (REVISADO)
+# 💾 7. BOTÕES DE GRAVAÇÃO E FINALIZAÇÃO (LADO A LADO)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
 
+# --- BOTÃO 1: GRAVAR (LADO ESQUERDO) ---
 with col1:
     if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
-        # Monta o pacote de dados (payload)
         payload = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": nome_digitado,
@@ -2775,23 +2775,16 @@ with col1:
         with st.spinner("💾 Gravando..."):
             nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
             if salvar_no_github(payload, nome_arq):
-                # Salva na memória do navegador para persistência imediata
                 st.session_state["rascunho_atual"] = payload
-                
-                # Limpa o cache dos editores de tabela para forçar refresh
                 for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
                     k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
                     if k in st.session_state: 
                         del st.session_state[k]
-                
                 st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                st.toast("✅ PROGRESSO SALVO COM SUCESSO!")
+                st.toast("✅ PROGRESSO SALVO!")
                 st.rerun()
 
-with col2:
-    # Espaço para o botão de finalizar (se houver)
-    pass
-
+# --- BOTÃO 2: FINALIZAR (LADO DIREITO) ---
 with col2:
     if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
         nome_validado = nome_digitado.strip().upper()
@@ -2807,11 +2800,11 @@ with col2:
                 "cursos": cursos, "objetivo": objetivo
             },
             "tabelas": {
-                "alta": limpar_para_rascunho(e_alta),
-                "normal": limpar_para_rascunho(e_normal),
-                "baixa": limpar_para_rascunho(e_baixa),
-                "dificuldades": limpar_para_rascunho(e_dif),
-                "sugestoes": limpar_para_rascunho(e_sug)
+                "alta": e_alta.to_dict('records') if e_alta is not None else [],
+                "normal": e_normal.to_dict('records') if e_normal is not None else [],
+                "baixa": e_baixa.to_dict('records') if e_baixa is not None else [],
+                "dificuldades": e_dif.to_dict('records') if e_dif is not None else [],
+                "sugestoes": e_sug.to_dict('records') if e_sug is not None else []
             },
             "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
         }
@@ -2832,4 +2825,4 @@ with col2:
                     use_container_width=True
                 )
             else:
-                st.error("❌ Erro na sincronização.")
+                st.error("❌ Erro na sincronização (Verifique GitHub ou Sheets).")
