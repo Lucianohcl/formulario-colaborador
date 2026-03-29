@@ -221,6 +221,47 @@ def atualizar_rascunhos_do_github():
         st.session_state["rascunhos"] = {}
 
 
+# =========================================================
+# ⚙️ NÚCLEO DE PERSISTÊNCIA E CONTROLE DE VERSÃO (V)
+# =========================================================
+
+# 1. Inicializa a versão dos widgets (o "v" que força o reset visual)
+if "widget_version" not in st.session_state:
+    st.session_state["widget_version"] = 0
+
+# 2. Inicializa o rascunho atual (a "Fonte da Verdade")
+if "rascunho_atual" not in st.session_state:
+    st.session_state["rascunho_atual"] = {}
+
+# 3. Define as variáveis globais que os widgets usarão
+v = st.session_state["widget_version"]
+rascunho = st.session_state["rascunho_atual"]
+
+# 4. Função Mestra para carregar novos dados e "limpar a mesa"
+def aplicar_persistência_total(conteudo_json):
+    """
+    Injeta o JSON no estado, aumenta a versão 'v' e 
+    força o Streamlit a redesenhar todos os campos.
+    """
+    try:
+        if isinstance(conteudo_json, str):
+            dados = json.loads(conteudo_json)
+        else:
+            dados = conteudo_json
+            
+        st.session_state["rascunho_atual"] = dados
+        st.session_state["widget_version"] += 1  # O Pulo do Gato: muda a KEY de todos os campos
+        
+        st.success("✅ Dados sincronizados! Formulário atualizado.")
+        st.rerun() 
+    except Exception as e:
+        st.error(f"Erro no motor de persistência: {e}")
+
+# =========================================================
+
+
+
+
 
 def gerar_word(form):
     doc = Document()
@@ -2720,6 +2761,9 @@ for i, pergunta in enumerate(perguntas_disc):
         key=f"disc_{i}_{v}", 
         horizontal=True
     )
+
+
+
 
 # =========================================================
 # 💾 7. BOTÃO SALVAR (VERSÃO AJUSTADA: SEM PREFIXO NO NOME)
