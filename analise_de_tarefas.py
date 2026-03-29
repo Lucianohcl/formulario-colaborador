@@ -2458,11 +2458,23 @@ from github import Github
 # ⚙️ FUNÇÃO DE BUSCA DE VALORES (ESSENCIAL)
 # =========================================================
 def val(id_campo, default=""):
-    """ Recupera dados do rascunho de forma segura """
+    """ Recupera dados do rascunho de forma segura (Raiz, Campos ou Tabelas) """
     form = st.session_state.get("rascunho_atual", {})
     if not form: return default
-    # Busca na raiz ou dentro da subchave 'campos'
-    return form.get(id_campo) or form.get("campos", {}).get(id_campo, default)
+    
+    # 1. Tenta na raiz
+    valor = form.get(id_campo)
+    if valor is not None: return valor
+    
+    # 2. Tenta dentro de 'campos'
+    valor_campo = form.get("campos", {}).get(id_campo)
+    if valor_campo is not None: return valor_campo
+    
+    # 3. Tenta dentro de 'tabelas' (ESSENCIAL PARA O F5)
+    valor_tabela = form.get("tabelas", {}).get(id_campo)
+    if valor_tabela is not None: return valor_tabela
+    
+    return default
 
 # =========================================================
 # 1. CONFIGURAÇÕES E INICIALIZAÇÃO
@@ -2744,10 +2756,13 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "chefe": chefe, 
             "unidade": unidade, 
             "escolaridade": escolaridade,
-            "devolver_em": devolver_em,
+            "devolver_em": st.session_state.get(f"dev_{v}", ""),
             "cursos": cursos, 
             "objetivo": objetivo
-        },
+        }
+
+    }
+
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
             "normal": limpar_para_rascunho(e_normal),
