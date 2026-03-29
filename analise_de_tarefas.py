@@ -2772,13 +2772,15 @@ st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Verificação de segurança
-    nome_validado = nome_digitado.strip().upper()
-    if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+    # 1. Verificação de segurança: Nome
+    # Buscamos direto do session_state usando a versão 'v'
+    nome_atual = st.session_state.get(f"nome_{v}", "").strip().upper()
+    
+    if not nome_atual or len(nome_atual) < 3:
+        st.error("❌ Erro de Persistência: Digite seu nome completo no campo de Identificação antes de salvar.")
         st.stop()
 
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    nome_arq = f"{nome_atual.replace(' ','_')}.json"
     
     # 2. Função interna para limpar linhas vazias
     def limpar_para_rascunho(df):
@@ -2788,20 +2790,20 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload (ADAPTADO: pegando das variáveis _f)
+    # 3. Montagem do Payload (Busca segura no session_state)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_digitado,
+        "colaborador": nome_atual,
         "campos": {
-            "cargo": cargo_f, 
-            "departamento": depto_f, 
-            "setor": setor_f,
-            "chefe": chefe_f, 
-            "unidade": unidade_f, 
-            "escolaridade": esc_f,
-            "devolver_em": dev_f, 
-            "cursos": cursos_f, 
-            "objetivo": obj_f
+            "cargo": st.session_state.get(f"cargo_{v}", ""),
+            "departamento": st.session_state.get(f"depto_{v}", ""),
+            "setor": st.session_state.get(f"setor_{v}", ""),
+            "chefe": st.session_state.get(f"chefe_{v}", ""),
+            "unidade": st.session_state.get(f"unidade_{v}", ""),
+            "escolaridade": st.session_state.get(f"esc_{v}", ""),
+            "devolver_em": st.session_state.get(f"dev_{v}", ""),
+            "cursos": st.session_state.get(f"cursos_{v}", ""),
+            "objetivo": st.session_state.get(f"objetivo_{v}", "")
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2810,15 +2812,11 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        "disc": respostas_disc
+        "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
     }
 
-    # Normalização
-    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
-    # Removida a linha que resetava o DISC para [] para manter seu dicionário
-
     # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_digitado}..."):
+    with st.spinner(f"📦 Enviando rascunho de {nome_atual}..."):
         try:
             sucesso = salvar_no_github(payload, nome_arq)
         except Exception as e:
@@ -2826,19 +2824,15 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             sucesso = False
         
         if sucesso:
-            # Garante que a memória local saiba que este é o rascunho atual
+            # Atualiza a "fonte da verdade" local
             st.session_state["rascunho_atual"] = payload
-            st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo!")
+            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_atual} salvo com sucesso!")
 
-            # Enviar para Sheets
+            # Envio para Sheets
             try:
-                enviado_sheets = enviar_para_sheets(payload)
-                if enviado_sheets:
-                    st.toast("📊 Rascunho enviado para Google Sheets!")
-                else:
-                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi para Sheets.")
-            except Exception as e_sheets:
-                st.warning(f"⚠️ Falha ao enviar para Sheets: {e_sheets}")
+                if enviar_para_sheets(payload):
+                    st.toast("📊 Sincronizado com Google Sheets!")
+            except:
+                pass 
         else:
-            st.error("❌ FALHA NA PERSISTÊNCIA: GitHub não respondeu.")
+            st.error("❌ O GitHub recusou o salvamento. Verifique o DB_TOKEN.")
