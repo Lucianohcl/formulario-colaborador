@@ -2729,96 +2729,86 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
+# --- AQUI TERMINA O FOR E COMEÇAM OS BOTÕES (FORA DO LOOP) ---
 
-        # No topo do arquivo, certifique-se de ter:
-        # import json
+# =========================================================
+# 💾 7. BOTÕES DE GRAVAÇÃO, PLANILHA E DOWNLOAD
+# =========================================================
+st.markdown("---")
+col1, col2 = st.columns(2)
 
-        # =========================================================
-        # 💾 7. BOTÕES DE GRAVAÇÃO, PLANILHA E DOWNLOAD
-        # =========================================================
-        st.markdown("---")
-        col1, col2 = st.columns(2)
+with col1:
+    if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
+        payload = {
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "colaborador": nome_digitado,
+            "status": "EM_EDICAO",
+            "campos": {
+                "cargo": cargo, "departamento": depto, "setor": setor,
+                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+                "devolver_em": st.session_state.get(f"dev_{v}", ""),
+                "cursos": cursos, "objetivo": objetivo
+            },
+            "tabelas": {
+                "alta": limpar_para_rascunho(e_alta),
+                "normal": limpar_para_rascunho(e_normal),
+                "baixa": limpar_para_rascunho(e_baixa),
+                "dificuldades": limpar_para_rascunho(e_dif),
+                "sugestoes": limpar_para_rascunho(e_sug)
+            },
+            "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+        }
+        
+        with st.spinner("💾 Gravando..."):
+            nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
+            if salvar_no_github(payload, nome_arq):
+                st.session_state["rascunho_atual"] = payload
+                for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
+                    k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
+                    if k in st.session_state: 
+                        del st.session_state[k]
+                st.session_state["versao"] = st.session_state.get("versao", 0) + 1
+                st.toast("✅ PROGRESSO SALVO!")
+                st.rerun()
 
-        with col1:
-            # --- BOTÃO 1: APENAS SALVA PROGRESSO (GIT) ---
-            if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
-                payload = {
-                    "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "colaborador": nome_digitado,
-                    "status": "EM_EDICAO",
-                    "campos": {
-                        "cargo": cargo, "departamento": depto, "setor": setor,
-                        "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                        "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                        "cursos": cursos, "objetivo": objetivo
-                    },
-                    "tabelas": {
-                        "alta": limpar_para_rascunho(e_alta),
-                        "normal": limpar_para_rascunho(e_normal),
-                        "baixa": limpar_para_rascunho(e_baixa),
-                        "dificuldades": limpar_para_rascunho(e_dif),
-                        "sugestoes": limpar_para_rascunho(e_sug)
-                    },
-                    "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
-                }
-                
-                with st.spinner("💾 Gravando progresso no GitHub..."):
-                    nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
-                    if salvar_no_github(payload, nome_arq):
-                        st.session_state["rascunho_atual"] = payload
-                        # Reset dos editores para carregar o novo estado
-                        for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-                            k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
-                            if k in st.session_state: 
-                                del st.session_state[k]
-                        
-                        st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                        st.toast(f"✅ PROGRESSO DE {nome_digitado} SALVO!")
-                        st.rerun()
+with col2:
+    if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
+        nome_validado = nome_digitado.strip().upper()
+        nome_arq = f"{nome_validado.replace(' ','_')}.json"
+        payload = {
+            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            "colaborador": nome_validado,
+            "status": "FINALIZADO",
+            "campos": {
+                "cargo": cargo, "departamento": depto, "setor": setor,
+                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+                "devolver_em": st.session_state.get(f"dev_{v}", ""),
+                "cursos": cursos, "objetivo": objetivo
+            },
+            "tabelas": {
+                "alta": limpar_para_rascunho(e_alta),
+                "normal": limpar_para_rascunho(e_normal),
+                "baixa": limpar_para_rascunho(e_baixa),
+                "dificuldades": limpar_para_rascunho(e_dif),
+                "sugestoes": limpar_para_rascunho(e_sug)
+            },
+            "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+        }
 
-        with col2:
-            # --- BOTÃO 2: FINALIZAÇÃO (GIT + SHEETS + DOWNLOAD) ---
-            if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
-                nome_validado = nome_digitado.strip().upper()
-                nome_arq = f"{nome_validado.replace(' ','_')}.json"
-                
-                payload = {
-                    "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                    "colaborador": nome_validado,
-                    "status": "FINALIZADO",
-                    "campos": {
-                        "cargo": cargo, "departamento": depto, "setor": setor,
-                        "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                        "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                        "cursos": cursos, "objetivo": objetivo
-                    },
-                    "tabelas": {
-                        "alta": limpar_para_rascunho(e_alta),
-                        "normal": limpar_para_rascunho(e_normal),
-                        "baixa": limpar_para_rascunho(e_baixa),
-                        "dificuldades": limpar_para_rascunho(e_dif),
-                        "sugestoes": limpar_para_rascunho(e_sug)
-                    },
-                    "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
-                }
-
-                with st.spinner("📦 Sincronizando GitHub e Planilha..."):
-                    sucesso_git = salvar_no_github(payload, nome_arq)
-                    sucesso_sheets = salvar_no_google_sheets(payload)
-
-                    if sucesso_git and sucesso_sheets:
-                        st.session_state["rascunho_atual"] = payload
-                        st.success("✅ DADOS ENVIADOS COM SUCESSO PARA O HUB E PLANILHA!")
-                        st.balloons()
-                        
-                        # Preparação do Download Final
-                        dados_json = json.dumps(payload, indent=4, ensure_ascii=False)
-                        st.download_button(
-                            label="📥 Baixar Cópia Final (JSON)",
-                            data=dados_json,
-                            file_name=nome_arq,
-                            mime="application/json",
-                            use_container_width=True
-                        )
-                    else:
-                        st.error("❌ Erro ao sincronizar. Verifique a conexão.")
+        with st.spinner("📦 Sincronizando..."):
+            sucesso_git = salvar_no_github(payload, nome_arq)
+            sucesso_sheets = salvar_no_google_sheets(payload)
+            if sucesso_git and sucesso_sheets:
+                st.session_state["rascunho_atual"] = payload
+                st.success("✅ ENVIADO COM SUCESSO!")
+                st.balloons()
+                dados_json = json.dumps(payload, indent=4, ensure_ascii=False)
+                st.download_button(
+                    label="📥 Baixar Cópia (JSON)",
+                    data=dados_json,
+                    file_name=nome_arq,
+                    mime="application/json",
+                    use_container_width=True
+                )
+            else:
+                st.error("❌ Erro na sincronização.")
