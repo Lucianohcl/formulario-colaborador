@@ -2745,24 +2745,21 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
         return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # 3. Montagem do Payload
+    # 3. Montagem do Payload (Verifique os espaços à esquerda)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_validado,
         "campos": {
-            "cargo": cargo, 
-            "departamento": depto, 
+            "cargo": cargo,
+            "departamento": depto,
             "setor": setor,
-            "chefe": chefe, 
-            "unidade": unidade, 
+            "chefe": chefe,
+            "unidade": unidade,
             "escolaridade": escolaridade,
             "devolver_em": st.session_state.get(f"dev_{v}", ""),
-            "cursos": cursos, 
+            "cursos": cursos,
             "objetivo": objetivo
-        }
-
-    }
-
+        },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
             "normal": limpar_para_rascunho(e_normal),
@@ -2770,7 +2767,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        "disc": respostas_disc
+        "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
     }
 
     # 4. Execução do salvamento
