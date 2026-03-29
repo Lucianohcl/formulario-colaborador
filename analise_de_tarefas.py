@@ -2592,6 +2592,48 @@ with col2:
 cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"), key=f"cursos_{v}")
 objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
 
+
+# =========================================================
+# ⚙️ MOTOR DE TABELAS (DEFINIÇÃO)
+# =========================================================
+def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
+    st.write(f"**{titulo}**")
+    
+    # Busca dados direto do rascunho atual carregado do GitHub
+    dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
+    
+    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
+    if col_extra: 
+        colunas.insert(1, col_extra)
+    
+    # Lista de opções para os selects
+    lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
+    lista_horas = [f"{i} h" for i in range(25)]
+    lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+    
+    # Converte para DataFrame e garante que sempre tenha as 15 linhas
+    df_base = pd.DataFrame(dados_salvos)
+    df = garantir_15_linhas(df_base, colunas)
+    
+    config = {
+        col_principal: st.column_config.TextColumn("Descrição", width="large"),
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
+        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
+        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
+    }
+    if col_extra: 
+        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
+
+    return st.data_editor(
+        df, 
+        key=f"editor_{chave_rascunho}_{v}", 
+        column_config=config, 
+        use_container_width=True, 
+        num_rows="fixed"
+    )
+
+
+
 # =========================================================
 # 5. TABELAS DE TAREFAS
 # =========================================================
