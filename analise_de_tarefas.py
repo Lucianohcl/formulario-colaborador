@@ -2722,7 +2722,7 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO FINAL CONSOLIDADA)
+# 💾 7. BOTÃO SALVAR (VERSÃO AJUSTADA: SEM PREFIXO NO NOME)
 # =========================================================
 st.markdown("---")
 
@@ -2730,8 +2730,7 @@ st.markdown("---")
 if "rascunho_salvo" not in st.session_state:
     st.session_state["rascunho_salvo"] = False
 
-# 2. O Botão de Execução Único
-if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True, type="secondary"):
+if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True):
     try:
         # Validação de Nome
         nome_validado = nome_digitado.strip().upper()
@@ -2739,23 +2738,22 @@ if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True, type="se
             st.error("❌ Digite seu nome completo antes de salvar.")
             st.stop()
 
-        # Função de limpeza das tabelas (alinhada)
+        # Função de limpeza das tabelas
         def limpar_para_rascunho(df):
-            if df is None or df.empty:
-                return []
+            if df is None or df.empty: return []
             df_temp = pd.DataFrame(df)
             mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
             return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-        # 3. Montagem do Payload Único
+        # 2. Montagem do Payload
         payload_rascunho = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": nome_validado,
             "status": "RASCUNHO",
             "campos": {
-                "cargo": cargo, "departamento": depto, "setor": setor,
-                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo
+                "cargo": cargo_f, "departamento": depto_f, "setor": setor_f,
+                "chefe": chefe_f, "unidade": unidade_f, "escolaridade": esc_f,
+                "devolver_em": dev_f, "cursos": cursos_f, "objetivo": obj_f
             },
             "tabelas": {
                 "alta": limpar_para_rascunho(e_alta),
@@ -2764,37 +2762,45 @@ if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True, type="se
                 "dificuldades": limpar_para_rascunho(e_dif),
                 "sugestoes": limpar_para_rascunho(e_sug)
             },
-            # Formata o DISC para chaves de string (p0 a p23)
             "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
         }
 
-        nome_arq_rascunho = f"RASCUNHO_{nome_validado.replace(' ', '_')}.json"
+        # Nome do arquivo SEM o prefixo "RASCUNHO_"
+        nome_arq_final = f"{nome_validado.replace(' ', '_')}.json"
 
-        # 4. Sincronização
-        with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-            salvo_github = salvar_no_github(payload_rascunho, nome_arq_rascunho)
+        # 3. Sincronização
+        with st.spinner(f"📦 Sincronizando dados de {nome_validado}..."):
+            salvo_github = salvar_no_github(payload_rascunho, nome_arq_final)
             enviado_sheets = enviar_para_sheets(payload_rascunho)
 
             if salvo_github:
                 st.session_state["rascunho_atual"] = payload_rascunho
                 st.session_state["rascunho_salvo"] = True 
                 
-                st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
-                st.toast("✅ GitHub Sincronizado!")
+                # Mensagem de Sucesso Geral
+                st.success(f"✅ Dados de {nome_validado} sincronizados com sucesso!")
+                
+                # Feedback específico do Sheets (conforme solicitado)
                 if enviado_sheets:
-                    st.toast("📊 Planilha Atualizada!")
+                    st.toast("📊 Planilha Google atualizada com sucesso!")
+                    st.info("💡 Os dados já constam na Planilha de Controle.")
+                else:
+                    st.warning("⚠️ Salvo no GitHub, mas houve um atraso na Planilha.")
+                
+                st.toast("🚀 GitHub Atualizado!")
             else:
-                st.error("❌ Falha crítica: Não foi possível salvar no GitHub.")
+                st.error("❌ Falha crítica ao salvar no servidor (GitHub).")
 
     except Exception as e:
-        st.error(f"❌ Erro ao processar rascunho: {e}")
+        st.error(f"❌ Erro ao processar salvamento: {e}")
 
-# 3. Botão de Download (visível após sucesso)
+# 4. Botão de Download do JSON (aparece após o sucesso)
 if st.session_state.get("rascunho_salvo"):
+    st.markdown("### 📥 Backup Local")
     st.download_button(
-        label="📥 Baixar arquivo de Rascunho (JSON)",
+        label="📥 BAIXAR ARQUIVO JSON (BACKUP)",
         data=json.dumps(st.session_state["rascunho_atual"], indent=4, ensure_ascii=False),
-        file_name=f"RASCUNHO_{nome_digitado.replace(' ', '_').upper()}.json",
+        file_name=f"{nome_digitado.replace(' ', '_').upper()}.json",
         mime="application/json",
         use_container_width=True
     )
