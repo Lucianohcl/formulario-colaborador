@@ -1409,6 +1409,9 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
+# SOLUÇÃO DO NOME NÃO DEFINIDO: Criando o apelido para o botão de envio
+nome_digitado = nome_f 
+
 st.markdown("---")
 st.subheader("✅ Status de Validação do Formulário")
 
@@ -1425,7 +1428,7 @@ for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS (AJUSTADA PARA TODOS OS CAMPOS) ---
+# --- 2. VALIDAÇÃO DAS TABELAS (VARREDURA ABSOLUTA DE TODOS OS CAMPOS) ---
 dict_tabelas = {
     "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
     "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
@@ -1441,44 +1444,46 @@ regras_colunas = {
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Pega as linhas onde a coluna principal foi escrita
-        linhas_ativas = df_validar[df_validar[col_principal if 'col_principal' in locals() else col_alvo].astype(str).str.strip() != ""]
+        # Identifica linhas onde a descrição principal foi preenchida
+        linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
             pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                # Valida TODAS as colunas da linha ativa
+                # VARREDURA DINÂMICA: Checa TODAS as colunas daquela linha
                 for col in df_validar.columns:
                     val_celula = str(row.get(col, "")).strip()
                     
-                    # Regra especial para Tempo (Horas/Minutos)
+                    # 1. Validação de Tempo (Horas e Minutos não podem ser 0 juntos)
                     if col in ["Horas", "Minutos"] and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
                         h = str(row.get("Horas", "0 h")).strip()
                         m = str(row.get("Minutos", "0 min")).strip()
-                        if h in ["0 h", ""] and m in ["0 min", ""]:
-                            msg = f"❌ {nome_tab}: Linha {i+1} sem tempo informado."
+                        if (h in ["0 h", ""]) and (m in ["0 min", ""]):
+                            msg = f"❌ {nome_tab} (Linha {i+1}): Informe o tempo (Horas ou Minutos)."
                             if msg not in pendencias: pendencias.append(msg)
                     
-                    # Regra para TODOS os outros campos (Frequência, Setor, Impacto, etc.)
-                    else:
-                        if val_celula in ["", "None", "nan", "Selecione"]:
-                            pendencias.append(f"❌ {nome_tab}: Linha {i+1} o campo **{col}** está vazio.")
+                    # 2. Validação de qualquer outro campo (Frequência, Setor Envolvido, Impacto, etc.)
+                    elif val_celula in ["", "None", "nan", "Selecione"]:
+                        pendencias.append(f"❌ {nome_tab} (Linha {i+1}): O campo **{col}** está vazio.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
 if len(respostas_vazias) > 0:
-    pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
+    pendencias.append(f"📊 Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
 
 # --- EXIBIÇÃO FINAL DO STATUS ---
 if pendencias:
     st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
-    for p in pendencias:
+    for p in pendencias[:15]: # Mostra os primeiros 15 para não travar a tela
         st.write(f"• {p}")
-    st.session_state["confirmacao_final"] = False
+    if len(pendencias) > 15:
+        st.info(f"...e mais {len(pendencias)-15} itens.")
+    st.session_state["pode_enviar"] = False
 else:
     st.success("🎉 **Perfeito! Tudo preenchido corretamente. O envio está liberado.**")
-    st.session_state["confirmacao_final"] = True
+    st.session_state["pode_enviar"] = True
+
 
 # =========================================================
 # 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
