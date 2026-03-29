@@ -2736,16 +2736,15 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     # 3. Montagem do Payload
     payload_final = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_validado,
-            "status": "FINALIZADO",
-            "campos": {
-                "cargo": cargo, "departamento": depto, "setor": setor,
-                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                "cursos": cursos, "objetivo": objetivo
-            },
-
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "colaborador": nome_validado,
+        "status": "FINALIZADO",
+        "campos": {
+            "cargo": cargo, "departamento": depto, "setor": setor,
+            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+            "devolver_em": st.session_state.get(f"dev_{v}", ""),
+            "cursos": cursos, "objetivo": objetivo
+        },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
             "normal": limpar_para_rascunho(e_normal),
@@ -2758,10 +2757,12 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload, nome_arq):
-            st.session_state["rascunho_atual"] = payload            st.session_state["rascunho_carregado"] = True
+        # USANDO payload_final PARA BATER COM A DEFINIÇÃO ACIMA
+        if salvar_no_github(payload_final, nome_arq):
+            st.session_state["rascunho_atual"] = payload_final
+            st.session_state["rascunho_carregado"] = True
             st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
             st.toast("Dados sincronizados!")
             st.rerun()
         else:
-            st.error("❌ Falha ao salvar no GitHub.")v
+            st.error("❌ Falha ao salvar no GitHub.")
