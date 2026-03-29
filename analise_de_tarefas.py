@@ -2767,4 +2767,4 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             st.toast("Dados sincronizados!")
             st.rerun()
         else:
-            st.error("❌ Falha ao salvar no GitHub.")v
+            st.error("❌ Falha ao salvar no GitHub.")
