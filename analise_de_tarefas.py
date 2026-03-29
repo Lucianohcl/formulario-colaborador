@@ -2750,11 +2750,11 @@ with col1:
                 "cursos": cursos, "objetivo": objetivo
             },
             "tabelas": {
-                "alta": limpar_para_rascunho(e_alta),
-                "normal": limpar_para_rascunho(e_normal),
-                "baixa": limpar_para_rascunho(e_baixa),
-                "dificuldades": limpar_para_rascunho(e_dif),
-                "sugestoes": limpar_para_rascunho(e_sug)
+                "alta": e_alta.to_dict('records') if e_alta is not None else [],
+                "normal": e_normal.to_dict('records') if e_normal is not None else [],
+                "baixa": e_baixa.to_dict('records') if e_baixa is not None else [],
+                "dificuldades": e_dif.to_dict('records') if e_dif is not None else [],
+                "sugestoes": e_sug.to_dict('records') if e_sug is not None else []
             },
             "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
         }
