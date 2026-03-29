@@ -2569,14 +2569,39 @@ if not st.session_state.get("rascunho_carregado"):
         st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
         
         st.session_state["rascunho_atual"] = dados
-        if "disc" in dados:
-            st.session_state["respostas_disc"] = dados.get("disc", {})
+
+        # =====================================================
+        # 🔥 TABELAS
+        # =====================================================
+        import pandas as pd
+
+        tb = dados.get("tabelas", {})
+
+        st.session_state["e_alta"] = pd.DataFrame(tb.get("alta", []))
+        st.session_state["e_normal"] = pd.DataFrame(tb.get("normal", []))
+        st.session_state["e_baixa"] = pd.DataFrame(tb.get("baixa", []))
+        st.session_state["e_dif"] = pd.DataFrame(tb.get("dificuldades", []))
+        st.session_state["e_sug"] = pd.DataFrame(tb.get("sugestoes", []))
+
+        # =====================================================
+        # 🔥 DISC
+        # =====================================================
+        disc = dados.get("disc", {})
+
+        for i in range(24):
+            st.session_state[f"p{i}"] = disc.get(str(i))
+
+        # =====================================================
+        # FINAL
+        # =====================================================
         st.session_state["rascunho_carregado"] = True
+
         st.toast("✅ Dados recuperados!")
+
         st.rerun()
 
-    except:
-        # Se não houver arquivo, libera o formulário limpo
+    except Exception as e:
+        st.error(f"Erro ao carregar rascunho: {e}")
         st.session_state["rascunho_carregado"] = True
         st.session_state["rascunho_atual"] = {}
         st.info("Nenhum rascunho encontrado. Iniciando novo cadastro.")
@@ -2584,7 +2609,7 @@ if not st.session_state.get("rascunho_carregado"):
 
 # Define a variável rascunho para ser usada nas tabelas
 rascunho = st.session_state.get("rascunho_atual", {})
-v = st.session_state.get("v_tab", 1) # Garante que v exista
+v = st.session_state.get("v_tab", 1)
 
 # =========================================================
 # 4. CAMPOS BÁSICOS (COM PERSISTÊNCIA ATIVA)
