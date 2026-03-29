@@ -2746,47 +2746,27 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 # 💾 7. BLOCO FINAL: GRAVAÇÃO E FINALIZAÇÃO (REVISÃO TRIPLA)
 # =========================================================
-st.markdown("---")
-col1, col2 = st.columns(2)
 
-# --- BOTÃO 1: GRAVAR EDIÇÃO (RASCUNHO) ---
-with col1:
-    if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
-        # Captura o estado atual do DISC com segurança
-        progresso_disc = {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
-        
-        payload = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_digitado,
-            "status": "EM_EDICAO",
-            "campos": {
-                "cargo": cargo, "departamento": depto, "setor": setor,
-                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                "cursos": cursos, "objetivo": objetivo
-            },
-            "tabelas": {
-                "alta": e_alta.to_dict('records') if e_alta is not None else [],
-                "normal": e_normal.to_dict('records') if e_normal is not None else [],
-                "baixa": e_baixa.to_dict('records') if e_baixa is not None else [],
-                "dificuldades": e_dif.to_dict('records') if e_dif is not None else [],
-                "sugestoes": e_sug.to_dict('records') if e_sug is not None else []
-            },
-            "disc": progresso_disc
-        }
-        
-        with st.spinner("💾 Gravando rascunho..."):
-            nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
-            if salvar_no_github(payload, nome_arq):
-                st.session_state["rascunho_atual"] = payload
-                # Limpa cache de editores para atualizar a visão
-                for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
-                    k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
-                    if k in st.session_state: del st.session_state[k]
-                
-                st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                st.toast("✅ PROGRESSO SALVO NO GITHUB!")
-                st.rerun()
+if st.button("📝 GRAVAR RASCUNHO"):
+    # 1. PEGA TUDO O QUE ESTÁ NA TELA
+    dados = {
+        "cargo": cargo, "departamento": depto, "setor": setor,
+        "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+        "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo,
+        "tabelas": {
+            "alta": e_alta.to_dict('records'),
+            "normal": e_normal.to_dict('records'),
+            "baixa": e_baixa.to_dict('records')
+        },
+        "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+    }
+
+    # 2. SALVA NO GITHUB E ATUALIZA A TELA
+    arquivo_nome = f"{nome_digitado.replace(' ','_')}.json"
+    if salvar_no_github(dados, arquivo_nome):
+        st.session_state["rascunho_atual"] = dados
+        st.success("✅ SALVO COM SUCESSO!")
+        st.rerun()
 
 # --- BOTÃO 2: FINALIZAR E ENVIAR TUDO ---
 with col2:
