@@ -2458,23 +2458,26 @@ from github import Github
 # ⚙️ FUNÇÃO DE BUSCA DE VALORES (ESSENCIAL)
 # =========================================================
 def val(id_campo, default=""):
-    """ Recupera dados do rascunho de forma segura (Raiz, Campos ou Tabelas) """
+    """ Recupera dados do rascunho respeitando a hierarquia do seu JSON """
     form = st.session_state.get("rascunho_atual", {})
-    if not form: return default
     
-    # 1. Tenta na raiz
-    valor = form.get(id_campo)
-    if valor is not None: return valor
+    # Se o rascunho estiver vazio, para aqui
+    if not form: 
+        return default
     
-    # 2. Tenta dentro de 'campos'
-    valor_campo = form.get("campos", {}).get(id_campo)
-    if valor_campo is not None: return valor_campo
+    # 1. Tenta dentro de 'campos' (onde está o devolver_em, cargo, etc)
+    campos = form.get("campos", {})
+    if id_campo in campos:
+        return campos[id_campo]
     
-    # 3. Tenta dentro de 'tabelas' (ESSENCIAL PARA O F5)
-    valor_tabela = form.get("tabelas", {}).get(id_campo)
-    if valor_tabela is not None: return valor_tabela
+    # 2. Tenta dentro de 'tabelas' (onde está alta, normal, dificuldades)
+    tabelas = form.get("tabelas", {})
+    if id_campo in tabelas:
+        return tabelas[id_campo]
     
-    return default
+    # 3. Tenta na raiz (caso o campo esteja solto)
+    return form.get(id_campo, default)
+
 
 # =========================================================
 # 1. CONFIGURAÇÕES E INICIALIZAÇÃO
@@ -2578,7 +2581,8 @@ if not st.session_state.get("rascunho_carregado"):
         st.session_state[f"esc_{v}"] = cp.get("escolaridade", "")
         st.session_state[f"cursos_{v}"] = cp.get("cursos", "")
         st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
-        
+        st.session_state[f"dev_{v}"] = cp.get("devolver_em", "")
+       
         st.session_state["rascunho_atual"] = dados
         st.session_state["rascunho_carregado"] = True
         st.toast("✅ Dados recuperados!")
@@ -2628,22 +2632,24 @@ lista_horas = [f"{i} h" for i in range(25)]
 lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 
 # =========================================================
-# ⚙️ MOTOR DE TABELAS (PERSISTÊNCIA GARANTIDA)
+# ⚙️ MOTOR DE TABELAS (VERSÃO SIMPLISTA E DIRETA)
 # =========================================================
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
-    st.write(f"**{titulo}**")
+    st.markdown(f"#### {titulo}")
     
-    # Busca dados direto do rascunho atual carregado do GitHub
-    dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
+    # 1. PEGA DIRETO DO BANCO (via função val que já testamos)
+    # Se não houver nada no banco, ele traz uma lista vazia []
+    dados_banco = val(chave_rascunho, [])
     
+    # 2. COLUNAS
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: 
-        colunas.insert(1, col_extra)
+    if col_extra: colunas.insert(1, col_extra)
     
-    # Converte para DataFrame e garante que sempre tenha as 15 linhas
-    df_base = pd.DataFrame(dados_salvos)
+    # 3. GARANTE AS 15 LINHAS (Para o visual ficar padronizado)
+    df_base = pd.DataFrame(dados_banco)
     df = garantir_15_linhas(df_base, colunas)
     
+    # 4. CONFIGURAÇÃO VISUAL
     config = {
         col_principal: st.column_config.TextColumn("Descrição", width="large"),
         "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
@@ -2653,21 +2659,21 @@ def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_ext
     if col_extra: 
         config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
 
-    # O uso da key com 'v' força o reset do componente quando os dados mudam
+    # 5. O EDITOR (O segredo é a KEY com 'v' para resetar a tela)
     return st.data_editor(
         df, 
         key=f"editor_{chave_rascunho}_{v}", 
         column_config=config, 
         use_container_width=True, 
-        num_rows="fixed"
+        num_rows="fixed" # Mantém as 15 linhas travadas
     )
 
-# Chamadas das tabelas (Mantenha estas chaves, elas batem com o Botão Salvar)
-e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+# --- Chamadas (NÃO MUDE AS CHAVES ABAIXO) ---
+e_alta   = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
 e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+e_baixa  = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
+e_dif    = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
+e_sug    = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
 # =========================================================
 # 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA)
