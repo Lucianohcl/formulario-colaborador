@@ -2725,23 +2725,68 @@ perguntas_disc = [
     "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-respostas_disc = {}
+
+# =========================================================
+# 📥 CARREGAMENTO DO RASCUNHO (VERSÃO SEGURA)
+# =========================================================
+
+import json
+from github import Github
+
 opcoes = ["A", "B", "C", "D"]
+respostas_disc = {}
+
+# 🔥 SÓ TENTA CARREGAR SE EXISTIR NOME
+if nome_digitado and not st.session_state.get("rascunho_carregado"):
+
+    nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
+
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NOME)
+        conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
+        dados = json.loads(conteudo.decoded_content.decode())
+
+        st.session_state["rascunho_atual"] = dados
+        st.session_state["rascunho_carregado"] = True
+
+        # 🔥 ESSENCIAL PRO DISC
+        st.session_state["rascunho_carregado_agora"] = True
+
+        st.toast("✅ Dados recuperados!")
+        st.rerun()
+
+    except Exception as e:
+        st.warning("⚠️ Nenhum rascunho encontrado. Iniciando novo.")
+        st.session_state["rascunho_carregado"] = True
+        st.session_state["rascunho_atual"] = {}
+
+# =========================================================
+# 📊 DISC
+# =========================================================
+
+st.markdown("---")
+st.subheader("📊 Questionário")
+
+disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
+carregou_agora = st.session_state.get("rascunho_carregado_agora", False)
 
 for i, pergunta in enumerate(perguntas_disc):
-    # Busca qual letra (A, B, C ou D) foi salva para esta pergunta específica
     valor_salvo = disc_data.get(str(i))
-    
-    # Descobre a posição (0, 1, 2 ou 3) para o rádio botão nascer marcado
-    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else 0
-    
+
+    # 🔥 INJETA APENAS QUANDO CARREGA
+    if carregou_agora:
+        st.session_state[f"p{i}"] = valor_salvo if valor_salvo in opcoes else "A"
+
     respostas_disc[str(i)] = st.radio(
-        f"**{i+1}.** {pergunta}", 
-        options=opcoes, 
-        index=idx, 
-        key=f"p{i}", 
+        f"**{i+1}.** {pergunta}",
+        options=opcoes,
+        key=f"p{i}",
         horizontal=True
     )
+
+# 🔥 DESLIGA FLAG
+st.session_state["rascunho_carregado_agora"] = False
 
 # =========================================================
 # 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
