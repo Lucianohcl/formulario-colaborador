@@ -2711,14 +2711,28 @@ perguntas_disc = [
     "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
+# =========================================================
+# 1. LOGICA DE PERSISTÊNCIA (TEM QUE VIR ANTES DE TUDO)
+# =========================================================
+if "rascunho_atual" not in st.session_state:
+    st.session_state["rascunho_atual"] = {}
+
+# Atalhos para facilitar a vida dos campos lá em cima
+rascunho = st.session_state.get("rascunho_atual", {})
+campos_salvos = rascunho.get("campos", {})
+disc_salvo = rascunho.get("disc", {})
+
+# =========================================================
+# 2. LOOP DO DISC (REVISADO E LIMPO)
+# =========================================================
 respostas_disc = {}
 opcoes = ["A", "B", "C", "D"]
 
 for i, pergunta in enumerate(perguntas_disc):
-    # Busca qual letra (A, B, C ou D) foi salva para esta pergunta específica
-    valor_salvo = disc_data.get(str(i))
+    # Busca o que foi salvo (se existir)
+    valor_salvo = disc_salvo.get(str(i))
     
-    # Descobre a posição (0, 1, 2 ou 3) para o rádio botão nascer marcado
+    # Define qual rádio botão nasce marcado
     idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
     
     respostas_disc[str(i)] = st.radio(
@@ -2729,16 +2743,15 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
-# --- AQUI TERMINA O FOR E COMEÇAM OS BOTÕES (FORA DO LOOP) ---
-
 # =========================================================
-# 💾 7. BOTÕES DE GRAVAÇÃO, PLANILHA E DOWNLOAD
+# 3. BOTÕES DE GRAVAÇÃO (REVISADO)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
     if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
+        # Monta o pacote de dados (payload)
         payload = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": nome_digitado,
@@ -2762,14 +2775,22 @@ with col1:
         with st.spinner("💾 Gravando..."):
             nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
             if salvar_no_github(payload, nome_arq):
+                # Salva na memória do navegador para persistência imediata
                 st.session_state["rascunho_atual"] = payload
+                
+                # Limpa o cache dos editores de tabela para forçar refresh
                 for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
                     k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
                     if k in st.session_state: 
                         del st.session_state[k]
+                
                 st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                st.toast("✅ PROGRESSO SALVO!")
+                st.toast("✅ PROGRESSO SALVO COM SUCESSO!")
                 st.rerun()
+
+with col2:
+    # Espaço para o botão de finalizar (se houver)
+    pass
 
 with col2:
     if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
