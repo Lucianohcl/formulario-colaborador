@@ -1379,35 +1379,34 @@ e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestã
 
 
 # =========================================================
-# 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
+# 📊 7. QUESTIONÁRIO DISC (SIMPLES E DIRETO)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário")
 
-# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
-v = st.session_state.get("v_tab", 0) 
+opcoes = ["A", "B", "C", "D"]
+respostas_disc = {}
 
-respostas_disc_atual = {}
-rascunho_disc = st.session_state.get("disc_v2", {})
+# 🔥 pega direto do rascunho correto
+disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
 
-# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
+# 🔍 DEBUG (APAGA DEPOIS)
+st.write("DEBUG DISC:", disc_data)
+
+# 🔥 injeta no session_state (ANTES dos radios)
+for i in range(24):
+    valor = disc_data.get(str(i))
+    if valor in opcoes:
+        st.session_state[f"p{i}"] = valor
+
+# 🔥 radios (limpos)
 for i, pergunta in enumerate(perguntas_disc):
-    # Tenta carregar a letra do rascunho
-    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
-    
-    # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
-    opcoes = ["A", "B", "C", "D"]
-    idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
-    
-    escolha = st.radio(
+    respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
-        index=idx_selecionado,
-        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
+        key=f"p{i}",
         horizontal=True
     )
-    respostas_disc_atual[f"p{i}"] = escolha
-
 
 
 # =========================================================
