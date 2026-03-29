@@ -2569,6 +2569,8 @@ if not st.session_state.get("rascunho_carregado"):
         st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
         
         st.session_state["rascunho_atual"] = dados
+        if "disc" in dados:
+            st.session_state["respostas_disc"] = dados.get("disc", {})
         st.session_state["rascunho_carregado"] = True
         st.toast("✅ Dados recuperados!")
         st.rerun()
@@ -2600,7 +2602,11 @@ with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
-    devolver_em = st.text_input("Devolver em:", value=val("devolver_em"), key=f"dev_{v}")
+    devolver_em = st.text_input(
+    "Devolver em:", 
+        value=st.session_state.get(f"dev_{v}", ""), 
+        key=f"dev_input_{v}"
+    )
 
 
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
