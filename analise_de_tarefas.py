@@ -2768,25 +2768,27 @@ if nome_digitado and not st.session_state.get("rascunho_carregado"):
 st.markdown("---")
 st.subheader("📊 Questionário")
 
+respostas_disc = {}
+opcoes = ["A", "B", "C", "D"]
+
 disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
-carregou_agora = st.session_state.get("rascunho_carregado_agora", False)
 
 for i, pergunta in enumerate(perguntas_disc):
     valor_salvo = disc_data.get(str(i))
 
-    # 🔥 INJETA APENAS QUANDO CARREGA
-    if carregou_agora:
-        st.session_state[f"p{i}"] = valor_salvo if valor_salvo in opcoes else "A"
+    if valor_salvo in opcoes:
+        idx = opcoes.index(valor_salvo)
+    else:
+        idx = 0  # fallback (ex: null)
 
     respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
+        index=idx,
         key=f"p{i}",
         horizontal=True
     )
 
-# 🔥 DESLIGA FLAG
-st.session_state["rascunho_carregado_agora"] = False
 
 # =========================================================
 # 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
