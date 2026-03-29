@@ -2628,10 +2628,12 @@ with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
-    devolver_em = st.text_input(
-        "Devolver em:", 
-        key=f"dev_{v}"
-    )
+    valor_dev = st.session_state.get("rascunho_atual", {}).get("campos", {}).get("devolver_em", "")
+
+    if f"dev_{v}" not in st.session_state:
+        st.session_state[f"dev_{v}"] = valor_dev
+
+    devolver_em = st.text_input("Devolver em:", key=f"dev_{v}")
 
 
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
