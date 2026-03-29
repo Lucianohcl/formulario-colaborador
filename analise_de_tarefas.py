@@ -2733,13 +2733,13 @@ for i, pergunta in enumerate(perguntas_disc):
     valor_salvo = disc_data.get(str(i))
     
     # Descobre a posição (0, 1, 2 ou 3) para o rádio botão nascer marcado
-    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
+    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else 0
     
     respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}", 
         options=opcoes, 
         index=idx, 
-        key=f"disc_{i}_{v}", 
+        key=f"p{i}", 
         horizontal=True
     )
 
