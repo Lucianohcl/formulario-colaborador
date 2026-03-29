@@ -2564,6 +2564,10 @@ if not st.session_state.get("rascunho_carregado"):
         st.session_state[f"dev_{v}"] = cp.get("devolver_em", "")
         st.session_state[f"cursos_{v}"] = cp.get("cursos", "")
         st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
+
+        # 🔥 COLOCA O DEBUG EXATAMENTE AQUI
+        st.write("DEBUG DEV:", cp.get("devolver_em", "NÃO VEIO"))
+        st.write("DEBUG SESSION:", st.session_state.get(f"dev_{v}", "NÃO SETOU"))
         
         st.session_state["rascunho_atual"] = dados
 
