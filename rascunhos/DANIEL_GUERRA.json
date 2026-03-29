@@ -1,6 +1,7 @@
 {
-    "timestamp": "28/03/2026 21:56:42",
+    "timestamp": "29/03/2026 17:19:23",
     "colaborador": "DANIEL GUERRA",
+    "status": "FINALIZADO",
     "campos": {
         "cargo": "Financeiro",
         "departamento": "Financeiro",
@@ -21,35 +22,65 @@
                 "Frequência": "M"
             }
         ],
-        "normal": [],
-        "baixa": [],
-        "dificuldades": [],
-        "sugestoes": []
+        "normal": [
+            {
+                "Atividade": "ddddd",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "d",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "f",
+                "Setor/Parceiro Envolvido": "f",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "d",
+                "Impacto": "d",
+                "Horas": "3 h",
+                "Minutos": "5 min",
+                "Frequência": "S"
+            }
+        ]
     },
     "disc": {
-        "0": null,
-        "1": null,
-        "2": null,
-        "3": null,
-        "4": null,
-        "5": null,
-        "6": null,
-        "7": null,
-        "8": null,
-        "9": null,
-        "10": null,
-        "11": null,
-        "12": null,
+        "0": "A",
+        "1": "A",
+        "2": "B",
+        "3": "C",
+        "4": "D",
+        "5": "B",
+        "6": "D",
+        "7": "B",
+        "8": "C",
+        "9": "B",
+        "10": "D",
+        "11": "C",
+        "12": "B",
         "13": null,
-        "14": null,
-        "15": null,
-        "16": null,
-        "17": null,
-        "18": null,
-        "19": null,
-        "20": null,
-        "21": null,
-        "22": null,
-        "23": null
+        "14": "A",
+        "15": "D",
+        "16": "A",
+        "17": "A",
+        "18": "C",
+        "19": "B",
+        "20": "B",
+        "21": "C",
+        "22": "B",
+        "23": "B"
     }
 }
