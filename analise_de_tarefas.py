@@ -2744,14 +2744,17 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 💾 7. BOTÕES DE GRAVAÇÃO E FINALIZAÇÃO (LADO A LADO)
+# 💾 7. BLOCO FINAL: GRAVAÇÃO E FINALIZAÇÃO (REVISÃO TRIPLA)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
 
-# --- BOTÃO 1: GRAVAR (LADO ESQUERDO) ---
+# --- BOTÃO 1: GRAVAR EDIÇÃO (RASCUNHO) ---
 with col1:
     if st.button("📝 Gravar Edição (Pode sair e voltar)", use_container_width=True):
+        # Captura o estado atual do DISC com segurança
+        progresso_disc = {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+        
         payload = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": nome_digitado,
@@ -2769,27 +2772,35 @@ with col1:
                 "dificuldades": e_dif.to_dict('records') if e_dif is not None else [],
                 "sugestoes": e_sug.to_dict('records') if e_sug is not None else []
             },
-            "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
+            "disc": progresso_disc
         }
         
-        with st.spinner("💾 Gravando..."):
+        with st.spinner("💾 Gravando rascunho..."):
             nome_arq = f"{nome_digitado.strip().upper().replace(' ','_')}.json"
             if salvar_no_github(payload, nome_arq):
                 st.session_state["rascunho_atual"] = payload
+                # Limpa cache de editores para atualizar a visão
                 for chave in ["alta", "normal", "baixa", "dificuldades", "sugestoes"]:
                     k = f"editor_{chave}_{st.session_state.get('versao', 0)}"
-                    if k in st.session_state: 
-                        del st.session_state[k]
+                    if k in st.session_state: del st.session_state[k]
+                
                 st.session_state["versao"] = st.session_state.get("versao", 0) + 1
-                st.toast("✅ PROGRESSO SALVO!")
+                st.toast("✅ PROGRESSO SALVO NO GITHUB!")
                 st.rerun()
 
-# --- BOTÃO 2: FINALIZAR (LADO DIREITO) ---
+# --- BOTÃO 2: FINALIZAR E ENVIAR TUDO ---
 with col2:
     if st.button("🚀 FINALIZAR E ENVIAR TUDO", type="primary", use_container_width=True):
         nome_validado = nome_digitado.strip().upper()
         nome_arq = f"{nome_validado.replace(' ','_')}.json"
-        payload = {
+        
+        # Função interna robusta para limpar tabelas antes do envio final
+        def limpar_final(df):
+            if df is None or df.empty: return []
+            # Mantém apenas linhas onde a primeira coluna não é vazia
+            return df[df[df.columns[0]].astype(str).str.strip() != ""].to_dict('records')
+
+        payload_final = {
             "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             "colaborador": nome_validado,
             "status": "FINALIZADO",
@@ -2800,29 +2811,41 @@ with col2:
                 "cursos": cursos, "objetivo": objetivo
             },
             "tabelas": {
-                "alta": e_alta.to_dict('records') if e_alta is not None else [],
-                "normal": e_normal.to_dict('records') if e_normal is not None else [],
-                "baixa": e_baixa.to_dict('records') if e_baixa is not None else [],
-                "dificuldades": e_dif.to_dict('records') if e_dif is not None else [],
-                "sugestoes": e_sug.to_dict('records') if e_sug is not None else []
+                "alta": limpar_final(e_alta),
+                "normal": limpar_final(e_normal),
+                "baixa": limpar_final(e_baixa),
+                "dificuldades": limpar_final(e_dif),
+                "sugestoes": limpar_final(e_sug)
             },
             "disc": {str(i): st.session_state.get(f"disc_{i}_{v}") for i in range(24)}
         }
 
-        with st.spinner("📦 Sincronizando..."):
-            sucesso_git = salvar_no_github(payload, nome_arq)
-            sucesso_sheets = salvar_no_google_sheets(payload)
-            if sucesso_git and sucesso_sheets:
-                st.session_state["rascunho_atual"] = payload
-                st.success("✅ ENVIADO COM SUCESSO!")
+        with st.spinner("📦 Sincronizando dados finais..."):
+            # Tenta GitHub
+            res_git = salvar_no_github(payload_final, nome_arq)
+            
+            # Tenta Sheets (ajustado para aceitar qualquer um dos dois nomes possíveis da sua função)
+            res_sheets = False
+            try:
+                if 'salvar_no_google_sheets' in globals():
+                    res_sheets = salvar_no_google_sheets(payload_final)
+                elif 'enviar_para_sheets' in globals():
+                    res_sheets = enviar_para_sheets(payload_final)
+            except:
+                res_sheets = False
+
+            if res_git:
+                st.success("✅ DADOS ENVIADOS AO GITHUB!")
+                if res_sheets: st.toast("📊 PLANILHA ATUALIZADA!")
                 st.balloons()
-                dados_json = json.dumps(payload, indent=4, ensure_ascii=False)
+                
+                # Botão de download como garantia extra
                 st.download_button(
-                    label="📥 Baixar Cópia (JSON)",
-                    data=dados_json,
-                    file_name=nome_arq,
+                    label="📥 Baixar Cópia de Segurança (JSON)",
+                    data=json.dumps(payload_final, indent=4, ensure_ascii=False),
+                    file_name=f"FINAL_{nome_arq}",
                     mime="application/json",
                     use_container_width=True
                 )
             else:
-                st.error("❌ Erro na sincronização (Verifique GitHub ou Sheets).")
+                st.error("❌ ERRO CRÍTICO: Não foi possível salvar no GitHub.")
