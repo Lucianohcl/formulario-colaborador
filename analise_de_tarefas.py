@@ -1387,25 +1387,25 @@ st.subheader("📊 Questionário")
 opcoes = ["A", "B", "C", "D"]
 respostas_disc = {}
 
-# 🔥 pega direto do rascunho correto
+# 🔥 Pega o rascunho
 disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
 
-
-# 🔥 injeta no session_state (ANTES dos radios)
-for i in range(24):
-    valor = disc_data.get(str(i))
-    if valor in opcoes:
-        st.session_state[f"p{i}"] = valor
-
-# 🔥 radios (limpos)
+# 🔥 Radios (AGORA REALMENTE LIMPOS)
 for i, pergunta in enumerate(perguntas_disc):
+    # Busca o valor salvo no rascunho
+    valor_salvo = disc_data.get(str(i))
+    
+    # Se a letra salva estiver nas opções, descobre o índice (0, 1, 2 ou 3)
+    # SE NÃO EXISTIR (formulário novo), o índice será NONE (isso deixa desmarcado)
+    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
+    
     respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
+        index=idx,           # <--- ESSA É A CHAVE: None desmarca tudo
         key=f"p{i}",
         horizontal=True
     )
-
 
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
@@ -2684,13 +2684,17 @@ opcoes = ["A", "B", "C", "D"]
 respostas_disc = {}
 
 for i, pergunta in enumerate(perguntas_disc):
+    # 1. Busca qual letra foi salva no rascunho
     valor_salvo = disc_data.get(str(i))
-    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else 0
+    
+    # 2. Se houver algo salvo, descobre o índice (0, 1, 2 ou 3). 
+    # Se NÃO houver nada (rascunho novo), define como None para ficar limpo.
+    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
     
     respostas_disc[str(i)] = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
-        index=idx,
+        index=idx,            # <--- Aqui é onde a mágica acontece
         key=f"p_disc_{i}_{v}",
         horizontal=True
     )
