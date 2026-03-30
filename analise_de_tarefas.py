@@ -145,6 +145,8 @@ def limpar_para_rascunho(*args, **kwargs):
     # e não reclame mais de "arguments".
     st.rerun()
 
+if "respostas_disc" not in st.session_state:
+    st.session_state["respostas_disc"] = {}
 
 # ============================================================
 # FUNÇÃO DE SUPORTE PARA AS TABELAS (O QUE ESTAVA FALTANDO)
@@ -1649,7 +1651,7 @@ with col_btn:
                     "dificuldades": preparar_dados(e_dif),
                     "sugestoes": preparar_dados(e_sug)
                 },
-                "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
+                "disc": {str(i): st.session_state.get("respostas_disc", {}).get(f"p{i}", "") for i in range(24)}
             }
 
 
