@@ -2526,8 +2526,8 @@ with col2:
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"))
     devolver_em = st.text_input("Devolver em:", value=val("devolver_em"))
 
-cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"))
-objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"))
+cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"))
+objetivo = st.text_area("Em que consiste seu trabalho e qual seu Principal Objetivo:", value=val("objetivo"))
 
 # =========================================================
 # 4. MOTOR DE TABELAS (VERSÃO FINAL SEM ERROS DE TIPO)
