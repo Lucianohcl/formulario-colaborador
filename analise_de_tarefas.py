@@ -2626,44 +2626,41 @@ with col2:
 cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"))
 objetivo = st.text_area("Em que consiste seu trabalho e qual seu Principal Objetivo:", value=val("objetivo"))
 
+
 # =========================================================
-# 4. MOTOR DE TABELAS (VERSÃO BLINDADA PARA RASCUNHOS)
+# 4. MOTOR DE TABELAS (VERSÃO FINAL COM ORDEM FIXA)
 # =========================================================
 def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
     st.write(f"**{titulo}**")
     
-    # 1. Puxa os dados salvos no rascunho
+    # 1. Puxa os dados
     dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
-    
-    # 2. Define as colunas necessárias
-    cols = [col_p, "Horas", "Minutos", "Frequência"]
-    if col_e: 
-        cols.insert(1, col_e)
-    
-    # 3. Cria o DataFrame e aplica a limpeza "Anti-Erro"
     df = pd.DataFrame(dados)
     
-    # --- AQUI ESTÁ A SOLUÇÃO: ---
-    df = df.fillna("").astype(str) # Transforma nulos em vazio e tudo em texto
+    # 2. DEFINE A ORDEM RÍGIDA (Resolve o problema da coluna extra no fim)
+    if col_e:
+        cols_finais = [col_p, col_e, "Horas", "Minutos", "Frequência"]
+    else:
+        cols_finais = [col_p, "Horas", "Minutos", "Frequência"]
+    
+    # 3. Limpeza Blindada
+    df = df.fillna("").astype(str)
     for c in df.columns:
-        df[c] = df[c].str.strip() # Remove espaços que quebram o seletor
-    # ----------------------------
+        df[c] = df[c].str.strip()
 
-    # 4. Garante que todas as colunas existam
-    for c in cols:
-        if c not in df.columns: 
-            df[c] = ""
-            
-    # 5. Garante as 15 linhas fixas para preenchimento
+    # 4. GARANTE AS COLUNAS NA ORDEM CERTA (Elimina colunas duplicadas ou fantasmas)
+    df = df.reindex(columns=cols_finais, fill_value="")
+    
+    # 5. Garante as 15 linhas fixas
     if len(df) < 15:
         faltam = 15 - len(df)
-        extras = pd.DataFrame([{c: "" for c in cols} for _ in range(faltam)])
+        extras = pd.DataFrame([{c: "" for c in cols_finais} for _ in range(faltam)])
         df = pd.concat([df, extras], ignore_index=True)
     
-    # Mantém apenas as colunas certas e 15 linhas
-    df = df[cols].head(15)
+    # Trava o DataFrame no formato final (15 linhas)
+    df = df[cols_finais].head(15)
 
-    # 6. Configuração Visual dos Seletores (Exatamente como no JSON)
+    # 6. Configuração Visual
     cfg = {
         col_p: st.column_config.TextColumn("Descrição", width="large"),
         "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"], width="small"),
@@ -2681,7 +2678,7 @@ def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
         num_rows="fixed"
     )
 
-# Chamadas das tabelas (mantenha como estão no seu código)
+# Chamadas das tabelas (Pode manter estas chamadas)
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
