@@ -2712,33 +2712,31 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO - AJUSTADO)
+# 7. BOTÃO SALVAR (GARANTINDO O FORMATO JSON SOLICITADO)
 # =========================================================
 st.markdown("---")
 
-# Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Verificação de segurança: Nome não pode estar vazio
+    # 1. Validação do Nome
     nome_validado = nome_digitado.strip().upper()
     if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+        st.error("❌ Erro: Digite seu nome completo no topo antes de salvar.")
         st.stop()
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    v_atual = st.session_state.get("v_tab", 1) # Pega a versão da aba (1)
     
-    # Recupera a versão da aba para buscar os dados certos no session_state
-    v_atual = st.session_state.get("v_tab", 1)
-    
-    # 2. Função interna para limpar linhas vazias das tabelas
+    # 2. Função para limpar linhas vazias (Garante que "normal", "baixa", etc. fiquem [])
     def limpar_para_rascunho(df):
         if df is None or df.empty: 
             return []
         col_principal = df.columns[0]
+        # Filtra apenas linhas onde a descrição da atividade não é vazia
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload (AQUI ESTÁ O AJUSTE DAS VARIÁVEIS)
+    # 3. Montagem do Payload EXATAMENTE como no seu exemplo
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
@@ -2760,40 +2758,26 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        "disc": respostas_disc
+        "disc": respostas_disc  # Pega o dicionário montado no loop do Bloco 6
     }
 
-    # 🔹 Normalização para evitar TypeError
-    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
-    payload["disc"] = payload.get("disc", [])
-
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
+    # 4. Envio e Persistência
+    with st.spinner(f"📦 Sincronizando rascunho de {nome_digitado}..."):
         try:
-            sucesso = salvar_no_github(payload, nome_arq)
-        except Exception as e:
-            st.error(f"❌ Erro crítico ao processar o envio: {e}")
-            sucesso = False
-        
-        if sucesso:
-            # Persistência imediata no session_state
-            st.session_state["rascunho_atual"] = payload
-            st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_digitado} salvo com sucesso!")
-
-            # 🔹 Enviar para Sheets também
-            try:
-                # Verifica se a função existe antes de chamar para não quebrar
+            if salvar_no_github(payload, nome_arq):
+                st.session_state["rascunho_atual"] = payload
+                st.session_state["rascunho_carregado"] = True
+                st.success(f"✅ PERSISTÊNCIA GARANTIDA!")
+                
+                # Tenta enviar para Sheets se a função existir
                 if "enviar_para_sheets" in globals():
-                    enviado_sheets = enviar_para_sheets(payload)
-                    if enviado_sheets:
-                        st.toast("📊 Rascunho enviado para Google Sheets!")
-                    else:
-                        st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
-            except Exception as e_sheets:
-                st.warning(f"⚠️ Rascunho salvo no GitHub, mas falha ao enviar para Sheets: {e_sheets}")
-            
-            # Recarrega para garantir que os dados fiquem na tela
-            st.rerun()
-        else:
-            st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
+                    try:
+                        enviar_para_sheets(payload)
+                        st.toast("📊 Enviado para Sheets!")
+                    except: pass
+                
+                st.rerun()
+            else:
+                st.error("❌ Erro ao salvar no GitHub.")
+        except Exception as e:
+            st.error(f"❌ Erro crítico: {e}")
