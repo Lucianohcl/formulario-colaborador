@@ -1410,7 +1410,7 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
-# Resolve o erro de variável não definida para o botão de envio
+# RESOLVE O ERRO DE NOME:
 nome_digitado = nome_f 
 
 st.markdown("---")
@@ -1427,9 +1427,9 @@ campos_id = {
 }
 for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
-        pendencias.append(f"🆔 **Identificação**: O campo **{campo}** está vazio.")
+        pendencias.append(f"🆔 Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS (EXIGÊNCIA TOTAL EM TODOS OS CAMPOS) ---
+# --- 2. VALIDAÇÃO DAS TABELAS (EXIGÊNCIA DE TODOS OS CAMPOS) ---
 dict_tabelas = {
     "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
     "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
@@ -1445,40 +1445,43 @@ regras_colunas = {
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Pega as linhas onde o usuário começou a escrever a descrição
+        # Filtra linhas que têm descrição
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
             pendencias.append(f"⚠️ **{nome_tab}**: Adicione pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                # Varre ABSOLUTAMENTE todas as colunas da linha
+                # CHECAGEM DE TODOS OS CAMPOS DA LINHA
                 for col in df_validar.columns:
                     val_celula = str(row.get(col, "")).strip()
                     
-                    # Se for Hora ou Minuto, não aceita vazio nem o padrão "0 h" / "0 min" se o outro também estiver vazio
-                    if col in ["Horas", "Minutos"] and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                        if val_celula in ["", "0 h", "0 min", "nan", "None"]:
-                            pendencias.append(f"❌ **{nome_tab}** (Linha {i+1}): O campo **{col}** deve ser preenchido.")
+                    # OBRIGA HORAS (Não aceita vazio ou zero padrão)
+                    if col == "Horas" and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
+                        if val_celula in ["", "0 h", "nan", "None"]:
+                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe as **Horas**.")
                     
-                    # Para Frequência, Setor, Impacto, etc.
-                    else:
-                        if val_celula in ["", "None", "nan", "Selecione"]:
-                            pendencias.append(f"❌ **{nome_tab}** (Linha {i+1}): O campo **{col}** está vazio.")
+                    # OBRIGA MINUTOS (Não aceita vazio ou zero padrão)
+                    elif col == "Minutos" and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
+                        if val_celula in ["", "0 min", "nan", "None"]:
+                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe os **Minutos**.")
+                    
+                    # OBRIGA TODOS OS OUTROS (Frequência, Setor, Impacto, etc)
+                    elif val_celula in ["", "None", "nan", "Selecione"]:
+                        pendencias.append(f"❌ {nome_tab} (Linha {i+1}): O campo **{col}** está vazio.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
 if len(respostas_vazias) > 0:
-    pendencias.append(f"📊 **DISC**: Faltam responder **{len(respostas_vazias)} questões**.")
+    pendencias.append(f"📊 DISC: Faltam responder **{len(respostas_vazias)} questões**.")
 
 # --- EXIBIÇÃO ---
 if pendencias:
-    st.warning(f"⚠️ **Pendências encontradas ({len(pendencias)}):**")
-    for p in pendencias[:20]: st.write(f"• {p}")
+    st.warning(f"⚠️ **Pendências ({len(pendencias)}):**")
+    for p in pendencias[:15]: st.write(f"• {p}")
     st.session_state["pode_enviar"] = False
-    st.session_state["confirmacao_final"] = False
 else:
-    st.success("🎉 **Tudo preenchido! O envio foi liberado.**")
+    st.success("🎉 **Tudo preenchido! Envio liberado.**")
     st.session_state["pode_enviar"] = True
 
 # =========================================================
