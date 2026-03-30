@@ -2733,6 +2733,16 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
         st.session_state["rascunho"] = payload
         st.success(f"✅ {nome_input} salvo com sucesso no GitHub!")
 
+        # === COLOQUE AQUI O BOTÃO DE DOWNLOAD ===
+        st.download_button(
+            label="📥 Baixar Arquivo JSON do Rascunho",
+            data=conteudo_json.encode('utf-8'), # Usa a variável que você já criou acima
+            file_name=f"{nome_limpo}.json",
+            mime="application/json",
+            use_container_width=True
+        )
+        # =========================================
+
         # --- AÇÃO 2: SHEETS ---
         if enviar_para_sheets(payload):
             st.toast("📊 Espelhado no Sheets!", icon="📈")
