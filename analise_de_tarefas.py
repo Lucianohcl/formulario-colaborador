@@ -121,6 +121,7 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+
 # --- FUNÇÕES DE EXPORTAÇÃO (COLE NO TOPO DO SEU ARQUIVO) ---
 from docx import Document
 from fpdf import FPDF
@@ -138,6 +139,9 @@ def extrair_num(texto):
         return int(texto)
     except:
         return 0
+
+def limpar_para_rascunho():
+    pass  # Isso diz ao Python: "Não faça nada, mas não dê erro"
 
 
 # ============================================================
