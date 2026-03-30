@@ -1290,7 +1290,15 @@ with col1:
                 st.session_state["rascunho_atual"] = rascunho
                 
                 # 4. DISC
-                st.session_state["disc_v2"] = rascunho.get("disc", {})
+                disc_salvo = rascunho.get("disc", {})
+                st.session_state["disc_v2"] = disc_salvo
+
+                # ESPALHA AS RESPOSTAS PARA OS WIDGETS
+                if disc_salvo:
+                    for i in range(24):
+                        chave_pergunta = str(i)
+                        if chave_pergunta in disc_salvo:
+                            st.session_state[f"q_{i}"] = disc_salvo[chave_pergunta]
 
                 st.success(f"✅ Dados de {nome_busca} carregados!")
                 st.rerun()
@@ -2636,6 +2644,8 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
         "disc": respostas_disc
     }
 
+
+
     try:
         # --- AÇÃO 1: GITHUB ---
         try:
@@ -2656,17 +2666,30 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
         
         
 
-        # --- AÇÃO 3: BOTÃO DE BACKUP (Aparece após o sucesso) ---
+        # --- AÇÃO 3: BOTÃO DE BACKUP (Sucesso ou Erro Parcial no Sheets) ---
         st.markdown("---")
         st.download_button(
             label="📥 Baixar Cópia de Segurança (JSON)",
-            data=json.dumps(payload, indent=4, ensure_ascii=False),
+            data=json.dumps(payload, indent=4, ensure_ascii=False).encode('utf-8'),
             file_name=f"{nome_input}_backup.json",
             mime="application/json",
-            use_container_width=True
+            use_container_width=True,
+            key="btn_backup_sucesso"
         )
 
     except Exception as e:
-        st.error(f"⚠️ Erro crítico: {e}. Baixe o backup abaixo!")
-        # Backup de emergência caso o try falhe
-        st.download_button("📥 Baixar Backup de Emergência", json.dumps(payload), f"{nome_input}_ERRO.json")
+        st.error(f"⚠️ Erro crítico: {e}")
+        
+        # Só tenta mostrar o botão se o payload conseguiu ser gerado
+        if 'payload' in locals():
+            st.warning("O sistema falhou ao enviar, mas seus dados estão salvos abaixo. Baixe e envie ao administrador:")
+            st.download_button(
+                label="📥 Baixar Backup de Emergência",
+                data=json.dumps(payload, indent=4, ensure_ascii=False).encode('utf-8'),
+                file_name=f"{nome_input}_EMERGENCIA.json",
+                mime="application/json",
+                use_container_width=True,
+                key="btn_backup_erro"
+            )
+        else:
+            st.error("Não foi possível gerar o backup. Tire um print da tela para não perder os dados.")
