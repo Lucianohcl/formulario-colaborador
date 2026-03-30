@@ -1346,6 +1346,27 @@ st.markdown("---")
 
 st.subheader("📋 Tabelas") # Título médio
 
+# --- INÍCIO DAS LEGENDAS ---
+col_leg1, col_leg2 = st.columns(2)
+
+with col_leg1:
+    st.info("""
+    **📋 LEGENDA DE FREQUÊNCIA:**
+    * **DVD**: Diário Várias Vezes
+    * **D**: Diário | **S**: Semanal
+    * **Q**: Quinzenal | **M**: Mensal
+    * **T**: Trimestral | **A**: Anual
+    """)
+
+with col_leg2:
+    st.warning("""
+    **⏱️ COMO REGISTRAR O TEMPO:**
+    * **Horas e Minutos**: Selecione o valor em cada coluna.
+    * **Menos de 1 hora?**: Selecione **0 h** e o tempo real em minutos.
+    * **Não se aplica?**: Selecione **0 h** e **0 min** em ambos.
+    """)
+# --- FIM DAS LEGENDAS ---
+
 # --- FUNÇÃO AUXILIAR (Garante que o editor tenha linhas suficientes) ---
 def garantir_15_linhas(df, colunas):
     if df is None or df.empty:
