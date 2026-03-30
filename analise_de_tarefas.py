@@ -2530,28 +2530,56 @@ cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"))
 objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"))
 
 # =========================================================
-# 4. MOTOR DE TABELAS
+# 4. MOTOR DE TABELAS (VERSÃO FINAL SEM ERROS DE TIPO)
 # =========================================================
 def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
     st.write(f"**{titulo}**")
-    dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
-    cols = [col_p, "Horas", "Minutos", "Frequência"]
-    if col_e: cols.insert(1, col_e)
-    df = pd.DataFrame(dados)
-    for c in cols:
-        if c not in df.columns: df[c] = ""
-    while len(df) < 15:
-        df = pd.concat([df, pd.DataFrame([{col_p: ""}])], ignore_index=True)
     
+    # Pega os dados do rascunho
+    dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
+    
+    # Define as colunas esperadas
+    cols = [col_p, "Horas", "Minutos", "Frequência"]
+    if col_e: 
+        cols.insert(1, col_e)
+    
+    # Cria o DataFrame
+    df = pd.DataFrame(dados)
+    
+    # 1. Garante que todas as colunas existam
+    for c in cols:
+        if c not in df.columns: 
+            df[c] = ""
+            
+    # 2. O PULO DO GATO: Força tudo para String e remove valores 'nan'
+    # Isso evita o erro de compatibilidade do Streamlit
+    df = df.astype(str).replace(['None', 'nan', 'NaN', '<NA>'], "")
+    
+    # 3. Garante as 15 linhas fixas
+    while len(df) < 15:
+        nova_linha = pd.DataFrame([{c: "" for c in cols}])
+        df = pd.concat([df, nova_linha], ignore_index=True)
+    
+    # 4. Limpa o DataFrame final para garantir que não há lixo
+    df = df[cols].head(15).fillna("")
+
+    # Configuração visual
     cfg = {
         col_p: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"]),
-        "Horas": st.column_config.SelectboxColumn(options=[f"{i} h" for i in range(25)]),
-        "Minutos": st.column_config.SelectboxColumn(options=[f"{i} min" for i in range(0, 60, 5)]),
+        "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"], width="small"),
+        "Horas": st.column_config.SelectboxColumn(options=[f"{i} h" for i in range(25)], width="small"),
+        "Minutos": st.column_config.SelectboxColumn(options=[f"{i} min" for i in range(0, 60, 5)], width="small"),
     }
-    if col_e: cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
-    return st.data_editor(df.head(15), key=f"ed_{chave}", column_config=cfg, use_container_width=True)
-
+    if col_e: 
+        cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
+        
+    return st.data_editor(
+        df, 
+        key=f"ed_{chave}", 
+        column_config=cfg, 
+        use_container_width=True,
+        num_rows="fixed" # Trava em 15 linhas para manter o padrão
+    )
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
