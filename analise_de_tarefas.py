@@ -2595,26 +2595,78 @@ perguntas = ["No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuni
 
 respostas_disc = {}
 d_disc = st.session_state["rascunho"].get("disc", {})
+
 for i, p in enumerate(perguntas):
-    respostas_disc[str(i)] = st.radio(f"{i+1}. {p}", ["A", "B", "C", "D"], index=["A", "B", "C", "D"].index(d_disc.get(str(i), "A")), horizontal=True, key=f"q_{i}")
+    # Pega o que está salvo. Se não houver nada, retorna None
+    valor_salvo = d_disc.get(str(i))
+    
+    # Define o índice: se tiver salvo, acha a posição. Se não, None (em branco)
+    idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
+    
+    respostas_disc[str(i)] = st.radio(
+        f"{i+1}. {p}", 
+        ["A", "B", "C", "D"], 
+        index=idx, 
+        horizontal=True, 
+        key=f"q_{i}"
+    )
+
 
 # =========================================================
-# 6. SALVAMENTO
+# 6. SALVAMENTO (GITHUB + SHEETS)
 # =========================================================
 if st.button("💾 SALVAR TUDO", use_container_width=True):
+    # 1. Monta o payload dentro do botão
     payload = {
-        "colaborador": nome_input, "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "campos": {"cargo": cargo, "dep": depto, "setor": setor, "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade, "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo},
-        "tabelas": {"alta": e_alta.to_dict("records"), "normal": e_normal.to_dict("records"), "baixa": e_baixa.to_dict("records"), "dificuldades": e_dif.to_dict("records"), "sugestoes": e_sug.to_dict("records")},
+        "colaborador": nome_input, 
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "campos": {
+            "cargo": cargo, "dep": depto, "setor": setor, 
+            "chefe": chefe, "unidade": unidade, 
+            "escolaridade": escolaridade, "devolver_em": devolver_em, 
+            "cursos": cursos, "objetivo": objetivo
+        },
+        "tabelas": {
+            "alta": e_alta.to_dict("records"), 
+            "normal": e_normal.to_dict("records"), 
+            "baixa": e_baixa.to_dict("records"), 
+            "dificuldades": e_dif.to_dict("records"), 
+            "sugestoes": e_sug.to_dict("records")
+        },
         "disc": respostas_disc
     }
-    try:
-        f = repo.get_contents(nome_arq)
-        repo.update_file(f.path, f"Update {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False), f.sha)
-        st.session_state["rascunho"] = payload
-        st.success("✅ SALVO NO GITHUB!")
-        st.balloons()
-    except Exception as e:
-        st.error(f"Erro ao salvar: {e}")
 
-st.download_button("📥 Backup JSON", data=json.dumps(st.session_state["rascunho"], indent=4, ensure_ascii=False).encode('utf-8'), file_name=f"{nome_input}.json")
+    try:
+        # --- AÇÃO 1: GITHUB ---
+        try:
+            f = repo.get_contents(nome_arq)
+            repo.update_file(f.path, f"Update {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False), f.sha)
+        except:
+            repo.create_file(nome_arq, f"Novo: {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False))
+        
+        st.session_state["rascunho"] = payload
+        st.success(f"✅ Formulário de {nome_input} salvo no GitHub!")
+
+        # --- AÇÃO 2: SHEETS ---
+        enviado_sheets = enviar_para_sheets(payload) # Chame sua função aqui
+        if enviado_sheets:
+            st.toast("📊 Dados espelhados no Google Sheets!", icon="📈")
+        else:
+            st.warning("⚠️ Salvou no GitHub, mas o Sheets não respondeu.")
+        
+        
+
+        # --- AÇÃO 3: BOTÃO DE BACKUP (Aparece após o sucesso) ---
+        st.markdown("---")
+        st.download_button(
+            label="📥 Baixar Cópia de Segurança (JSON)",
+            data=json.dumps(payload, indent=4, ensure_ascii=False),
+            file_name=f"{nome_input}_backup.json",
+            mime="application/json",
+            use_container_width=True
+        )
+
+    except Exception as e:
+        st.error(f"⚠️ Erro crítico: {e}. Baixe o backup abaixo!")
+        # Backup de emergência caso o try falhe
+        st.download_button("📥 Baixar Backup de Emergência", json.dumps(payload), f"{nome_input}_ERRO.json")
