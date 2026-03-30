@@ -2459,70 +2459,67 @@ from github import Github
 # =========================================================
 st.set_page_config(page_title="Formulário Analítico", layout="wide")
 
-# Credenciais (Certifique-se de que estão no seu Secrets)
 TOKEN = st.secrets["DB_TOKEN"]
 REPO_NOME = "lucianohcl/formulario-colaborador"
 g = Github(TOKEN)
 repo = g.get_repo(REPO_NOME)
 
-# Inicialização de Estados de Sessão
 if "rascunho" not in st.session_state: st.session_state["rascunho"] = {}
 if "logado" not in st.session_state: st.session_state["logado"] = False
 
 def val(chave, default=""):
-    """ Recupera dados do rascunho de forma direta e segura """
     d = st.session_state["rascunho"]
-    # Tenta buscar dentro de 'campos' ou na raiz do rascunho
     return d.get("campos", {}).get(chave, d.get(chave, default))
 
 # =========================================================
-# 2. IDENTIFICAÇÃO E CARREGAMENTO NO TOPO (A TRAVA)
+# 2. IDENTIFICAÇÃO E CARREGAMENTO (VERSÃO BLINDADA)
 # =========================================================
 st.subheader("📋 Acesso ao Sistema")
 nome_input = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
 
 if not nome_input:
-    st.info("Digite seu nome para liberar o formulário.")
+    st.info("Digite seu nome para começar.")
     st.stop()
 
 nome_arq = f"rascunhos/{nome_input.replace(' ', '_')}.json"
 
-# Se trocar o nome, reseta o estado para carregar o arquivo correto
 if st.session_state.get("usuario_atual") != nome_input:
     st.session_state["usuario_atual"] = nome_input
     st.session_state["logado"] = False
 
-confirmar = st.checkbox("✅ CLIQUE PARA CARREGAR SEUS DADOS")
+confirmar = st.checkbox("✅ CLIQUE PARA CARREGAR MEUS DADOS")
 
-if not confirmar:
-    st.stop()
-
-# Carregamento do GitHub (Executa apenas uma vez após o check)
-if not st.session_state["logado"]:
+if confirmar and not st.session_state["logado"]:
+    novo_vazio = {"colaborador": nome_input, "campos": {}, "tabelas": {}, "disc": {}}
     try:
+        # Tenta buscar
         conteudo = repo.get_contents(nome_arq)
         st.session_state["rascunho"] = json.loads(conteudo.decoded_content.decode())
-        st.session_state["logado"] = True
-        st.rerun() # Reinicia para injetar os dados nos campos abaixo
     except:
-        st.warning("Novo usuário detectado. Criando rascunho em branco...")
-        novo = {"colaborador": nome_input, "campos": {}, "tabelas": {}, "disc": {}}
-        repo.create_file(nome_arq, f"Criar: {nome_input}", json.dumps(novo))
-        st.session_state["rascunho"] = novo
-        st.session_state["logado"] = True
-        st.rerun()
+        # Se não achar ou der erro de API, tenta criar, mas não trava se falhar
+        try:
+            repo.create_file(nome_arq, f"Novo: {nome_input}", json.dumps(novo_vazio))
+            st.session_state["rascunho"] = novo_vazio
+        except:
+            # Se der o erro GithubException (arquivo já existe ou permissão), usa o vazio na memória
+            st.session_state["rascunho"] = novo_vazio
+    
+    st.session_state["logado"] = True
+    st.rerun()
+
+# Se não confirmou, para aqui
+if not st.session_state["logado"]:
+    st.stop()
 
 # =========================================================
 # 3. FORMULÁRIO: CAMPOS DE TEXTO
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
-
 with col1:
     cargo = st.text_input("Cargo:", value=val("cargo"))
     depto = st.text_input("Departamento:", value=val("dep"))
     setor = st.text_input("Setor:", value=val("setor"))
-
 with col2:
     chefe = st.text_input("Chefe imediato:", value=val("chefe"))
     unidade = st.text_input("Empresa / Unidade:", value=val("unidade"))
@@ -2533,37 +2530,27 @@ cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"))
 objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"))
 
 # =========================================================
-# 4. MOTOR DE TABELAS (REVISADO)
+# 4. MOTOR DE TABELAS
 # =========================================================
-st.markdown("---")
-st.subheader("📋 Tabelas de Atividades")
-
-def criar_editor(titulo, chave_interna, col_principal, col_extra=None, nome_extra=None):
+def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
     st.write(f"**{titulo}**")
-    dados_vidos = st.session_state["rascunho"].get("tabelas", {}).get(chave_interna, [])
-    
-    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: colunas.insert(1, col_extra)
-    
-    df = pd.DataFrame(dados_vidos)
-    for c in colunas:
+    dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
+    cols = [col_p, "Horas", "Minutos", "Frequência"]
+    if col_e: cols.insert(1, col_e)
+    df = pd.DataFrame(dados)
+    for c in cols:
         if c not in df.columns: df[c] = ""
-        
-    # Garante as 15 linhas
     while len(df) < 15:
-        df = pd.concat([df, pd.DataFrame([{col_principal: ""}])], ignore_index=True)
+        df = pd.concat([df, pd.DataFrame([{col_p: ""}])], ignore_index=True)
     
-    # Configuração das colunas (Dropdowns e Tamanhos)
-    config = {
-        col_principal: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"], width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=[f"{i} h" for i in range(25)], width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=[f"{i} min" for i in range(0, 60, 5)], width="small"),
+    cfg = {
+        col_p: st.column_config.TextColumn("Descrição", width="large"),
+        "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"]),
+        "Horas": st.column_config.SelectboxColumn(options=[f"{i} h" for i in range(25)]),
+        "Minutos": st.column_config.SelectboxColumn(options=[f"{i} min" for i in range(0, 60, 5)]),
     }
-    if col_extra: 
-        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
-
-    return st.data_editor(df.head(15), key=f"ed_{chave_interna}", column_config=config, use_container_width=True)
+    if col_e: cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
+    return st.data_editor(df.head(15), key=f"ed_{chave}", column_config=cfg, use_container_width=True)
 
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
@@ -2572,79 +2559,34 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "impacto", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC (AS 24 PERGUNTAS)
+# 5. PERFIL DISC
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
-perguntas_disc = [
-    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza",
-    "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes",
-    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica",
-    "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico",
-    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas",
-    "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade",
-    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico",
-    "Confia mais em: Intuição, Opinião alheia, Experiência, Dados",
-    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas",
-    "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado",
-    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas",
-    "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso",
-    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização",
-    "Você se considera: Dominante, Influente, Estável, Analítico",
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico",
-    "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos",
-    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado",
-    "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras",
-    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais",
-    "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos",
-    "Como se comunica: Direto, Amigável, Calmo, Técnico",
-    "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos",
-    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos",
-    "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
-]
+perguntas = ["No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"]
 
-respostas_final = {}
-disc_salvo = st.session_state["rascunho"].get("disc", {})
-
-for i, p in enumerate(perguntas_disc):
-    v_radio = disc_salvo.get(str(i), "A")
-    respostas_final[str(i)] = st.radio(f"{i+1}. {p}", ["A", "B", "C", "D"], 
-                                      index=["A", "B", "C", "D"].index(v_radio), 
-                                      horizontal=True, key=f"q_{i}")
+respostas_disc = {}
+d_disc = st.session_state["rascunho"].get("disc", {})
+for i, p in enumerate(perguntas):
+    respostas_disc[str(i)] = st.radio(f"{i+1}. {p}", ["A", "B", "C", "D"], index=["A", "B", "C", "D"].index(d_disc.get(str(i), "A")), horizontal=True, key=f"q_{i}")
 
 # =========================================================
-# 6. SALVAMENTO E PERSISTÊNCIA
+# 6. SALVAMENTO
 # =========================================================
-st.markdown("---")
-if st.button("💾 SALVAR RASCUNHO NA NUVEM", use_container_width=True):
+if st.button("💾 SALVAR TUDO", use_container_width=True):
     payload = {
-        "colaborador": nome_input,
-        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "campos": {
-            "cargo": cargo, "dep": depto, "setor": setor, "chefe": chefe,
-            "unidade": unidade, "escolaridade": escolaridade, 
-            "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo
-        },
-        "tabelas": {
-            "alta": e_alta.to_dict("records"),
-            "normal": e_normal.to_dict("records"),
-            "baixa": e_baixa.to_dict("records"),
-            "dificuldades": e_dif.to_dict("records"),
-            "sugestoes": e_sug.to_dict("records")
-        },
-        "disc": respostas_final
+        "colaborador": nome_input, "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "campos": {"cargo": cargo, "dep": depto, "setor": setor, "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade, "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo},
+        "tabelas": {"alta": e_alta.to_dict("records"), "normal": e_normal.to_dict("records"), "baixa": e_baixa.to_dict("records"), "dificuldades": e_dif.to_dict("records"), "sugestoes": e_sug.to_dict("records")},
+        "disc": respostas_disc
     }
-    
-    # Atualiza o arquivo no GitHub
     try:
-        f_git = repo.get_contents(nome_arq)
-        repo.update_file(f_git.path, f"Update {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False), f_git.sha)
+        f = repo.get_contents(nome_arq)
+        repo.update_file(f.path, f"Update {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False), f.sha)
         st.session_state["rascunho"] = payload
-        st.success("✅ SALVO COM SUCESSO!")
+        st.success("✅ SALVO NO GITHUB!")
         st.balloons()
     except Exception as e:
         st.error(f"Erro ao salvar: {e}")
 
-# Download de Backup
-json_bytes = json.dumps(st.session_state["rascunho"], indent=4, ensure_ascii=False).encode('utf-8')
-st.download_button("📥 Baixar Backup JSON", data=json_bytes, file_name=f"{nome_input}.json", mime="application/json")
+st.download_button("📥 Backup JSON", data=json.dumps(st.session_state["rascunho"], indent=4, ensure_ascii=False).encode('utf-8'), file_name=f"{nome_input}.json")
