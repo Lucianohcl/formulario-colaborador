@@ -2709,27 +2709,35 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
-# =========================================================
-# 7. BOTÃO SALVAR (MÁXIMA SIMPLICIDADE - CORRIGE O F5)
-# ========================
-if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    nome_arq = f"{nome_digitado.replace(' ','_')}.json"
-    
-    # Limpa linhas vazias das tabelas
-    def lim(df):
-        return df[df.iloc[:,0].astype(str).str.strip() != ""].to_dict("records") if not df.empty else []
 
-    # O segredo: as chaves (cargo, dep, setor) iguais ao que o val() pede
+# =========================================================
+# 7. BOTÃO SALVAR (VERSÃO FINAL - SEM TRAVAS)
+# =========================================================
+if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
+    nome_validado = nome_digitado.strip().upper()
+    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    
+    # Extração direta e segura das tabelas
+    def safe_get(editor):
+        import pandas as pd
+        if editor is not None:
+            return pd.DataFrame(editor).to_dict("records")
+        return []
+
     payload = {
-        "colaborador": nome_digitado.strip().upper(),
+        "colaborador": nome_validado,
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "campos": {
             "cargo": cargo, "dep": depto, "setor": setor,
             "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
             "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo
         },
         "tabelas": {
-            "alta": lim(e_alta), "normal": lim(e_normal), "baixa": lim(e_baixa),
-            "dificuldades": lim(e_dif), "sugestoes": lim(e_sug)
+            "alta": safe_get(e_alta),
+            "normal": safe_get(e_normal),
+            "baixa": safe_get(e_baixa),
+            "dificuldades": safe_get(e_dif),
+            "sugestoes": safe_get(e_sug)
         },
         "disc": respostas_disc
     }
@@ -2737,8 +2745,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     if salvar_no_github(payload, nome_arq):
         st.session_state["rascunho_atual"] = payload
         st.session_state["rascunho_carregado"] = True
-        st.success("✅ SALVO! Pode dar F5.")
+        st.success("✅ SALVO COM SUCESSO!")
         st.rerun()
     else:
-        st.error("❌ Erro no GitHub.")
-
+        st.error("❌ ERRO NO GITHUB")
