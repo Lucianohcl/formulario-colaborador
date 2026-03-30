@@ -1513,22 +1513,26 @@ with col_btn:
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                 "colaborador": nome_digitado,
                 "campos": {
-                    "cargo": cargo, 
-                    "departamento": depto, 
-                    "setor": setor,
-                    "chefe": chefe, 
-                    "unidade": unidade, 
-                    "escolaridade": escolaridade,
-                    "cursos": cursos, 
-                    "objetivo": objetivo
+                    "cargo": cargo_f, 
+                    "departamento": depto_f, 
+                    "setor": setor_f,
+                    "chefe": chefe_f, 
+                    "unidade": unidade_f, 
+                    "escolaridade": esc_f,
+                    "cursos": cursos_f, 
+                    "objetivo": obj_f
                 },
                 "tabelas": {
-                    "alta": limpar_para_rascunho(e_alta),
-                    "normal": limpar_para_rascunho(e_normal),
-                    "baixa": limpar_para_rascunho(e_baixa),
-                    "dificuldades": limpar_para_rascunho(e_dif),
-                    "sugestoes": limpar_para_rascunho(e_sug)
+                    "alta": preparar_dados(e_alta),
+                    "normal": preparar_dados(e_normal),
+                    "baixa": preparar_dados(e_baixa),
+                    "dificuldades": preparar_dados(e_dif),
+                    "sugestoes": preparar_dados(e_sug)
                 },
+                "disc": {str(i): respostas_disc.get(i) or "" for i in range(24)}
+            }
+
+
                 # 🔥 CORREÇÃO AQUI
                 "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
             }
