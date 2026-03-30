@@ -2711,20 +2711,18 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO - VERSÃO RECUPERADA)
+# 7. BOTÃO SALVAR (VERSÃO SINCRONIZADA COM BLOCO 3)
 # =========================================================
 st.markdown("---")
 
-# Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Verificação de segurança (Sincronizado com seu input nome_f)
-    nome_validado = nome_f.strip().upper() if 'nome_f' in locals() else ""
-    if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+    # 1. Verificação: Usa 'nome_digitado' que foi definido lá no Bloco 3
+    if not nome_digitado or len(nome_digitado) < 3:
+        st.error("❌ Erro de Persistência: Digite seu nome completo no topo da página antes de salvar.")
         st.stop()
 
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    nome_arq = f"{nome_digitado.replace(' ','_')}.json"
     
     # 2. Função interna para limpar linhas vazias
     def limpar_para_rascunho(df):
@@ -2734,19 +2732,20 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload (Sincronizado com suas variáveis _f)
+    # 3. Montagem do Payload (Usando as variáveis definidas nos campos do Bloco 4)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_f,
+        "colaborador": nome_digitado,
         "campos": {
-            "cargo": cargo_f, 
-            "departamento": depto_f, 
-            "setor": setor_f,
-            "chefe": chefe_f, 
-            "unidade": unidade_f, 
-            "escolaridade": esc_f,
-            "cursos": cursos_f, 
-            "objetivo": obj_f
+            "cargo": cargo, 
+            "departamento": depto, 
+            "setor": setor,
+            "chefe": chefe, 
+            "unidade": unidade, 
+            "escolaridade": escolaridade,
+            "devolver_em": devolver_em,
+            "cursos": cursos, 
+            "objetivo": objetivo
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2758,33 +2757,23 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 🔹 Normalização para evitar TypeError
-    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
-    payload["disc"] = payload.get("disc", [])
-
     # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_f} para a nuvem..."):
-        try:
-            sucesso = salvar_no_github(payload, nome_arq)
-        except Exception as e:
-            st.error(f"❌ Erro crítico ao processar o envio: {e}")
-            sucesso = False
-        
-        if sucesso:
+    with st.spinner(f"📦 Enviando rascunho de {nome_digitado} para a nuvem..."):
+        if salvar_no_github(payload, nome_arq):
             # Persistência imediata no session_state
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_f} salvo com sucesso!")
-
-            # 🔹 Enviar para Sheets também
-            try:
-                enviado_sheets = enviar_para_sheets(payload)
-                if enviado_sheets:
-                    st.toast("📊 Rascunho enviado para Google Sheets!")
-            except Exception as e_sheets:
-                st.warning(f"⚠️ Salvo no GitHub, falha ao enviar para Sheets.")
             
-            # Recarrega a tela para fixar os dados
+            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho salvo com sucesso!")
+            
+            # Enviar para Sheets (Opcional - tenta mas não trava se falhar)
+            try:
+                if "enviar_para_sheets" in globals():
+                    enviar_para_sheets(payload)
+                    st.toast("📊 Sincronizado com Sheets!")
+            except:
+                pass
+                
             st.rerun()
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu.")
