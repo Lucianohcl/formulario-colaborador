@@ -2711,33 +2711,33 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
+# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
 # =========================================================
 st.markdown("---")
 
-# Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
+    # 1. Validação (Apontando para nome_f)
+    nome_validado = nome_f.strip().upper() if 'nome_f' in locals() else ""
     
-    # 1. Verificação: Usando 'nome_f' (a variável real do seu formulário)
-    nome_validado = nome_f.strip().upper() 
-    if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
+    if len(nome_validado) < 3:
+        st.error("❌ Digite seu nome completo antes de salvar.")
         st.stop()
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna para limpar linhas vazias
+    # 2. Função interna 
     def limpar_para_rascunho(df):
-        if df is None or df.empty: 
+        if df is None or df.empty:
             return []
-        col_principal = df.columns[0]
-        mask = df[col_principal].astype(str).str.strip() != ""
-        return df[mask].to_dict("records")
+        df_temp = pd.DataFrame(df)
+        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
+        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # 3. Montagem do Payload (Sincronizado com seus inputs _f)
-    payload = {
+    # 3. Montagem do Payload (Sincronizado com os sufixos _f do seu app)
+    payload_final = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_f,
+        "colaborador": nome_validado,
+        "status": "FINALIZADO",
         "campos": {
             "cargo": cargo_f, 
             "departamento": depto_f, 
@@ -2745,6 +2745,7 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "chefe": chefe_f, 
             "unidade": unidade_f, 
             "escolaridade": esc_f,
+            "devolver_em": devolver_em_f if 'devolver_em_f' in locals() else "",
             "cursos": cursos_f, 
             "objetivo": obj_f
         },
@@ -2758,32 +2759,13 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 🔹 Normalização
-    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
-    payload["disc"] = payload.get("disc", [])
-
     # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_f}..."):
-        try:
-            sucesso = salvar_no_github(payload, nome_arq)
-        except Exception as e:
-            st.error(f"❌ Erro crítico no envio: {e}")
-            sucesso = False
-        
-        if sucesso:
-            # Persistência
-            st.session_state["rascunho_atual"] = payload
+    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
+        if salvar_no_github(payload_final, nome_arq):
+            st.session_state["rascunho_atual"] = payload_final
             st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_f} salvo!")
-
-            # Sheets
-            try:
-                enviar_para_sheets(payload)
-                st.toast("📊 Sincronizado com Sheets!")
-            except:
-                pass
-            
-            # Recarrega para fixar os dados
+            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
+            st.toast("Dados sincronizados!")
             st.rerun()
         else:
-            st.error("❌ FALHA NA PERSISTÊNCIA: GitHub não respondeu.")
+            st.error("❌ Falha ao salvar no GitHub. Verifique o DB_TOKEN.")
