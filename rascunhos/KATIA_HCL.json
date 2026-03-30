@@ -1,16 +1,16 @@
 {
     "colaborador": "KATIA HCL",
-    "timestamp": "30/03/2026 20:47:32",
+    "timestamp": "30/03/2026 21:21:45",
     "campos": {
         "cargo": "Analista de Custos",
-        "dep": "",
-        "setor": "",
+        "dep": "Contoladoria",
+        "setor": "Setor de Custos",
         "chefe": "José da Silva",
-        "unidade": "",
-        "escolaridade": "",
-        "devolver_em": "",
-        "cursos": "",
-        "objetivo": ""
+        "unidade": "Empresa Exemplo",
+        "escolaridade": "Graduação e Ciências Contábeis",
+        "devolver_em": "25/03/2026",
+        "cursos": "Graduação em Ciências Contábeis",
+        "objetivo": "Apurar os custos da empresa"
     },
     "tabelas": {
         "alta": [
@@ -292,105 +292,105 @@
         "dificuldades": [
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Dificuldade": "",
-                "setor_env": "",
+                "Setor Envolvido": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
@@ -399,105 +399,105 @@
         "sugestoes": [
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
             },
             {
                 "Sugestão": "",
-                "impacto": "",
+                "Impacto Esperado": "",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
@@ -506,28 +506,28 @@
     },
     "disc": {
         "0": "A",
-        "1": "B",
+        "1": "A",
         "2": "B",
-        "3": "C",
+        "3": "B",
         "4": "B",
-        "5": "C",
-        "6": "B",
+        "5": "A",
+        "6": "A",
         "7": "B",
-        "8": null,
-        "9": null,
-        "10": null,
-        "11": null,
-        "12": null,
-        "13": null,
-        "14": null,
-        "15": null,
-        "16": null,
-        "17": null,
-        "18": null,
+        "8": "C",
+        "9": "D",
+        "10": "D",
+        "11": "C",
+        "12": "B",
+        "13": "B",
+        "14": "C",
+        "15": "C",
+        "16": "B",
+        "17": "B",
+        "18": "C",
         "19": "D",
-        "20": "B",
-        "21": null,
-        "22": null,
-        "23": null
+        "20": "C",
+        "21": "B",
+        "22": "B",
+        "23": "C"
     }
 }
