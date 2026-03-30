@@ -2669,10 +2669,10 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
 
     # --- VALIDAÇÃO CRÍTICA ---
     if not nome_input or len(nome_input) < 3:
-        st.error("⚠️ Erro: Nome do colaborador está vazio ou inválido. Não vou salvar para não corromper o banco.")
-        st.stop() # Interrompe o código aqui
+        st.error("⚠️ Erro: Nome do colaborador está vazio ou inválido.")
+        st.stop()
 
-    # 1. Monta o payload dentro do botão
+    # 1. Monta o payload (O "corpo" do arquivo)
     payload = {
         "colaborador": nome_input, 
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -2692,52 +2692,39 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
         "disc": respostas_disc
     }
 
-
+    # --- CONFIGURAÇÃO DO NOME DO ARQUIVO (A CHAVE DO SUCESSO) ---
+    nome_limpo = nome_input.strip().replace(" ", "_").upper()
+    caminho_github = f"rascunhos/{nome_limpo}.json" # Garante que vai para a pasta rascunhos
 
     try:
-        # --- AÇÃO 1: GITHUB ---
-        try:
-            f = repo.get_contents(nome_arq)
-            repo.update_file(f.path, f"Update {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False), f.sha)
-        except:
-            repo.create_file(nome_arq, f"Novo: {nome_input}", json.dumps(payload, indent=4, ensure_ascii=False))
+        # --- AÇÃO 1: GITHUB (ENVIO REAL PARA O REPOSITÓRIO) ---
+        conteudo_json = json.dumps(payload, indent=4, ensure_ascii=False)
         
+        try:
+            # Tenta atualizar se já existir
+            f = repo.get_contents(caminho_github)
+            repo.update_file(f.path, f"Update: {nome_input}", conteudo_json, f.sha)
+        except:
+            # Cria novo se não existir
+            repo.create_file(caminho_github, f"Novo: {nome_input}", conteudo_json)
+        
+        # Salva no estado da sessão para uso imediato
         st.session_state["rascunho"] = payload
-        st.success(f"✅ Formulário de {nome_input} salvo no GitHub!")
+        st.success(f"✅ {nome_input} salvo com sucesso no GitHub!")
 
         # --- AÇÃO 2: SHEETS ---
-        enviado_sheets = enviar_para_sheets(payload) # Chame sua função aqui
-        if enviado_sheets:
-            st.toast("📊 Dados espelhados no Google Sheets!", icon="📈")
+        if enviar_para_sheets(payload):
+            st.toast("📊 Espelhado no Sheets!", icon="📈")
         else:
-            st.warning("⚠️ Salvou no GitHub, mas o Sheets não respondeu.")
-        
-        
-
-        # --- AÇÃO 3: BOTÃO DE BACKUP (Sucesso ou Erro Parcial no Sheets) ---
-        st.markdown("---")
-        st.download_button(
-            label="📥 Baixar Cópia de Segurança (JSON)",
-            data=json.dumps(payload, indent=4, ensure_ascii=False).encode('utf-8'),
-            file_name=f"{nome_input}_backup.json",
-            mime="application/json",
-            use_container_width=True,
-            key="btn_backup_sucesso"
-        )
+            st.warning("⚠️ Salvo no GitHub, mas Sheets não respondeu.")
 
     except Exception as e:
-        st.error(f"⚠️ Erro crítico: {e}")
-        
-        # Só tenta mostrar o botão se o payload conseguiu ser gerado
-        if 'payload' in locals():
-            st.warning("O sistema falhou ao enviar, mas seus dados estão salvos abaixo. Baixe e envie ao administrador:")
-            st.download_button(
-                label="📥 Baixar Backup de Emergência",
-                data=json.dumps(payload, indent=4, ensure_ascii=False).encode('utf-8'),
-                file_name=f"{nome_input}_EMERGENCIA.json",
-                mime="application/json",
-                use_container_width=True,
-                key="btn_backup_erro"
-            )
-        else:
-            st.error("Não foi possível gerar o backup. Tire um print da tela para não perder os dados.")
+        st.error(f"⚠️ Erro ao salvar: {e}")
+        # Botão de emergência caso o GitHub falhe
+        st.download_button(
+            label="📥 Baixar Backup de Emergência",
+            data=json.dumps(payload, indent=4, ensure_ascii=False).encode('utf-8'),
+            file_name=f"{nome_limpo}_EMERGENCIA.json",
+            mime="application/json",
+            use_container_width=True
+        )
