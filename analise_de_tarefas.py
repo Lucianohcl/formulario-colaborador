@@ -2564,6 +2564,7 @@ if not st.session_state.get("rascunho_carregado"):
         st.session_state[f"chef_{v}"] = cp.get("chefe", "")
         st.session_state[f"uni_{v}"] = cp.get("unidade", "")
         st.session_state[f"esc_{v}"] = cp.get("escolaridade", "")
+        st.session_state[f"dev_{v}"] = cp.get("devolver_em", "")
         st.session_state[f"cursos_{v}"] = cp.get("cursos", "")
         st.session_state[f"obj_{v}"] = cp.get("objetivo", "")
         
@@ -2720,31 +2721,30 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR (GARANTINDO O FORMATO JSON SOLICITADO)
+# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO - VERSÃO FINAL)
 # =========================================================
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Validação do Nome
+    # 1. Verificação de segurança
     nome_validado = nome_digitado.strip().upper()
     if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro: Digite seu nome completo no topo antes de salvar.")
+        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
         st.stop()
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
-    v_atual = st.session_state.get("v_tab", 1) # Pega a versão da aba (1)
+    v_atual = st.session_state.get("v_tab", 1)
     
-    # 2. Função para limpar linhas vazias (Garante que "normal", "baixa", etc. fiquem [])
+    # 2. Função interna para limpar linhas vazias
     def limpar_para_rascunho(df):
         if df is None or df.empty: 
             return []
         col_principal = df.columns[0]
-        # Filtra apenas linhas onde a descrição da atividade não é vazia
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload EXATAMENTE como no seu exemplo
+    # 3. Montagem do Payload (Lendo do session_state para garantir o F5)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
@@ -2766,29 +2766,24 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
             "dificuldades": limpar_para_rascunho(e_dif),
             "sugestoes": limpar_para_rascunho(e_sug)
         },
-        "disc": respostas_disc  # Pega o dicionário montado no loop do Bloco 6
+        "disc": respostas_disc
     }
 
-
-
-
-    # 4. Envio e Persistência
-    with st.spinner(f"📦 Sincronizando rascunho de {nome_digitado}..."):
+    # 4. Execução do salvamento
+    with st.spinner(f"📦 Enviando rascunho de {nome_digitado}..."):
         try:
             if salvar_no_github(payload, nome_arq):
                 st.session_state["rascunho_atual"] = payload
                 st.session_state["rascunho_carregado"] = True
                 st.success(f"✅ PERSISTÊNCIA GARANTIDA!")
                 
-                # Tenta enviar para Sheets se a função existir
+                # Envio para Sheets (Opcional)
                 if "enviar_para_sheets" in globals():
-                    try:
-                        enviar_para_sheets(payload)
-                        st.toast("📊 Enviado para Sheets!")
+                    try: enviar_para_sheets(payload)
                     except: pass
                 
                 st.rerun()
             else:
-                st.error("❌ Erro ao salvar no GitHub.")
+                st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu.")
         except Exception as e:
             st.error(f"❌ Erro crítico: {e}")
