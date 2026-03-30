@@ -2583,6 +2583,14 @@ if not st.session_state.get("rascunho_carregado"):
 rascunho = st.session_state.get("rascunho_atual", {})
 v = st.session_state.get("v_tab", 1) # Garante que v exista
 
+def val(chave):
+    """Busca o valor que veio do GitHub no dicionário 'campos'"""
+    # Busca no rascunho atual carregado no Bloco 3
+    rascunho_atual = st.session_state.get("rascunho_atual", {})
+    campos_salvos = rascunho_atual.get("campos", {})
+    return campos_salvos.get(chave, "")
+
+
 # =========================================================
 # 4. CAMPOS BÁSICOS (COM PERSISTÊNCIA ATIVA)
 # =========================================================
@@ -2760,6 +2768,9 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         },
         "disc": respostas_disc  # Pega o dicionário montado no loop do Bloco 6
     }
+
+
+
 
     # 4. Envio e Persistência
     with st.spinner(f"📦 Sincronizando rascunho de {nome_digitado}..."):
