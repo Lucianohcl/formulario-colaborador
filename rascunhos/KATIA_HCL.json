@@ -1,6 +1,6 @@
 {
     "colaborador": "KATIA HCL",
-    "timestamp": "30/03/2026 19:22:20",
+    "timestamp": "30/03/2026 19:26:49",
     "campos": {
         "cargo": "Analista de Custos",
         "dep": "",
@@ -15,10 +15,10 @@
     "tabelas": {
         "alta": [
             {
-                "Atividade": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Atividade": "DDDD",
+                "Horas": "6 h",
+                "Minutos": "30 min",
+                "Frequência": "T"
             },
             {
                 "Atividade": "",
