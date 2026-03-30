@@ -1305,6 +1305,25 @@ with col1:
                         v = st.session_state["v_tab"]
                         st.session_state[f"disc_radio_{i}_{v}"] = disc_salvo.get(chave_json)
 
+
+                # --- 4. TABELAS - SINCRONIZAÇÃO ---
+                tabelas_salvas = rascunho.get("tabelas", {})
+                if tabelas_salvas:
+                    # Lista das chaves de tabela que você tem no JSON
+                    chaves_tabelas = ["alta", "normal", "baixa", "dificuldades", "sugestoes"]
+                    
+                    for t_key in chaves_tabelas:
+                        dados = tabelas_salvas.get(t_key, [])
+                        if dados:
+                            # Converte a lista de dicionários do JSON em um DataFrame
+                            df_carregado = pd.DataFrame(dados)
+                            
+                            # SALVA NO SESSION_STATE 
+                            # Importante: A chave deve ser EXATAMENTE a 'key' que você usa no st.data_editor
+                            # Se o seu data_editor usa key=f"editor_{t_key}_{v}", faça igual:
+                            v = st.session_state["v_tab"]
+                            st.session_state[f"editor_{t_key}_{v}"] = df_carregado
+
                 st.success(f"✅ Rascunho e DISC de {nome_busca} carregados!")
                 st.rerun()
             else:
@@ -1371,7 +1390,7 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 if "rascunho_atual" not in st.session_state:
     st.session_state["rascunho_atual"] = {}
 
-rascunho = st.session_state["rascunho_atual"]
+rascunho = st.session_state["rascunho"]
 v_layout = st.session_state.get("v_tab", 0)
 
 # 2. Definição da função de renderização
@@ -1404,12 +1423,20 @@ def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_
         num_rows="fixed"
     )
 
-# 3. Chamadas das Tabelas
+# 3. Chamadas das Tabelas (Sincronização Total com o JSON)
+# Nota: O terceiro parâmetro deve ser EXATAMENTE a chave do JSON (ex: "Atividade")
+
 e_alta = gerar_tabela_final("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+
 e_normal = gerar_tabela_final("📋 Atividades de Complexidade Normal", "normal", "Atividade")
+
 e_baixa = gerar_tabela_final("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+
+# Aqui mudamos de "Setor/Parceiro Envolvido" para "Setor Envolvido"
+e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor Envolvido", "Setor Envolvido")
+
+# Aqui mudamos de "Impacto" para "Impacto Esperado"
+e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto Esperado", "Impacto Esperado")
 
 
 # =========================================================
