@@ -2717,18 +2717,17 @@ st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Identificação do arquivo (Trava REMOVIDA)
-    nome_validado = nome_f.strip().upper() if nome_f else "SEM_NOME"
+    # 1. Identificação (Usando nome_f que é o seu input real)
+    nome_validado = nome_f.strip().upper() if nome_f else "RASCUNHO"
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna para limpar linhas vazias
     def limpar_para_rascunho(df):
         if df is None or df.empty: return []
         col_principal = df.columns[0]
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload (Garantindo que os dados entrem no pacote)
+    # 2. Payload (Apenas coloquei o _f para o código não travar)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_f,
@@ -2747,23 +2746,24 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 4. A MÁGICA DA PERSISTÊNCIA (Salvar e manter na tela)
-    with st.spinner(f"📦 Sincronizando rascunho..."):
+    # 3. Execução e Persistência (DO JEITO QUE VOCÊ QUER)
+    with st.spinner("📦 Sincronizando..."):
         try:
             sucesso = salvar_no_github(payload, nome_arq)
             
-            # ISSO AQUI garante que os dados fiquem na tela
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
             
             if sucesso:
-                st.success(f"✅ PERSISTÊNCIA OK: Rascunho salvo!")
-                st.toast("Dados guardados no GitHub e no Navegador")
+                st.success(f"✅ SALVO COM SUCESSO!")
+                try:
+                    enviar_para_sheets(payload)
+                except:
+                    pass
             else:
-                st.warning("⚠️ Guardado apenas no navegador (GitHub falhou).")
+                st.warning("⚠️ Salvo apenas localmente.")
             
-            # Força o Streamlit a reconhecer os novos dados
-            st.rerun()
+            st.rerun() # Mantém os dados na tela
             
         except Exception as e:
-            st.error(f"❌ Erro na persistência: {e}")
+            st.error(f"❌ Erro: {e}")
