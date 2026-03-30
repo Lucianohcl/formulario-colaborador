@@ -73,7 +73,23 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# DEFINE O DIRETÓRIO (Isso resolve o problema da função não achar os arquivos)
+# ============================================================
+# 🛡️ INICIALIZAÇÃO DE VARIÁVEIS (PREVINE ERRO 'NOT DEFINED')
+# ============================================================
+# Aqui dizemos ao Python que essas variáveis existem, mesmo que vazias.
+if "nome_f" not in locals(): nome_f = ""
+if "cargo" not in locals(): cargo = ""
+if "depto" not in locals(): depto = ""
+if "setor" not in locals(): setor = ""
+if "chefe" not in locals(): chefe = ""
+if "unidade" not in locals(): unidade = ""
+if "escolaridade" not in locals(): escolaridade = ""
+if "devolver_em" not in locals(): devolver_em = ""
+if "cursos" not in locals(): cursos = ""
+if "objetivo" not in locals(): objetivo = ""
+# Caso seu código ainda procure pelo nome antigo em algum lugar:
+nome_digitado = st.session_state.get("usuario_atual", "")
+# ============================================================
 
 
 
