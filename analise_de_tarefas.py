@@ -1463,6 +1463,15 @@ for i, pergunta in enumerate(perguntas_disc):
     respostas_disc_atual[chave_json] = escolha
 
 # 6. ATUALIZA O RASCUNHO GLOBAL NA HORA
+# Verifica se o rascunho existe; se não, inicializa para evitar o KeyError
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {}
+
+# Garante que a sub-chave "disc" também exista
+if "disc" not in st.session_state["rascunho"]:
+    st.session_state["rascunho"]["disc"] = {}
+
+# Agora sim, salva as respostas sem risco de quebrar
 st.session_state["rascunho"]["disc"] = respostas_disc_atual
 
 
