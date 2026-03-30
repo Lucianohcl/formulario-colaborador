@@ -1427,34 +1427,43 @@ e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestã
 
 
 # =========================================================
-# 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
+# 📊 7. QUESTIONÁRIO DISC (SINCRONIZADO COM O JSON)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário")
 
-# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
 v = st.session_state.get("v_tab", 0) 
 
-respostas_disc_atual = {}
-rascunho_disc = st.session_state.get("disc_v2", {})
+# 1. BUSCA O RASCUNHO NO LUGAR CERTO (Onde o JSON que você mostrou reside)
+# O seu JSON mostra que o DISC está dentro de "rascunho" -> "disc"
+rascunho_disc = st.session_state.get("rascunho", {}).get("disc", {})
 
-# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
+respostas_disc_atual = {}
+
 for i, pergunta in enumerate(perguntas_disc):
-    # Tenta carregar a letra do rascunho
-    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
+    # 2. BUSCA PELA CHAVE DO JSON (O seu JSON usa apenas o número como string)
+    chave_json = str(i)
+    letra_salva = rascunho_disc.get(chave_json)
     
-    # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
+    # 3. DEFINE O ÍNDICE (A=0, B=1, C=2, D=3)
     opcoes = ["A", "B", "C", "D"]
+    # Se letra_salva for None ou null no JSON, o index será None (fica desmarcado)
     idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
     
+    # 4. O WIDGET
     escolha = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
         index=idx_selecionado,
-        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
+        key=f"disc_radio_{i}_{v}",
         horizontal=True
     )
-    respostas_disc_atual[f"p{i}"] = escolha
+    
+    # 5. GUARDA PARA SALVAR DEPOIS (Mantendo o padrão de string do JSON)
+    respostas_disc_atual[chave_json] = escolha
+
+# 6. ATUALIZA O RASCUNHO GLOBAL NA HORA
+st.session_state["rascunho"]["disc"] = respostas_disc_atual
 
 
 
@@ -2699,8 +2708,8 @@ def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
-e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "setor_env", "Setor Envolvido")
-e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "impacto", "Impacto Esperado")
+e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
+e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
 # 5. PERFIL DISC
