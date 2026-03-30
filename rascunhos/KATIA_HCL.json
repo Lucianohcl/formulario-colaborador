@@ -1,6 +1,6 @@
 {
     "colaborador": "KATIA HCL",
-    "timestamp": "30/03/2026 21:21:45",
+    "timestamp": "30/03/2026 22:08:53",
     "campos": {
         "cargo": "Analista de Custos",
         "dep": "Contoladoria",
@@ -107,10 +107,10 @@
         ],
         "normal": [
             {
-                "Atividade": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Atividade": "DDDDD",
+                "Horas": "2 h",
+                "Minutos": "5 min",
+                "Frequência": "DVD"
             },
             {
                 "Atividade": "",
@@ -199,10 +199,10 @@
         ],
         "baixa": [
             {
-                "Atividade": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Atividade": "EEEEE",
+                "Horas": "3 h",
+                "Minutos": "10 min",
+                "Frequência": "Q"
             },
             {
                 "Atividade": "",
@@ -291,11 +291,11 @@
         ],
         "dificuldades": [
             {
-                "Dificuldade": "",
-                "Setor Envolvido": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Dificuldade": "DDDD",
+                "Setor Envolvido": "DDDD",
+                "Horas": "4 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
             },
             {
                 "Dificuldade": "",
@@ -398,11 +398,11 @@
         ],
         "sugestoes": [
             {
-                "Sugestão": "",
-                "Impacto Esperado": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Sugestão": "DDDD",
+                "Impacto Esperado": "DDD",
+                "Horas": "6 h",
+                "Minutos": "25 min",
+                "Frequência": "T"
             },
             {
                 "Sugestão": "",
@@ -505,29 +505,29 @@
         ]
     },
     "disc": {
-        "0": "A",
-        "1": "A",
-        "2": "B",
-        "3": "B",
-        "4": "B",
-        "5": "A",
-        "6": "A",
-        "7": "B",
-        "8": "C",
-        "9": "D",
-        "10": "D",
-        "11": "C",
-        "12": "B",
-        "13": "B",
-        "14": "C",
-        "15": "C",
-        "16": "B",
-        "17": "B",
-        "18": "C",
-        "19": "D",
-        "20": "C",
-        "21": "B",
-        "22": "B",
-        "23": "C"
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": null,
+        "5": null,
+        "6": null,
+        "7": null,
+        "8": null,
+        "9": null,
+        "10": null,
+        "11": null,
+        "12": null,
+        "13": null,
+        "14": null,
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": null
     }
 }
