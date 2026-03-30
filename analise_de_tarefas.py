@@ -2715,34 +2715,27 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 st.markdown("---")
 
-# Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Identificação do arquivo (Trava removida conforme solicitado)
+    # 1. Identificação do arquivo (Trava REMOVIDA)
     nome_validado = nome_f.strip().upper() if nome_f else "SEM_NOME"
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna para limpar linhas vazias das tabelas
+    # 2. Função interna para limpar linhas vazias
     def limpar_para_rascunho(df):
-        if df is None or df.empty: 
-            return []
+        if df is None or df.empty: return []
         col_principal = df.columns[0]
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload (NOMES CORRIGIDOS PARA NÃO DAR ERRO)
+    # 3. Montagem do Payload (Garantindo que os dados entrem no pacote)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_f,
         "campos": {
-            "cargo": cargo_f, 
-            "departamento": depto_f, 
-            "setor": setor_f,
-            "chefe": chefe_f, 
-            "unidade": unidade_f, 
-            "escolaridade": esc_f,
-            "cursos": cursos_f, 
-            "objetivo": obj_f
+            "cargo": cargo_f, "departamento": depto_f, "setor": setor_f,
+            "chefe": chefe_f, "unidade": unidade_f, "escolaridade": esc_f,
+            "cursos": cursos_f, "objetivo": obj_f
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2754,32 +2747,23 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 🔹 Normalização para evitar TypeError
-    payload["tabelas"] = {k: (v if isinstance(v, list) else []) for k, v in payload.get("tabelas", {}).items()}
-    
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Enviando rascunho de {nome_f} para a nuvem..."):
+    # 4. A MÁGICA DA PERSISTÊNCIA (Salvar e manter na tela)
+    with st.spinner(f"📦 Sincronizando rascunho..."):
         try:
-            # Mantendo sua função de salvar
             sucesso = salvar_no_github(payload, nome_arq)
-        except Exception as e:
-            st.error(f"❌ Erro crítico ao processar o envio: {e}")
-            sucesso = False
-        
-        if sucesso:
-            # Persistência imediata no session_state
+            
+            # ISSO AQUI garante que os dados fiquem na tela
             st.session_state["rascunho_atual"] = payload
             st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ PERSISTÊNCIA GARANTIDA: Rascunho de {nome_f} salvo com sucesso!")
-
-            # 🔹 Enviar para Sheets também
-            try:
-                enviado_sheets = enviar_para_sheets(payload)
-                if enviado_sheets:
-                    st.toast("📊 Rascunho enviado para Google Sheets!")
-                else:
-                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
-            except Exception as e_sheets:
-                st.warning(f"⚠️ Rascunho salvo no GitHub, mas falha ao enviar para Sheets: {e_sheets}")
-        else:
-            st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
+            
+            if sucesso:
+                st.success(f"✅ PERSISTÊNCIA OK: Rascunho salvo!")
+                st.toast("Dados guardados no GitHub e no Navegador")
+            else:
+                st.warning("⚠️ Guardado apenas no navegador (GitHub falhou).")
+            
+            # Força o Streamlit a reconhecer os novos dados
+            st.rerun()
+            
+        except Exception as e:
+            st.error(f"❌ Erro na persistência: {e}")
