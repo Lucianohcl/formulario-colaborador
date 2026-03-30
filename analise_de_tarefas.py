@@ -1390,7 +1390,7 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 if "rascunho_atual" not in st.session_state:
     st.session_state["rascunho_atual"] = {}
 
-rascunho = st.session_state["rascunho"]
+rascunho = st.session_state.get("rascunho", {})
 v_layout = st.session_state.get("v_tab", 0)
 
 # 2. Definição da função de renderização
