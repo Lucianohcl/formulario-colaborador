@@ -2628,27 +2628,34 @@ objetivo = st.text_area("Em que consiste seu trabalho e qual seu Principal Objet
 
 
 # =========================================================
-# 4. MOTOR DE TABELAS (VERSÃO FINAL COM ORDEM FIXA)
+# 4. MOTOR DE TABELAS (VERSÃO ULTRA-BLINDADA V3)
 # =========================================================
 def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
+    # --- 1. RESET DE MEMÓRIA (FORÇA O STREAMLIT A REDESENHAR O LAYOUT) ---
+    # Se a v3 ainda não existe no estado da sessão, limpamos as versões antigas
+    if f"ed_{chave}_v3" not in st.session_state:
+        for k in list(st.session_state.keys()):
+            if f"ed_{chave}" in k:
+                del st.session_state[k]
+
     st.write(f"**{titulo}**")
     
-    # 1. Puxa os dados
+    # 2. Puxa os dados do rascunho
     dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
     df = pd.DataFrame(dados)
     
-    # 2. DEFINE A ORDEM RÍGIDA (Resolve o problema da coluna extra no fim)
+    # 3. Define a Ordem Rígida (O Setor/Impacto TEM que ser a segunda coluna)
     if col_e:
         cols_finais = [col_p, col_e, "Horas", "Minutos", "Frequência"]
     else:
         cols_finais = [col_p, "Horas", "Minutos", "Frequência"]
     
-    # 3. Limpeza Blindada
+    # 4. Limpeza e Reindex (Remove colunas fantasmas e organiza a ordem)
     df = df.fillna("").astype(str)
     for c in df.columns:
         df[c] = df[c].str.strip()
-
-    # 4. GARANTE AS COLUNAS NA ORDEM CERTA (Elimina colunas duplicadas ou fantasmas)
+    
+    # O reindex com columns=cols_finais descarta qualquer coluna que não esteja na lista
     df = df.reindex(columns=cols_finais, fill_value="")
     
     # 5. Garante as 15 linhas fixas
@@ -2657,35 +2664,43 @@ def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
         extras = pd.DataFrame([{c: "" for c in cols_finais} for _ in range(faltam)])
         df = pd.concat([df, extras], ignore_index=True)
     
-    # Trava o DataFrame no formato final (15 linhas)
+    # Trava em 15 linhas e na ordem correta
     df = df[cols_finais].head(15)
 
-    # 6. Configuração Visual
+    # 6. Configuração Visual dos Seletores
     cfg = {
         col_p: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"], width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=[""] + [f"{i} h" for i in range(25)], width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=[""] + [f"{i} min" for i in range(0, 60, 5)], width="small"),
+        "Frequência": st.column_config.SelectboxColumn(
+            options=["", "DVD", "D", "S", "Q", "M", "T", "A"], 
+            width="small"
+        ),
+        "Horas": st.column_config.SelectboxColumn(
+            options=[""] + [f"{i} h" for i in range(25)], 
+            width="small"
+        ),
+        "Minutos": st.column_config.SelectboxColumn(
+            options=[""] + [f"{i} min" for i in range(0, 60, 5)], 
+            width="small"
+        ),
     }
     if col_e: 
         cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
         
-    # Adicionei o "v2" na key para forçar o reset visual
+    # 7. Renderização com a Key v3 (O segredo para resetar o visual)
     return st.data_editor(
         df, 
-        key=f"ed_{chave}_v2",  # Mude de ed_{chave} para ed_{chave}_v2
+        key=f"ed_{chave}_v3", 
         column_config=cfg, 
         use_container_width=True,
         num_rows="fixed"
     )
 
-# Chamadas das tabelas (Pode manter estas chamadas)
+# Chamadas das tabelas
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "setor_env", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "impacto", "Impacto Esperado")
-
 
 # =========================================================
 # 5. PERFIL DISC
