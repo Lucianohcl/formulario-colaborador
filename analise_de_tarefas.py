@@ -1555,11 +1555,11 @@ for nome_tab, df_validar in dict_tabelas.items():
                 
                 # Validação extra para colunas específicas (Impacto / Setor)
                 if nome_tab == "Dificuldades":
-                    if str(row.get("setor_env", "")).strip() == "":
+                    if str(row.get("Setor Envolvido", "")).strip() == "":
                         pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o **Setor Envolvido**.")
                 
                 if nome_tab == "Sugestões e Melhorias":
-                    if str(row.get("impacto", "")).strip() == "":
+                    if str(row.get("Impacto Esperado", "")).strip() == "":
                         pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o **Impacto Esperado**.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
