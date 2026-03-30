@@ -2619,51 +2619,43 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 # ⚙️ MOTOR DE TABELAS (PERSISTÊNCIA GARANTIDA)
 # =========================================================
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
-    st.write(f"### {titulo}")
+    st.write(f"**{titulo}**")
     
-    # 1. Pega os dados que vieram do rascunho (GitHub)
-    # Se não houver nada, retorna uma lista vazia
-    dados_banco = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
+    # Busca dados direto do rascunho atual carregado do GitHub
+    dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
     
-    # 2. Define as colunas IDÊNTICAS ao seu JSON
-    # CUIDADO: "Atividade", "Horas", "Minutos" e "Frequência" (com acento!)
-    colunas_finais = [col_principal, "Horas", "Minutos", "Frequência"]
+    colunas = [col_principal, "Horas", "Minutos", "Frequência"]
     if col_extra: 
-        colunas_finais.insert(1, col_extra)
+        colunas.insert(1, col_extra)
     
-    # 3. Cria o DataFrame e garante que as colunas existam
-    df = pd.DataFrame(dados_banco)
+    # Converte para DataFrame e garante que sempre tenha as 15 linhas
+    df_base = pd.DataFrame(dados_salvos)
+    df = garantir_15_linhas(df_base, colunas)
     
-    if df.empty:
-        df = pd.DataFrame(columns=colunas_finais)
-    else:
-        # Garante que todas as colunas do JSON apareçam na ordem certa
-        for c in colunas_finais:
-            if c not in df.columns: df[c] = ""
-        df = df[colunas_finais]
+    config = {
+        col_principal: st.column_config.TextColumn("Descrição", width="large"),
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
+        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
+        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
+    }
+    if col_extra: 
+        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
 
-    # 4. Força 15 linhas para preenchimento
-    df = garantir_15_linhas(df, colunas_finais)
-
-    # 5. O SEGREDO: A key precisa mudar para o Streamlit "limpar" a tabela velha
-    # Se não mudar a key, ele mantém a tabela vazia do primeiro carregamento
-    v_trigger = st.session_state.get("v_tab", 1)
-    
+    # O uso da key com 'v' força o reset do componente quando os dados mudam
     return st.data_editor(
-        df,
-        key=f"editor_{chave_rascunho}_{v_trigger}",
-        use_container_width=True,
+        df, 
+        key=f"editor_{chave_rascunho}_{v}", 
+        column_config=config, 
+        use_container_width=True, 
         num_rows="fixed"
     )
 
-# O terceiro parâmetro tem que ser "Atividade" (com A maiúsculo!)
-e_alta = gerar_editor("🚀 Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_editor("📋 Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Baixa", "baixa", "Atividade")
-
-# E para Dificuldades/Sugestões, veja se no JSON está "Dificuldade" e "Sugestão"
-e_dif = gerar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor", "Setor")
-e_sug = gerar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto", "Impacto")
+# Chamadas das tabelas (Mantenha estas chaves, elas batem com o Botão Salvar)
+e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
+e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
+e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
+e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
 
 # =========================================================
 # 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA)
@@ -2765,16 +2757,11 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload_final, nome_arq):
-            # Comandos separados e alinhados (4 espaços para cada nível)
-            st.session_state["rascunho_atual"] = payload_final
-            st.session_state["rascunho_carregado"] = True
-            
-            # Atualiza a versão da tela para os dados aparecerem nos campos
-            st.session_state["v_tab"] = st.session_state.get("v_tab", 1) + 1
-            
+        if salvar_no_github(payload, nome_arq):
+            st.session_state["rascunho_atual"] = payload            st.session_state["rascunho_carregado"] = True
             st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
             st.toast("Dados sincronizados!")
             st.rerun()
         else:
             st.error("❌ Falha ao salvar no GitHub.")
+
