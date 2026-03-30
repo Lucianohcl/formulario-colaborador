@@ -2670,9 +2670,10 @@ def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
     if col_e: 
         cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
         
+    # Adicionei o "v2" na key para forçar o reset visual
     return st.data_editor(
         df, 
-        key=f"ed_{chave}", 
+        key=f"ed_{chave}_v2",  # Mude de ed_{chave} para ed_{chave}_v2
         column_config=cfg, 
         use_container_width=True,
         num_rows="fixed"
