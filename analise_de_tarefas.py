@@ -2220,7 +2220,7 @@ def atualizar_rascunhos_do_github():
         repo = g.get_repo(REPO_NOME)
         # O GitHub pode dar erro se a pasta 'dados' estiver vazia ou não existir
         try:
-            contents = repo.get_contents("dados")
+            contents = repo.get_contents("rascunhos")
         except:
             st.session_state["rascunhos"] = {}
             return False
@@ -2584,15 +2584,15 @@ rascunho = st.session_state.get("rascunho_atual", {})
 v = st.session_state.get("v_tab", 1) # Garante que v exista
 
 # =========================================================
-# 4. CAMPOS BÁSICOS (COM PERSISTÊNCIA ATIVA)
+# 4. CAMPOS BÁSICOS (AJUSTADO PARA POPULAR NO F5)
 # =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    # O segredo é o 'value=val(...)'. Se tiver no GitHub, ele preenche.
+    # O segredo: 'dep' no val() para bater com o banco
     cargo = st.text_input("Cargo:", value=val("cargo"), key=f"cargo_{v}")
-    depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
+    depto = st.text_input("Departamento:", value=val("dep"), key=f"dep_{v}")
     setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
 
 with col2:
@@ -2601,10 +2601,8 @@ with col2:
     escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
     devolver_em = st.text_input("Devolver em:", value=val("devolver_em"), key=f"dev_{v}")
 
-
-cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
+cursos = st.text_area("Cursos Obrigatórios:", value=val("cursos"), key=f"cursos_{v}")
 objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
-
 # =========================================================
 # 5. TABELAS DE TAREFAS
 # =========================================================
@@ -2712,56 +2710,35 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
-# =========================================================
-st.markdown("---")
-
+# 7. BOTÃO SALVAR (MÁXIMA SIMPLICIDADE - CORRIGE O F5)
+# ========================
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    # 1. Validação simples (4 espaços de recuo aqui)
-    nome_validado = nome_digitado.strip().upper()
-    if len(nome_validado) < 3:
-        st.error("❌ Digite seu nome completo antes de salvar.")
-        st.stop()
-
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    nome_arq = f"{nome_digitado.replace(' ','_')}.json"
     
-    # 2. Função interna (alinhada com o código acima)
-    def limpar_para_rascunho(df):
-        if df is None or df.empty:
-            return []
-        df_temp = pd.DataFrame(df)
-        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
+    # Limpa linhas vazias das tabelas
+    def lim(df):
+        return df[df.iloc[:,0].astype(str).str.strip() != ""].to_dict("records") if not df.empty else []
 
-    # 3. Montagem do Payload
-    payload_final = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_validado,
-            "status": "FINALIZADO",
-            "campos": {
-                "cargo": cargo, "departamento": depto, "setor": setor,
-                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                "cursos": cursos, "objetivo": objetivo
-            },
-
+    # O segredo: as chaves (cargo, dep, setor) iguais ao que o val() pede
+    payload = {
+        "colaborador": nome_digitado.strip().upper(),
+        "campos": {
+            "cargo": cargo, "dep": depto, "setor": setor,
+            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+            "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo
+        },
         "tabelas": {
-            "alta": limpar_para_rascunho(e_alta),
-            "normal": limpar_para_rascunho(e_normal),
-            "baixa": limpar_para_rascunho(e_baixa),
-            "dificuldades": limpar_para_rascunho(e_dif),
-            "sugestoes": limpar_para_rascunho(e_sug)
+            "alta": lim(e_alta), "normal": lim(e_normal), "baixa": lim(e_baixa),
+            "dificuldades": lim(e_dif), "sugestoes": lim(e_sug)
         },
         "disc": respostas_disc
     }
 
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload, nome_arq):
-            st.session_state["rascunho_atual"] = payload            st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
-            st.toast("Dados sincronizados!")
-            st.rerun()
-        else:
-            st.error("❌ Falha ao salvar no GitHub.")
+    if salvar_no_github(payload, nome_arq):
+        st.session_state["rascunho_atual"] = payload
+        st.session_state["rascunho_carregado"] = True
+        st.success("✅ SALVO! Pode dar F5.")
+        st.rerun()
+    else:
+        st.error("❌ Erro no GitHub.")
 
