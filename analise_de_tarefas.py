@@ -2703,45 +2703,65 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 7. BOTÃO SALVAR
+# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
 # =========================================================
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    nome_validado = nome_digitado.strip()
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    
+    # 1. Verificação de segurança
+    nome_validado = nome_digitado.strip().upper()
+    if not nome_validado or len(nome_validado) < 3:
+        st.error("❌ Digite seu nome completo antes de salvar.")
+        st.stop()
 
-    def limpar_para_rascunho(df):
+    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+    
+    # 2. Função para limpar linhas vazias
+    def limpar(df):
         if df is None or df.empty: return []
         col = df.columns[0]
         return df[df[col].astype(str).str.strip() != ""].to_dict("records")
 
+    # 3. Montagem do Payload (Exatamente como o seu JSON)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_validado,
+        "colaborador": nome_digitado,
         "campos": {
             "cargo": cargo, "departamento": depto, "setor": setor,
             "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-            "devolver_em": devolver_em, "cursos": cursos, "objetivo": objetivo
+            "cursos": cursos, "objetivo": objetivo
         },
         "tabelas": {
-            "alta": limpar_para_rascunho(e_alta),
-            "normal": limpar_para_rascunho(e_normal),
-            "baixa": limpar_para_rascunho(e_baixa),
-            "dificuldades": limpar_para_rascunho(e_dif),
-            "sugestoes": limpar_para_rascunho(e_sug)
+            "alta": limpar(e_alta), "normal": limpar(e_normal), 
+            "baixa": limpar(e_baixa), "dificuldades": limpar(e_dif), 
+            "sugestoes": limpar(e_sug)
         },
         "disc": respostas_disc
     }
 
-    with st.spinner("📦 Sincronizando..."):
-        if salvar_no_github(payload, nome_arq):
-            # 1. Atualiza a memória com o que acabou de ser enviado
+    # 4. Execução do push
+    with st.spinner(f"📦 Enviando rascunho de {nome_digitado}..."):
+        # Tenta GitHub
+        sucesso_git = salvar_no_github(payload, nome_arq)
+        
+        if sucesso_git:
+            # ATUALIZAÇÃO CRÍTICA PARA PERSISTÊNCIA:
             st.session_state["rascunho_atual"] = payload
-            
-            # 2. Gira a "chave" para os campos não resetarem vazios
+            st.session_state["rascunho_carregado"] = True
+            # Gira a chave da tela para os widgets lerem o payload novo
             st.session_state["v_tab"] = st.session_state.get("v_tab", 1) + 1
             
-            # 3. Avisa que deu certo e recarrega a tela com os dados
-            st.success("✅ RASCUNHO SALVO COM SUCESSO!")
+            st.success(f"✅ Rascunho de {nome_digitado} salvo com sucesso!")
+
+            # Tenta Sheets (opcional)
+            try:
+                if enviar_para_sheets(payload):
+                    st.toast("📊 Sincronizado com Google Sheets!")
+            except:
+                pass # Se falhar o Sheets, o Git já garantiu o rascunho
+
+            # Recarrega para aplicar a persistência visual
             st.rerun()
+        else:
+            st.error("❌ FALHA NO ENVIO: O GitHub não respondeu.")
