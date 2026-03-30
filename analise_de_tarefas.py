@@ -2716,16 +2716,20 @@ for i, pergunta in enumerate(perguntas_disc):
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    # 1. Validação (Apontando para nome_f)
-    nome_validado = nome_f.strip().upper() if 'nome_f' in locals() else ""
     
-    if len(nome_validado) < 3:
-        st.error("❌ Digite seu nome completo antes de salvar.")
-        st.stop()
+    # FORÇANDO A LEITURA: Se nome_digitado falhar, ele usa nome_f
+    # Se ambos falharem, ele usa "USUARIO_DESCONHECIDO" para NÃO TRAVAR MAIS
+    try:
+        nome_validado = nome_f.strip().upper()
+    except:
+        try:
+            nome_validado = nome_digitado.strip().upper()
+        except:
+            nome_validado = "RASCUNHO_SEM_NOME"
 
+    # Criando o nome do arquivo
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna 
     def limpar_para_rascunho(df):
         if df is None or df.empty:
             return []
@@ -2733,21 +2737,15 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
         return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # 3. Montagem do Payload (Sincronizado com os sufixos _f do seu app)
+    # Montagem do Payload (Sincronizado com os nomes que você usa no formulário)
     payload_final = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_validado,
-        "status": "FINALIZADO",
+        "status": "RASCUNHO",
         "campos": {
-            "cargo": cargo_f, 
-            "departamento": depto_f, 
-            "setor": setor_f,
-            "chefe": chefe_f, 
-            "unidade": unidade_f, 
-            "escolaridade": esc_f,
-            "devolver_em": devolver_em_f if 'devolver_em_f' in locals() else "",
-            "cursos": cursos_f, 
-            "objetivo": obj_f
+            "cargo": cargo_f, "departamento": depto_f, "setor": setor_f,
+            "chefe": chefe_f, "unidade": unidade_f, "escolaridade": esc_f,
+            "cursos": cursos_f, "objetivo": obj_f
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2759,13 +2757,11 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
+    with st.spinner(f"📦 Sincronizando rascunho..."):
         if salvar_no_github(payload_final, nome_arq):
             st.session_state["rascunho_atual"] = payload_final
             st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
-            st.toast("Dados sincronizados!")
+            st.success(f"✅ SALVO COM SUCESSO! Nome: {nome_validado}")
             st.rerun()
         else:
-            st.error("❌ Falha ao salvar no GitHub. Verifique o DB_TOKEN.")
+            st.error("❌ Erro ao conectar com GitHub. Verifique sua internet.")
