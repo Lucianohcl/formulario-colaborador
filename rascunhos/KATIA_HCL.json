@@ -1,1 +1,533 @@
-{"colaborador": "KATIA HCL", "campos": {}, "tabelas": {}, "disc": {}}
+{
+    "colaborador": "KATIA HCL",
+    "timestamp": "30/03/2026 19:08:06",
+    "campos": {
+        "cargo": "Analista de Custos",
+        "dep": "",
+        "setor": "",
+        "chefe": "José da Silva",
+        "unidade": "",
+        "escolaridade": "",
+        "devolver_em": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "setor_env": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "impacto": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ]
+    },
+    "disc": {
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": null,
+        "5": null,
+        "6": null,
+        "7": null,
+        "8": null,
+        "9": null,
+        "10": null,
+        "11": null,
+        "12": null,
+        "13": null,
+        "14": null,
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": null
+    }
+}
