@@ -2711,37 +2711,34 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
+# 7. BOTÃO SALVAR - VERSÃO FINAL (SEM TRAVAS)
 # =========================================================
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # FORÇANDO A LEITURA: Se nome_digitado falhar, ele usa nome_f
-    # Se ambos falharem, ele usa "USUARIO_DESCONHECIDO" para NÃO TRAVAR MAIS
+    # 1. PEGA O NOME DE QUALQUER JEITO (Sem travas, sem erro)
+    # Se ele não achar nome_f, ele usa "RASCUNHO_FINAL"
     try:
-        nome_validado = nome_f.strip().upper()
+        nome_val = nome_f.strip().upper() if nome_f else "RASCUNHO_SEM_NOME"
     except:
-        try:
-            nome_validado = nome_digitado.strip().upper()
-        except:
-            nome_validado = "RASCUNHO_SEM_NOME"
-
-    # Criando o nome do arquivo
-    nome_arq = f"{nome_validado.replace(' ','_')}.json"
+        nome_val = "RASCUNHO_FINAL"
+        
+    nome_arq = f"{nome_val.replace(' ','_')}.json"
     
     def limpar_para_rascunho(df):
-        if df is None or df.empty:
+        if df is None or df.empty: return []
+        try:
+            col = df.columns[0]
+            mask = df[col].astype(str).str.strip() != ""
+            return df[mask].to_dict("records")
+        except:
             return []
-        df_temp = pd.DataFrame(df)
-        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
 
-    # Montagem do Payload (Sincronizado com os nomes que você usa no formulário)
-    payload_final = {
+    # 2. MONTAGEM DO PAYLOAD (Sincronizado com os campos _f)
+    payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-        "colaborador": nome_validado,
-        "status": "RASCUNHO",
+        "colaborador": nome_val,
         "campos": {
             "cargo": cargo_f, "departamento": depto_f, "setor": setor_f,
             "chefe": chefe_f, "unidade": unidade_f, "escolaridade": esc_f,
@@ -2757,11 +2754,16 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    with st.spinner(f"📦 Sincronizando rascunho..."):
-        if salvar_no_github(payload_final, nome_arq):
-            st.session_state["rascunho_atual"] = payload_final
-            st.session_state["rascunho_carregado"] = True
-            st.success(f"✅ SALVO COM SUCESSO! Nome: {nome_validado}")
-            st.rerun()
-        else:
-            st.error("❌ Erro ao conectar com GitHub. Verifique sua internet.")
+    # 3. SALVAMENTO DIRETO
+    with st.spinner("📦 Sincronizando..."):
+        try:
+            if salvar_no_github(payload, nome_arq):
+                st.session_state["rascunho_atual"] = payload
+                st.session_state["rascunho_carregado"] = True
+                st.success(f"✅ SALVOU! Nome: {nome_val}")
+                st.balloons()
+                st.rerun()
+            else:
+                st.error("❌ Erro no GitHub. Verifique o Token.")
+        except Exception as e:
+            st.error(f"❌ Erro crítico: {e}")
