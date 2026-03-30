@@ -1607,7 +1607,7 @@ with col_btn:
 
             payload = {
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "colaborador": nome_digitado,
+                "colaborador": nome_f,
                 "campos": {
                     "cargo": cargo, 
                     "departamento": depto, 
@@ -2604,6 +2604,8 @@ def val(chave, default=""):
 # =========================================================
 st.subheader("📋 Acesso ao Sistema")
 nome_input = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
+# ADICIONE ESTA LINHA ABAIXO:
+nome_digitado = nome_input
 
 if not nome_input:
     st.info("Digite seu nome para começar.")
