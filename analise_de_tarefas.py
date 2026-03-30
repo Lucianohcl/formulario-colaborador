@@ -2621,15 +2621,20 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
     st.write(f"**{titulo}**")
     
-    # Busca dados direto do rascunho atual carregado do GitHub
+    # 1. Busca os dados
     dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
     
+    # 2. Define as colunas (Exatamente como no JSON: "Atividade", "Horas", etc)
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: 
-        colunas.insert(1, col_extra)
+    if col_extra: colunas.insert(1, col_extra)
     
-    # Converte para DataFrame e garante que sempre tenha as 15 linhas
-    df_base = pd.DataFrame(dados_salvos)
+    # 3. AJUSTE AQUI: Se houver dados, usa eles. Se não, cria DF vazio com as colunas certas.
+    if dados_salvos:
+        df_base = pd.DataFrame(dados_salvos)
+    else:
+        df_base = pd.DataFrame(columns=colunas)
+        
+    # 4. Garante as 15 linhas
     df = garantir_15_linhas(df_base, colunas)
     
     config = {
@@ -2638,13 +2643,12 @@ def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_ext
         "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
         "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
     }
-    if col_extra: 
-        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
+    if col_extra: config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
 
-    # O uso da key com 'v' força o reset do componente quando os dados mudam
+    # 5. O SEGREDO DO F5: A key precisa do 'v' para resetar o widget e ler o novo DF
     return st.data_editor(
         df, 
-        key=f"editor_{chave_rascunho}_{v}", 
+        key=f"editor_{chave_rascunho}_{st.session_state.get('v_tab', 1)}", 
         column_config=config, 
         use_container_width=True, 
         num_rows="fixed"
