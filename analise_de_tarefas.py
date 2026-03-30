@@ -1532,11 +1532,6 @@ with col_btn:
                 "disc": {str(i): respostas_disc.get(i) or "" for i in range(24)}
             }
 
-
-                # 🔥 CORREÇÃO AQUI
-                "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
-            }
-
             nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
             
             with st.spinner("Sincronizando..."):
