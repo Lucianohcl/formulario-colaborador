@@ -2712,12 +2712,11 @@ for i, pergunta in enumerate(perguntas_disc):
     )
 
 # =========================================================
-# 💾 7. BOTÃO SALVAR (VERSÃO FINAL E CORRIGIDA)
+# 💾 7. BOTÃO SALVAR (VERSÃO CORRIGIDA EM 5 MINUTOS)
 # =========================================================
 st.markdown("---")
 
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
-    # 1. Validação simples (4 espaços de recuo aqui)
     nome_validado = nome_digitado.strip().upper()
     if len(nome_validado) < 3:
         st.error("❌ Digite seu nome completo antes de salvar.")
@@ -2725,26 +2724,26 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
-    # 2. Função interna (alinhada com o código acima)
     def limpar_para_rascunho(df):
-        if df is None or df.empty:
-            return []
+        if df is None: return []
+        # Converte editor para DataFrame se necessário
         df_temp = pd.DataFrame(df)
-        mask = df_temp.iloc[:, 0].astype(str).str.strip() != ""
-        return df_temp[mask].to_dict("records") if mask.sum() > 0 else []
+        if df_temp.empty: return []
+        # Pega a primeira coluna para filtrar linhas vazias
+        col_ref = df_temp.columns[0]
+        mask = df_temp[col_ref].astype(str).str.strip() != ""
+        return df_temp[mask].to_dict("records")
 
-    # 3. Montagem do Payload
+    # MONTAGEM DO PAYLOAD (Corrigindo Devolver Em e Tabelas)
     payload_final = {
-            "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            "colaborador": nome_validado,
-            "status": "FINALIZADO",
-            "campos": {
-                "cargo": cargo, "departamento": depto, "setor": setor,
-                "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
-                "devolver_em": st.session_state.get(f"dev_{v}", ""),
-                "cursos": cursos, "objetivo": objetivo
-            },
-
+        "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        "colaborador": nome_validado,
+        "campos": {
+            "cargo": cargo, "departamento": depto, "setor": setor,
+            "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+            "devolver_em": devolver_em, # Pegando direto do input
+            "cursos": cursos, "objetivo": objetivo
+        },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
             "normal": limpar_para_rascunho(e_normal),
@@ -2755,19 +2754,15 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         "disc": respostas_disc
     }
 
-    # 4. Execução do salvamento
-    with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload, nome_arq):
-            # CADA COMANDO EM UMA LINHA E COM 12 ESPAÇOS (OU 3 TABS) DE RECUO:
-            st.session_state["rascunho_atual"] = payload
+    # EXECUÇÃO DO SALVAMENTO (Usando a variável correta: payload_final)
+    with st.spinner(f"📦 Sincronizando rascunho..."):
+        if salvar_no_github(payload_final, nome_arq):
+            # Sincroniza o estado local para o F5 funcionar
+            st.session_state["rascunho_atual"] = payload_final
             st.session_state["rascunho_carregado"] = True
-            
-            # Atualiza a versão da tela para os dados "brotarem" nos campos
             st.session_state["v_tab"] = st.session_state.get("v_tab", 1) + 1
             
-            st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
-            st.toast("Dados sincronizados!")
+            st.success(f"✅ Salvo com sucesso!")
             st.rerun()
         else:
             st.error("❌ Falha ao salvar no GitHub.")
-
