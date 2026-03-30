@@ -1410,7 +1410,7 @@ for i, pergunta in enumerate(perguntas_disc):
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
-# Resolve o erro 'nome_digitado' is not defined
+# Resolve o erro de variável não definida para o botão de envio
 nome_digitado = nome_f 
 
 st.markdown("---")
@@ -1429,62 +1429,56 @@ for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"🆔 **Identificação**: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS (RIGOR TOTAL EM TODAS AS COLUNAS) ---
+# --- 2. VALIDAÇÃO DAS TABELAS (EXIGÊNCIA TOTAL EM TODOS OS CAMPOS) ---
 dict_tabelas = {
-    "Alta Complexidade": e_alta, 
-    "Complexidade Normal": e_normal,
-    "Baixa Complexidade": e_baixa, 
-    "Dificuldades": e_dif,
+    "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
+    "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
     "Sugestões e Melhorias": e_sug
 }
 
 regras_colunas = {
-    "Alta Complexidade": "Atividade", 
-    "Complexidade Normal": "Atividade",
-    "Baixa Complexidade": "Atividade", 
-    "Dificuldades": "Dificuldade",
+    "Alta Complexidade": "Atividade", "Complexidade Normal": "Atividade",
+    "Baixa Complexidade": "Atividade", "Dificuldades": "Dificuldade",
     "Sugestões e Melhorias": "Sugestão"
 }
 
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Identifica linhas onde a descrição foi iniciada
+        # Pega as linhas onde o usuário começou a escrever a descrição
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
-            pendencias.append(f"⚠️ **{nome_tab}**: Precisa de pelo menos 1 item preenchido.")
+            pendencias.append(f"⚠️ **{nome_tab}**: Adicione pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                # Varre ABSOLUTAMENTE todas as colunas daquela linha
+                # Varre ABSOLUTAMENTE todas as colunas da linha
                 for col in df_validar.columns:
                     val_celula = str(row.get(col, "")).strip()
                     
-                    # Validação de Tempo (Horas e Minutos não podem ser '0' simultaneamente)
+                    # Se for Hora ou Minuto, não aceita vazio nem o padrão "0 h" / "0 min" se o outro também estiver vazio
                     if col in ["Horas", "Minutos"] and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                        h = str(row.get("Horas", "0 h")).strip()
-                        m = str(row.get("Minutos", "0 min")).strip()
-                        if (h in ["0 h", ""]) and (m in ["0 min", ""]):
-                            msg = f"❌ **{nome_tab}** (Linha {i+1}): Informe o tempo (H ou Min)."
-                            if msg not in pendencias: pendencias.append(msg)
+                        if val_celula in ["", "0 h", "0 min", "nan", "None"]:
+                            pendencias.append(f"❌ **{nome_tab}** (Linha {i+1}): O campo **{col}** deve ser preenchido.")
                     
-                    # Validação de Frequência, Setor, Impacto ou qualquer outra coluna
-                    elif val_celula in ["", "None", "nan", "Selecione"]:
-                        pendencias.append(f"❌ **{nome_tab}** (Linha {i+1}): O campo **{col}** está vazio.")
+                    # Para Frequência, Setor, Impacto, etc.
+                    else:
+                        if val_celula in ["", "None", "nan", "Selecione"]:
+                            pendencias.append(f"❌ **{nome_tab}** (Linha {i+1}): O campo **{col}** está vazio.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
 if len(respostas_vazias) > 0:
     pendencias.append(f"📊 **DISC**: Faltam responder **{len(respostas_vazias)} questões**.")
 
-# --- EXIBIÇÃO FINAL ---
+# --- EXIBIÇÃO ---
 if pendencias:
-    st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
-    for p in pendencias[:15]: st.write(f"• {p}")
-    if len(pendencias) > 15: st.info(f"...e mais {len(pendencias)-15} itens.")
+    st.warning(f"⚠️ **Pendências encontradas ({len(pendencias)}):**")
+    for p in pendencias[:20]: st.write(f"• {p}")
     st.session_state["pode_enviar"] = False
+    st.session_state["confirmacao_final"] = False
 else:
-    st.success("🎉 **Perfeito! Tudo preenchido. O envio está liberado.**")
+    st.success("🎉 **Tudo preenchido! O envio foi liberado.**")
     st.session_state["pode_enviar"] = True
 
 # =========================================================
