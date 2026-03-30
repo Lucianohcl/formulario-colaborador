@@ -1406,7 +1406,6 @@ for i, pergunta in enumerate(perguntas_disc):
         key=f"p{i}",
         horizontal=True
     )
-
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
@@ -1429,7 +1428,7 @@ for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"🆔 Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS (EXIGÊNCIA DE TODOS OS CAMPOS) ---
+# --- 2. VALIDAÇÃO DAS TABELAS (RIGOR EM TODOS OS CAMPOS) ---
 dict_tabelas = {
     "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
     "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
@@ -1445,30 +1444,26 @@ regras_colunas = {
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Filtra linhas que têm descrição
+        # Verifica se a descrição principal foi preenchida
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
         
         if len(linhas_ativas) == 0:
             pendencias.append(f"⚠️ **{nome_tab}**: Adicione pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                # CHECAGEM DE TODOS OS CAMPOS DA LINHA
                 for col in df_validar.columns:
                     val_celula = str(row.get(col, "")).strip()
                     
-                    # OBRIGA HORAS (Não aceita vazio ou zero padrão)
-                    if col == "Horas" and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                        if val_celula in ["", "0 h", "nan", "None"]:
-                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe as **Horas**.")
+                    # Validação de Horas/Minutos: Aceita "0", mas não aceita VAZIO ou texto de instrução
+                    if col in ["Horas", "Minutos"] and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
+                        # Se estiver totalmente vazio ou apenas com o sufixo sem número
+                        if val_celula in ["", "h", "min", "nan", "None"]:
+                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o valor de **{col}** (pode ser 0).")
                     
-                    # OBRIGA MINUTOS (Não aceita vazio ou zero padrão)
-                    elif col == "Minutos" and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                        if val_celula in ["", "0 min", "nan", "None"]:
-                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe os **Minutos**.")
-                    
-                    # OBRIGA TODOS OS OUTROS (Frequência, Setor, Impacto, etc)
-                    elif val_celula in ["", "None", "nan", "Selecione"]:
-                        pendencias.append(f"❌ {nome_tab} (Linha {i+1}): O campo **{col}** está vazio.")
+                    # Validação de Frequência e outros campos de seleção/texto
+                    else:
+                        if val_celula in ["", "None", "nan", "Selecione"]:
+                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): O campo **{col}** está vazio.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
@@ -1483,6 +1478,7 @@ if pendencias:
 else:
     st.success("🎉 **Tudo preenchido! Envio liberado.**")
     st.session_state["pode_enviar"] = True
+
 
 # =========================================================
 # 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
