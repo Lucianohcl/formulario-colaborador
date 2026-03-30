@@ -1265,59 +1265,45 @@ with col1:
             atualizar_rascunhos_do_github() 
             rascunhos_dict = st.session_state.get("rascunhos", {})
             
-            # Força o nome para MAIÚSCULO para bater com o que vem da nuvem
             nome_busca = nome_f.strip().upper()
             rascunho = rascunhos_dict.get(nome_busca)
             
             if rascunho:
-                # 1. SALVA O NOME PARA ELE NÃO SUMIR
-                
+                # 1. SALVA O ESTADO GLOBAL
+                st.session_state["rascunho"] = rascunho  # <--- CRUCIAL para o motor de tabelas
                 st.session_state["f_nome_v2"] = nome_busca
                 st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
                 
-                # 2. DADOS BÁSICOS (Injeta direto nas chaves que os widgets usam)
+                # 2. DADOS BÁSICOS (Ajustado para a estrutura do seu JSON)
                 cp = rascunho.get("campos", {})
                 
-                # Injetamos tanto na f_cargo quanto na f_cargo_v2 para não ter erro
+                # Mapeamento: "Chave_do_Widget": "Chave_dentro_do_JSON_campos"
                 campos_map = {
                     "f_cargo": "cargo",
-                    "f_depto": "departamento",
-                    "f_esc": "escolaridade",
+                    "f_depto": "dep",         # No JSON está "dep", não "departamento"
                     "f_setor": "setor",
                     "f_chefe": "chefe",
                     "f_unidade": "unidade",
-                    "f_dev": "devolucao",
+                    "f_esc": "escolaridade",
+                    "f_dev": "devolver_em",    # No JSON está "devolver_em"
                     "f_cursos_area": "cursos",
                     "f_obj_area": "objetivo"
                 }
                 
                 for key_ui, key_json in campos_map.items():
-                    valor = rascunho.get(key_json) or cp.get(key_json, "")
+                    valor = cp.get(key_json, "")
                     st.session_state[key_ui] = valor
                     st.session_state[f"{key_ui}_v2"] = valor
 
-                # 3. TABELAS (O ponto chave)
-                # Salvamos na 'rascunho_atual' para o seu motor de baixo ler
-                st.session_state["rascunho_atual"] = rascunho
-                
-                # --- LIGAÇÃO DIRETA DO DISC ---
-                # 1. PRIMEIRO: Definimos o que é disc_salvo (buscando no rascunho)
+                # 3. DISC - SINCRONIZAÇÃO TOTAL
                 disc_salvo = rascunho.get("disc", {})
-
-                # 2. DEPOIS: Guardamos no session_state
-                st.session_state["disc_v2"] = disc_salvo
-
-                # 3. AGORA: Processamos as questões se houver dados
                 if disc_salvo:
                     for i in range(24):
-                        # Convertemos o índice para String para bater com o JSON ("0", "1"...)
                         chave_json = str(i)
-                        # A chave do widget st.radio que definimos antes (q_0, q_1...)
-                        chave_widget = f"q_{i}"
-                        
-                        if chave_json in disc_salvo:
-                            # Injeta o valor ("A", "B", "C" ou "D") direto no estado do rádio
-                            st.session_state[chave_widget] = disc_salvo[chave_json]
+                        # Sincroniza a chave do rádio que você usa no loop do DISC
+                        # Importante: a chave aqui deve ser idêntica à definida no st.radio
+                        v = st.session_state["v_tab"]
+                        st.session_state[f"disc_radio_{i}_{v}"] = disc_salvo.get(chave_json)
 
                 st.success(f"✅ Rascunho e DISC de {nome_busca} carregados!")
                 st.rerun()
