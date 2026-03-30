@@ -2757,8 +2757,14 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     # 4. Execução do salvamento
     with st.spinner(f"📦 Sincronizando rascunho de {nome_validado}..."):
-        if salvar_no_github(payload, nome_arq):
-            st.session_state["rascunho_atual"] = payload            st.session_state["rascunho_carregado"] = True
+        if salvar_no_github(payload_final, nome_arq):
+            # Comandos separados e alinhados (4 espaços para cada nível)
+            st.session_state["rascunho_atual"] = payload_final
+            st.session_state["rascunho_carregado"] = True
+            
+            # Atualiza a versão da tela para os dados aparecerem nos campos
+            st.session_state["v_tab"] = st.session_state.get("v_tab", 1) + 1
+            
             st.success(f"✅ Rascunho de {nome_validado} salvo com sucesso!")
             st.toast("Dados sincronizados!")
             st.rerun()
