@@ -1362,72 +1362,57 @@ def gerar_tabela_final(titulo, chave_json, col_principal, col_extra=None, label_
     if col_extra: 
         config_tab[col_extra] = st.column_config.TextColumn(label_extra, width="medium")
 
-    df_out = st.data_editor(
-        df,
-        key=f"editor_{chave_rascunho}_{v}",
-        column_config=config,
-        use_container_width=True,
+    return st.data_editor(
+        df_base, 
+        key=f"editor_{chave_json}_v{v_layout}", 
+        column_config=config_tab, 
+        use_container_width=True, 
         num_rows="fixed"
     )
 
-    
-    
-
-    return df_out
-
 # 3. Chamadas das Tabelas
-e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_editor(
-    "⚠️ Dificuldades e Bloqueios",
-    "dificuldades",
-    "Dificuldade",
-    "Setor/Parceiro Envolvido",
-    "Setor Envolvido"
-)
-e_sug = gerar_editor(
-    "💡 Sugestões de Melhoria",
-    "sugestoes",
-    "Sugestão",
-    "Impacto",
-    "Impacto Esperado"
-)
+e_alta = gerar_tabela_final("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_tabela_final("📋 Atividades de Complexidade Normal", "normal", "Atividade")
+e_baixa = gerar_tabela_final("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
+e_dif = gerar_tabela_final("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
+e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+
 
 # =========================================================
-# 📊 7. QUESTIONÁRIO DISC (SIMPLES E DIRETO)
+# 📊 7. QUESTIONÁRIO DISC (CORRIGIDO PARA MUDAR COM O RASCUNHO)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário")
 
-opcoes = ["A", "B", "C", "D"]
-respostas_disc = {}
+# --- RESOLUÇÃO DO NAMEERROR: DEFININDO A VARIÁVEL V ---
+v = st.session_state.get("v_tab", 0) 
 
-# 🔥 Pega o rascunho
-disc_data = st.session_state.get("rascunho_atual", {}).get("disc", {})
+respostas_disc_atual = {}
+rascunho_disc = st.session_state.get("disc_v2", {})
 
-# 🔥 Radios (AGORA REALMENTE LIMPOS)
+# Certifique-se de que 'perguntas_disc' foi definida anteriormente no seu código
 for i, pergunta in enumerate(perguntas_disc):
-    # Busca o valor salvo no rascunho
-    valor_salvo = disc_data.get(str(i))
+    # Tenta carregar a letra do rascunho
+    letra_salva = rascunho_disc.get(f"p{i}") or rascunho_disc.get(f"q{i+1}")
     
-    # Se a letra salva estiver nas opções, descobre o índice (0, 1, 2 ou 3)
-    # SE NÃO EXISTIR (formulário novo), o índice será NONE (isso deixa desmarcado)
-    idx = opcoes.index(valor_salvo) if valor_salvo in opcoes else None
+    # Define qual bolinha marcar (0=A, 1=B, 2=C, 3=D)
+    opcoes = ["A", "B", "C", "D"]
+    idx_selecionado = opcoes.index(letra_salva) if letra_salva in opcoes else None
     
-    respostas_disc[str(i)] = st.radio(
+    escolha = st.radio(
         f"**{i+1}.** {pergunta}",
         options=opcoes,
-        index=idx,           # <--- ESSA É A CHAVE: None desmarca tudo
-        key=f"p{i}",
+        index=idx_selecionado,
+        key=f"disc_radio_{i}_{v}", # <--- Agora o 'v' existe!
         horizontal=True
     )
+    respostas_disc_atual[f"p{i}"] = escolha
+
+
+
 # =========================================================
 # 6. VALIDAÇÃO UNIFICADA (TABELAS, DISC E CABEÇALHO)
 # =========================================================
-# RESOLVE O ERRO DE NOME:
-nome_digitado = nome_f 
-
 st.markdown("---")
 st.subheader("✅ Status de Validação do Formulário")
 
@@ -1442,9 +1427,9 @@ campos_id = {
 }
 for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
-        pendencias.append(f"🆔 Identificação: O campo **{campo}** está vazio.")
+        pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS (RIGOR EM TODOS OS CAMPOS) ---
+# --- 2. VALIDAÇÃO DAS TABELAS ---
 dict_tabelas = {
     "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
     "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
@@ -1460,41 +1445,31 @@ regras_colunas = {
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
     if df_validar is not None and col_alvo in df_validar.columns:
-        # Verifica se a descrição principal foi preenchida
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
-        
         if len(linhas_ativas) == 0:
-            pendencias.append(f"⚠️ **{nome_tab}**: Adicione pelo menos 1 item.")
+            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                for col in df_validar.columns:
-                    val_celula = str(row.get(col, "")).strip()
-                    
-                    # Validação de Horas/Minutos: Aceita "0", mas não aceita VAZIO ou texto de instrução
-                    if col in ["Horas", "Minutos"] and nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                        # Se estiver totalmente vazio ou apenas com o sufixo sem número
-                        if val_celula in ["", "h", "min", "nan", "None"]:
-                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o valor de **{col}** (pode ser 0).")
-                    
-                    # Validação de Frequência e outros campos de seleção/texto
-                    else:
-                        if val_celula in ["", "None", "nan", "Selecione"]:
-                            pendencias.append(f"❌ {nome_tab} (Linha {i+1}): O campo **{col}** está vazio.")
+                h = extrair_num(row.get("Horas", "0 h"))
+                m = extrair_num(row.get("Minutos", "0 min"))
+                freq = str(row.get("Frequência", "")).strip()
+                if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
+                    if h == 0 and m == 0: pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem tempo.")
+                    if freq == "": pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem frequência.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
-respostas_vazias = [k for k, v in respostas_disc.items() if v is None]
+respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
 if len(respostas_vazias) > 0:
-    pendencias.append(f"📊 DISC: Faltam responder **{len(respostas_vazias)} questões**.")
+    pendencias.append(f"Questionário: Faltam responder **{len(respostas_vazias)} questões**.")
 
-# --- EXIBIÇÃO ---
+# --- EXIBIÇÃO FINAL DO STATUS ---
 if pendencias:
-    st.warning(f"⚠️ **Pendências ({len(pendencias)}):**")
-    for p in pendencias[:15]: st.write(f"• {p}")
-    st.session_state["pode_enviar"] = False
+    st.warning(f"⚠️ **Existem {len(pendencias)} pendências obrigatórias:**")
+    for p in pendencias:
+        st.write(f"• {p}")
+    st.session_state["confirmacao_final"] = False
 else:
-    st.success("🎉 **Tudo preenchido! Envio liberado.**")
-    st.session_state["pode_enviar"] = True
-
+    st.success("🎉 **Perfeito! Tudo preenchido corretamente. O envio está liberado.**")
 
 # =========================================================
 # 🚀 4. BOTÃO DE ENVIO E SALVAMENTO REAL (VERSÃO FINAL)
@@ -1529,23 +1504,24 @@ with col_btn:
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                 "colaborador": nome_digitado,
                 "campos": {
-                    "cargo": cargo_f, 
-                    "departamento": depto_f, 
-                    "setor": setor_f,
-                    "chefe": chefe_f, 
-                    "unidade": unidade_f, 
-                    "escolaridade": esc_f,
-                    "cursos": cursos_f, 
-                    "objetivo": obj_f
+                    "cargo": cargo, 
+                    "departamento": depto, 
+                    "setor": setor,
+                    "chefe": chefe, 
+                    "unidade": unidade, 
+                    "escolaridade": escolaridade,
+                    "cursos": cursos, 
+                    "objetivo": objetivo
                 },
                 "tabelas": {
-                    "alta": preparar_dados(e_alta),
-                    "normal": preparar_dados(e_normal),
-                    "baixa": preparar_dados(e_baixa),
-                    "dificuldades": preparar_dados(e_dif),
-                    "sugestoes": preparar_dados(e_sug)
+                    "alta": limpar_para_rascunho(e_alta),
+                    "normal": limpar_para_rascunho(e_normal),
+                    "baixa": limpar_para_rascunho(e_baixa),
+                    "dificuldades": limpar_para_rascunho(e_dif),
+                    "sugestoes": limpar_para_rascunho(e_sug)
                 },
-                "disc": {str(i): respostas_disc.get(i) or "" for i in range(24)}
+                # 🔥 CORREÇÃO AQUI
+                "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
             }
 
             nome_arquivo = f"{nome_f.replace(' ', '_').upper()}.json"
@@ -2470,6 +2446,8 @@ if st.session_state.get("pagina") == "disc":
     else:
         st.info("Carregue formulários para habilitar o Panorama Coletivo.")
 
+
+
 import streamlit as st
 import pandas as pd
 import json
@@ -2733,10 +2711,8 @@ for i, pergunta in enumerate(perguntas_disc):
         horizontal=True
     )
 
-
-
 # =========================================================
-# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO)
+# 7. BOTÃO SALVAR (FECHAMENTO COMPLETO - AJUSTADO)
 # =========================================================
 st.markdown("---")
 
@@ -2751,6 +2727,9 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
+    # Recupera a versão da aba para buscar os dados certos no session_state
+    v_atual = st.session_state.get("v_tab", 1)
+    
     # 2. Função interna para limpar linhas vazias das tabelas
     def limpar_para_rascunho(df):
         if df is None or df.empty: 
@@ -2759,19 +2738,20 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
         mask = df[col_principal].astype(str).str.strip() != ""
         return df[mask].to_dict("records")
 
-    # 3. Montagem do Payload
+    # 3. Montagem do Payload (AQUI ESTÁ O AJUSTE DAS VARIÁVEIS)
     payload = {
         "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
         "colaborador": nome_digitado,
         "campos": {
-            "cargo": cargo, 
-            "departamento": depto, 
-            "setor": setor,
-            "chefe": chefe, 
-            "unidade": unidade, 
-            "escolaridade": escolaridade,
-            "cursos": cursos, 
-            "objetivo": objetivo
+            "cargo": st.session_state.get(f"cargo_{v_atual}", ""), 
+            "departamento": st.session_state.get(f"dep_{v_atual}", ""), 
+            "setor": st.session_state.get(f"set_{v_atual}", ""),
+            "chefe": st.session_state.get(f"chef_{v_atual}", ""), 
+            "unidade": st.session_state.get(f"uni_{v_atual}", ""), 
+            "escolaridade": st.session_state.get(f"esc_{v_atual}", ""),
+            "devolver_em": st.session_state.get(f"dev_{v_atual}", ""),
+            "cursos": st.session_state.get(f"cursos_{v_atual}", ""), 
+            "objetivo": st.session_state.get(f"obj_{v_atual}", "")
         },
         "tabelas": {
             "alta": limpar_para_rascunho(e_alta),
@@ -2803,13 +2783,17 @@ if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
 
             # 🔹 Enviar para Sheets também
             try:
-                enviado_sheets = enviar_para_sheets(payload)
-                if enviado_sheets:
-                    st.toast("📊 Rascunho enviado para Google Sheets!")
-                else:
-                    st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
+                # Verifica se a função existe antes de chamar para não quebrar
+                if "enviar_para_sheets" in globals():
+                    enviado_sheets = enviar_para_sheets(payload)
+                    if enviado_sheets:
+                        st.toast("📊 Rascunho enviado para Google Sheets!")
+                    else:
+                        st.warning("⚠️ Rascunho salvo no GitHub, mas não foi enviado para Sheets.")
             except Exception as e_sheets:
                 st.warning(f"⚠️ Rascunho salvo no GitHub, mas falha ao enviar para Sheets: {e_sheets}")
+            
+            # Recarrega para garantir que os dados fiquem na tela
+            st.rerun()
         else:
             st.error("❌ FALHA NA PERSISTÊNCIA: O GitHub não respondeu. Verifique sua conexão ou o DB_TOKEN.")
-
