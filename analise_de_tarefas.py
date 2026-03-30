@@ -1477,33 +1477,59 @@ for campo, valor in campos_id.items():
     if not valor or str(valor).strip() == "":
         pendencias.append(f"Identificação: O campo **{campo}** está vazio.")
 
-# --- 2. VALIDAÇÃO DAS TABELAS ---
+# --- 2. VALIDAÇÃO DAS TABELAS (RIGOR TOTAL) ---
 dict_tabelas = {
-    "Alta Complexidade": e_alta, "Complexidade Normal": e_normal,
-    "Baixa Complexidade": e_baixa, "Dificuldades": e_dif,
+    "Alta Complexidade": e_alta, 
+    "Complexidade Normal": e_normal,
+    "Baixa Complexidade": e_baixa, 
+    "Dificuldades": e_dif,
     "Sugestões e Melhorias": e_sug
 }
 
 regras_colunas = {
-    "Alta Complexidade": "Atividade", "Complexidade Normal": "Atividade",
-    "Baixa Complexidade": "Atividade", "Dificuldades": "Dificuldade",
+    "Alta Complexidade": "Atividade", 
+    "Complexidade Normal": "Atividade",
+    "Baixa Complexidade": "Atividade", 
+    "Dificuldades": "Dificuldade",
     "Sugestões e Melhorias": "Sugestão"
 }
 
 for nome_tab, df_validar in dict_tabelas.items():
     col_alvo = regras_colunas.get(nome_tab)
+    
     if df_validar is not None and col_alvo in df_validar.columns:
+        # Identifica linhas onde a descrição foi preenchida
         linhas_ativas = df_validar[df_validar[col_alvo].astype(str).str.strip() != ""]
+        
         if len(linhas_ativas) == 0:
-            pendencias.append(f"⚠️ A tabela **{nome_tab}** precisa de pelo menos 1 item.")
+            pendencias.append(f"⚠️ A tabela **{nome_tab}** está totalmente vazia. Preencha pelo menos 1 item.")
         else:
             for i, row in linhas_ativas.iterrows():
-                h = extrair_num(row.get("Horas", "0 h"))
-                m = extrair_num(row.get("Minutos", "0 min"))
+                # Extração limpa dos valores
+                h_str = str(row.get("Horas", "")).strip()
+                m_str = str(row.get("Minutos", "")).strip()
                 freq = str(row.get("Frequência", "")).strip()
-                if nome_tab in ["Alta Complexidade", "Complexidade Normal", "Baixa Complexidade"]:
-                    if h == 0 and m == 0: pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem tempo.")
-                    if freq == "": pendencias.append(f"❌ {nome_tab}: Linha {i+1} sem frequência.")
+                
+                # Validação de Horas
+                if h_str == "":
+                    pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Falta selecionar as **Horas**.")
+                
+                # Validação de Minutos
+                if m_str == "":
+                    pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Falta selecionar os **Minutos**.")
+                
+                # Validação de Frequência
+                if freq == "":
+                    pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Falta selecionar a **Frequência**.")
+                
+                # Validação extra para colunas específicas (Impacto / Setor)
+                if nome_tab == "Dificuldades":
+                    if str(row.get("setor_env", "")).strip() == "":
+                        pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o **Setor Envolvido**.")
+                
+                if nome_tab == "Sugestões e Melhorias":
+                    if str(row.get("impacto", "")).strip() == "":
+                        pendencias.append(f"❌ {nome_tab} (Linha {i+1}): Informe o **Impacto Esperado**.")
 
 # --- 3. VALIDAÇÃO DO DISC ---
 respostas_vazias = [k for k, v in respostas_disc_atual.items() if v is None]
