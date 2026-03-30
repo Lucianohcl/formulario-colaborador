@@ -1627,9 +1627,10 @@ with col_btn:
                 col_principal = df.columns[0] 
                 return df[df[col_principal].astype(str).str.strip() != ""].to_dict("records")
 
+            # MONTAGEM DO PAYLOAD (DADOS QUE SERÃO SALVOS)
             payload = {
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-                "colaborador": nome_f,
+                "colaborador": st.session_state.get("usuario_atual", "Usuario_Desconhecido"),
                 "campos": {
                     "cargo": cargo, 
                     "departamento": depto, 
@@ -1641,12 +1642,20 @@ with col_btn:
                     "objetivo": objetivo
                 },
                 "tabelas": {
-                    "alta": limpar_para_rascunho(e_alta),
-                    "normal": limpar_para_rascunho(e_normal),
-                    "baixa": limpar_para_rascunho(e_baixa),
-                    "dificuldades": limpar_para_rascunho(e_dif),
-                    "sugestoes": limpar_para_rascunho(e_sug)
+                    # AQUI ESTAVA O ERRO: Use preparar_dados e não limpar_para_rascunho
+                    "alta": preparar_dados(e_alta),
+                    "normal": preparar_dados(e_normal),
+                    "baixa": preparar_dados(e_baixa),
+                    "dificuldades": preparar_dados(e_dif),
+                    "sugestoes": preparar_dados(e_sug)
                 },
+                "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
+            }
+
+
+
+
+
                 # 🔥 CORREÇÃO AQUI
                 "disc": {str(i): respostas_disc.get(f"p{i}") or "" for i in range(24)}
             }
