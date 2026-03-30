@@ -1290,17 +1290,24 @@ with col1:
                 st.session_state["rascunho_atual"] = rascunho
                 
                 # 4. DISC
-                disc_salvo = rascunho.get("disc", {})
+                
                 st.session_state["disc_v2"] = disc_salvo
 
-                # ESPALHA AS RESPOSTAS PARA OS WIDGETS
+                # --- LIGAÇÃO DIRETA DO DISC ---
+                disc_salvo = rascunho.get("disc", {})
+                
                 if disc_salvo:
                     for i in range(24):
-                        chave_pergunta = str(i)
-                        if chave_pergunta in disc_salvo:
-                            st.session_state[f"q_{i}"] = disc_salvo[chave_pergunta]
+                        # Convertemos o índice para String para bater com o JSON ("0", "1"...)
+                        chave_json = str(i)
+                        # A chave do widget st.radio que definimos antes (q_0, q_1...)
+                        chave_widget = f"q_{i}"
+                        
+                        if chave_json in disc_salvo:
+                            # Injeta o valor ("A", "B", "C" ou "D") direto no estado do rádio
+                            st.session_state[chave_widget] = disc_salvo[chave_json]
 
-                st.success(f"✅ Dados de {nome_busca} carregados!")
+                st.success(f"✅ Rascunho e DISC de {nome_busca} carregados!")
                 st.rerun()
             else:
                 st.error(f"⚠️ Rascunho de '{nome_busca}' não encontrado.")
