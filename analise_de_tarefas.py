@@ -2621,45 +2621,54 @@ lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
     st.write(f"**{titulo}**")
     
-    # 1. Busca os dados
+    # 1. Busca os dados brutos do rascunho
     dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
     
-    # 2. Define as colunas (Exatamente como no JSON: "Atividade", "Horas", etc)
+    # 2. Define as colunas exatamente como estão no seu JSON (Case Sensitive!)
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: colunas.insert(1, col_extra)
+    if col_extra:
+        colunas.insert(1, col_extra)
     
-    # 3. AJUSTE AQUI: Se houver dados, usa eles. Se não, cria DF vazio com as colunas certas.
-    if dados_salvos:
-        df_base = pd.DataFrame(dados_salvos)
-    else:
-        df_base = pd.DataFrame(columns=colunas)
-        
-    # 4. Garante as 15 linhas
+    # 3. Cria o DataFrame garantindo que ele tenha as colunas do JSON
+    df_base = pd.DataFrame(dados_salvos)
+    
+    # Se o DF veio vazio ou sem as colunas, força a criação delas
+    for col in colunas:
+        if col not in df_base.columns:
+            df_base[col] = ""
+            
+    # 4. Ordena as colunas para o editor não bagunçar a visualização
+    df_base = df_base[colunas]
+    
+    # 5. Aplica as 15 linhas padrão
     df = garantir_15_linhas(df_base, colunas)
     
+    # 6. Configuração visual
     config = {
         col_principal: st.column_config.TextColumn("Descrição", width="large"),
         "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
         "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
         "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
     }
-    if col_extra: config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
+    if col_extra:
+        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
 
-    # 5. O SEGREDO DO F5: A key precisa do 'v' para resetar o widget e ler o novo DF
+    # KEY dinâmica com v_tab para forçar o refresh no F5
+    v_atual = st.session_state.get("v_tab", 1)
     return st.data_editor(
         df, 
-        key=f"editor_{chave_rascunho}_{st.session_state.get('v_tab', 1)}", 
+        key=f"editor_{chave_rascunho}_{v_atual}", 
         column_config=config, 
-        use_container_width=True, 
+        use_container_width=True,
         num_rows="fixed"
     )
 
-# Chamadas das tabelas (Mantenha estas chaves, elas batem com o Botão Salvar)
-e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+
+# O terceiro parâmetro DEVE ser "Atividade" (com A maiúsculo)
+e_alta = gerar_editor("🚀 Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_editor("📋 Normal", "normal", "Atividade")
+e_baixa = gerar_editor("⏳ Baixa", "baixa", "Atividade")
+
 
 # =========================================================
 # 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA)
