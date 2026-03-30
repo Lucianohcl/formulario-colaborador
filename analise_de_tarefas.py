@@ -140,8 +140,10 @@ def extrair_num(texto):
     except:
         return 0
 
-def limpar_para_rascunho():
-    pass  # Isso diz ao Python: "Não faça nada, mas não dê erro"
+def limpar_para_rascunho(*args, **kwargs):
+    # O (*args, **kwargs) permite que a função receba QUALQUER coisa 
+    # e não reclame mais de "arguments".
+    st.rerun()
 
 
 # ============================================================
