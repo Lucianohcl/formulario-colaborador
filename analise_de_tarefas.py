@@ -2515,11 +2515,10 @@ def garantir_15_linhas(df, colunas):
     return df.head(15)
 
 # =========================================================
-# 3. FLUXO DE IDENTIFICAÇÃO COM TRAVA DE SEGURANÇA
+# 3. FLUXO DE IDENTIFICAÇÃO COM FORÇA BRUTA (RECONECTANDO)
 # =========================================================
 st.subheader("📋 Rascunho")
 
-# 1. A Caixinha de Nome
 nome_digitado = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
 
 if not nome_digitado:
@@ -2527,35 +2526,30 @@ if not nome_digitado:
     st.stop()
 
 # Inicialização de estados
-if "confirmado" not in st.session_state: st.session_state["confirmado"] = False
-if "usuario_logado" not in st.session_state: st.session_state["usuario_logado"] = ""
 if "v_tab" not in st.session_state: st.session_state["v_tab"] = 1
+if "usuario_logado" not in st.session_state: st.session_state["usuario_logado"] = ""
 
-# Se trocar o nome, reseta a confirmação
+# Se mudar o nome, reseta tudo para não misturar dados
 if st.session_state["usuario_logado"] != nome_digitado:
     st.session_state["usuario_logado"] = nome_digitado
-    st.session_state["confirmado"] = False
+    st.session_state["rascunho_carregado"] = False
     st.rerun()
 
-# 2. A "CAIXINHA" DE CADASTRO/RECUPERAÇÃO
-st.warning(f"Usuário identificado: **{nome_digitado}**")
 confirmar = st.checkbox("✅ CLIQUE AQUI PARA CARREGAR MEUS DADOS E ABRIR O FORMULÁRIO")
 
 if not confirmar:
-    st.info("Aguardando confirmação para liberar o acesso...")
-    st.stop() # O código para aqui até ele marcar a caixa
+    st.stop()
 
-# 3. BUSCA DE DADOS (Só roda se ele marcou a caixa)
+# BUSCA FORÇADA NO GITHUB
 if not st.session_state.get("rascunho_carregado"):
     nome_arquivo = f"{nome_digitado.replace(' ','_')}.json"
-    
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NOME)
         conteudo = repo.get_contents(f"rascunhos/{nome_arquivo}")
         dados = json.loads(conteudo.decoded_content.decode())
         
-        # Injeção estilo "Copiar"
+        # INJEÇÃO DIRETA NA MEMÓRIA (FORÇANDO VALORES)
         v = st.session_state["v_tab"]
         cp = dados.get("campos", {})
         st.session_state[f"cargo_{v}"] = cp.get("cargo", "")
@@ -2570,101 +2564,67 @@ if not st.session_state.get("rascunho_carregado"):
         
         st.session_state["rascunho_atual"] = dados
         st.session_state["rascunho_carregado"] = True
-        st.toast("✅ Dados recuperados!")
         st.rerun()
-
     except:
-        # Se não houver arquivo, libera o formulário limpo
         st.session_state["rascunho_carregado"] = True
         st.session_state["rascunho_atual"] = {}
-        st.info("Nenhum rascunho encontrado. Iniciando novo cadastro.")
+        st.info("Iniciando formulário novo.")
 
-
-# Define a variável rascunho para ser usada nas tabelas
+# =========================================================
+# 4. CAMPOS BÁSICOS (LENDO DO GITHUB)
+# =========================================================
 rascunho = st.session_state.get("rascunho_atual", {})
-v = st.session_state.get("v_tab", 1) # Garante que v exista
+campos_salvos = rascunho.get("campos", {})
+v = st.session_state["v_tab"]
 
-def val(chave):
-    """Busca o valor que veio do GitHub no dicionário 'campos'"""
-    # Busca no rascunho atual carregado no Bloco 3
-    rascunho_atual = st.session_state.get("rascunho_atual", {})
-    campos_salvos = rascunho_atual.get("campos", {})
-    return campos_salvos.get(chave, "")
-
-
-# =========================================================
-# 4. CAMPOS BÁSICOS (COM PERSISTÊNCIA ATIVA)
-# =========================================================
 st.markdown("---")
 col1, col2 = st.columns(2)
 
 with col1:
-    # O segredo é o 'value=val(...)'. Se tiver no GitHub, ele preenche.
-    cargo = st.text_input("Cargo:", value=val("cargo"), key=f"cargo_{v}")
-    depto = st.text_input("Departamento:", value=val("departamento"), key=f"dep_{v}")
-    setor = st.text_input("Setor:", value=val("setor"), key=f"set_{v}")
+    cargo = st.text_input("Cargo:", value=campos_salvos.get("cargo", ""), key=f"cargo_{v}")
+    depto = st.text_input("Departamento:", value=campos_salvos.get("departamento", ""), key=f"dep_{v}")
+    setor = st.text_input("Setor:", value=campos_salvos.get("setor", ""), key=f"set_{v}")
 
 with col2:
-    chefe = st.text_input("Chefe imediato:", value=val("chefe"), key=f"chef_{v}")
-    unidade = st.text_input("Empresa / Unidade:", value=val("unidade"), key=f"uni_{v}")
-    escolaridade = st.text_input("Escolaridade:", value=val("escolaridade"), key=f"esc_{v}")
-    devolver_em = st.text_input("Devolver em:", value=val("devolver_em"), key=f"dev_{v}")
+    chefe = st.text_input("Chefe imediato:", value=campos_salvos.get("chefe", ""), key=f"chef_{v}")
+    unidade = st.text_input("Empresa / Unidade:", value=campos_salvos.get("unidade", ""), key=f"uni_{v}")
+    escolaridade = st.text_input("Escolaridade:", value=campos_salvos.get("escolaridade", ""), key=f"esc_{v}")
+    devolver_em = st.text_input("Devolver em:", value=campos_salvos.get("devolver_em", ""), key=f"dev_{v}")
 
-
-cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"), key=f"cursos_{v}")
-objetivo = st.text_area("Objetivo do Trabalho:", value=val("objetivo"), key=f"obj_{v}")
-
-# =========================================================
-# 5. TABELAS DE TAREFAS
-# =========================================================
-st.markdown("---")
-st.subheader("📋 Tabelas de Atividades")
-
-lista_frequencia = ["", "DVD", "D", "S", "Q", "M", "T", "A"]
-lista_horas = [f"{i} h" for i in range(25)]
-lista_minutos = [f"{i} min" for i in range(0, 60, 5)]
+cursos = st.text_area("Cursos:", value=campos_salvos.get("cursos", ""), key=f"cursos_{v}")
+objetivo = st.text_area("Objetivo:", value=campos_salvos.get("objetivo", ""), key=f"obj_{v}")
 
 # =========================================================
-# ⚙️ MOTOR DE TABELAS (PERSISTÊNCIA GARANTIDA)
+# 5. MOTOR DE TABELAS (FORÇANDO RECONSTRUÇÃO)
 # =========================================================
 def gerar_editor(titulo, chave_rascunho, col_principal, col_extra=None, nome_extra=None):
     st.write(f"**{titulo}**")
     
-    # Busca dados direto do rascunho atual carregado do GitHub
-    dados_salvos = st.session_state.get("rascunho_atual", {}).get("tabelas", {}).get(chave_rascunho, [])
+    # Busca forçada no rascunho que veio do GitHub
+    rascunho_f = st.session_state.get("rascunho_atual", {})
+    tabelas_f = rascunho_f.get("tabelas", {})
+    dados_da_tabela = tabelas_f.get(chave_rascunho, [])
     
     colunas = [col_principal, "Horas", "Minutos", "Frequência"]
-    if col_extra: 
-        colunas.insert(1, col_extra)
+    if col_extra: colunas.insert(1, col_extra)
     
-    # Converte para DataFrame e garante que sempre tenha as 15 linhas
-    df_base = pd.DataFrame(dados_salvos)
-    df = garantir_15_linhas(df_base, colunas)
+    df = garantir_15_linhas(pd.DataFrame(dados_da_tabela), colunas)
     
     config = {
         col_principal: st.column_config.TextColumn("Descrição", width="large"),
-        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia, width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=lista_horas, width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos, width="small"),
+        "Frequência": st.column_config.SelectboxColumn(options=lista_frequencia),
+        "Horas": st.column_config.SelectboxColumn(options=lista_horas),
+        "Minutos": st.column_config.SelectboxColumn(options=lista_minutos),
     }
-    if col_extra: 
-        config[col_extra] = st.column_config.TextColumn(nome_extra, width="medium")
+    if col_extra: config[col_extra] = st.column_config.TextColumn(nome_extra)
 
-    # O uso da key com 'v' força o reset do componente quando os dados mudam
-    return st.data_editor(
-        df, 
-        key=f"editor_{chave_rascunho}_{v}", 
-        column_config=config, 
-        use_container_width=True, 
-        num_rows="fixed"
-    )
+    return st.data_editor(df, key=f"ed_{chave_rascunho}_{v}", column_config=config, use_container_width=True)
 
-# Chamadas das tabelas (Mantenha estas chaves, elas batem com o Botão Salvar)
-e_alta = gerar_editor("🚀 Atividades de Alta Complexidade", "alta", "Atividade")
-e_normal = gerar_editor("📋 Atividades de Complexidade Normal", "normal", "Atividade")
-e_baixa = gerar_editor("⏳ Atividades de Baixa Complexidade", "baixa", "Atividade")
-e_dif = gerar_editor("⚠️ Dificuldades e Bloqueios", "dificuldades", "Dificuldade", "Setor/Parceiro Envolvido", "Setor Envolvido")
-e_sug = gerar_editor("💡 Sugestões de Melhoria", "sugestoes", "Sugestão", "Impacto", "Impacto Esperado")
+e_alta = gerar_editor("🚀 Atividades Alta Complexidade", "alta", "Atividade")
+e_normal = gerar_editor("📋 Atividades Normal", "normal", "Atividade")
+e_baixa = gerar_editor("⏳ Atividades Baixa Complexidade", "baixa", "Atividade")
+e_dif = gerar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor", "Setor Envolvido")
+e_sug = gerar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto", "Impacto")
 
 # =========================================================
 # 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA)
