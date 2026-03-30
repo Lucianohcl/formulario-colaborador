@@ -1300,13 +1300,14 @@ with col1:
                 # Salvamos na 'rascunho_atual' para o seu motor de baixo ler
                 st.session_state["rascunho_atual"] = rascunho
                 
-                # 4. DISC
-                
+                # --- LIGAÇÃO DIRETA DO DISC ---
+                # 1. PRIMEIRO: Definimos o que é disc_salvo (buscando no rascunho)
+                disc_salvo = rascunho.get("disc", {})
+
+                # 2. DEPOIS: Guardamos no session_state
                 st.session_state["disc_v2"] = disc_salvo
 
-                # --- LIGAÇÃO DIRETA DO DISC ---
-                disc_salvo = rascunho.get("disc", {})
-                
+                # 3. AGORA: Processamos as questões se houver dados
                 if disc_salvo:
                     for i in range(24):
                         # Convertemos o índice para String para bater com o JSON ("0", "1"...)
