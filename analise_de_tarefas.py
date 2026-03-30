@@ -167,6 +167,7 @@ config_col = {"Tarefa": st.column_config.TextColumn("Descrição", width="large"
 
 
 
+@st.cache_data(ttl=10) # 👈 FORÇA O APP A LER O GITHUB A CADA 10 SEGUNDOS
 def atualizar_rascunhos_do_github():
     import requests
     import json
@@ -177,7 +178,10 @@ def atualizar_rascunhos_do_github():
     GITHUB_TOKEN = st.secrets["DB_TOKEN"]
 
     url = f"https://api.github.com/repos/{GITHUB_USER}/{GITHUB_REPO}/contents/{FOLDER_PATH}"
-    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
 
     try:
         response = requests.get(url, headers=headers)
@@ -188,7 +192,10 @@ def atualizar_rascunhos_do_github():
             for arquivo in arquivos:
                 if arquivo["name"].endswith(".json"):
                     try:
-                        conteudo_res = requests.get(arquivo["download_url"], headers=headers)
+                        # Adicionamos um parâmetro aleatório na URL para evitar cache do navegador
+                        download_url = arquivo["download_url"]
+                        conteudo_res = requests.get(download_url, headers=headers)
+                        
                         if conteudo_res.status_code != 200:
                             continue
                         
@@ -196,7 +203,7 @@ def atualizar_rascunhos_do_github():
                         if not isinstance(dados, dict):
                             continue
 
-                        # Resgate do nome com todas as suas correções
+                        # Lógica de resgate do nome (idêntica à sua)
                         nome_colaborador = dados.get("colaborador")
                         if isinstance(nome_colaborador, dict):
                             nome_colaborador = nome_colaborador.get("nome")
@@ -205,21 +212,25 @@ def atualizar_rascunhos_do_github():
                         
                         if isinstance(nome_colaborador, str):
                             nome_colaborador = nome_colaborador.strip().upper()
-                            # 🔥 AQUI O PULO DO GATO: Salva os dados no dicionário principal
                             rascunhos_temp[nome_colaborador] = dados
                     
                     except Exception:
                         continue
             
-            # Atualiza o estado global com os novos rascunhos
-            st.session_state["rascunhos"] = rascunhos_temp
-        else:
-            st.session_state["rascunhos"] = {}
+            # 🔥 ATUALIZAÇÃO SEGURA: Só limpa se realmente trouxe algo novo
+            if rascunhos_temp:
+                st.session_state["rascunhos"] = rascunhos_temp
+                return True
+        return False
 
     except Exception as e:
-        st.error(f"Erro na nuvem: {e}")
-        st.session_state["rascunhos"] = {}
+        # Se der erro de rede, não limpa o que já está na memória
+        return False
 
+# --- INICIALIZAÇÃO AUTOMÁTICA ---
+if "rascunhos" not in st.session_state:
+    st.session_state["rascunhos"] = {}
+    atualizar_rascunhos_do_github()
 
 
 def gerar_word(form):
@@ -2230,31 +2241,51 @@ except Exception as e:
 # 2. COLOQUE A FUNÇÃO AQUI (DEFINIÇÃO)
 # =========================================================
 def atualizar_rascunhos_do_github():
+    # Inicializa rascunhos como dicionário vazio se não existir
+    if "rascunhos" not in st.session_state:
+        st.session_state["rascunhos"] = {}
+
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NOME)
-        # O GitHub pode dar erro se a pasta 'dados' estiver vazia ou não existir
+        
+        # Tenta acessar a pasta. Se falhar, tenta a raiz ""
+        caminho = "rascunhos"
         try:
-            contents = repo.get_contents("rascunhos")
+            contents = repo.get_contents(caminho)
         except:
-            st.session_state["rascunhos"] = {}
-            return False
+            contents = repo.get_contents("")
 
         rascunhos_localizados = {}
         for content_file in contents:
             if content_file.name.endswith(".json"):
-                file_data = content_file.decoded_content.decode("utf-8")
-                dados_json = json.loads(file_data)
-                # Tenta pegar o nome de dentro do arquivo para usar como chave de busca
-                nome_chave = dados_json.get("colaborador") or dados_json.get("nome")
-                if nome_chave:
-                    rascunhos_localizados[nome_chave] = dados_json
+                try:
+                    file_data = content_file.decoded_content.decode("utf-8")
+                    dados_json = json.loads(file_data)
+                    
+                    # Normalização da Chave (Upper Case)
+                    nome_raw = dados_json.get("colaborador") or dados_json.get("nome")
+                    if nome_raw:
+                        nome_chave = str(nome_raw).strip().upper() 
+                        rascunhos_localizados[nome_chave] = dados_json
+                except:
+                    continue # Se um arquivo estiver com erro, não quebra os outros
         
-        st.session_state["rascunhos"] = rascunhos_localizados
-        return True
-    except Exception as e:
-        st.session_state["rascunhos"] = {}
+        # IMPORTANTE: Só atualiza se encontrar algo, para não limpar o que já tem
+        if rascunhos_localizados:
+            st.session_state["rascunhos"] = rascunhos_localizados
+            return True
         return False
+
+    except Exception as e:
+        # Se der erro de rede, mantém o que já estava na memória para não sumir tudo
+        return False
+
+# CHAME A FUNÇÃO AUTOMATICAMENTE NA INICIALIZAÇÃO
+# Adicionamos uma trava para não ficar rodando toda hora sem necessidade
+if "rascunhos" not in st.session_state or not st.session_state["rascunhos"]:
+    atualizar_rascunhos_do_github()
+
 
 # =========================================================
 # 3. CHAME A EXECUÇÃO AQUI (INICIALIZAÇÃO)
@@ -2483,8 +2514,11 @@ if "rascunho" not in st.session_state: st.session_state["rascunho"] = {}
 if "logado" not in st.session_state: st.session_state["logado"] = False
 
 def val(chave, default=""):
-    d = st.session_state["rascunho"]
-    return d.get("campos", {}).get(chave, d.get(chave, default))
+    # Só tenta ler se o rascunho existir, senão ignora
+    if "rascunho" in st.session_state:
+        d = st.session_state["rascunho"]
+        return d.get("campos", {}).get(chave, d.get(chave, default))
+    return default
 
 # =========================================================
 # 2. IDENTIFICAÇÃO E CARREGAMENTO (VERSÃO BLINDADA)
@@ -2631,6 +2665,12 @@ for i, p in enumerate(perguntas):
 # 6. SALVAMENTO (GITHUB + SHEETS)
 # =========================================================
 if st.button("💾 SALVAR TUDO", use_container_width=True):
+
+    # --- VALIDAÇÃO CRÍTICA ---
+    if not nome_input or len(nome_input) < 3:
+        st.error("⚠️ Erro: Nome do colaborador está vazio ou inválido. Não vou salvar para não corromper o banco.")
+        st.stop() # Interrompe o código aqui
+
     # 1. Monta o payload dentro do botão
     payload = {
         "colaborador": nome_input, 
