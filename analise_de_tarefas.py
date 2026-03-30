@@ -2601,45 +2601,48 @@ cursos = st.text_area("Cursos Obrigatórios e Diferenciais:", value=val("cursos"
 objetivo = st.text_area("Em que consiste seu trabalho e qual seu Principal Objetivo:", value=val("objetivo"))
 
 # =========================================================
-# 4. MOTOR DE TABELAS (VERSÃO FINAL SEM ERROS DE TIPO)
+# 4. MOTOR DE TABELAS (VERSÃO BLINDADA PARA RASCUNHOS)
 # =========================================================
 def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
     st.write(f"**{titulo}**")
     
-    # Pega os dados do rascunho
+    # 1. Puxa os dados salvos no rascunho
     dados = st.session_state["rascunho"].get("tabelas", {}).get(chave, [])
     
-    # Define as colunas esperadas
+    # 2. Define as colunas necessárias
     cols = [col_p, "Horas", "Minutos", "Frequência"]
     if col_e: 
         cols.insert(1, col_e)
     
-    # Cria o DataFrame
+    # 3. Cria o DataFrame e aplica a limpeza "Anti-Erro"
     df = pd.DataFrame(dados)
     
-    # 1. Garante que todas as colunas existam
+    # --- AQUI ESTÁ A SOLUÇÃO: ---
+    df = df.fillna("").astype(str) # Transforma nulos em vazio e tudo em texto
+    for c in df.columns:
+        df[c] = df[c].str.strip() # Remove espaços que quebram o seletor
+    # ----------------------------
+
+    # 4. Garante que todas as colunas existam
     for c in cols:
         if c not in df.columns: 
             df[c] = ""
             
-    # 2. O PULO DO GATO: Força tudo para String e remove valores 'nan'
-    # Isso evita o erro de compatibilidade do Streamlit
-    df = df.astype(str).replace(['None', 'nan', 'NaN', '<NA>'], "")
+    # 5. Garante as 15 linhas fixas para preenchimento
+    if len(df) < 15:
+        faltam = 15 - len(df)
+        extras = pd.DataFrame([{c: "" for c in cols} for _ in range(faltam)])
+        df = pd.concat([df, extras], ignore_index=True)
     
-    # 3. Garante as 15 linhas fixas
-    while len(df) < 15:
-        nova_linha = pd.DataFrame([{c: "" for c in cols}])
-        df = pd.concat([df, nova_linha], ignore_index=True)
-    
-    # 4. Limpa o DataFrame final para garantir que não há lixo
-    df = df[cols].head(15).fillna("")
+    # Mantém apenas as colunas certas e 15 linhas
+    df = df[cols].head(15)
 
-    # Configuração visual
+    # 6. Configuração Visual dos Seletores (Exatamente como no JSON)
     cfg = {
         col_p: st.column_config.TextColumn("Descrição", width="large"),
         "Frequência": st.column_config.SelectboxColumn(options=["", "DVD", "D", "S", "Q", "M", "T", "A"], width="small"),
-        "Horas": st.column_config.SelectboxColumn(options=[f"{i} h" for i in range(25)], width="small"),
-        "Minutos": st.column_config.SelectboxColumn(options=[f"{i} min" for i in range(0, 60, 5)], width="small"),
+        "Horas": st.column_config.SelectboxColumn(options=[""] + [f"{i} h" for i in range(25)], width="small"),
+        "Minutos": st.column_config.SelectboxColumn(options=[""] + [f"{i} min" for i in range(0, 60, 5)], width="small"),
     }
     if col_e: 
         cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
@@ -2649,13 +2652,16 @@ def criar_editor(titulo, chave, col_p, col_e=None, nome_e=None):
         key=f"ed_{chave}", 
         column_config=cfg, 
         use_container_width=True,
-        num_rows="fixed" # Trava em 15 linhas para manter o padrão
+        num_rows="fixed"
     )
+
+# Chamadas das tabelas (mantenha como estão no seu código)
 e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
 e_normal = criar_editor("📋 Complexidade Normal", "normal", "Atividade")
 e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "setor_env", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "impacto", "Impacto Esperado")
+
 
 # =========================================================
 # 5. PERFIL DISC
