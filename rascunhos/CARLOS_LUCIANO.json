@@ -1,5 +1,5 @@
 {
-    "timestamp": "30/03/2026 01:49:08",
+    "timestamp": "30/03/2026 01:52:00",
     "colaborador": "CARLOS LUCIANO",
     "campos": {
         "cargo": "DDSDSD",
@@ -15,10 +15,10 @@
     "tabelas": {
         "alta": [
             {
-                "Atividade": "SSSSSSSSS",
-                "Horas": "5 h",
+                "Atividade": "EEEEE",
+                "Horas": "7 h",
                 "Minutos": "30 min",
-                "Frequência": "T"
+                "Frequência": "A"
             }
         ],
         "normal": [],
