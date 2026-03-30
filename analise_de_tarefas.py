@@ -2718,13 +2718,8 @@ st.markdown("---")
 # Criamos o botão
 if st.button("💾 Salvar Rascunho na Nuvem", use_container_width=True):
     
-    # 1. Verificação de segurança: Nome não pode estar vazio
-    # Usando nome_f que é a sua variável real do input
-    nome_validado = nome_f.strip().upper() 
-    if not nome_validado or len(nome_validado) < 3:
-        st.error("❌ Erro de Persistência: Digite seu nome completo antes de salvar.")
-        st.stop()
-
+    # 1. Identificação do arquivo (Trava removida conforme solicitado)
+    nome_validado = nome_f.strip().upper() if nome_f else "SEM_NOME"
     nome_arq = f"{nome_validado.replace(' ','_')}.json"
     
     # 2. Função interna para limpar linhas vazias das tabelas
