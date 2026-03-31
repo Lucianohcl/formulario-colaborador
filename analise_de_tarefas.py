@@ -2777,17 +2777,17 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
-   
 # =========================================================
-# 5. PERFIL DISC - CONEXÃO DIRETA E FORÇADA
+# 5. PERFIL DISC - VERSÃO RECUPERADA (LIGAÇÃO DIRETA)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. Garante que os dados da Katia estão na mão
-respostas_banco = st.session_state.get("rascunho", {}).get("disc", {})
+# 1. Garante a estrutura
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {"disc": {}}
 
-# 2. LISTA DE PERGUNTAS
+# 2. LISTA DE PERGUNTAS (A mesma de sempre)
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
@@ -2796,39 +2796,34 @@ perguntas_disc = [
     "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
     "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
     "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais espeço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
     "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
     "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
     "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 3. O DE-PARA DIRETO
-opcoes = ["A", "B", "C", "D"]
-
+# 3. O LOOP SIMPLES (O que você entende como De-Para)
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
     
-    # Pega o valor que você me mostrou no JSON ("A", "B", etc.)
-    letra_banco = respostas_banco.get(chave, "")
+    # Busca o valor direto do rascunho
+    valor_no_banco = st.session_state["rascunho"].get("disc", {}).get(chave, "")
     
-    # Converte a letra em número (0, 1, 2, 3) para o rádio marcar
-    indice_marcado = opcoes.index(letra_banco) if letra_banco in opcoes else None
+    opcoes = ["A", "B", "C", "D"]
+    idx = opcoes.index(valor_no_banco) if valor_no_banco in opcoes else None
 
-    # KEY DINÂMICA: Isso é o que FORÇA a bolinha a aparecer marcada
-    # Ela muda conforme o usuário logado, obrigando o Streamlit a atualizar
-    user_id = st.session_state.get("usuario_atual", "user").replace(" ", "")
-    
+    # USANDO A KEY QUE VOCÊ JÁ TINHA (Para não zerar)
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes, 
-        index=indice_marcado, 
+        index=idx, 
         horizontal=True, 
-        key=f"final_disc_{user_id}_{i}" 
+        key=f"disc_direto_{i}"
     )
     
-    # Salva de volta no rascunho para não perder o que foi alterado
-    st.session_state["rascunho"]["disc"][chave] = escolha
+    # Atualiza o banco na memória
+    st.session_state["rascunho"]["disc"][chave] = escolha   
 
 
 # =========================================================
