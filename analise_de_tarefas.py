@@ -1259,112 +1259,119 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
+
 # =========================================================
-# 👤 DADOS DE IDENTIFICAÇÃO (AJUSTADO PARA 5 TABELAS)
+# 🛡️ PROTEÇÃO DE PÁGINA: O FORMULÁRIO SÓ APARECE AQUI
 # =========================================================
-st.subheader("👤 Dados de Identificação")
 
-st.write("DEBUG - O que tem no state agora:", st.session_state.get("f_cargo"))
+# Esta linha garante que o conteúdo abaixo SÓ apareça na página do formulário
+if st.session_state.pagina in ["script2", "formulario"]:
 
-fonte = st.session_state.get("dados_oficiais", {})
-col1, col2 = st.columns(2)
+    # =========================================================
+    # 👤 DADOS DE IDENTIFICAÇÃO (AJUSTADO PARA 5 TABELAS)
+    # =========================================================
+    st.subheader("👤 Dados de Identificação")
 
-with col1:
-    # Mostra os nomes encontrados no GitHub
-    rascunhos_dict = st.session_state.get("rascunhos", {})
-    nomes_disponiveis = list(rascunhos_dict.keys())
-    st.write(f"🗂️ Rascunhos na Nuvem: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
+    st.write("DEBUG - O que tem no state agora:", st.session_state.get("f_cargo"))
 
-    v = st.session_state.get("v_tab", 0)
-    nome_f = st.text_input(
-        "Nome do colaborador",
-        value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
-        key=f"f_nome_{v}"
-    )
+    fonte = st.session_state.get("dados_oficiais", {})
+    col1, col2 = st.columns(2)
 
-    if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
-        if nome_f:
-            atualizar_rascunhos_do_github() 
-            rascunhos_dict = st.session_state.get("rascunhos", {})
-            
-            nome_busca = nome_f.strip().upper()
-            rascunho = rascunhos_dict.get(nome_busca)
-            
-            if rascunho:
-                # 1. SALVA O ESTADO GLOBAL
-                st.session_state["rascunho"] = rascunho  # <--- CRUCIAL para o motor de tabelas
-                st.session_state["f_nome_v2"] = nome_busca
-                st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
+    with col1:
+        # Mostra os nomes encontrados no GitHub
+        rascunhos_dict = st.session_state.get("rascunhos", {})
+        nomes_disponiveis = list(rascunhos_dict.keys())
+        st.write(f"🗂️ Rascunhos na Nuvem: **{', '.join(nomes_disponiveis) if nomes_disponiveis else 'Nenhum'}**")
+
+        v = st.session_state.get("v_tab", 0)
+        nome_f = st.text_input(
+            "Nome do colaborador",
+            value=st.session_state.get("f_nome_v2") or fonte.get("nome", ""),
+            key=f"f_nome_{v}"
+        )
+
+        if st.button("📥 Carregar Rascunho", key="btn_carregar_rascunho_v3"):
+            if nome_f:
+                atualizar_rascunhos_do_github() 
+                rascunhos_dict = st.session_state.get("rascunhos", {})
                 
-                # 2. DADOS BÁSICOS (Ajustado para a estrutura do seu JSON)
-                cp = rascunho.get("campos", {})
+                nome_busca = nome_f.strip().upper()
+                rascunho = rascunhos_dict.get(nome_busca)
                 
-                # Mapeamento: "Chave_do_Widget": "Chave_dentro_do_JSON_campos"
-                campos_map = {
-                    "f_cargo": "cargo",
-                    "f_depto": "dep",         # No JSON está "dep", não "departamento"
-                    "f_setor": "setor",
-                    "f_chefe": "chefe",
-                    "f_unidade": "unidade",
-                    "f_esc": "escolaridade",
-                    "f_dev": "devolver_em",    # No JSON está "devolver_em"
-                    "f_cursos_area": "cursos",
-                    "f_obj_area": "objetivo"
-                }
-                
-                for key_ui, key_json in campos_map.items():
-                    valor = cp.get(key_json, "")
-                    st.session_state[key_ui] = valor
-                    st.session_state[f"{key_ui}_v2"] = valor
-
-                # 3. DISC - SINCRONIZAÇÃO TOTAL
-                disc_salvo = rascunho.get("disc", {})
-                if disc_salvo:
-                    for i in range(24):
-                        chave_json = str(i)
-                        # Sincroniza a chave do rádio que você usa no loop do DISC
-                        # Importante: a chave aqui deve ser idêntica à definida no st.radio
-                        v = st.session_state["v_tab"]
-                        st.session_state[f"disc_radio_{i}_{v}"] = disc_salvo.get(chave_json)
-
-
-                # --- 4. TABELAS - SINCRONIZAÇÃO ---
-                tabelas_salvas = rascunho.get("tabelas", {})
-                if tabelas_salvas:
-                    # Lista das chaves de tabela que você tem no JSON
-                    chaves_tabelas = ["alta", "normal", "baixa", "dificuldades", "sugestoes"]
+                if rascunho:
+                    # 1. SALVA O ESTADO GLOBAL
+                    st.session_state["rascunho"] = rascunho  # <--- CRUCIAL para o motor de tabelas
+                    st.session_state["f_nome_v2"] = nome_busca
+                    st.session_state["v_tab"] = st.session_state.get("v_tab", 0) + 1
                     
-                    for t_key in chaves_tabelas:
-                        dados = tabelas_salvas.get(t_key, [])
-                        if dados:
-                            # Converte a lista de dicionários do JSON em um DataFrame
-                            df_carregado = pd.DataFrame(dados)
-                            
-                            # SALVA NO SESSION_STATE 
-                            # Importante: A chave deve ser EXATAMENTE a 'key' que você usa no st.data_editor
-                            # Se o seu data_editor usa key=f"editor_{t_key}_{v}", faça igual:
+                    # 2. DADOS BÁSICOS (Ajustado para a estrutura do seu JSON)
+                    cp = rascunho.get("campos", {})
+                    
+                    # Mapeamento: "Chave_do_Widget": "Chave_dentro_do_JSON_campos"
+                    campos_map = {
+                        "f_cargo": "cargo",
+                        "f_depto": "dep",          # No JSON está "dep", não "departamento"
+                        "f_setor": "setor",
+                        "f_chefe": "chefe",
+                        "f_unidade": "unidade",
+                        "f_esc": "escolaridade",
+                        "f_dev": "devolver_em",    # No JSON está "devolver_em"
+                        "f_cursos_area": "cursos",
+                        "f_obj_area": "objetivo"
+                    }
+                    
+                    for key_ui, key_json in campos_map.items():
+                        valor = cp.get(key_json, "")
+                        st.session_state[key_ui] = valor
+                        st.session_state[f"{key_ui}_v2"] = valor
+
+                    # 3. DISC - SINCRONIZAÇÃO TOTAL
+                    disc_salvo = rascunho.get("disc", {})
+                    if disc_salvo:
+                        for i in range(24):
+                            chave_json = str(i)
+                            # Sincroniza a chave do rádio que você usa no loop do DISC
+                            # Importante: a chave aqui deve ser idêntica à definida no st.radio
                             v = st.session_state["v_tab"]
-                            st.session_state[f"editor_{t_key}_{v}"] = df_carregado
+                            st.session_state[f"disc_radio_{i}_{v}"] = disc_salvo.get(chave_json)
 
-                st.success(f"✅ Rascunho e DISC de {nome_busca} carregados!")
-                st.rerun()
+
+                    # --- 4. TABELAS - SINCRONIZAÇÃO ---
+                    tabelas_salvas = rascunho.get("tabelas", {})
+                    if tabelas_salvas:
+                        # Lista das chaves de tabela que você tem no JSON
+                        chaves_tabelas = ["alta", "normal", "baixa", "dificuldades", "sugestoes"]
+                        
+                        for t_key in chaves_tabelas:
+                            dados = tabelas_salvas.get(t_key, [])
+                            if dados:
+                                # Converte a lista de dicionários do JSON em um DataFrame
+                                df_carregado = pd.DataFrame(dados)
+                                
+                                # SALVA NO SESSION_STATE 
+                                # Importante: A chave deve ser EXATAMENTE a 'key' que você usa no st.data_editor
+                                # Se o seu data_editor usa key=f"editor_{t_key}_{v}", faça igual:
+                                v = st.session_state["v_tab"]
+                                st.session_state[f"editor_{t_key}_{v}"] = df_carregado
+
+                    st.success(f"✅ Rascunho e DISC de {nome_busca} carregados!")
+                    st.rerun()
+                else:
+                    st.error(f"⚠️ Rascunho de '{nome_busca}' não encontrado.")
             else:
-                st.error(f"⚠️ Rascunho de '{nome_busca}' não encontrado.")
-        else:
-            st.warning("⚠️ Digite um nome antes de carregar.")
+                st.warning("⚠️ Digite um nome antes de carregar.")
 
-with col2:
-    cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
-    depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
-    esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
-    setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
-    chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
-    unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
-    dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
+    with col2:
+        cargo_f = st.text_input("Cargo", value=st.session_state.get("f_cargo_v2") or fonte.get("cargo", ""), key="f_cargo")
+        depto_f = st.text_input("Departamento", value=st.session_state.get("f_depto_v2") or fonte.get("departamento", ""), key="f_depto")
+        esc_f = st.text_input("Escolaridade", value=st.session_state.get("f_esc_v2") or fonte.get("escolaridade", ""), key="f_esc")
+        setor_f = st.text_input("Setor", value=st.session_state.get("f_setor_v2") or fonte.get("setor", ""), key="f_setor")
+        chefe_f = st.text_input("Chefe imediato", value=st.session_state.get("f_chefe_v2") or fonte.get("chefe", ""), key="f_chefe")
+        unidade_f = st.text_input("Empresa / Unidade", value=st.session_state.get("f_unidade_v2") or fonte.get("unidade", ""), key="f_unidade")
+        dev_f = st.text_input("Devolver preenchido em", value=st.session_state.get("f_dev_v2") or fonte.get("devolucao", ""), key="f_dev")
 
-cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
-obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
-
+    cursos_f = st.text_area("Cursos Obrigatórios e Diferenciais", value=st.session_state.get("f_cursos_v2") or fonte.get("cursos", ""), key="f_cursos_area")
+    obj_f = st.text_area("Em que consiste seu Trabalho e qual seu Principal Objetivo", value=st.session_state.get("f_obj_v2") or fonte.get("objetivo", ""), key="f_obj_area")
 
 # =========================================================
 # 5. TABELAS DE TAREFAS (COM FUNÇÃO DE SUPORTE INTEGRADA)
