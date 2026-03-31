@@ -2774,54 +2774,41 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 
-# =========================================================
-# 5. PERFIL DISC - XEQUE-MATE (FORÇA BRUTA)
-# =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. LISTA DE PERGUNTAS INTEGRADA
-perguntas_lista = [
-    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
-    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
-    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
-    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", 
-    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
-    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
-    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais profissional, Desculpas criativas, Ansiedade, Argumentos técnicos", 
-    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
-    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
-    "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
-    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
+# Perguntas (Lista essencial para o loop)
+perguntas = [
+    "No trabalho em equipe", "Em reuniões", "Ao lidar com conflitos", "Seu ritmo de trabalho",
+    "Prefere tarefas", "Seu foco principal", "Ao decidir, você é", "Confia mais em",
+    "Prefere decisões", "Estilo de organização", "Lida melhor com", "Prefere trabalhar",
+    "Seu ponto forte", "Você se considera", "Se motiva por", "Reação a cobranças",
+    "Ambiente ideal", "Ao lidar com feedback", "Como prefere aprender", "Gestão de tempo",
+    "Como se comunica", "Estilo de liderança", "Em situações de pressão", "Como prefere ser gerenciado"
 ]
 
-# 2. BUSCA O DADO REAL (DO RASCUNHO OU DO INPUT)
-# Se o rascunho existir, usamos ele. Se não, começamos vazio.
-dic_disc = st.session_state.get("rascunho", {}).get("disc", {})
+# Puxa exatamente o que você colou aí em cima
+dados_json = st.session_state.get("rascunho", {}).get("disc", {})
 respostas_disc_final = {}
 
-for i, p in enumerate(perguntas_lista):
+for i, p in enumerate(perguntas):
     chave = str(i)
-    # Pega a letra (A, B, C, D) do JSON
-    letra = str(dic_disc.get(chave, "")).strip().upper()
+    # Puxa a letra (Ex: "A"). Se não tiver, fica vazio.
+    letra_salva = dados_json.get(chave, "")
     
     opcoes = ["A", "B", "C", "D"]
-    
-    # FORÇAR O ÍNDICE: Se for A=0, B=1, C=2, D=3. Se não tiver nada, é None.
-    idx_final = opcoes.index(letra) if letra in opcoes else None
+    # Se a letra for "A", idx vira 0. Se for "B", vira 1...
+    idx = opcoes.index(letra_salva) if letra_salva in opcoes else None
 
-    # O RADIO (A key precisa ser ÚNICA e mudar se o dado mudar)
-    # Usamos o hash da letra para garantir que o rádio mude se o JSON mudar
+    # O Radio que marca a bolinha automaticamente pelo 'index'
     escolha = st.radio(
-        f"**{i+1}.** {p}", 
+        f"{i+1}. {p}", 
         opcoes, 
-        index=idx_final, 
+        index=idx, 
         horizontal=True, 
-        key=f"final_check_{nome_input}_{chave}_{letra}" 
+        key=f"d_{nome_input}_{i}"
     )
     respostas_disc_final[chave] = escolha
-
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
 # =========================================================
