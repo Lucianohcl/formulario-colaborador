@@ -2775,11 +2775,36 @@ e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esper
 
 
 # =========================================================
-# 📊 DISC + DEBUG (RAIO-X TOTAL)
+# 📊 DISC - DEBUG + AUTO FIX (ESPELHO REAL DA NUVEM)
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário DISC (DEBUG)")
+st.subheader("📊 Questionário DISC (DEBUG HARD)")
 
+# =========================================================
+# 🔍 DEBUG 1 - RASCUNHO COMPLETO
+# =========================================================
+st.write("🧠 DEBUG - RASCUNHO COMPLETO:")
+st.json(st.session_state.get("rascunho", {}))
+
+# =========================================================
+# 🔍 DEBUG 2 - DISC BRUTO
+# =========================================================
+disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
+
+st.write("📦 DEBUG - DISC BRUTO:")
+st.json(disc_nuvem)
+
+# =========================================================
+# 🚨 AUTO CORREÇÃO (TIMING STREAMLIT)
+# =========================================================
+if disc_nuvem and "disc_sync_ok" not in st.session_state:
+    st.warning("⚠️ Detectado DISC carregado, forçando sincronização de UI...")
+    st.session_state["disc_sync_ok"] = True
+    st.rerun()
+
+# =========================================================
+# 📋 PERGUNTAS
+# =========================================================
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2807,21 +2832,19 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# 🔥 DADO BRUTO DA NUVEM
-disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
-
-st.write("🧠 DEBUG - DISC vindo da nuvem:")
-st.json(disc_nuvem)
-
+# =========================================================
+# 🎯 RENDER COM DEBUG
+# =========================================================
 respostas_disc = {}
 opcoes = ["A", "B", "C", "D"]
 
 for i, texto in enumerate(perguntas_disc):
     chave = str(i)
-    
-    valor = disc_nuvem.get(chave)
 
-    # DEBUG INDIVIDUAL
+    # 🔥 fallback inteligente (string/int)
+    valor = disc_nuvem.get(chave) or disc_nuvem.get(int(chave))
+
+    # DEBUG
     st.caption(f"Q{i} → chave='{chave}' | valor_nuvem='{valor}'")
 
     if valor not in opcoes:
@@ -2842,12 +2865,16 @@ for i, texto in enumerate(perguntas_disc):
     respostas_disc[chave] = escolha
 
 
-# RESULTADO FINAL
+# =========================================================
+# 📦 DEBUG FINAL
+# =========================================================
 st.markdown("---")
-st.write("📦 DEBUG - Resultado atual (antes de salvar):")
+st.write("📦 DEBUG FINAL - O que vai salvar:")
 st.json(respostas_disc)
 
-# ATUALIZA
+# =========================================================
+# 💾 ESPELHO FINAL
+# =========================================================
 st.session_state["rascunho"]["disc"] = respostas_disc
 
 
