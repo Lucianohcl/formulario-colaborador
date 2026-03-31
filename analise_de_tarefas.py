@@ -1652,7 +1652,7 @@ with col_btn:
                     "dificuldades": preparar_dados(e_dif),
                     "sugestoes": preparar_dados(e_sug)
                 },
-                "disc": dados_disc_final  # <--- USA O DICIONÁRIO QUE ACABAMOS DE CRIAR
+                "disc": st.session_state.get("rascunho", {}).get("disc", {})
             }
 
 
@@ -2781,13 +2781,27 @@ for i, p in enumerate(perguntas):
     # Define o índice: se tiver salvo, acha a posição. Se não, None (em branco)
     idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
     
-    respostas_disc[str(i)] = st.radio(
+# Garante que o dicionário de respostas existe na memória
+if "respostas_disc_fix" not in st.session_state:
+    st.session_state["respostas_disc_fix"] = {str(i): "" for i in range(24)}
+
+# Loop do DISC
+for i, p in enumerate(lista_perguntas):
+    # Pegamos o índice atual da resposta para não resetar a visão do usuário
+    res_atual = st.session_state["respostas_disc_fix"].get(str(i), "")
+    idx = ["A", "B", "C", "D"].index(res_atual) if res_atual in ["A", "B", "C", "D"] else None
+
+    # O rádio salva o valor direto na memória fixa ao ser alterado
+    escolha = st.radio(
         f"{i+1}. {p}", 
         ["A", "B", "C", "D"], 
         index=idx, 
         horizontal=True, 
         key=f"q_{i}"
     )
+    
+    # SALVAMENTO IMEDIATO:
+    st.session_state["respostas_disc_fix"][str(i)] = escolha    
 
 
 # =========================================================
