@@ -2118,8 +2118,21 @@ def gerar_atividades_ideais(cargo, setor, client=None):
             messages=[{"role":"user","content":prompt}],
             temperature=0.3
         )
-        return json.loads(response.choices[0].message.content)
-    except:
+        
+        # 1. Primeiro carregamos o conteúdo em uma variável
+        dados_carregados = json.loads(response.choices[0].message.content)
+
+        # 2. Agora injetamos o DISC na memória antes de sair da função
+        if isinstance(dados_carregados, dict) and "disc" in dados_carregados:
+            st.session_state["respostas_disc_fix"] = {
+                str(k): v for k, v in dados_carregados["disc"].items()
+            }
+        
+        # 3. SÓ AGORA damos o return com os dados prontos
+        return dados_carregados
+
+    except Exception as e:
+        # Se der erro, retorna o padrão
         return [{
             "nome_atividade": "Atividade de exemplo",
             "descricao": "Descrição de exemplo",
@@ -2764,51 +2777,7 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
-# =========================================================
-# 5. PERFIL DISC
-# =========================================================
-st.markdown("---")
-st.subheader("📊 Questionário DISC")
-
-# 1. A LISTA (O nome correto é 'perguntas')
-perguntas = [
-    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
-    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
-    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
-    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", 
-    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
-    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
-    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
-    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
-    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
-    "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
-    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
-]
-
-# 2. INICIALIZAÇÃO DA MEMÓRIA FIXA
-if "respostas_disc_fix" not in st.session_state:
-    # Tenta resgatar do rascunho se existir, senão inicia vazio
-    d_disc = st.session_state.get("rascunho", {}).get("disc", {})
-    st.session_state["respostas_disc_fix"] = {str(i): d_disc.get(str(i), "") for i in range(24)}
-
-# 3. LOOP ÚNICO (Usando 'perguntas' corretamente)
-for i, p in enumerate(perguntas):
-    res_atual = st.session_state["respostas_disc_fix"].get(str(i), "")
-    
-    opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(res_atual) if res_atual in opcoes else None
-
-    escolha = st.radio(
-        f"**{i+1}.** {p}", 
-        opcoes, 
-        index=idx, 
-        horizontal=True, 
-        key=f"q_{i}"
-    )
-    
-    # SALVAMENTO IMEDIATO
-    st.session_state["respostas_disc_fix"][str(i)] = escolha   
+   
 
 
 # =========================================================
