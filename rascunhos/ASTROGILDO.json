@@ -1,13 +1,13 @@
 {
     "colaborador": "ASTROGILDO",
-    "timestamp": "31/03/2026 10:27:40",
+    "timestamp": "31/03/2026 18:17:21",
     "campos": {
         "cargo": "Analista de Custos",
-        "dep": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "escolaridade": "",
+        "dep": "Financeiro",
+        "setor": "Contas a Pagar",
+        "chefe": "José da Silva",
+        "unidade": "Empresa Exemplo",
+        "escolaridade": "Fiscal",
         "devolver_em": "",
         "cursos": "",
         "objetivo": ""
@@ -505,9 +505,9 @@
         ]
     },
     "disc": {
-        "0": "A",
-        "1": "B",
-        "2": "C",
+        "0": null,
+        "1": null,
+        "2": null,
         "3": null,
         "4": null,
         "5": null,
