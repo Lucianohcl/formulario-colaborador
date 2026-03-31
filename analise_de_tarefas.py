@@ -2775,36 +2775,11 @@ e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esper
 
 
 # =========================================================
-# 📊 DISC - DEBUG + AUTO FIX (ESPELHO REAL DA NUVEM)
+# 📊 QUESTIONÁRIO DISC (ESPELHO REAL DA NUVEM - SEM DEBUG)
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário DISC (DEBUG HARD)")
+st.subheader("📊 Questionário DISC")
 
-# =========================================================
-# 🔍 DEBUG 1 - RASCUNHO COMPLETO
-# =========================================================
-st.write("🧠 DEBUG - RASCUNHO COMPLETO:")
-st.json(st.session_state.get("rascunho", {}))
-
-# =========================================================
-# 🔍 DEBUG 2 - DISC BRUTO
-# =========================================================
-disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
-
-st.write("📦 DEBUG - DISC BRUTO:")
-st.json(disc_nuvem)
-
-# =========================================================
-# 🚨 AUTO CORREÇÃO (TIMING STREAMLIT)
-# =========================================================
-if disc_nuvem and "disc_sync_ok" not in st.session_state:
-    st.warning("⚠️ Detectado DISC carregado, forçando sincronização de UI...")
-    st.session_state["disc_sync_ok"] = True
-    st.rerun()
-
-# =========================================================
-# 📋 PERGUNTAS
-# =========================================================
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2833,50 +2808,42 @@ perguntas_disc = [
 ]
 
 # =========================================================
-# 🎯 RENDER COM DEBUG
+# 🔥 DISC DA NUVEM (FONTE ÚNICA)
 # =========================================================
+disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
+
+# Guarda versão original (proteção contra overwrite)
+if "disc_original" not in st.session_state:
+    st.session_state["disc_original"] = disc_nuvem.copy()
+
 respostas_disc = {}
 opcoes = ["A", "B", "C", "D"]
 
+# =========================================================
+# 🎯 RENDER CORRETO
+# =========================================================
 for i, texto in enumerate(perguntas_disc):
     chave = str(i)
 
-    # 🔥 fallback inteligente (string/int)
     valor = disc_nuvem.get(chave) or disc_nuvem.get(int(chave))
 
-    # DEBUG
-    st.caption(f"Q{i} → chave='{chave}' | valor_nuvem='{valor}'")
-
-    if valor not in opcoes:
-        st.error(f"❌ Problema na questão {i}: valor inválido → {valor}")
-
     idx = opcoes.index(valor) if valor in opcoes else 0
-
-    st.caption(f"👉 índice calculado: {idx}")
 
     escolha = st.radio(
         f"**{i+1}. {texto}**",
         options=opcoes,
         index=idx,
         horizontal=True,
-        key=f"disc_debug_{i}"
+        key=f"disc_{i}"
     )
 
     respostas_disc[chave] = escolha
 
-
 # =========================================================
-# 📦 DEBUG FINAL
+# 💾 ATUALIZAÇÃO BLINDADA (NÃO SOBRESCREVE ERRADO)
 # =========================================================
-st.markdown("---")
-st.write("📦 DEBUG FINAL - O que vai salvar:")
-st.json(respostas_disc)
-
-# =========================================================
-# 💾 ESPELHO FINAL
-# =========================================================
-st.session_state["rascunho"]["disc"] = respostas_disc
-
+if respostas_disc != st.session_state["disc_original"]:
+    st.session_state["rascunho"]["disc"] = respostas_disc
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
