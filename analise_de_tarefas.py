@@ -785,6 +785,30 @@ if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
 # ============================================================
+# 🎭 BLINDAGEM VISUAL (OCULTA SEM QUEBRAR O FLUXO)
+# ============================================================
+
+# Se a página NÃO for o formulário, injetamos um CSS que esconde o conteúdo.
+# Isso garante que o rascunho rode (Python lê), mas o usuário não veja nada.
+if st.session_state.get("pagina") != "formulario":
+    st.markdown("""
+        <style>
+            /* Esconde a área onde o formulário aparece */
+            #root > div:nth-child(1) > div:nth-child(1) > div > div > main {
+                display: none !important;
+            }
+            /* Garante que o Sidebar continue aparecendo para você navegar */
+            [data-testid="stSidebar"] {
+                display: block !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # Opcional: Mostrar uma mensagem simples para as outras páginas não ficarem em branco
+    st.info(f"📂 Você está na aba: {st.session_state.pagina.upper()}")
+
+
+# ============================================================
 # PÁGINA PERFIL DISC (VERSÃO SINCRO)
 # ============================================================
 
@@ -1239,6 +1263,7 @@ with area_do_formulario:
 # ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
 # O rascunho continuará funcionando porque o código está sendo lido,
 # mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
+
 
 # =========================================================
 # Perguntas DISC
