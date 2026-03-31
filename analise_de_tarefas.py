@@ -2002,7 +2002,7 @@ if st.session_state.get("pagina") == "visualizar":
                             data=gerar_word(form),
                             file_name=f"{nome_arquivo}.docx",
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            key=f"btn_word_{nome_clean}_{data_clean}" # KEY DINÂMICA
+                            key=f"btn_word_{nome_clean}_{data_clean}_{form.get('id', '1')}"
                         )
 
                     with col2:
@@ -2011,7 +2011,7 @@ if st.session_state.get("pagina") == "visualizar":
                             data=gerar_pdf(form),
                             file_name=f"{nome_arquivo}.pdf",
                             mime="application/pdf",
-                            key=f"btn_pdf_{nome_clean}_{data_clean}" # KEY DINÂMICA
+                            key=f"btn_pdf_{nome_clean}_{data_clean}_{form.get('id', '1')}"
                         )
 
 
