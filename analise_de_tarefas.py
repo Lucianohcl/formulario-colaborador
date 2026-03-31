@@ -1212,8 +1212,6 @@ col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", 
 # 🎨 TÍTULO E CABEÇALHO DO FORMULÁRIO
 # =========================================================
 
-# Define o nome que aparecerá no navegador e o ícone
-st.set_page_config(page_title="Formulário de Desempenho", page_icon="📝")
 
 # Resgata o nome do colaborador carregado (se houver)
 resgate = st.session_state.get("rascunho_atual", {})
