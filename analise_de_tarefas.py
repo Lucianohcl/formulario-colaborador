@@ -2775,13 +2775,13 @@ e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esper
 
 
 # =========================================================
-# 5. PERFIL DISC - RESOLUÇÃO FINAL (COPIAR E COLAR)
+# 5. PERFIL DISC - XEQUE-MATE (FORÇA BRUTA)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# A lista está aqui dentro, então não dá erro de "NameError"
-perguntas_disc_lista = [
+# 1. LISTA DE PERGUNTAS INTEGRADA
+perguntas_lista = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
     "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
@@ -2789,40 +2789,38 @@ perguntas_disc_lista = [
     "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
     "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
     "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais profissional, Desculpas criativas, Ansiedade, Argumentos técnicos", 
     "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
     "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
     "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# Puxa o rascunho que foi carregado no st.session_state
-rascunho_dados = st.session_state.get("rascunho", {})
-respostas_no_json = rascunho_dados.get("disc", {})
-
+# 2. BUSCA O DADO REAL (DO RASCUNHO OU DO INPUT)
+# Se o rascunho existir, usamos ele. Se não, começamos vazio.
+dic_disc = st.session_state.get("rascunho", {}).get("disc", {})
 respostas_disc_final = {}
 
-for i, p in enumerate(perguntas_disc_lista):
+for i, p in enumerate(perguntas_lista):
     chave = str(i)
-    # Pega a letra do JSON (A, B, C ou D)
-    letra_salva = str(respostas_no_json.get(chave, "")).strip().upper()
+    # Pega a letra (A, B, C, D) do JSON
+    letra = str(dic_disc.get(chave, "")).strip().upper()
     
-    opcoes_radio = ["A", "B", "C", "D"]
+    opcoes = ["A", "B", "C", "D"]
     
-    # Se a letra existe no JSON, descobre a posição (0 a 3) para marcar a bolinha
-    idx_marcar = opcoes_radio.index(letra_salva) if letra_salva in opcoes_radio else None
+    # FORÇAR O ÍNDICE: Se for A=0, B=1, C=2, D=3. Se não tiver nada, é None.
+    idx_final = opcoes.index(letra) if letra in opcoes else None
 
-    # Desenha o rádio. A key garante que ele resete ao trocar de colaborador
+    # O RADIO (A key precisa ser ÚNICA e mudar se o dado mudar)
+    # Usamos o hash da letra para garantir que o rádio mude se o JSON mudar
     escolha = st.radio(
         f"**{i+1}.** {p}", 
-        opcoes_radio, 
-        index=idx_marcar, 
+        opcoes, 
+        index=idx_final, 
         horizontal=True, 
-        key=f"radio_disc_{nome_input.replace(' ', '_')}_{i}"
+        key=f"final_check_{nome_input}_{chave}_{letra}" 
     )
-    # Guarda o que está na tela para o botão SALVAR usar
     respostas_disc_final[chave] = escolha
-
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
