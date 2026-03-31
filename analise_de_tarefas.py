@@ -2778,16 +2778,12 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC - VERSÃO RECUPERADA (LIGAÇÃO DIRETA)
+# 5. PERFIL DISC - MARCAÇÃO AUTOMÁTICA
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. Garante a estrutura
-if "rascunho" not in st.session_state:
-    st.session_state["rascunho"] = {"disc": {}}
-
-# 2. LISTA DE PERGUNTAS (A mesma de sempre)
+# 1. Lista de perguntas (se já tiver no código, pode manter)
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
@@ -2796,35 +2792,39 @@ perguntas_disc = [
     "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
     "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
     "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais espeço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
     "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
     "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
     "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 3. O LOOP SIMPLES (O que você entende como De-Para)
+# 2. O LOOP DO DE-PARA
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
     
-    # Busca o valor direto do rascunho
-    valor_no_banco = st.session_state["rascunho"].get("disc", {}).get(chave, "")
+    # PEGA A LETRA DO BANCO (A, B, C ou D)
+    valor_v = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
     
-    opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(valor_no_banco) if valor_no_banco in opcoes else None
+    opcoes_d = ["A", "B", "C", "D"]
+    
+    # AQUI ESTÁ O DE-PARA: Se for "A", o index é 0. Se for "B", é 1...
+    idx_d = opcoes_d.index(valor_v) if valor_v in opcoes_d else None
 
-    # USANDO A KEY QUE VOCÊ JÁ TINHA (Para não zerar)
-    escolha = st.radio(
+    # O RÁDIO (Mantendo a key fixa para não sumir com as perguntas)
+    escolha_d = st.radio(
         f"**{i+1}.** {p}", 
-        opcoes, 
-        index=idx, 
+        opcoes_d, 
+        index=idx_d, 
         horizontal=True, 
         key=f"disc_direto_{i}"
     )
     
-    # Atualiza o banco na memória
-    st.session_state["rascunho"]["disc"][chave] = escolha   
-
+    # Salva qualquer mudança de volta no rascunho
+    if "rascunho" in st.session_state:
+        if "disc" not in st.session_state["rascunho"]:
+            st.session_state["rascunho"]["disc"] = {}
+        st.session_state["rascunho"]["disc"][chave] = escolha_d
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB + SHEETS)
