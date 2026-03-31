@@ -2807,27 +2807,35 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 3. LOOP COM LIGAÇÃO DIRETA
+# 3. LOOP COM LIGAÇÃO DIRETA (VERSÃO CORRIGIDA)
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
-    # Busca o valor direto do rascunho que veio do banco
-    valor_no_banco = st.session_state["rascunho"]["disc"].get(chave, "")
+    
+    # --- AJUSTE AQUI: Tenta buscar de dois lugares possíveis ---
+    # 1. Tenta buscar do rascunho (voto de confiança no banco)
+    # 2. Se não achar, tenta buscar da memória local (respostas_disc_fix)
+    valor_no_banco = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
+    
+    if not valor_no_banco:
+        valor_no_banco = st.session_state.get("respostas_disc_fix", {}).get(chave, "")
     
     opcoes = ["A", "B", "C", "D"]
     idx = opcoes.index(valor_no_banco) if valor_no_banco in opcoes else None
 
-    # O rádio desenha o que está no banco e salva de volta no banco na mesma hora
+    # O rádio
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes, 
         index=idx, 
         horizontal=True, 
-        key=f"disc_direto_{i}"
+        key=f"disc_vFinal_Real_{i}" # Mudei a key para forçar o reset visual
     )
     
-    # ATUALIZAÇÃO DIRETA NO RASCUNHO
-    st.session_state["rascunho"]["disc"][chave] = escolha
-
+    # SALVA DE VOLTA NOS DOIS LUGARES PARA NÃO PERDER MAIS
+    if "rascunho" in st.session_state:
+        if "disc" not in st.session_state["rascunho"]:
+            st.session_state["rascunho"]["disc"] = {}
+        st.session_state["rascunho"]["disc"][chave] = escolha
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB + SHEETS)
