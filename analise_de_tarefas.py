@@ -2661,20 +2661,16 @@ if st.session_state.get("usuario_atual") != nome_input:
 
 confirmar = st.checkbox("✅ CLIQUE PARA CARREGAR MEUS DADOS")
 
-if confirmar and not st.session_state["logado"]:
-    novo_vazio = {"colaborador": nome_input, "campos": {}, "tabelas": {}, "disc": {}}
+if confirmar and not st.session_state.get("logado"):
     try:
-        # Tenta buscar
         conteudo = repo.get_contents(nome_arq)
-        st.session_state["rascunho"] = json.loads(conteudo.decoded_content.decode())
+        dados_carregados = json.loads(conteudo.decoded_content.decode())
+        # Garante que o rascunho seja EXATAMENTE o que está no GitHub
+        st.session_state["rascunho"] = dados_carregados
+        st.success("Dados recuperados!")
     except:
-        # Se não achar ou der erro de API, tenta criar, mas não trava se falhar
-        try:
-            repo.create_file(nome_arq, f"Novo: {nome_input}", json.dumps(novo_vazio))
-            st.session_state["rascunho"] = novo_vazio
-        except:
-            # Se der o erro GithubException (arquivo já existe ou permissão), usa o vazio na memória
-            st.session_state["rascunho"] = novo_vazio
+        st.session_state["rascunho"] = {"colaborador": nome_input, "campos": {}, "tabelas": {}, "disc": {}}
+        st.info("Iniciando novo rascunho.")
     
     st.session_state["logado"] = True
     st.rerun()
@@ -2799,35 +2795,29 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 2. O LOOP DO DE-PARA
+respostas_disc_atual = {}
+
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
-    
-    # PEGA A LETRA DO BANCO (A, B, C ou D)
-    valor_v = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
-    
+    valor_banco = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
     opcoes_d = ["A", "B", "C", "D"]
-    
-    # AQUI ESTÁ O DE-PARA: Se for "A", o index é 0. Se for "B", é 1...
-    idx_d = opcoes_d.index(valor_v) if valor_v in opcoes_d else None
+    idx_d = opcoes_d.index(valor_banco) if valor_banco in opcoes_d else None
 
-    # O RÁDIO (Mantendo a key fixa para não sumir com as perguntas)
-    escolha_d = st.radio(
+    escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes_d, 
         index=idx_d, 
         horizontal=True, 
-        key=f"disc_direto_{i}"
+        key=f"rd_disc_{nome_input}_{i}"
     )
-    
-    # Salva qualquer mudança de volta no rascunho
-    if "rascunho" in st.session_state:
-        if "disc" not in st.session_state["rascunho"]:
-            st.session_state["rascunho"]["disc"] = {}
-        st.session_state["rascunho"]["disc"][chave] = escolha_d
+    respostas_disc_atual[chave] = escolha
+
+# ADICIONE ESTA LINHA FORA DO LOOP (alinhada à esquerda)
+respostas_disc_final = respostas_disc_atual
+
 
 # =========================================================
-# 6. SALVAMENTO (GITHUB + SHEETS)
+# 6. SALVAMENTO (GITHUB)
 # =========================================================
 if st.button("💾 SALVAR TUDO", use_container_width=True):
 
@@ -2853,7 +2843,7 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
             "dificuldades": e_dif.to_dict("records"), 
             "sugestoes": e_sug.to_dict("records")
         },
-        "disc": respostas_disc
+        "disc": respostas_disc_final  # <--- AGORA O NOME ESTÁ IGUAL AO QUE VOCÊ CRIOU
     }
 
     # --- CONFIGURAÇÃO DO NOME DO ARQUIVO (A CHAVE DO SUCESSO) ---
