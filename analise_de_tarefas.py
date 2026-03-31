@@ -1629,29 +1629,30 @@ with col_btn:
                 col_principal = df.columns[0] 
                 return df[df[col_principal].astype(str).str.strip() != ""].to_dict("records")
 
-            # MONTAGEM DO PAYLOAD (DADOS QUE SERÃO SALVOS)
+            # 1. EXTRAÇÃO FORÇADA (Garante que os dados saiam do rádio e entrem no código)
+            dados_disc_final = {}
+            for i in range(24):
+                # Tentamos todas as variações possíveis de nomes que você pode ter usado
+                valor = st.session_state.get(f"q_{i}") or st.session_state.get(f"q{i}") or st.session_state.get(f"p{i}") or ""
+                dados_disc_final[str(i)] = valor
+
+            # 2. MONTAGEM DO PAYLOAD
             payload = {
                 "timestamp": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
                 "colaborador": st.session_state.get("usuario_atual", "Usuario_Desconhecido"),
                 "campos": {
-                    "cargo": cargo, 
-                    "departamento": depto, 
-                    "setor": setor,
-                    "chefe": chefe, 
-                    "unidade": unidade, 
-                    "escolaridade": escolaridade,
-                    "cursos": cursos, 
-                    "objetivo": objetivo
+                    "cargo": cargo, "departamento": depto, "setor": setor,
+                    "chefe": chefe, "unidade": unidade, "escolaridade": escolaridade,
+                    "cursos": cursos, "objetivo": objetivo
                 },
                 "tabelas": {
-                    # AQUI ESTAVA O ERRO: Use preparar_dados e não limpar_para_rascunho
                     "alta": preparar_dados(e_alta),
                     "normal": preparar_dados(e_normal),
                     "baixa": preparar_dados(e_baixa),
                     "dificuldades": preparar_dados(e_dif),
                     "sugestoes": preparar_dados(e_sug)
                 },
-                "disc": {str(i): st.session_state.get(f"q_{i}", "") for i in range(24)}
+                "disc": dados_disc_final  # <--- USA O DICIONÁRIO QUE ACABAMOS DE CRIAR
             }
 
 
