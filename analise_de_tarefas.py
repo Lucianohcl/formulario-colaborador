@@ -774,6 +774,9 @@ elif btn_parecer:
     st.session_state.pagina = "parecer"
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
+elif btn_produtividade:
+    st.session_state.pagina = "produtividade"
+
 # O elif abaixo verifica a URL sem precisar de botão
 elif st.session_state.pagina == "formulario":
     pass # Este comando é obrigatório para não dar erro de sintaxe
@@ -784,28 +787,33 @@ elif btn_logout:
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
-# ============================================================
-# 🎭 BLINDAGEM VISUAL (OCULTA SEM QUEBRAR O FLUXO)
-# ============================================================
+# Lista das abas que DEVEM ESCONDER o formulário
+abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
 
-# Se a página NÃO for o formulário, injetamos um CSS que esconde o conteúdo.
-# Isso garante que o rascunho rode (Python lê), mas o usuário não veja nada.
-if st.session_state.get("pagina") != "formulario":
+# Se estiver em qualquer aba do menu, a gente aplica a "capa de invisibilidade"
+if st.session_state.get("pagina") in abas_do_menu:
+    
+    # 1. CONTEÚDO DA HOME (O que aparece quando abre o app)
+    if st.session_state.pagina == "home":
+        st.title("🏠 Bem-vindo ao Dashboard")
+        st.write("Use o menu lateral para navegar pelas análises.")
+        # Se quiser mostrar algo do rascunho na home sem mostrar o form todo:
+        # st.write(f"Rascunho atual: {st.session_state.get('colaborador', 'Nenhum')}")
+
+    # 2. INJEÇÃO DO CSS (A Blindagem)
+    # Isso esconde os inputs, botões e textos das 3000 linhas, mas o Python continua lendo elas.
     st.markdown("""
         <style>
-            /* Esconde a área onde o formulário aparece */
-            #root > div:nth-child(1) > div:nth-child(1) > div > div > main {
+            /* Seleciona o bloco principal de conteúdo e esconde tudo o que é widget de formulário */
+            .main div[data-testid="stVerticalBlock"] > div:nth-child(n+3) {
                 display: none !important;
             }
-            /* Garante que o Sidebar continue aparecendo para você navegar */
-            [data-testid="stSidebar"] {
+            /* Mantém o Sidebar e o Título da aba visíveis */
+            [data-testid="stSidebar"], .main h1 {
                 display: block !important;
             }
         </style>
     """, unsafe_allow_html=True)
-
-    # Opcional: Mostrar uma mensagem simples para as outras páginas não ficarem em branco
-    st.info(f"📂 Você está na aba: {st.session_state.pagina.upper()}")
 
 
 # ============================================================
@@ -1263,7 +1271,6 @@ with area_do_formulario:
 # ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
 # O rascunho continuará funcionando porque o código está sendo lido,
 # mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
-
 
 # =========================================================
 # Perguntas DISC
