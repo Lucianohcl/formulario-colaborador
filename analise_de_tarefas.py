@@ -2773,9 +2773,8 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
-
 # =========================================================
-# 📊 QUESTIONÁRIO DISC (ESPELHO REAL DA NUVEM - SEM DEBUG)
+# 📊 QUESTIONÁRIO DISC (ESPELHO REAL - PRODUÇÃO FINAL)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
@@ -2808,31 +2807,40 @@ perguntas_disc = [
 ]
 
 # =========================================================
-# 🔥 DISC DA NUVEM (FONTE ÚNICA)
+# 🔥 FONTE ÚNICA (SESSION_STATE)
 # =========================================================
-disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {}
 
-# Guarda versão original (proteção contra overwrite)
-if "disc_original" not in st.session_state:
-    st.session_state["disc_original"] = disc_nuvem.copy()
+if "disc" not in st.session_state["rascunho"]:
+    st.session_state["rascunho"]["disc"] = {}
 
-respostas_disc = {}
+# normaliza chave
+disc_nuvem = {
+    str(k): v for k, v in st.session_state["rascunho"]["disc"].items()
+}
+
+# =========================================================
+# 🎯 DEFINIÇÕES
+# =========================================================
 opcoes = ["A", "B", "C", "D"]
+respostas_disc = {}
 
 # =========================================================
-# 🎯 RENDER CORRETO
+# 🎯 RENDER CORRETO (SEM BUG)
 # =========================================================
 for i, texto in enumerate(perguntas_disc):
     chave = str(i)
 
-    valor = disc_nuvem.get(chave) or disc_nuvem.get(int(chave))
+    valor = disc_nuvem.get(chave, "A")
 
-    idx = opcoes.index(valor) if valor in opcoes else 0
+    if valor not in opcoes:
+        valor = "A"
 
     escolha = st.radio(
         f"**{i+1}. {texto}**",
         options=opcoes,
-        index=idx,
+        index=opcoes.index(valor),
         horizontal=True,
         key=f"disc_{i}"
     )
@@ -2840,10 +2848,10 @@ for i, texto in enumerate(perguntas_disc):
     respostas_disc[chave] = escolha
 
 # =========================================================
-# 💾 ATUALIZAÇÃO BLINDADA (NÃO SOBRESCREVE ERRADO)
+# 💾 SINCRONIZAÇÃO DIRETA (SEM CONDIÇÃO BUGADA)
 # =========================================================
-if respostas_disc != st.session_state["disc_original"]:
-    st.session_state["rascunho"]["disc"] = respostas_disc
+st.session_state["rascunho"]["disc"] = respostas_disc
+
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
