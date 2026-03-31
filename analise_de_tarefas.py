@@ -1209,18 +1209,24 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
-# 1. Primeiro você verifica se a página é a do formulário
-if st.session_state.get("pagina") == "formulario":
 
-    # =========================================================
-    # 🎨 TÍTULO E CABEÇALHO DO FORMULÁRIO (AGORA DENTRO DO IF)
-    # =========================================================
+# =========================================================
+# 🎭 CAPA DE INVISIBILIDADE (NÃO QUEBRA O RASCUNHO)
+# =========================================================
 
-    # Resgata o nome do colaborador carregado (se houver)
+# Criamos um lugar no app que pode ser "esvaziado"
+area_do_formulario = st.container()
+
+# Se NÃO estivermos na página do formulário, a gente limpa a área visual
+# mas deixa o código das 3000 linhas rodar "em silêncio" para o rascunho
+if st.session_state.get("pagina") != "formulario":
+    area_do_formulario.empty() 
+
+# Agora, para o Título e as mensagens iniciais, usamos o 'with'
+with area_do_formulario:
     resgate = st.session_state.get("rascunho_atual", {})
     nome_titulo = resgate.get("colaborador", "Novo Formulário")
 
-    # Exibição do Título Principal
     st.title("📋 Formulário de Acompanhamento")
 
     if nome_titulo != "Novo Formulário":
@@ -1230,6 +1236,9 @@ if st.session_state.get("pagina") == "formulario":
 
     st.markdown("---")
 
+# ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
+# O rascunho continuará funcionando porque o código está sendo lido,
+# mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
 
 # =========================================================
 # Perguntas DISC
