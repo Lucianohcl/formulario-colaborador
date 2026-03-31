@@ -74,6 +74,8 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
 dados_dir = os.path.join(base_dir, "dados")
 os.makedirs(dados_dir, exist_ok=True)
 
@@ -872,51 +874,6 @@ if st.session_state.pagina == "disc":
                 st.write("•", atividade)
 
 
-import streamlit as st
-import pandas as pd
-import os
-import json
-import sys
-
-# ============================================================
-# CONFIGURAÇÃO DE DIRETÓRIO E CARREGAMENTO
-# ============================================================
-
-# Define o diretório base e a pasta de dados
-base_dir = os.path.dirname(os.path.abspath(__file__))
-dados_dir = os.path.join(base_dir, "dados")
-os.makedirs(dados_dir, exist_ok=True)
-
-# Função para carregar todos os JSONs da pasta 'dados'
-def carregar_todos_formularios():
-    lista_formularios = []
-    if os.path.exists(dados_dir):
-        for nome_arquivo in os.listdir(dados_dir):
-            if nome_arquivo.endswith(".json"):
-                caminho_completo = os.path.join(dados_dir, nome_arquivo)
-                try:
-                    with open(caminho_completo, "r", encoding="utf-8") as f:
-                        dados = json.load(f)
-                        if isinstance(dados, dict):
-                            lista_formularios.append(dados)
-                except Exception:
-                    continue
-    return lista_formularios
-
-# Inicializa o estado da sessão com os dados carregados
-if "formularios" not in st.session_state:
-    st.session_state["formularios"] = carregar_todos_formularios()
-
-# --- BLOCO DE CSS PARA OCULTAÇÃO ---
-if st.query_params.get("page") == "formulario":
-    st.markdown("""
-    <style>
-        [data-testid="stSidebar"] {display: none !important;}
-        #MainMenu, footer, header {visibility: hidden !important;}
-    </style>
-    """, unsafe_allow_html=True)
-
-
 # =========================================================
 # 1. FUNÇÕES DE SUPORTE
 # =========================================================
@@ -1195,8 +1152,9 @@ e_sug = gerar_tabela_final("💡 Sugestões de Melhoria", "sugestoes", "Sugestã
 # =========================================================
 # 📊 7. QUESTIONÁRIO DISC (SINCRONIZADO COM O JSON)
 # =========================================================
-st.markdown("---")
-st.subheader("📊 Questionário")
+if st.session_state.get("pagina") == "formulario":
+    st.markdown("---")
+    st.subheader("📊 Questionário")
 
 v = st.session_state.get("v_tab", 0) 
 
