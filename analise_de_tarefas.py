@@ -2769,39 +2769,46 @@ e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esper
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
-perguntas = ["No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"]
 
-respostas_disc = {}
-d_disc = st.session_state["rascunho"].get("disc", {})
+# 1. A LISTA (O nome correto é 'perguntas')
+perguntas = [
+    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
+    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
+    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
+    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", 
+    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
+    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
+    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
+    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
+    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
+    "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
+    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
+]
 
-for i, p in enumerate(perguntas):
-    # Pega o que está salvo. Se não houver nada, retorna None
-    valor_salvo = d_disc.get(str(i))
-    
-    # Define o índice: se tiver salvo, acha a posição. Se não, None (em branco)
-    idx = ["A", "B", "C", "D"].index(valor_salvo) if valor_salvo in ["A", "B", "C", "D"] else None
-    
-# Garante que o dicionário de respostas existe na memória
+# 2. INICIALIZAÇÃO DA MEMÓRIA FIXA
 if "respostas_disc_fix" not in st.session_state:
-    st.session_state["respostas_disc_fix"] = {str(i): "" for i in range(24)}
+    # Tenta resgatar do rascunho se existir, senão inicia vazio
+    d_disc = st.session_state.get("rascunho", {}).get("disc", {})
+    st.session_state["respostas_disc_fix"] = {str(i): d_disc.get(str(i), "") for i in range(24)}
 
-# Loop do DISC
-for i, p in enumerate(lista_perguntas):
-    # Pegamos o índice atual da resposta para não resetar a visão do usuário
+# 3. LOOP ÚNICO (Usando 'perguntas' corretamente)
+for i, p in enumerate(perguntas):
     res_atual = st.session_state["respostas_disc_fix"].get(str(i), "")
-    idx = ["A", "B", "C", "D"].index(res_atual) if res_atual in ["A", "B", "C", "D"] else None
+    
+    opcoes = ["A", "B", "C", "D"]
+    idx = opcoes.index(res_atual) if res_atual in opcoes else None
 
-    # O rádio salva o valor direto na memória fixa ao ser alterado
     escolha = st.radio(
-        f"{i+1}. {p}", 
-        ["A", "B", "C", "D"], 
+        f"**{i+1}.** {p}", 
+        opcoes, 
         index=idx, 
         horizontal=True, 
         key=f"q_{i}"
     )
     
-    # SALVAMENTO IMEDIATO:
-    st.session_state["respostas_disc_fix"][str(i)] = escolha    
+    # SALVAMENTO IMEDIATO
+    st.session_state["respostas_disc_fix"][str(i)] = escolha   
 
 
 # =========================================================
