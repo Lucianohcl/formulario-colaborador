@@ -2780,12 +2780,18 @@ e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esper
    
 
 # =========================================================
-# 5. PERFIL DISC - RECONSTRUTOR
+# 5. PERFIL DISC - LIGAÇÃO DIRETA COM O BANCO (RASCUNHO)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# A LISTA PRECISA ESTAR AQUI
+# 1. Garante que a estrutura do rascunho existe para não dar erro
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {}
+if "disc" not in st.session_state["rascunho"]:
+    st.session_state["rascunho"]["disc"] = {}
+
+# 2. A LISTA DE PERGUNTAS
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
@@ -2801,26 +2807,26 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# GARANTE A MEMÓRIA
-if "respostas_disc_fix" not in st.session_state:
-    st.session_state["respostas_disc_fix"] = {str(i): "" for i in range(24)}
-
-# LOOP DE EXIBIÇÃO
+# 3. LOOP COM LIGAÇÃO DIRETA
 for i, p in enumerate(perguntas_disc):
-    res_atual = st.session_state["respostas_disc_fix"].get(str(i), "")
+    chave = str(i)
+    # Busca o valor direto do rascunho que veio do banco
+    valor_no_banco = st.session_state["rascunho"]["disc"].get(chave, "")
+    
     opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(res_atual) if res_atual in opcoes else None
+    idx = opcoes.index(valor_no_banco) if valor_no_banco in opcoes else None
 
-    # O RADIO
+    # O rádio desenha o que está no banco e salva de volta no banco na mesma hora
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes, 
         index=idx, 
         horizontal=True, 
-        key=f"q_final_{i}" # Mudei a key levemente para forçar o Streamlit a redesenhar
+        key=f"disc_direto_{i}"
     )
-    st.session_state["respostas_disc_fix"][str(i)] = escolha
-
+    
+    # ATUALIZAÇÃO DIRETA NO RASCUNHO
+    st.session_state["rascunho"]["disc"][chave] = escolha
 
 
 # =========================================================
