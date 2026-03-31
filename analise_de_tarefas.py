@@ -2774,12 +2774,12 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC - ESPELHAMENTO DO RASCUNHO
+# 📊 QUESTIONÁRIO DISC (SINCRONIZAÇÃO NUVEM -> RASCUNHO)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# Sua lista exata de perguntas (24 itens)
+# 1. LISTA DAS 24 PERGUNTAS (TEXTO PLANO)
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2807,37 +2807,40 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Acessa o dicionário 'disc' dentro do rascunho carregado
-rascunho_dados = st.session_state.get("rascunho", {})
-dados_disc_json = rascunho_dados.get("disc", {})
+# 2. BUSCA O DISC DENTRO DO RASCUNHO QUE VEIO DA NUVEM
+# Garante que pegue exatamente as letras "A", "B", "C", "D"
+rascunho_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
+respostas_finais_disc = {}
 
-# Dicionário para coletar as respostas da tela e salvar depois
-respostas_disc_final = {}
+# Variável de controle para resetar os widgets quando mudar de colaborador
+v = st.session_state.get("v_tab", 0)
 
-for i, enunciado in enumerate(perguntas_disc):
+for i, texto in enumerate(perguntas_disc):
     chave = str(i)
-    # Pega a letra que está no JSON (ex: "A", "B"...)
-    letra_salva = str(dados_disc_json.get(chave, "")).strip().upper()
+    letra_salva = rascunho_nuvem.get(chave)
     
     opcoes = ["A", "B", "C", "D"]
     
-    # Define qual bolinha marcar com base na letra do JSON
-    idx_marcar = opcoes.index(letra_salva) if letra_salva in opcoes else None
-
-    # Exibe o rádio. A key dinâmica força a atualização visual ao carregar outro rascunho.
+    # Converte a letra do JSON para o índice do rádio (0, 1, 2 ou 3)
+    idx = opcoes.index(letra_salva) if letra_salva in opcoes else None
+    
+    # 3. EXIBE O RÁDIO COM A BOLINHA NO LUGAR CERTO
     escolha = st.radio(
-        f"**Pergunta {i+1}**",
-        opcoes,
-        index=idx_marcar,
+        f"**{i+1}. {texto}**",
+        options=opcoes,
+        index=idx,
         horizontal=True,
-        help=enunciado, # Coloca o texto da pergunta como dica ou label
-        key=f"radio_disc_{nome_input}_{i}"
+        key=f"disc_rascunho_{i}_{v}"
     )
     
-    # Mostra o texto da pergunta acima ou ao lado para clareza
-    st.write(f"*{enunciado}*")
-    
-    respostas_disc_final[chave] = escolha
+    # 4. GUARDA O ESTADO ATUAL (Caso ele edite antes de salvar de novo)
+    respostas_finais_disc[chave] = escolha
+
+# 5. ATUALIZA O SESSION STATE PARA O PRÓXIMO SALVAMENTO
+if "rascunho" not in st.session_state:
+    st.session_state["rascunho"] = {}
+st.session_state["rascunho"]["disc"] = respostas_finais_disc
+
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
