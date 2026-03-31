@@ -1209,25 +1209,26 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
-# =========================================================
-# 🎨 TÍTULO E CABEÇALHO DO FORMULÁRIO
-# =========================================================
+# 1. Primeiro você verifica se a página é a do formulário
+if st.session_state.get("pagina") == "formulario":
 
+    # =========================================================
+    # 🎨 TÍTULO E CABEÇALHO DO FORMULÁRIO (AGORA DENTRO DO IF)
+    # =========================================================
 
-# Resgata o nome do colaborador carregado (se houver)
-resgate = st.session_state.get("rascunho_atual", {})
-nome_titulo = resgate.get("colaborador", "Novo Formulário")
+    # Resgata o nome do colaborador carregado (se houver)
+    resgate = st.session_state.get("rascunho_atual", {})
+    nome_titulo = resgate.get("colaborador", "Novo Formulário")
 
-# Exibição do Título Principal
-st.title("📋 Formulário de Acompanhamento")
+    # Exibição do Título Principal
+    st.title("📋 Formulário de Acompanhamento")
 
-if nome_titulo != "Novo Formulário":
-    st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
-else:
-    st.success("📝 **Criando Novo Registro**")
+    if nome_titulo != "Novo Formulário":
+        st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
+    else:
+        st.success("📝 **Criando Novo Registro**")
 
-st.markdown("---")
-
+    st.markdown("---")
 
 
 # =========================================================
