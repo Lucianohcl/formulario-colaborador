@@ -1996,18 +1996,20 @@ if st.session_state.get("pagina") == "visualizar":
 
                     with col1:
                         st.download_button(
-                            "📄 Baixar Word",
-                            gerar_word(form),
+                            label="📄 Baixar Word",
+                            data=gerar_word(form),
                             file_name=f"{nome_arquivo}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"btn_word_{nome_clean}_{data_clean}" # KEY DINÂMICA
                         )
 
                     with col2:
                         st.download_button(
-                            "📑 Baixar PDF",
-                            gerar_pdf(form),
+                            label="📑 Baixar PDF",
+                            data=gerar_pdf(form),
                             file_name=f"{nome_arquivo}.pdf",
-                            mime="application/pdf"
+                            mime="application/pdf",
+                            key=f"btn_pdf_{nome_clean}_{data_clean}" # KEY DINÂMICA
                         )
 
 
