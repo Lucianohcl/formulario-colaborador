@@ -2642,7 +2642,7 @@ def val(chave, default=""):
 # =========================================================
 # 2. IDENTIFICAÇÃO E CARREGAMENTO (VERSÃO BLINDADA)
 # =========================================================
-st.subheader("📋 Acesso ao Sistema")
+st.subheader("📋 Acesso ao Rascunho")
 nome_input = st.text_input("DIGITE SEU NOME COMPLETO:").strip().upper()
 # ADICIONE ESTA LINHA ABAIXO:
 nome_digitado = nome_input
