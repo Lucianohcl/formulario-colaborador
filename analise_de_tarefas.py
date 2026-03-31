@@ -800,17 +800,30 @@ if st.session_state.get("pagina") in abas_do_menu:
         # Se quiser mostrar algo do rascunho na home sem mostrar o form todo:
         # st.write(f"Rascunho atual: {st.session_state.get('colaborador', 'Nenhum')}")
 
-    # 2. INJEÇÃO DO CSS (A Blindagem)
-    # Isso esconde os inputs, botões e textos das 3000 linhas, mas o Python continua lendo elas.
+    # 2. INJEÇÃO DO CSS (Bloqueio Universal por Posição)
     st.markdown("""
         <style>
-            /* Seleciona o bloco principal de conteúdo e esconde tudo o que é widget de formulário */
-            .main div[data-testid="stVerticalBlock"] > div:nth-child(n+3) {
+            /* 1. Esconde ABSOLUTAMENTE TUDO que for gerado na área principal */
+            [data-testid="stVerticalBlock"] > div {
                 display: none !important;
             }
-            /* Mantém o Sidebar e o Título da aba visíveis */
-            [data-testid="stSidebar"], .main h1 {
+
+            /* 2. Abre exceção para os 3 primeiros blocos (Onde estão seu Título e Boas-vindas) */
+            /* Isso garante que o conteúdo do seu 'if home' apareça, mas as 3000 linhas sumam */
+            [data-testid="stVerticalBlock"] > div:nth-child(1),
+            [data-testid="stVerticalBlock"] > div:nth-child(2),
+            [data-testid="stVerticalBlock"] > div:nth-child(3) {
                 display: block !important;
+            }
+
+            /* 3. Garante que o Sidebar (Menu) continue visível e funcional */
+            [data-testid="stSidebar"] {
+                display: block !important;
+            }
+            
+            /* 4. Remove espaços em branco extras que as tabelas escondidas poderiam deixar */
+            .main .block-container {
+                padding-bottom: 0px !important;
             }
         </style>
     """, unsafe_allow_html=True)
