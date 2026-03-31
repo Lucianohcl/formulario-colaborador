@@ -2773,14 +2773,15 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
+
 # =========================================================
-# 5. PERFIL DISC - RESOLUÇÃO DO NAMEERROR
+# 5. PERFIL DISC - RESOLUÇÃO FINAL (COPIAR E COLAR)
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. DEFINIÇÃO DA LISTA (O Python precisa ler isso antes do 'for')
-perguntas_lista = [
+# A lista está aqui dentro, então não dá erro de "NameError"
+perguntas_disc_lista = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
     "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
@@ -2795,27 +2796,34 @@ perguntas_lista = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 2. PUXA OS DADOS DO DICIONÁRIO
-dados_disc_json = st.session_state.get("rascunho", {}).get("disc", {})
+# Puxa o rascunho que foi carregado no st.session_state
+rascunho_dados = st.session_state.get("rascunho", {})
+respostas_no_json = rascunho_dados.get("disc", {})
+
 respostas_disc_final = {}
 
-# 3. O LOOP (Onde dava o erro)
-for i, p in enumerate(perguntas_lista):
+for i, p in enumerate(perguntas_disc_lista):
     chave = str(i)
-    letra_banco = str(dados_disc_json.get(chave, "")).strip().upper()
+    # Pega a letra do JSON (A, B, C ou D)
+    letra_salva = str(respostas_no_json.get(chave, "")).strip().upper()
     
     opcoes_radio = ["A", "B", "C", "D"]
-    idx_radio = opcoes_radio.index(letra_banco) if letra_banco in opcoes_radio else None
+    
+    # Se a letra existe no JSON, descobre a posição (0 a 3) para marcar a bolinha
+    idx_marcar = opcoes_radio.index(letra_salva) if letra_salva in opcoes_radio else None
 
-    # Key dinâmica para forçar a marcação na tela
+    # Desenha o rádio. A key garante que ele resete ao trocar de colaborador
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes_radio, 
-        index=idx_radio, 
+        index=idx_marcar, 
         horizontal=True, 
-        key=f"radio_persistente_{nome_input}_{chave}"
+        key=f"radio_disc_{nome_input.replace(' ', '_')}_{i}"
     )
+    # Guarda o que está na tela para o botão SALVAR usar
     respostas_disc_final[chave] = escolha
+
+
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
 # =========================================================
