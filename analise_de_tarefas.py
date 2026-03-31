@@ -1774,227 +1774,22 @@ if st.session_state.get("pagina") == "visualizar":
                     st.info(f"Resposta selecionada: **{valor_resposta}**")
                     st.markdown("---")
 
-                                # -------------------------------------------------
-                # EXPORTAÇÃO WORD + PDF (ESPELHO DO FORMULÁRIO)
-                # -------------------------------------------------
-
-                import io
-                from docx import Document
-                from reportlab.lib.pagesizes import A4
-                from reportlab.pdfgen import canvas
-
-
-                def gerar_word(form):
-
-                    indent = " " * 16
-                    doc = Document()
-
-                    doc.add_heading("RELATÓRIO DO FORMULÁRIO DO COLABORADOR", level=1)
-
-                    doc.add_heading("1. Dados de Identificação", level=2)
-
-                    campos = [
-                        ("Nome", "nome"),
-                        ("Data de Envio", "data_envio"),
-                        ("Setor", "setor"),
-                        ("Cargo", "cargo"),
-                        ("Chefe", "chefe"),
-                        ("Departamento", "departamento"),
-                        ("Empresa", "empresa"),
-                        ("Escolaridade", "escolaridade"),
-                        ("Devolver preenchido em", "devolucao")
-                    ]
-
-                    for titulo, chave in campos:
-                        doc.add_paragraph(f"{indent}{titulo}: {form.get(chave,'')}")
-
-                    doc.add_paragraph("")
-                    doc.add_paragraph(f"{indent}Cursos:")
-                    doc.add_paragraph(f"{indent}{form.get('cursos','')}")
-
-                    doc.add_paragraph("")
-                    doc.add_paragraph(f"{indent}Objetivo do Trabalho:")
-                    doc.add_paragraph(f"{indent}{form.get('objetivo','')}")
-
-                    doc.add_heading("2. Atividades Executadas", level=2)
-
-                    table = doc.add_table(rows=1, cols=4)
-                    headers = ["Atividade", "Frequência", "Horas", "Minutos"]
-
-                    for i, h in enumerate(headers):
-                        table.rows[0].cells[i].text = h
-
-                    for ativ in form.get("atividades", []):
-                        row = table.add_row().cells
-                        row[0].text = str(ativ.get("Atividade Descrita",""))
-                        row[1].text = str(ativ.get("Frequência",""))
-                        row[2].text = str(ativ.get("Horas",""))
-                        row[3].text = str(ativ.get("Minutos",""))
-
-                    doc.add_heading("3. Dificuldades e Bloqueios", level=2)
-
-                    table = doc.add_table(rows=1, cols=5)
-                    headers = ["Dificuldade","Setor/Parceiro","Frequência","Horas Perdidas","Minutos Perdidos"]
-
-                    for i,h in enumerate(headers):
-                        table.rows[0].cells[i].text = h
-
-                    for dif in form.get("dificuldades", []):
-                        row = table.add_row().cells
-                        row[0].text = str(dif.get("Dificuldade",""))
-                        row[1].text = str(dif.get("Setor/Parceiro Envolvido",""))
-                        row[2].text = str(dif.get("Frequência",""))
-                        row[3].text = str(dif.get("Horas Perdidas",""))
-                        row[4].text = str(dif.get("Minutos Perdidos",""))
-
-                    doc.add_heading("4. Sugestões de Melhoria", level=2)
-
-                    table = doc.add_table(rows=1, cols=5)
-                    headers = ["Sugestão","Impacto Esperado","Redução Horas","Redução Minutos","Frequência Impacto"]
-
-                    for i,h in enumerate(headers):
-                        table.rows[0].cells[i].text = h
-
-                    for sug in form.get("sugestoes", []):
-                        row = table.add_row().cells
-                        row[0].text = str(sug.get("Sugestão de Melhoria",""))
-                        row[1].text = str(sug.get("Impacto Esperado",""))
-                        row[2].text = str(sug.get("Redução Horas",""))
-                        row[3].text = str(sug.get("Redução Minutos",""))
-                        row[4].text = str(sug.get("Frequência do Impacto",""))
-
-                    doc.add_heading("5. Questionário DISC", level=2)
-
-                    for i, pergunta in enumerate(perguntas_disc, 1):
-                        resp = form.get("disc", {}).get(f"disc_{i}", "")
-                        doc.add_paragraph(f"{indent}{i}. {pergunta}")
-                        doc.add_paragraph(f"{indent}Resposta: {resp}")
-
-                    buffer = io.BytesIO()
-                    doc.save(buffer)
-                    buffer.seek(0)
-
-                    return buffer
-
-
-                def gerar_pdf(form):
-
-                    indent = " " * 16
-                    buffer = io.BytesIO()
-
-                    c = canvas.Canvas(buffer, pagesize=A4)
-
-                    largura, altura = A4
-                    y = altura - 40
-
-                    def linha(texto):
-
-                        nonlocal y
-
-                        largura_max = 95
-                        palavras = texto.split(" ")
-
-                        linha_atual = ""
-
-                        for palavra in palavras:
-
-                            if len(linha_atual + palavra) <= largura_max:
-                                linha_atual += palavra + " "
-
-                            else:
-                                c.drawString(40, y, linha_atual)
-                                y -= 18
-                                linha_atual = palavra + " "
-
-                                if y < 40:
-                                    c.showPage()
-                                    c.setFont("Helvetica",11)
-                                    y = altura - 40
-
-                        if linha_atual:
-                            c.drawString(40, y, linha_atual)
-                            y -= 18
-
-                    c.setFont("Helvetica-Bold",16)
-                    linha("RELATÓRIO DO FORMULÁRIO DO COLABORADOR")
-
-                    c.setFont("Helvetica",11)
-                    linha("")
-                    linha("1. Dados de Identificação")
-
-                    campos = [
-                        ("Nome","nome"),
-                        ("Data de Envio","data_envio"),
-                        ("Setor","setor"),
-                        ("Cargo","cargo"),
-                        ("Chefe","chefe"),
-                        ("Departamento","departamento"),
-                        ("Empresa","empresa"),
-                        ("Escolaridade","escolaridade")
-                    ]
-
-                    for titulo,chave in campos:
-                        linha(f"{indent}{titulo}: {form.get(chave,'')}")
-
-                    linha("")
-                    linha(f"{indent}Cursos: {form.get('cursos','')}")
-                    linha(f"{indent}Objetivo: {form.get('objetivo','')}")
-
-                    linha("")
-                    linha("2. Atividades Executadas")
-
-                    for ativ in form.get("atividades", []):
-                        linha(f"{indent}Atividade: {ativ.get('Atividade Descrita','')}")
-                        linha(f"{indent}Frequência: {ativ.get('Frequência','')}")
-                        linha(f"{indent}Tempo: {ativ.get('Horas','')} {ativ.get('Minutos','')}")
-                        linha("")
-
-                    linha("3. Dificuldades")
-
-                    for dif in form.get("dificuldades", []):
-                        linha(f"{indent}Dificuldade: {dif.get('Dificuldade','')}")
-                        linha(f"{indent}Setor: {dif.get('Setor/Parceiro Envolvido','')}")
-                        linha(f"{indent}Frequência: {dif.get('Frequência','')}")
-                        linha("")
-
-                    linha("4. Sugestões")
-
-                    for sug in form.get("sugestoes", []):
-                        linha(f"{indent}Sugestão: {sug.get('Sugestão de Melhoria','')}")
-                        linha(f"{indent}Impacto: {sug.get('Impacto Esperado','')}")
-                        linha("")
-
-                    linha("5. Questionário DISC")
-
-                    for i, pergunta in enumerate(perguntas_disc, 1):
-                        resp = form.get("disc", {}).get(f"disc_{i}", "")
-                        linha(f"{indent}{i}. {pergunta}")
-                        linha(f"{indent}Resposta: {resp}")
-                        linha("")
-
-                    c.save()
-                    buffer.seek(0)
-
-                    return buffer
-
-
                 # -------------------------------------------------
                 # BOTÕES DE EXPORTAÇÃO
                 # -------------------------------------------------
-
                 if st.session_state.get("usuario_logado") == "Luciano 123":
-
                     st.markdown("---")
                     st.subheader("⚙️ Painel de Exportação")
 
                     col1, col2 = st.columns(2)
 
+                    # Preparação do nome do arquivo
                     nome = form.get("nome", "Colaborador")
                     data = form.get("data_envio", "")
-
+                    
+                    # Limpeza para evitar caracteres proibidos em nomes de arquivos
                     nome_clean = nome.replace(" ", "_")
-                    data_clean = data.replace("/", "").replace(":", "").replace(" ", "_")
-
+                    data_clean = str(data).replace("/", "").replace(":", "").replace(" ", "_")
                     nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
 
                     with col1:
@@ -2003,7 +1798,7 @@ if st.session_state.get("pagina") == "visualizar":
                             data=gerar_word(form),
                             file_name=f"{nome_arquivo}.docx",
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            key=f"btn_word_{nome_clean}_{int(time.time()*1000)}"
+                            key=f"btn_word_{idx}" # Key estável usando o índice do loop
                         )
 
                     with col2:
@@ -2012,7 +1807,7 @@ if st.session_state.get("pagina") == "visualizar":
                             data=gerar_pdf(form),
                             file_name=f"{nome_arquivo}.pdf",
                             mime="application/pdf",
-                            key=f"btn_pdf_{nome_clean}_{int(time.time()*1000)}"
+                            key=f"btn_pdf_{idx}" # Key estável usando o índice do loop
                         )
 
 
