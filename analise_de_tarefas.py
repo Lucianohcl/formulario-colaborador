@@ -2774,68 +2774,70 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC - SINCRONIZAÇÃO COMPLETA
+# 5. PERFIL DISC - ESPELHAMENTO DO RASCUNHO
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# Lista oficial das 24 perguntas para bater com seu JSON (0-23)
+# Sua lista exata de perguntas (24 itens)
 perguntas_disc = [
-    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", 
-    "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
-    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", 
-    "Seu ritmo de trabalho: Rápido, Entusiasmado, Constante, Metódico", 
-    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", 
-    "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
-    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", 
-    "Confia mais em: Intuição, Opinião alheia, Experiência, Dados", 
-    "Prefere decisões: Independentes, Em grupo, Consensuais, Normatizadas", 
-    "Estilo de organização: Prático, Criativo, Tradicional, Detalhista", 
-    "Lida melhor com: Mudanças, Novas ideias, Rotinas, Regras", 
-    "Prefere trabalhar: Sozinho, Em equipe social, Em equipe calma, Silencioso", 
-    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", 
-    "Você se considera: Dominante, Influente, Estável, Analítico", 
-    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento", 
-    "Reação a cobranças: Mais esforço, Desculpas, Ansiedade, Argumentos", 
-    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", 
-    "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue", 
-    "Como aprende: Fazendo, Interagindo, Observando, Estudando", 
-    "Gestão de tempo: Resultados, Relações, Planejamento, Processos", 
-    "Como se comunica: Direto, Amigável, Calmo, Técnico", 
-    "Estilo de liderança: Autoritário, Persuasivo, Participativo, Processual", 
-    "Em pressão: Age rápido, Convence, Busca apoio, Analisa riscos", 
-    "Como quer ser gerenciado: Liberdade, Incentivo, Apoio, Instruções claras"
+    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
+    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
+    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
+    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
+    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
+    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
+    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
+    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
+    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
+    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
+    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
+    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
+    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
+    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
+    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
+    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
+    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
+    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
+    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
+    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# Puxa o dicionário 'disc' do rascunho carregado
-# Se o seu JSON é o que você colou, ele vai achar "0": "A", "1": "B", etc.
-rascunho_carregado = st.session_state.get("rascunho", {})
-dados_disc_json = rascunho_carregado.get("disc", {})
+# Acessa o dicionário 'disc' dentro do rascunho carregado
+rascunho_dados = st.session_state.get("rascunho", {})
+dados_disc_json = rascunho_dados.get("disc", {})
 
+# Dicionário para coletar as respostas da tela e salvar depois
 respostas_disc_final = {}
 
 for i, enunciado in enumerate(perguntas_disc):
     chave = str(i)
-    # Puxa a letra do seu JSON (ex: "A")
+    # Pega a letra que está no JSON (ex: "A", "B"...)
     letra_salva = str(dados_disc_json.get(chave, "")).strip().upper()
     
     opcoes = ["A", "B", "C", "D"]
     
-    # Descobre o índice (A=0, B=1, C=2, D=3)
+    # Define qual bolinha marcar com base na letra do JSON
     idx_marcar = opcoes.index(letra_salva) if letra_salva in opcoes else None
 
-    # Desenha o rádio com a bolinha já marcada se idx não for None
+    # Exibe o rádio. A key dinâmica força a atualização visual ao carregar outro rascunho.
     escolha = st.radio(
-        f"**{i+1}.** {enunciado}", 
-        opcoes, 
-        index=idx_marcar, 
-        horizontal=True, 
-        key=f"disc_final_{nome_input}_{i}" # Key dinâmica para resetar no F5
+        f"**Pergunta {i+1}**",
+        opcoes,
+        index=idx_marcar,
+        horizontal=True,
+        help=enunciado, # Coloca o texto da pergunta como dica ou label
+        key=f"radio_disc_{nome_input}_{i}"
     )
     
-    # Guarda o estado atual da tela para o botão SALVAR
+    # Mostra o texto da pergunta acima ou ao lado para clareza
+    st.write(f"*{enunciado}*")
+    
     respostas_disc_final[chave] = escolha
-
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
