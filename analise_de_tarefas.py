@@ -2773,13 +2773,13 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
+
 # =========================================================
-# 📊 QUESTIONÁRIO DISC (SINCRONIZAÇÃO NUVEM -> RASCUNHO)
+# 📊 DISC + DEBUG (RAIO-X TOTAL)
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário DISC")
+st.subheader("📊 Questionário DISC (DEBUG)")
 
-# 1. LISTA DAS 24 PERGUNTAS (TEXTO PLANO)
 perguntas_disc = [
     "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
     "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
@@ -2807,39 +2807,48 @@ perguntas_disc = [
     "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
 ]
 
-# 2. BUSCA O DISC DENTRO DO RASCUNHO QUE VEIO DA NUVEM
-# Garante que pegue exatamente as letras "A", "B", "C", "D"
-rascunho_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
-respostas_finais_disc = {}
+# 🔥 DADO BRUTO DA NUVEM
+disc_nuvem = st.session_state.get("rascunho", {}).get("disc", {})
 
-# Variável de controle para resetar os widgets quando mudar de colaborador
-v = st.session_state.get("v_tab", 0)
+st.write("🧠 DEBUG - DISC vindo da nuvem:")
+st.json(disc_nuvem)
+
+respostas_disc = {}
+opcoes = ["A", "B", "C", "D"]
 
 for i, texto in enumerate(perguntas_disc):
     chave = str(i)
-    letra_salva = rascunho_nuvem.get(chave)
     
-    opcoes = ["A", "B", "C", "D"]
-    
-    # Converte a letra do JSON para o índice do rádio (0, 1, 2 ou 3)
-    idx = opcoes.index(letra_salva) if letra_salva in opcoes else None
-    
-    # 3. EXIBE O RÁDIO COM A BOLINHA NO LUGAR CERTO
+    valor = disc_nuvem.get(chave)
+
+    # DEBUG INDIVIDUAL
+    st.caption(f"Q{i} → chave='{chave}' | valor_nuvem='{valor}'")
+
+    if valor not in opcoes:
+        st.error(f"❌ Problema na questão {i}: valor inválido → {valor}")
+
+    idx = opcoes.index(valor) if valor in opcoes else 0
+
+    st.caption(f"👉 índice calculado: {idx}")
+
     escolha = st.radio(
         f"**{i+1}. {texto}**",
         options=opcoes,
         index=idx,
         horizontal=True,
-        key=f"disc_rascunho_{i}_{v}"
+        key=f"disc_debug_{i}"
     )
-    
-    # 4. GUARDA O ESTADO ATUAL (Caso ele edite antes de salvar de novo)
-    respostas_finais_disc[chave] = escolha
 
-# 5. ATUALIZA O SESSION STATE PARA O PRÓXIMO SALVAMENTO
-if "rascunho" not in st.session_state:
-    st.session_state["rascunho"] = {}
-st.session_state["rascunho"]["disc"] = respostas_finais_disc
+    respostas_disc[chave] = escolha
+
+
+# RESULTADO FINAL
+st.markdown("---")
+st.write("📦 DEBUG - Resultado atual (antes de salvar):")
+st.json(respostas_disc)
+
+# ATUALIZA
+st.session_state["rascunho"]["disc"] = respostas_disc
 
 
 # =========================================================
