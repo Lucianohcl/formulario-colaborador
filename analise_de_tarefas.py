@@ -2807,35 +2807,30 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 3. LOOP COM LIGAÇÃO DIRETA (VERSÃO CORRIGIDA)
+# 3. LOOP COM LIGAÇÃO DIRETA (A PROVA DE BALAS)
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
     
-    # --- AJUSTE AQUI: Tenta buscar de dois lugares possíveis ---
-    # 1. Tenta buscar do rascunho (voto de confiança no banco)
-    # 2. Se não achar, tenta buscar da memória local (respostas_disc_fix)
-    valor_no_banco = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
-    
-    if not valor_no_banco:
-        valor_no_banco = st.session_state.get("respostas_disc_fix", {}).get(chave, "")
+    # Busca o valor no JSON que você postou acima
+    valor_v = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
     
     opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(valor_no_banco) if valor_no_banco in opcoes else None
+    idx = opcoes.index(valor_v) if valor_v in opcoes else None
 
-    # O rádio
+    # O SEGREDO: A key agora muda se o rascunho mudar (força a marcação)
+    # Usamos o nome do usuário na key para resetar o visual ao trocar de perfil
+    user_key = st.session_state.get("usuario_atual", "default")
+    
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes, 
         index=idx, 
         horizontal=True, 
-        key=f"disc_vFinal_Real_{i}" # Mudei a key para forçar o reset visual
+        key=f"disc_{user_key}_{chave}" 
     )
     
-    # SALVA DE VOLTA NOS DOIS LUGARES PARA NÃO PERDER MAIS
-    if "rascunho" in st.session_state:
-        if "disc" not in st.session_state["rascunho"]:
-            st.session_state["rascunho"]["disc"] = {}
-        st.session_state["rascunho"]["disc"][chave] = escolha
+    # SALVA NO RASCUNHO
+    st.session_state["rascunho"]["disc"][chave] = escolha
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB + SHEETS)
