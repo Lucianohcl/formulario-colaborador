@@ -2774,40 +2774,48 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC - MARRETA DE CACHE (RESOLUÇÃO FINAL)
+# 5. PERFIL DISC - RESOLUÇÃO DO NAMEERROR
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. Puxa os dados salvos
-dados_json = st.session_state.get("rascunho", {}).get("disc", {})
+# 1. DEFINIÇÃO DA LISTA (O Python precisa ler isso antes do 'for')
+perguntas_lista = [
+    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
+    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
+    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
+    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", 
+    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
+    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
+    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", "Você se considera: Dominante, Influente, Estável, Analítico", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico", "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos", 
+    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras", 
+    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais", "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos", 
+    "Como se comunica: Direto, Amigável, Calmo, Técnico", "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos", 
+    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
+]
+
+# 2. PUXA OS DADOS DO DICIONÁRIO
+dados_disc_json = st.session_state.get("rascunho", {}).get("disc", {})
 respostas_disc_final = {}
 
-# 2. Criamos um "ID de Versão" baseado no tempo para forçar o Streamlit a atualizar
-import time
-versao_id = int(time.time()) 
-
+# 3. O LOOP (Onde dava o erro)
 for i, p in enumerate(perguntas_lista):
     chave = str(i)
+    letra_banco = str(dados_disc_json.get(chave, "")).strip().upper()
     
-    # Pega a letra e garante que é compatível com a lista de opções
-    letra_banco = str(dados_json.get(chave, "")).strip().upper()
     opcoes_radio = ["A", "B", "C", "D"]
-    
-    # Define o índice. Se não achar a letra, fica None (vazio)
     idx_radio = opcoes_radio.index(letra_banco) if letra_banco in opcoes_radio else None
 
-    # O SEGREDO: A key muda toda vez que você dá F5 ou carrega o nome
-    # Isso obriga a bolinha a aparecer marcada!
+    # Key dinâmica para forçar a marcação na tela
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes_radio, 
         index=idx_radio, 
         horizontal=True, 
-        key=f"radio_final_{nome_input}_{chave}_{versao_id}" 
+        key=f"radio_persistente_{nome_input}_{chave}"
     )
     respostas_disc_final[chave] = escolha
-
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
 # =========================================================
