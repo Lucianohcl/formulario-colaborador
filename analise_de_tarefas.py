@@ -2778,20 +2778,16 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
    
-
 # =========================================================
-# 5. PERFIL DISC - LIGAÇÃO DIRETA COM O BANCO (RASCUNHO)
+# 5. PERFIL DISC - CONEXÃO DIRETA E FORÇADA
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. Garante que a estrutura do rascunho existe para não dar erro
-if "rascunho" not in st.session_state:
-    st.session_state["rascunho"] = {}
-if "disc" not in st.session_state["rascunho"]:
-    st.session_state["rascunho"]["disc"] = {}
+# 1. Garante que os dados da Katia estão na mão
+respostas_banco = st.session_state.get("rascunho", {}).get("disc", {})
 
-# 2. A LISTA DE PERGUNTAS
+# 2. LISTA DE PERGUNTAS
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
@@ -2807,30 +2803,33 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-# 3. LOOP COM LIGAÇÃO DIRETA (A PROVA DE BALAS)
+# 3. O DE-PARA DIRETO
+opcoes = ["A", "B", "C", "D"]
+
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
     
-    # Busca o valor no JSON que você postou acima
-    valor_v = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
+    # Pega o valor que você me mostrou no JSON ("A", "B", etc.)
+    letra_banco = respostas_banco.get(chave, "")
     
-    opcoes = ["A", "B", "C", "D"]
-    idx = opcoes.index(valor_v) if valor_v in opcoes else None
+    # Converte a letra em número (0, 1, 2, 3) para o rádio marcar
+    indice_marcado = opcoes.index(letra_banco) if letra_banco in opcoes else None
 
-    # O SEGREDO: A key agora muda se o rascunho mudar (força a marcação)
-    # Usamos o nome do usuário na key para resetar o visual ao trocar de perfil
-    user_key = st.session_state.get("usuario_atual", "default")
+    # KEY DINÂMICA: Isso é o que FORÇA a bolinha a aparecer marcada
+    # Ela muda conforme o usuário logado, obrigando o Streamlit a atualizar
+    user_id = st.session_state.get("usuario_atual", "user").replace(" ", "")
     
     escolha = st.radio(
         f"**{i+1}.** {p}", 
         opcoes, 
-        index=idx, 
+        index=indice_marcado, 
         horizontal=True, 
-        key=f"disc_{user_key}_{chave}" 
+        key=f"final_disc_{user_id}_{i}" 
     )
     
-    # SALVA NO RASCUNHO
+    # Salva de volta no rascunho para não perder o que foi alterado
     st.session_state["rascunho"]["disc"][chave] = escolha
+
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB + SHEETS)
