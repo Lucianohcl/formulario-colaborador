@@ -2774,16 +2774,16 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 5. PERFIL DISC - MARCAÇÃO AUTOMÁTICA
+# 5. PERFIL DISC - COMPLETO COM PERGUNTAS
 # =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# 1. Lista de perguntas (se já tiver no código, pode manter)
+# 1. LISTA RÍGIDA DE PERGUNTAS (Para garantir que apareçam)
 perguntas_disc = [
     "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
     "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico", 
-    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
+    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Quality", 
     "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", "Confia mais em: Intuição, Opinião alheia, Experience, Dados", 
     "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas", "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado", 
     "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas", "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso", 
@@ -2795,26 +2795,27 @@ perguntas_disc = [
     "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos", "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
 ]
 
-respostas_disc_atual = {}
+# 2. LEITURA DOS DADOS DO JSON
+dados_disc = st.session_state.get("rascunho", {}).get("disc", {})
+respostas_disc_final = {}
 
+# 3. O LOOP QUE DESENHA NA TELA
 for i, p in enumerate(perguntas_disc):
     chave = str(i)
-    valor_banco = st.session_state.get("rascunho", {}).get("disc", {}).get(chave, "")
-    opcoes_d = ["A", "B", "C", "D"]
-    idx_d = opcoes_d.index(valor_banco) if valor_banco in opcoes_d else None
+    letra_salva = dados_disc.get(chave, "") 
+    
+    opcoes = ["A", "B", "C", "D"]
+    idx = opcoes.index(letra_salva) if letra_salva in opcoes else None
 
+    # O Radio desenha a pergunta (p) e marca a bolinha (idx)
     escolha = st.radio(
         f"**{i+1}.** {p}", 
-        opcoes_d, 
-        index=idx_d, 
+        opcoes, 
+        index=idx, 
         horizontal=True, 
-        key=f"rd_disc_{nome_input}_{i}"
+        key=f"disc_vfinal_{nome_input.replace(' ', '')}_{i}"
     )
-    respostas_disc_atual[chave] = escolha
-
-# ADICIONE ESTA LINHA FORA DO LOOP (alinhada à esquerda)
-respostas_disc_final = respostas_disc_atual
-
+    respostas_disc_final[chave] = escolha
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
