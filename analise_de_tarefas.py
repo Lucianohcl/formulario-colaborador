@@ -2773,42 +2773,70 @@ e_baixa = criar_editor("⏳ Baixa Complexidade", "baixa", "Atividade")
 e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Setor Envolvido")
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
-
+# =========================================================
+# 5. PERFIL DISC - SINCRONIZAÇÃO COMPLETA
+# =========================================================
 st.markdown("---")
 st.subheader("📊 Questionário DISC")
 
-# Perguntas (Lista essencial para o loop)
-perguntas = [
-    "No trabalho em equipe", "Em reuniões", "Ao lidar com conflitos", "Seu ritmo de trabalho",
-    "Prefere tarefas", "Seu foco principal", "Ao decidir, você é", "Confia mais em",
-    "Prefere decisões", "Estilo de organização", "Lida melhor com", "Prefere trabalhar",
-    "Seu ponto forte", "Você se considera", "Se motiva por", "Reação a cobranças",
-    "Ambiente ideal", "Ao lidar com feedback", "Como prefere aprender", "Gestão de tempo",
-    "Como se comunica", "Estilo de liderança", "Em situações de pressão", "Como prefere ser gerenciado"
+# Lista oficial das 24 perguntas para bater com seu JSON (0-23)
+perguntas_disc = [
+    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza", 
+    "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes", 
+    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica", 
+    "Seu ritmo de trabalho: Rápido, Entusiasmado, Constante, Metódico", 
+    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas", 
+    "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade", 
+    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico", 
+    "Confia mais em: Intuição, Opinião alheia, Experiência, Dados", 
+    "Prefere decisões: Independentes, Em grupo, Consensuais, Normatizadas", 
+    "Estilo de organização: Prático, Criativo, Tradicional, Detalhista", 
+    "Lida melhor com: Mudanças, Novas ideias, Rotinas, Regras", 
+    "Prefere trabalhar: Sozinho, Em equipe social, Em equipe calma, Silencioso", 
+    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização", 
+    "Você se considera: Dominante, Influente, Estável, Analítico", 
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento", 
+    "Reação a cobranças: Mais esforço, Desculpas, Ansiedade, Argumentos", 
+    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado", 
+    "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue", 
+    "Como aprende: Fazendo, Interagindo, Observando, Estudando", 
+    "Gestão de tempo: Resultados, Relações, Planejamento, Processos", 
+    "Como se comunica: Direto, Amigável, Calmo, Técnico", 
+    "Estilo de liderança: Autoritário, Persuasivo, Participativo, Processual", 
+    "Em pressão: Age rápido, Convence, Busca apoio, Analisa riscos", 
+    "Como quer ser gerenciado: Liberdade, Incentivo, Apoio, Instruções claras"
 ]
 
-# Puxa exatamente o que você colou aí em cima
-dados_json = st.session_state.get("rascunho", {}).get("disc", {})
+# Puxa o dicionário 'disc' do rascunho carregado
+# Se o seu JSON é o que você colou, ele vai achar "0": "A", "1": "B", etc.
+rascunho_carregado = st.session_state.get("rascunho", {})
+dados_disc_json = rascunho_carregado.get("disc", {})
+
 respostas_disc_final = {}
 
-for i, p in enumerate(perguntas):
+for i, enunciado in enumerate(perguntas_disc):
     chave = str(i)
-    # Puxa a letra (Ex: "A"). Se não tiver, fica vazio.
-    letra_salva = dados_json.get(chave, "")
+    # Puxa a letra do seu JSON (ex: "A")
+    letra_salva = str(dados_disc_json.get(chave, "")).strip().upper()
     
     opcoes = ["A", "B", "C", "D"]
-    # Se a letra for "A", idx vira 0. Se for "B", vira 1...
-    idx = opcoes.index(letra_salva) if letra_salva in opcoes else None
+    
+    # Descobre o índice (A=0, B=1, C=2, D=3)
+    idx_marcar = opcoes.index(letra_salva) if letra_salva in opcoes else None
 
-    # O Radio que marca a bolinha automaticamente pelo 'index'
+    # Desenha o rádio com a bolinha já marcada se idx não for None
     escolha = st.radio(
-        f"{i+1}. {p}", 
+        f"**{i+1}.** {enunciado}", 
         opcoes, 
-        index=idx, 
+        index=idx_marcar, 
         horizontal=True, 
-        key=f"d_{nome_input}_{i}"
+        key=f"disc_final_{nome_input}_{i}" # Key dinâmica para resetar no F5
     )
+    
+    # Guarda o estado atual da tela para o botão SALVAR
     respostas_disc_final[chave] = escolha
+
+
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
 # =========================================================
