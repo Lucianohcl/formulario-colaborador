@@ -2774,51 +2774,54 @@ e_dif = criar_editor("⚠️ Dificuldades", "dificuldades", "Dificuldade", "Seto
 e_sug = criar_editor("💡 Sugestões", "sugestoes", "Sugestão", "Impacto Esperado")
 
 # =========================================================
-# 📊 QUESTIONÁRIO DISC (ESPELHO REAL - PRODUÇÃO FINAL)
+# 6. PERFIL DISC (PERSISTÊNCIA GARANTIDA - CORRIGIDO)
 # =========================================================
 st.markdown("---")
-st.subheader("📊 Questionário DISC")
-
-perguntas_disc = [
-    "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
-    "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
-    "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda as regras",
-    "No trabalho em equipe: (A) Lidera o grupo | (B) Motiva os colegas | (C) Apoia os outros | (D) Organiza as tarefas",
-    "Em reuniões: (A) Vai direto ao ponto | (B) Interage e brinca | (C) Escuta mais | (D) Anota detalhes",
-    "Ao lidar com conflitos: (A) Enfrenta direto | (B) Tenta apaziguar | (C) Evita o confronto | (D) Usa lógica e fatos",
-    "Seu ritmo de trabalho: (A) Rápido/Impaciente | (B) Rápido/Entusiasmado | (C) Calmo/Constante | (D) Metódico/Cauteloso",
-    "Prefere tarefas: (A) Desafiadoras | (B) Variadas e sociais | (C) Rotineiras e seguras | (D) Técnicas e detalhadas",
-    "Seu foco principal: (A) Resultados | (B) Relacionamentos | (C) Estabilidade | (D) Qualidade e Processos",
-    "Ao decidir, você é: (A) Decidido e firme | (B) Impulsivo e intuitivo | (C) Cuidadoso e lento | (D) Lógico e analítico",
-    "Confia mais em: (A) Sua intuição | (B) Opinião alheia | (C) Experiência passada | (D) Dados e provas",
-    "Prefere decisões: (A) Independentes | (B) Em grupo | (C) Consensuais | (D) Baseadas em normas",
-    "Estilo de organização: (A) Prático | (B) Criativo/Bagunçado | (C) Tradicional | (D) Muito organizado",
-    "Lida melhor com: (A) Mudanças rápidas | (B) Novas ideias | (C) Rotinas claras | (D) Regras rígidas",
-    "Prefere trabalhar: (A) Sozinho/Comando | (B) Ambiente festivo | (C) Ambiente tranquilo | (D) Ambiente silencioso",
-    "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
-    "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Conforme/Analítico",
-    "Se motiva por: (A) Poder/Bônus | (B) Reconhecimento | (C) Segurança/Paz | (D) Conhecimento Técnico",
-    "Reação a cobranças: (A) Mais esforço | (B) Desculpas criativas | (C) Ansiedade | (D) Argumentos técnicos",
-    "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
-    "Ao lidar com feedback: (A) Aceita e ajusta | (B) Comenta e debate | (C) Analisa e planeja | (D) Segue regras",
-    "Como prefere aprender: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando materiais",
-    "Gestão de tempo: (A) Prioriza resultados | (B) Mantém relações | (C) Planeja com cuidado | (D) Segue processos",
-    "Como se comunica: (A) Direto e objetivo | (B) Amigável e motivador | (C) Calmo e ponderado | (D) Técnico e detalhista"
-]
+st.subheader("📊 Questionário")
 
 # =========================================================
-# 🔥 FONTE ÚNICA (SESSION_STATE)
+# 🔥 GARANTE ESTRUTURA
 # =========================================================
-if "rascunho" not in st.session_state:
-    st.session_state["rascunho"] = {}
+if "rascunho_atual" not in st.session_state:
+    st.session_state["rascunho_atual"] = {}
 
-if "disc" not in st.session_state["rascunho"]:
-    st.session_state["rascunho"]["disc"] = {}
+if "disc" not in st.session_state["rascunho_atual"]:
+    st.session_state["rascunho_atual"]["disc"] = {}
 
-# normaliza chave
-disc_nuvem = {
-    str(k): v for k, v in st.session_state["rascunho"]["disc"].items()
+# Recupera o dicionário salvo
+disc_data = {
+    str(k): v for k, v in st.session_state["rascunho_atual"]["disc"].items()
 }
+
+# =========================================================
+# 📋 PERGUNTAS
+# =========================================================
+perguntas_disc = [
+    "No trabalho em equipe: Lidera, Motiva, Apoia, Organiza",
+    "Em reuniões: Vai direto ao ponto, Interage, Escuta, Anota detalhes",
+    "Ao lidar com conflitos: Enfrenta, Apazigua, Evita, Usa lógica",
+    "Seu ritmo de trabalho: Rápido/Impaciente, Entusiasmado, Constante, Metódico",
+    "Prefere tarefas: Desafiadoras, Variadas, Rotineiras, Técnicas",
+    "Seu foco principal: Resultados, Relacionamentos, Estabilidade, Qualidade",
+    "Ao decidir, você é: Decidido, Impulsivo, Cuidadoso, Lógico",
+    "Confia mais em: Intuição, Opinião alheia, Experiência, Dados",
+    "Prefere decisões: Independentes, Em grupo, Consensuais, Baseadas em normas",
+    "Estilo de organização: Prático, Criativo, Tradicional, Muito organizado",
+    "Lida melhor com: Mudanças rápidas, Novas ideias, Rotinas claras, Regras rígidas",
+    "Prefere trabalhar: Sozinho, Festivo, Tranquilo, Silencioso",
+    "Seu ponto forte: Coragem, Comunicação, Paciência, Organização",
+    "Você se considera: Dominante, Influente, Estável, Analítico",
+    "Se motiva por: Poder, Reconhecimento, Segurança, Conhecimento Técnico",
+    "Reação a cobranças: Mais esforço, Desculpas criativas, Ansiedade, Argumentos técnicos",
+    "Ambiente ideal: Competitivo, Amigável, Previsível, Disciplinado",
+    "Ao lidar com feedback: Aceita, Comenta, Analisa, Segue regras",
+    "Como prefere aprender: Fazendo, Interagindo, Observando, Estudando materiais",
+    "Gestão de tempo: Prioriza resultados, Mantém relações, Planeja, Segue processos",
+    "Como se comunica: Direto, Amigável, Calmo, Técnico",
+    "Estilo de liderança: Autoritário, Persuasivo, Participativo, Orientado a processos",
+    "Em situações de pressão: Age rápido, Tenta convencer, Busca apoio, Analisa os riscos",
+    "Como você prefere ser gerenciado: Com liberdade, Com incentivos, Com apoio, Com instruções claras"
+]
 
 # =========================================================
 # 🎯 DEFINIÇÕES
@@ -2827,31 +2830,28 @@ opcoes = ["A", "B", "C", "D"]
 respostas_disc = {}
 
 # =========================================================
-# 🎯 RENDER CORRETO (SEM BUG)
+# 🎯 RENDER (CORRETO E ESTÁVEL)
 # =========================================================
-for i, texto in enumerate(perguntas_disc):
+for i, pergunta in enumerate(perguntas_disc):
     chave = str(i)
 
-    valor = disc_nuvem.get(chave, "A")
+    valor_salvo = disc_data.get(chave, "A")
 
-    if valor not in opcoes:
-        valor = "A"
+    if valor_salvo not in opcoes:
+        valor_salvo = "A"
 
-    escolha = st.radio(
-        f"**{i+1}. {texto}**",
+    respostas_disc[chave] = st.radio(
+        f"**{i+1}.** {pergunta}",
         options=opcoes,
-        index=opcoes.index(valor),
-        horizontal=True,
-        key=f"disc_{i}"
+        index=opcoes.index(valor_salvo),
+        key=f"disc_{i}",
+        horizontal=True
     )
 
-    respostas_disc[chave] = escolha
-
 # =========================================================
-# 💾 SINCRONIZAÇÃO DIRETA (SEM CONDIÇÃO BUGADA)
+# 💾 PERSISTÊNCIA (SALVA AUTOMATICAMENTE NO SESSION_STATE)
 # =========================================================
-st.session_state["rascunho"]["disc"] = respostas_disc
-
+st.session_state["rascunho_atual"]["disc"] = respostas_disc
 
 # =========================================================
 # 6. SALVAMENTO (GITHUB)
