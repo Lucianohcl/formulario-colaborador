@@ -1254,56 +1254,51 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
+
 # =========================================================
-# 🎭 CAPA DE INVISIBILIDADE (NÃO QUEBRA O RASCUNHO)
+# 🎭 CAPA DE INVISIBILIDADE (DEFINITIVA)
 # =========================================================
 
-# Criamos um lugar no app que pode ser "esvaziado"
-area_do_formulario = st.container()
-
-# Se NÃO estivermos na página do formulário, a gente limpa a área visual
-if st.session_state.get("pagina") != "formulario":
-    area_do_formulario.empty() 
-
-# Título e mensagens iniciais dentro do container
-with area_do_formulario:
-    resgate = st.session_state.get("rascunho_atual", {})
-    nome_titulo = resgate.get("colaborador", "Novo Formulário")
-
-    st.title("📋 Formulário de Acompanhamento")
-
-    if nome_titulo != "Novo Formulário":
-        st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
-    else:
-        st.success("📝 **Criando Novo Registro**")
-
-    st.markdown("---")
-
-# --- 🎯 AQUI ENTRA A "MARRETA" PARA TABELAS E GRÁFICOS ---
-
-# Criamos uma âncora invisível. Tudo o que vier DEPOIS dela será ocultado pelo CSS.
-st.markdown('<div id="blindagem-formulario"></div>', unsafe_allow_html=True)
-
-# Se estiver em uma aba do menu, aplicamos o bloqueio visual total abaixo da âncora
+# 1. Se estivermos no MENU, mostramos o conteúdo da aba selecionada
 if st.session_state.get("pagina") in abas_do_menu:
-    # 1. CONTEÚDO DAS ABAS (O que deve aparecer no lugar do formulário)
-    if st.session_state.pagina == "disc":
-        st.title("🧠 Perfil DISC")
-        # SEU CÓDIGO DO DISC (Gráficos/Tabelas) AQUI - Eles vão aparecer!
     
-    elif st.session_state.pagina == "visualizar":
-        st.title("👁️ Visualizar Dados")
-        # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
-        
-    # 2. O CSS que mata as 3000 linhas (inclusive tabelas)
+    # Criamos um container só para a aba atual (isso isola o conteúdo)
+    with st.container():
+        if st.session_state.pagina == "home":
+            st.title("🏠 Bem-vindo")
+            st.write("Use o menu lateral para navegar.")
+            
+        elif st.session_state.pagina == "disc":
+            st.title("🧠 Perfil DISC")
+            # SEU CÓDIGO DO DISC AQUI (Tabelas e Gráficos aparecerão aqui)
+            
+        elif st.session_state.pagina == "comparar":
+            st.title("⚖️ Comparar Colaboradores")
+            # SEU CÓDIGO DE COMPARAÇÃO AQUI
+            
+        elif st.session_state.pagina == "visualizar":
+            st.title("👁️ Visualizar Dados")
+            # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
+
+    # 2. A "DIVISÓRIA" (Tudo o que estiver ABAIXO daqui será DELETADO visualmente)
+    st.markdown('<div id="corte-de-seguranca"></div>', unsafe_allow_html=True)
+    
     st.markdown("""
         <style>
-            /* Esconde tudo o que for 'irmão' da âncora e vier depois dela */
-            #blindagem-formulario ~ * {
+            /* Esconde absolutamente TUDO que não esteja dentro do container da aba */
+            #corte-de-seguranca ~ * {
                 display: none !important;
             }
+            /* Garante que o Sidebar e o topo não sumam */
+            [data-testid="stSidebar"] { display: block !important; }
         </style>
     """, unsafe_allow_html=True)
+
+# 3. Caso seja o link de FORMULÁRIO (fora do menu), mostramos o título dele
+else:
+    st.title("📋 Formulário de Acompanhamento")
+    st.markdown("---")
+
 
 
 
