@@ -1209,36 +1209,54 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
+# ============================================================
+# 🎭 CONTROLE DE EXIBIÇÃO DEFINITIVO (COPIE E COLE)
+# ============================================================
 
-# =========================================================
-# 🎭 CAPA DE INVISIBILIDADE (NÃO QUEBRA O RASCUNHO)
-# =========================================================
+# 1. Lista oficial das suas abas
+abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
+pagina_atual = st.session_state.get("pagina", "home")
 
-# Criamos um lugar no app que pode ser "esvaziado"
-area_do_formulario = st.container()
+# 2. Blindagem Visual: Se estiver no Menu, o Navegador esconde o Form
+if pagina_atual in abas_do_menu:
+    st.markdown("<style>#envelope-form { display: none !important; }</style>", unsafe_allow_html=True)
+    
+    if pagina_atual == "home":
+        st.title("🏠 Bem-vindo ao Dashboard")
+        st.write("Use o menu lateral para navegar.")
+        
+    elif pagina_atual == "analise":
+        st.title("📊 Análise Inteligente")
+        # Seu código de análise aqui...
 
-# Se NÃO estivermos na página do formulário, a gente limpa a área visual
-# mas deixa o código das 3000 linhas rodar "em silêncio" para o rascunho
-if st.session_state.get("pagina") != "formulario":
-    area_do_formulario.empty() 
+    elif pagina_atual == "comparar":
+        st.title("⚖️ Comparativo")
+        # Seu código de comparar aqui...
 
-# Agora, para o Título e as mensagens iniciais, usamos o 'with'
-with area_do_formulario:
-    resgate = st.session_state.get("rascunho_atual", {})
-    nome_titulo = resgate.get("colaborador", "Novo Formulário")
+    elif pagina_atual == "disc":
+        st.title("🧠 Perfil DISC")
+        # Seu código de DISC aqui...
 
+    elif pagina_atual == "parecer":
+        st.title("📝 Parecer Técnico")
+        # Seu código de parecer aqui...
+
+    elif pagina_atual == "visualizar":
+        st.title("👁️ Visualizar Dados")
+        # Seu código de visualização aqui...
+
+    elif pagina_atual == "produtividade":
+        st.title("📈 Produtividade")
+        # Seu código de produtividade aqui...
+
+# 3. Cabeçalho do Formulário (Para quando o link for acessado)
+else:
     st.title("📋 Formulário de Acompanhamento")
+    st.info("✨ Editando Rascunho")
 
-    if nome_titulo != "Novo Formulário":
-        st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
-    else:
-        st.success("📝 **Criando Novo Registro**")
+# --- 🛡️ INÍCIO DA PROTEÇÃO (COLE ACIMA DO SEU FORMULÁRIO) ---
+st.markdown('<div id="envelope-form">', unsafe_allow_html=True)
 
-    st.markdown("---")
-
-# ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
-# O rascunho continuará funcionando porque o código está sendo lido,
-# mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
 
 # =========================================================
 # Perguntas DISC
@@ -2741,3 +2759,7 @@ if st.button("💾 SALVAR TUDO", use_container_width=True):
             mime="application/json",
             use_container_width=True
         )
+
+
+# --- 🛡️ FIM DA PROTEÇÃO ---
+st.markdown('</div>', unsafe_allow_html=True)
