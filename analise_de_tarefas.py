@@ -787,46 +787,41 @@ elif btn_logout:
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
-# Lista das abas que DEVEM ESCONDER o formulário
+# ============================================================
+# 🎭 CONTROLE DE EXIBIÇÃO (DASHBOARD vs FORMULÁRIO)
+# ============================================================
+
+# 1. Lista das abas que pertencem ao Dashboard
 abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
 
-# Se estiver em qualquer aba do menu, a gente aplica a "capa de invisibilidade"
+# 2. SE ESTIVER NO MENU: Mostra a análise e PARA a execução (bloqueia o form abaixo)
 if st.session_state.get("pagina") in abas_do_menu:
     
-    # 1. CONTEÚDO DA HOME (O que aparece quando abre o app)
     if st.session_state.pagina == "home":
         st.title("🏠 Bem-vindo ao Dashboard")
         st.write("Use o menu lateral para navegar pelas análises.")
-        # Se quiser mostrar algo do rascunho na home sem mostrar o form todo:
-        # st.write(f"Rascunho atual: {st.session_state.get('colaborador', 'Nenhum')}")
+        
+    elif st.session_state.pagina == "disc":
+        st.title("🧠 Perfil DISC")
+        # --- Seus gráficos do DISC entram aqui ---
 
-    # 2. INJEÇÃO DO CSS (Bloqueio Universal por Posição)
-    st.markdown("""
-        <style>
-            /* 1. Esconde ABSOLUTAMENTE TUDO que for gerado na área principal */
-            [data-testid="stVerticalBlock"] > div {
-                display: none !important;
-            }
+    elif st.session_state.pagina == "analise":
+        st.title("📊 Análise Inteligente")
+        # --- Sua lógica de análise entra aqui ---
 
-            /* 2. Abre exceção para os 3 primeiros blocos (Onde estão seu Título e Boas-vindas) */
-            /* Isso garante que o conteúdo do seu 'if home' apareça, mas as 3000 linhas sumam */
-            [data-testid="stVerticalBlock"] > div:nth-child(1),
-            [data-testid="stVerticalBlock"] > div:nth-child(2),
-            [data-testid="stVerticalBlock"] > div:nth-child(3) {
-                display: block !important;
-            }
+    elif st.session_state.pagina == "visualizar":
+        st.title("👁️ Visualizar Dados")
+        # --- Suas tabelas de visualização entram aqui ---
 
-            /* 3. Garante que o Sidebar (Menu) continue visível e funcional */
-            [data-testid="stSidebar"] {
-                display: block !important;
-            }
-            
-            /* 4. Remove espaços em branco extras que as tabelas escondidas poderiam deixar */
-            .main .block-container {
-                padding-bottom: 0px !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
+    # 🔥 A MARRETA FINAL:
+    # Se o código chegou aqui (dentro do menu), ele PARA e não desenha o que vem abaixo.
+    st.stop() 
+
+# 3. SE NÃO ESTIVER NO MENU (Link do formulário): O código pula o st.stop() e segue
+else:
+    st.title("📋 Formulário de Acompanhamento")
+    st.info("✨ Você está editando um rascunho.")
+    st.markdown("---")
 
 
 # ============================================================
