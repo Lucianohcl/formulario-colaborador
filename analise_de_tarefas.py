@@ -788,41 +788,45 @@ if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
 # ============================================================
-# 🎭 CONTROLE DE EXIBIÇÃO (DASHBOARD vs FORMULÁRIO)
+# 🎭 CONTROLE DE EXIBIÇÃO (VERSÃO SEGURA COM ID)
 # ============================================================
 
-# 1. Lista das abas que pertencem ao Dashboard
+# 1. Lista das abas
 abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
 
-# 2. SE ESTIVER NO MENU: Mostra a análise e PARA a execução (bloqueia o form abaixo)
+# 2. SE ESTIVER NO MENU: Aplicamos o CSS que esconde o ID 'bloco-formulario'
 if st.session_state.get("pagina") in abas_do_menu:
+    st.markdown("""
+        <style>
+            #bloco-formulario {
+                display: none !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
     
     if st.session_state.pagina == "home":
-        st.title("🏠 Bem-vindo ao Dashboard")
-        st.write("Use o menu lateral para navegar pelas análises.")
-        
+        st.title("🏠 Dashboard")
+        st.write("Bem-vindo!")
     elif st.session_state.pagina == "disc":
         st.title("🧠 Perfil DISC")
-        # --- Seus gráficos do DISC entram aqui ---
-
     elif st.session_state.pagina == "analise":
         st.title("📊 Análise Inteligente")
-        # --- Sua lógica de análise entra aqui ---
-
     elif st.session_state.pagina == "visualizar":
         st.title("👁️ Visualizar Dados")
-        # --- Suas tabelas de visualização entram aqui ---
+    # Adicione os outros elifs se precisar
 
-    # 🔥 A MARRETA FINAL:
-    # Se o código chegou aqui (dentro do menu), ele PARA e não desenha o que vem abaixo.
-    st.stop() 
-
-# 3. SE NÃO ESTIVER NO MENU (Link do formulário): O código pula o st.stop() e segue
+# 3. SE FOR O LINK DO FORMULÁRIO: Apenas mostra o título
 else:
     st.title("📋 Formulário de Acompanhamento")
-    st.info("✨ Você está editando um rascunho.")
+    st.info("✨ Editando Rascunho")
     st.markdown("---")
 
+# --- 🛡️ ABERTURA DO COFRE (COLOQUE ISSO EXATAMENTE AQUI) ---
+st.markdown('<div id="bloco-formulario">', unsafe_allow_html=True)
+
+# ============================================================
+# 🚀 AS 3.000 LINHAS COMEÇAM AQUI (ELAS ESTÃO DENTRO DO ID)
+# ============================================================
 
 # ============================================================
 # PÁGINA PERFIL DISC (VERSÃO SINCRO)
