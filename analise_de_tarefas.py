@@ -788,45 +788,29 @@ if pagina_anterior != st.session_state.pagina:
     st.rerun()
 
 # ============================================================
-# 🎭 CONTROLE DE EXIBIÇÃO (VERSÃO SEGURA COM ID)
+# 🎭 CONTROLE DE EXIBIÇÃO (VERSÃO CORRIGIDA - SEM CORTE)
 # ============================================================
 
-# 1. Lista das abas
 abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
+pagina_atual = st.session_state.get("pagina")
 
-# 2. SE ESTIVER NO MENU: Aplicamos o CSS que esconde o ID 'bloco-formulario'
-if st.session_state.get("pagina") in abas_do_menu:
-    st.markdown("""
-        <style>
-            #bloco-formulario {
-                display: none !important;
-            }
-        </style>
-    """, unsafe_allow_html=True)
-    
-    if st.session_state.pagina == "home":
+# 1. SE ESTIVER NO MENU: Mostra o conteúdo da aba
+if pagina_atual in abas_do_menu:
+    if pagina_atual == "home":
         st.title("🏠 Dashboard")
         st.write("Bem-vindo!")
-    elif st.session_state.pagina == "disc":
+    elif pagina_atual == "disc":
         st.title("🧠 Perfil DISC")
-    elif st.session_state.pagina == "analise":
-        st.title("📊 Análise Inteligente")
-    elif st.session_state.pagina == "visualizar":
+    elif pagina_atual == "visualizar":
         st.title("👁️ Visualizar Dados")
-    # Adicione os outros elifs se precisar
+    
+    # EM VEZ DE STOP, USAMOS CSS PARA ESCONDER O QUE VEM ABAIXO
+    st.markdown("<style>#vazio-abaixo { display: none; } .main .block-container > div:nth-child(n+5) { display: none; }</style>", unsafe_allow_html=True)
 
-# 3. SE FOR O LINK DO FORMULÁRIO: Apenas mostra o título
+# 2. SE FOR O FORMULÁRIO: Mostra o título e deixa o resto carregar
 else:
     st.title("📋 Formulário de Acompanhamento")
-    st.info("✨ Editando Rascunho")
-    st.markdown("---")
-
-# --- 🛡️ ABERTURA DO COFRE (COLOQUE ISSO EXATAMENTE AQUI) ---
-st.markdown('<div id="bloco-formulario">', unsafe_allow_html=True)
-
-# ============================================================
-# 🚀 AS 3.000 LINHAS COMEÇAM AQUI (ELAS ESTÃO DENTRO DO ID)
-# ============================================================
+    st.info("📝 Editando Rascunho...")
 
 # ============================================================
 # PÁGINA PERFIL DISC (VERSÃO SINCRO)
