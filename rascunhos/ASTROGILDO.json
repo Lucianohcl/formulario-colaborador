@@ -1,6 +1,6 @@
 {
     "colaborador": "ASTROGILDO",
-    "timestamp": "31/03/2026 23:13:08",
+    "timestamp": "01/04/2026 00:56:08",
     "campos": {
         "cargo": "Analista de Custos",
         "dep": "Financeiro",
@@ -398,11 +398,11 @@
         ],
         "sugestoes": [
             {
-                "Sugestão": "",
-                "Impacto Esperado": "",
-                "Horas": "",
-                "Minutos": "",
-                "Frequência": ""
+                "Sugestão": "EEEEEE",
+                "Impacto Esperado": "EEEEE",
+                "Horas": "3 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
             },
             {
                 "Sugestão": "",
