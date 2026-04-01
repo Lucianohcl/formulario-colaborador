@@ -774,9 +774,6 @@ elif btn_parecer:
     st.session_state.pagina = "parecer"
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
-elif btn_produtividade:
-    st.session_state.pagina = "produtividade"
-
 # O elif abaixo verifica a URL sem precisar de botão
 elif st.session_state.pagina == "formulario":
     pass # Este comando é obrigatório para não dar erro de sintaxe
@@ -786,31 +783,6 @@ elif btn_logout:
 
 if pagina_anterior != st.session_state.pagina:
     st.rerun()
-
-# ============================================================
-# 🎭 CONTROLE DE EXIBIÇÃO (VERSÃO CORRIGIDA - SEM CORTE)
-# ============================================================
-
-abas_do_menu = ["home", "analise", "comparar", "disc", "parecer", "visualizar", "produtividade"]
-pagina_atual = st.session_state.get("pagina")
-
-# 1. SE ESTIVER NO MENU: Mostra o conteúdo da aba
-if pagina_atual in abas_do_menu:
-    if pagina_atual == "home":
-        st.title("🏠 Dashboard")
-        st.write("Bem-vindo!")
-    elif pagina_atual == "disc":
-        st.title("🧠 Perfil DISC")
-    elif pagina_atual == "visualizar":
-        st.title("👁️ Visualizar Dados")
-    
-    # EM VEZ DE STOP, USAMOS CSS PARA ESCONDER O QUE VEM ABAIXO
-    st.markdown("<style>#vazio-abaixo { display: none; } .main .block-container > div:nth-child(n+5) { display: none; }</style>", unsafe_allow_html=True)
-
-# 2. SE FOR O FORMULÁRIO: Mostra o título e deixa o resto carregar
-else:
-    st.title("📋 Formulário de Acompanhamento")
-    st.info("📝 Editando Rascunho...")
 
 # ============================================================
 # PÁGINA PERFIL DISC (VERSÃO SINCRO)
@@ -1239,40 +1211,34 @@ col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", 
 
 
 # =========================================================
-# 🎭 CAPA DE INVISIBILIDADE (DEFINITIVA)
+# 🎭 CAPA DE INVISIBILIDADE (NÃO QUEBRA O RASCUNHO)
 # =========================================================
 
-# 1. Se estivermos no MENU, mostramos APENAS as abas e PARAMOS o desenho do form
-if st.session_state.get("pagina") in abas_do_menu:
-    
-    if st.session_state.pagina == "home":
-        st.title("🏠 Bem-vindo")
-        st.write("Use o menu lateral para navegar.")
-        
-    elif st.session_state.pagina == "disc":
-        st.title("🧠 Perfil DISC")
-        # SEU CÓDIGO DO DISC AQUI
-        
-    elif st.session_state.pagina == "visualizar":
-        st.title("👁️ Visualizar Dados")
-        # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
+# Criamos um lugar no app que pode ser "esvaziado"
+area_do_formulario = st.container()
 
-    # ESTA LINHA É A CHAVE: Ela impede que o que vem abaixo seja desenhado,
-    # mas o Streamlit ainda processa as variáveis para o rascunho.
-    st.stop() 
+# Se NÃO estivermos na página do formulário, a gente limpa a área visual
+# mas deixa o código das 3000 linhas rodar "em silêncio" para o rascunho
+if st.session_state.get("pagina") != "formulario":
+    area_do_formulario.empty() 
 
-# 2. Caso seja o link de FORMULÁRIO (fora do menu), o st.stop() acima é ignorado
-else:
+# Agora, para o Título e as mensagens iniciais, usamos o 'with'
+with area_do_formulario:
+    resgate = st.session_state.get("rascunho_atual", {})
+    nome_titulo = resgate.get("colaborador", "Novo Formulário")
+
     st.title("📋 Formulário de Acompanhamento")
-    st.info(f"✨ Editando Rascunho")
+
+    if nome_titulo != "Novo Formulário":
+        st.info(f"✨ **Editando Rascunho de:** {nome_titulo}")
+    else:
+        st.success("📝 **Criando Novo Registro**")
+
     st.markdown("---")
 
-# ============================================================
-# 🚀 ABAIXO SEGUEM AS 3.000 LINHAS (SEM INDENTAÇÃO)
-# ============================================================
-# Elas só serão alcançadas se o st.stop() NÃO for executado.
-
-
+# ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
+# O rascunho continuará funcionando porque o código está sendo lido,
+# mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
 
 # =========================================================
 # Perguntas DISC
