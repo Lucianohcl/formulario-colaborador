@@ -1259,46 +1259,35 @@ col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", 
 # 🎭 CAPA DE INVISIBILIDADE (DEFINITIVA)
 # =========================================================
 
-# 1. Se estivermos no MENU, mostramos o conteúdo da aba selecionada
+# 1. Se estivermos no MENU, mostramos APENAS as abas e PARAMOS o desenho do form
 if st.session_state.get("pagina") in abas_do_menu:
     
-    # Criamos um container só para a aba atual (isso isola o conteúdo)
-    with st.container():
-        if st.session_state.pagina == "home":
-            st.title("🏠 Bem-vindo")
-            st.write("Use o menu lateral para navegar.")
-            
-        elif st.session_state.pagina == "disc":
-            st.title("🧠 Perfil DISC")
-            # SEU CÓDIGO DO DISC AQUI (Tabelas e Gráficos aparecerão aqui)
-            
-        elif st.session_state.pagina == "comparar":
-            st.title("⚖️ Comparar Colaboradores")
-            # SEU CÓDIGO DE COMPARAÇÃO AQUI
-            
-        elif st.session_state.pagina == "visualizar":
-            st.title("👁️ Visualizar Dados")
-            # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
+    if st.session_state.pagina == "home":
+        st.title("🏠 Bem-vindo")
+        st.write("Use o menu lateral para navegar.")
+        
+    elif st.session_state.pagina == "disc":
+        st.title("🧠 Perfil DISC")
+        # SEU CÓDIGO DO DISC AQUI
+        
+    elif st.session_state.pagina == "visualizar":
+        st.title("👁️ Visualizar Dados")
+        # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
 
-    # 2. A "DIVISÓRIA" (Tudo o que estiver ABAIXO daqui será DELETADO visualmente)
-    st.markdown('<div id="corte-de-seguranca"></div>', unsafe_allow_html=True)
-    
-    st.markdown("""
-        <style>
-            /* Esconde absolutamente TUDO que não esteja dentro do container da aba */
-            #corte-de-seguranca ~ * {
-                display: none !important;
-            }
-            /* Garante que o Sidebar e o topo não sumam */
-            [data-testid="stSidebar"] { display: block !important; }
-        </style>
-    """, unsafe_allow_html=True)
+    # ESTA LINHA É A CHAVE: Ela impede que o que vem abaixo seja desenhado,
+    # mas o Streamlit ainda processa as variáveis para o rascunho.
+    st.stop() 
 
-# 3. Caso seja o link de FORMULÁRIO (fora do menu), mostramos o título dele
+# 2. Caso seja o link de FORMULÁRIO (fora do menu), o st.stop() acima é ignorado
 else:
     st.title("📋 Formulário de Acompanhamento")
+    st.info(f"✨ Editando Rascunho")
     st.markdown("---")
 
+# ============================================================
+# 🚀 ABAIXO SEGUEM AS 3.000 LINHAS (SEM INDENTAÇÃO)
+# ============================================================
+# Elas só serão alcançadas se o st.stop() NÃO for executado.
 
 
 
