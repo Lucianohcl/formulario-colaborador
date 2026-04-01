@@ -1254,7 +1254,6 @@ col_atv = ["Atividade", "Frequência", "Horas", "Minutos"]
 col_dif = ["Dificuldade/Bloqueio", "Setor/Parceiro Envolvido", "Frequência", "Horas", "Minutos"]
 col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", "Minutos"]
 
-
 # =========================================================
 # 🎭 CAPA DE INVISIBILIDADE (NÃO QUEBRA O RASCUNHO)
 # =========================================================
@@ -1263,11 +1262,10 @@ col_sug = ["Sugestão de Melhoria", "Impacto Esperado", "Frequência", "Horas", 
 area_do_formulario = st.container()
 
 # Se NÃO estivermos na página do formulário, a gente limpa a área visual
-# mas deixa o código das 3000 linhas rodar "em silêncio" para o rascunho
 if st.session_state.get("pagina") != "formulario":
     area_do_formulario.empty() 
 
-# Agora, para o Título e as mensagens iniciais, usamos o 'with'
+# Título e mensagens iniciais dentro do container
 with area_do_formulario:
     resgate = st.session_state.get("rascunho_atual", {})
     nome_titulo = resgate.get("colaborador", "Novo Formulário")
@@ -1281,9 +1279,33 @@ with area_do_formulario:
 
     st.markdown("---")
 
-# ABAIXO SEGUEM AS 3000 LINHAS SEM INDENTAÇÃO
-# O rascunho continuará funcionando porque o código está sendo lido,
-# mas o 'area_do_formulario.empty()' lá em cima ajuda a limpar o topo.
+# --- 🎯 AQUI ENTRA A "MARRETA" PARA TABELAS E GRÁFICOS ---
+
+# Criamos uma âncora invisível. Tudo o que vier DEPOIS dela será ocultado pelo CSS.
+st.markdown('<div id="blindagem-formulario"></div>', unsafe_allow_html=True)
+
+# Se estiver em uma aba do menu, aplicamos o bloqueio visual total abaixo da âncora
+if st.session_state.get("pagina") in abas_do_menu:
+    # 1. CONTEÚDO DAS ABAS (O que deve aparecer no lugar do formulário)
+    if st.session_state.pagina == "disc":
+        st.title("🧠 Perfil DISC")
+        # SEU CÓDIGO DO DISC (Gráficos/Tabelas) AQUI - Eles vão aparecer!
+    
+    elif st.session_state.pagina == "visualizar":
+        st.title("👁️ Visualizar Dados")
+        # SEU CÓDIGO DE VISUALIZAÇÃO AQUI
+        
+    # 2. O CSS que mata as 3000 linhas (inclusive tabelas)
+    st.markdown("""
+        <style>
+            /* Esconde tudo o que for 'irmão' da âncora e vier depois dela */
+            #blindagem-formulario ~ * {
+                display: none !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)
+
+
 
 # =========================================================
 # Perguntas DISC
