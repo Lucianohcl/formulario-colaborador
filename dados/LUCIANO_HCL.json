@@ -1,0 +1,169 @@
+{
+    "timestamp": "05/04/2026 16:19:13",
+    "colaborador": "Usuario_Desconhecido",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Monitorar variações de custos de matérias-primas críticas",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": " Elaborar relatórios comparativos de custos reais vs. orçados ",
+                "Horas": "4 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Análise detalhada de rentabilidade por produto/linha",
+                "Horas": "6 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Registrar e validar lançamentos de custos no ERP ",
+                "Horas": "1 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Revisar e conciliar contas de custos",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Preparar relatórios de custos departamentais ",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Atualizar planilhas de controle de despesas menores",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": " Conferir notas fiscais e documentos simples ",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Organizar arquivos e registros para auditoria",
+                "Horas": "1 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Necessidade de consolidar dados provenientes de várias planilhas diferentes",
+                "Setor Envolvido": "Processos Gerais",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Correção manual de dados inconsistentes antes da análise de custos",
+                "Setor Envolvido": "Financeiro",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Lançamento manual ou repetitivo de informações em planilhas ou sistemas",
+                "Setor Envolvido": "Processos Gerais",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Dificuldade": "Dificuldade em localizar rapidamente informações históricas de custos",
+                "Setor Envolvido": "Controladoria / Arquivos de dados",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Dificuldade": "Recebimento de dados incompletos ou atrasados de áreas operacionais",
+                "Setor Envolvido": "Produção / Operações",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Dificuldade": "Divergência de informações entre relatórios de diferentes sistemas",
+                "Setor Envolvido": "TI / Sistemas",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Dificuldade": "Necessidade de treinamentos em ERPs/Sistemas Diversos",
+                "Setor Envolvido": "TI / Sistemas",
+                "Horas": "1 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Automatizações de relatórios e consolidação automática de dados",
+                "Impacto Esperado": "Redução de retrabalho, menor risco de erros e maior agilidade na consolidação das informações",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Automatizar integração de dados entre sistemas ou criar importação automática de informações",
+                "Impacto Esperado": "Maior eficiência operacional e redução de tarefas repetitivas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "A",
+        "2": "C",
+        "3": "A",
+        "4": "A",
+        "5": "D",
+        "6": "B",
+        "7": "D",
+        "8": "A",
+        "9": "D",
+        "10": "C",
+        "11": "A",
+        "12": "A",
+        "13": "B",
+        "14": "C",
+        "15": "A",
+        "16": "A",
+        "17": "B",
+        "18": "A",
+        "19": "D",
+        "20": "A",
+        "21": "C",
+        "22": "C",
+        "23": "A"
+    }
+}
