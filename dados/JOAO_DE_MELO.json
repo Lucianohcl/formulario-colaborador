@@ -1,0 +1,81 @@
+{
+    "nome": "JOAO DE MELO",
+    "cargo": "Analista de Custos",
+    "departamento": "Controladoria",
+    "setor": "Financeiro",
+    "chefe": "José",
+    "empresa": "Empresa Y",
+    "escolaridade": "Graduação em Ciências Contábeis",
+    "cursos": "X",
+    "objetivo": "X",
+    "devolucao": "25/03/2026",
+    "atividades_alta": [
+        {
+            "Atividade": "X",
+            "Frequência": "D",
+            "Horas": "2 h",
+            "Minutos": "15 min"
+        }
+    ],
+    "atividades_normal": [
+        {
+            "Atividade": "X",
+            "Frequência": "S",
+            "Horas": "2 h",
+            "Minutos": "10 min"
+        }
+    ],
+    "atividades_baixa": [
+        {
+            "Atividade": "X",
+            "Frequência": "S",
+            "Horas": "4 h",
+            "Minutos": "30 min"
+        }
+    ],
+    "dificuldades": [
+        {
+            "Dificuldade/Bloqueio": "C",
+            "Setor/Parceiro Envolvido": "C",
+            "Frequência": "S",
+            "Horas": "2 h",
+            "Minutos": "15 min"
+        }
+    ],
+    "sugestoes": [
+        {
+            "Sugestão de Melhoria": "C",
+            "Impacto Esperado": "C",
+            "Frequência": "D",
+            "Horas": "1 h",
+            "Minutos": "15 min"
+        }
+    ],
+    "disc": {
+        "q1": "A",
+        "q2": "A",
+        "q3": "A",
+        "q4": "A",
+        "q5": "A",
+        "q6": "A",
+        "q7": "A",
+        "q8": "A",
+        "q9": "A",
+        "q10": "A",
+        "q11": "A",
+        "q12": "A",
+        "q13": "A",
+        "q14": "A",
+        "q15": "A",
+        "q16": "A",
+        "q17": "A",
+        "q18": "A",
+        "q19": "A",
+        "q20": "A",
+        "q21": "A",
+        "q22": "A",
+        "q23": "A",
+        "q24": "A"
+    },
+    "data_snapshot": "26/03/2026 01:43"
+}

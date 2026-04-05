@@ -1,0 +1,81 @@
+{
+    "nome": "Luciano",
+    "cargo": "Analista de Custos",
+    "departamento": "Controladoria",
+    "setor": "Financeiro",
+    "chefe": "José de Souza",
+    "empresa": "Empresa X",
+    "escolaridade": "Graduação em Ciências Contábeis",
+    "cursos": "WDVFEVWEV",
+    "objetivo": "FEVEFVWEBBG",
+    "devolucao": "25/03/2026",
+    "atividades_alta": [
+        {
+            "Atividade": "D",
+            "Frequência": "D",
+            "Horas": "1 h",
+            "Minutos": "5 min"
+        }
+    ],
+    "atividades_normal": [
+        {
+            "Atividade": "D",
+            "Frequência": "D",
+            "Horas": "5 h",
+            "Minutos": "25 min"
+        }
+    ],
+    "atividades_baixa": [
+        {
+            "Atividade": "D",
+            "Frequência": "D",
+            "Horas": "3 h",
+            "Minutos": "10 min"
+        }
+    ],
+    "dificuldades": [
+        {
+            "Dificuldade/Bloqueio": "D",
+            "Setor/Parceiro Envolvido": "C",
+            "Frequência": "D",
+            "Horas": "2 h",
+            "Minutos": "15 min"
+        }
+    ],
+    "sugestoes": [
+        {
+            "Sugestão de Melhoria": "D",
+            "Impacto Esperado": "D",
+            "Frequência": "S",
+            "Horas": "1 h",
+            "Minutos": "5 min"
+        }
+    ],
+    "disc": {
+        "q1": "A",
+        "q2": "A",
+        "q3": "A",
+        "q4": "A",
+        "q5": "A",
+        "q6": "A",
+        "q7": "B",
+        "q8": "B",
+        "q9": "C",
+        "q10": "A",
+        "q11": "D",
+        "q12": "D",
+        "q13": "D",
+        "q14": "B",
+        "q15": "B",
+        "q16": "D",
+        "q17": "D",
+        "q18": "D",
+        "q19": "D",
+        "q20": "D",
+        "q21": "B",
+        "q22": "B",
+        "q23": "B",
+        "q24": "B"
+    },
+    "data_snapshot": "25/03/2026 21:30"
+}
