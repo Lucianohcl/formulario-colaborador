@@ -1,0 +1,61 @@
+{
+    "colaborador": "TESTE_SISTEMA",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "escolaridade": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "devolucao": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabela_tarefas": [
+        {
+            "Tarefa": "",
+            "Frequência": "Diária",
+            "Horas": "0",
+            "Minutos": "00"
+        },
+        {
+            "Tarefa": "",
+            "Frequência": "Diária",
+            "Horas": "0",
+            "Minutos": "00"
+        },
+        {
+            "Tarefa": "",
+            "Frequência": "Diária",
+            "Horas": "0",
+            "Minutos": "00"
+        }
+    ],
+    "disc": {
+        "p0": null,
+        "p1": null,
+        "p2": null,
+        "p3": null,
+        "p4": null,
+        "p5": null,
+        "p6": null,
+        "p7": null,
+        "p8": null,
+        "p9": null,
+        "p10": null,
+        "p11": null,
+        "p12": null,
+        "p13": null,
+        "p14": null,
+        "p15": null,
+        "p16": null,
+        "p17": null,
+        "p18": null,
+        "p19": null,
+        "p20": null,
+        "p21": null,
+        "p22": null,
+        "p23": null
+    },
+    "data_atualizacao": "26/03/2026 11:23:10"
+}

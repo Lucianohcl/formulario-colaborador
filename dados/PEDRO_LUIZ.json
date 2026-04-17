@@ -1,0 +1,85 @@
+{
+    "timestamp": "13/04/2026 15:08:16",
+    "colaborador": "PEDRO LUIZ",
+    "campos": {
+        "cargo": "FINANCEIRO",
+        "departamento": "FINENCEIRO",
+        "setor": "FINANCERIO",
+        "chefe": "JOSÉ",
+        "unidade": "EXEMPLO",
+        "escolaridade": "SYPERUIOR",
+        "devolver_em": "13/04/2026",
+        "cursos": "EFGERBRBTR",
+        "objetivo": "BFBWEBWFBW"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "WEWBWVEFBW",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "FBWGRBRG",
+                "Horas": "5 h",
+                "Minutos": "25 min",
+                "Frequência": "A"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "FEFEGBRGBGR",
+                "Horas": "2 h",
+                "Minutos": "20 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "SCCFQWEFWQ",
+                "Setor Envolvido": "WDFVQWFQWER",
+                "Horas": "6 h",
+                "Minutos": "35 min",
+                "Frequência": "A"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "DVFEQVEFQV",
+                "Impacto Esperado": "FEVFD",
+                "Horas": "4 h",
+                "Minutos": "30 min",
+                "Frequência": "T"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "A",
+        "2": "A",
+        "3": "A",
+        "4": "A",
+        "5": "A",
+        "6": "A",
+        "7": "A",
+        "8": "A",
+        "9": "A",
+        "10": "A",
+        "11": "A",
+        "12": "A",
+        "13": "A",
+        "14": "A",
+        "15": "A",
+        "16": "A",
+        "17": "A",
+        "18": "A",
+        "19": "A",
+        "20": "D",
+        "21": "A",
+        "22": "A",
+        "23": "A"
+    }
+}

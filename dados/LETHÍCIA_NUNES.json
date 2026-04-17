@@ -1,0 +1,84 @@
+{
+    "timestamp": "06/04/2026 20:06:33",
+    "colaborador": "LETHÍCIA NUNES",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Fechamento de empresas que não estão atualizadas em um curto prazo. Devido a falta de informações no prazo correto esta atividade se torna complexa para finalização em curto prazo. (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Fechamento das demonstrações contábeis (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Conciliações (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Envio de informações do cliente em prazo hábil",
+                "Setor Envolvido": "Financeiro do cliente",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Devido ao pouco tempo que tenho na empresa ainda não possuo sugestões.",
+                "Impacto Esperado": "Melhoria",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ]
+    },
+    "disc": {
+        "0": "B",
+        "1": "C",
+        "2": "A",
+        "3": "C",
+        "4": "C",
+        "5": "D",
+        "6": "C",
+        "7": "B",
+        "8": "A",
+        "9": "A",
+        "10": "D",
+        "11": "B",
+        "12": "A",
+        "13": "C",
+        "14": "C",
+        "15": "B",
+        "16": "D",
+        "17": "C",
+        "18": "A",
+        "19": "B",
+        "20": "C",
+        "21": "A",
+        "22": "D",
+        "23": "A"
+    }
+}

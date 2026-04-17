@@ -1,0 +1,91 @@
+{
+    "timestamp": "14/04/2026 11:30:08",
+    "colaborador": "Luciana Simas ",
+    "campos": {
+        "cargo": "Assistente ",
+        "departamento": "Fiscal ",
+        "setor": "Fiscal ",
+        "chefe": "Túlio ",
+        "unidade": "JV contabilidade ",
+        "escolaridade": "Eu não o superior ",
+        "devolver_em": "14/04/2026",
+        "cursos": "Ciências contábeis ",
+        "objetivo": "Calcular tributos e executar minhas tarefas com excelência "
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Apuração de impostos",
+                "Horas": "8 h",
+                "Minutos": "35 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Simples nacional ",
+                "Horas": "8 h",
+                "Minutos": "35 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Emitir faturamento ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "A missão de nota fiscal ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "N/A",
+                "Setor Envolvido": "N/A",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Precisamos de um estagiário no setor ",
+                "Impacto Esperado": "Auxiliar nas demandas diárias ",
+                "Horas": "6 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ]
+    },
+    "disc": {
+        "0": "C",
+        "1": "C",
+        "2": "A",
+        "3": "C",
+        "4": "C",
+        "5": "C",
+        "6": "C",
+        "7": "C",
+        "8": "D",
+        "9": "D",
+        "10": "D",
+        "11": "D",
+        "12": "A",
+        "13": "C",
+        "14": "C",
+        "15": "B",
+        "16": "B",
+        "17": "C",
+        "18": "A",
+        "19": "B",
+        "20": "A",
+        "21": "A",
+        "22": "A",
+        "23": "A"
+    }
+}

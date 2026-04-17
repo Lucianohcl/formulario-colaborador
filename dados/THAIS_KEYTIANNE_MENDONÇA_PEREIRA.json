@@ -1,0 +1,145 @@
+{
+    "timestamp": "09/04/2026 17:21:22",
+    "colaborador": "Usuario_Desconhecido",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "INFORME DE RENDIMENTOS SOCIOS - 2025",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "SIMULAÇÃO DE RESCISÃO",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA EMPRESA FILIAL",
+                "Horas": "1 h",
+                "Minutos": "20 min",
+                "Frequência": "M"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "RESCISÃO PEDIDO",
+                "Horas": "0 h",
+                "Minutos": "25 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "RECIBO DE FERIAS",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "ADMISSÃO",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA EMPRESA PEQUENA",
+                "Horas": "0 h",
+                "Minutos": "45 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "RESCISAO DEMISSAO",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "CONSULTA FGTS",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "CONSULTA ECAC ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "AVISO DE FERIAS",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "ATESTADOS",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "FECHAMENTO E REABERTURA DE FOLHA NO SISTEMA ESOCIAL",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            },
+            {
+                "Dificuldade": "ENVIO DE RESCISAO - CONECTIVIDADE, MTE",
+                "Setor Envolvido": "GOV",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "S"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "CURSOS DE ATUALIZACAO",
+                "Impacto Esperado": "MELHORIA NO ATENDIMENTO DO SETOR",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ]
+    },
+    "disc": {
+        "0": "C",
+        "1": "D",
+        "2": "A",
+        "3": "D",
+        "4": "D",
+        "5": "C",
+        "6": "D",
+        "7": "D",
+        "8": "D",
+        "9": "D",
+        "10": "D",
+        "11": "B",
+        "12": "A",
+        "13": "C",
+        "14": "C",
+        "15": "A",
+        "16": "D",
+        "17": "D",
+        "18": "D",
+        "19": "D",
+        "20": "A",
+        "21": "A",
+        "22": "B",
+        "23": "C"
+    }
+}

@@ -1,0 +1,533 @@
+{
+    "colaborador": "MOACIR JÚNIOR",
+    "timestamp": "14/04/2026 20:31:56",
+    "campos": {
+        "cargo": "",
+        "dep": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "devolver_em": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Fechamento de folha",
+                "Horas": "4 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Rescisões",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Cálculos de encargos trabalhistas",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Admissão",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Férias",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Cálculo da quinzena",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "Q"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Recalculos",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Certificados e senhas",
+                "Setor Envolvido": "Processos",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Mais comunicação dos setores",
+                "Impacto Esperado": "Melhoria certa",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "A",
+        "2": "A",
+        "3": "A",
+        "4": "A",
+        "5": "A",
+        "6": "A",
+        "7": "A",
+        "8": "A",
+        "9": "A",
+        "10": "A",
+        "11": "A",
+        "12": "A",
+        "13": "A",
+        "14": "A",
+        "15": "A",
+        "16": "A",
+        "17": "A",
+        "18": "A",
+        "19": "A",
+        "20": "A",
+        "21": "A",
+        "22": "A",
+        "23": "A"
+    }
+}

@@ -1,0 +1,159 @@
+{
+    "timestamp": "15/04/2026 20:39:06",
+    "colaborador": "PEDRO HENRIQUE",
+    "campos": {
+        "cargo": "Analista Fiscal I",
+        "departamento": "Fiscal",
+        "setor": "Fiscal",
+        "chefe": "Tulio",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "Ensino Superior Completo",
+        "devolver_em": "15/04/2026",
+        "cursos": "PLANEJAMENTO TRIBUTARIO, REFORMA TRIBUTARIA.",
+        "objetivo": "ANALISE , APURAÇÃO E ENVIO DE IMPOSTOS. PRINCIPAL OBJETIVO É ANALISAR OS PROCESSOS ANTES DO ENVIO DOS IMPOSTOS E ATENDER OS CLIENTES DA MELHOR FORMA."
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "APURAÇÃO DO ICMS",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "APURAÇÃO DO SIMPLES NACIONAL",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "APURAÇÃO DO PIS E COFINS ",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "APURAÇÃO DO ICMS FRONTEIRA",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "APURAÇÃO DA REINF",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "APURAÇÃO IRPJ E CSLL",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "T"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "ATENDIMENTO AO CLIENTE",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "EMISSÃO DE NOTA FISCAL",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "APURAÇÃO DO ISS",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "DEFIS",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            },
+            {
+                "Atividade": "INVENTARIO DAS EMPRESAS",
+                "Horas": "0 h",
+                "Minutos": "40 min",
+                "Frequência": "A"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "RESPONDER EMAIL",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "DS",
+                "Horas": "0 h",
+                "Minutos": "5 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "SISTEMA QUANDO CAI ",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            },
+            {
+                "Dificuldade": "CLIENTES NÃO ENVIAM INFORMAÇOES",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            },
+            {
+                "Dificuldade": "INTERNET QUANDO CAI",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "SISTEMAS PARA OTIMIZAR TEMPO",
+                "Impacto Esperado": "REDUZIR TEMPO DE TRABALHO",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "C",
+        "2": "C",
+        "3": "D",
+        "4": "A",
+        "5": "C",
+        "6": "B",
+        "7": "B",
+        "8": "A",
+        "9": "D",
+        "10": "D",
+        "11": "B",
+        "12": "C",
+        "13": "C",
+        "14": "C",
+        "15": "B",
+        "16": "B",
+        "17": "B",
+        "18": "A",
+        "19": "B",
+        "20": "A",
+        "21": "A",
+        "22": "B",
+        "23": "B"
+    }
+}

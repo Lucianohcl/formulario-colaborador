@@ -1,0 +1,85 @@
+{
+    "timestamp": "14/04/2026 18:10:44",
+    "colaborador": "JOAO CARLOS DA SILVA",
+    "campos": {
+        "cargo": "GERENTE",
+        "departamento": "DEPARTAMENTO PESSOAL",
+        "setor": "Setor de Custos",
+        "chefe": "José da Silva",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "Graduação e Ciências Contábeis",
+        "devolver_em": "14/04/2024",
+        "cursos": "DCDDVDVD",
+        "objetivo": "DVDVDVDD"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "DDDDDD",
+                "Horas": "2 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "DDDDD",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "FFFFF",
+                "Horas": "2 h",
+                "Minutos": "20 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "FFFFF",
+                "Setor Envolvido": "FFFFF",
+                "Horas": "3 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "FFFFFFF",
+                "Impacto Esperado": "FFFFFF",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "Q"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "B",
+        "2": "B",
+        "3": "C",
+        "4": "B",
+        "5": "A",
+        "6": "B",
+        "7": "C",
+        "8": "D",
+        "9": "B",
+        "10": "A",
+        "11": "C",
+        "12": "B",
+        "13": "B",
+        "14": "C",
+        "15": "D",
+        "16": "A",
+        "17": "A",
+        "18": "A",
+        "19": "B",
+        "20": "B",
+        "21": "C",
+        "22": "B",
+        "23": "A"
+    }
+}

@@ -1,0 +1,85 @@
+{
+    "timestamp": "15/04/2026 10:46:19",
+    "colaborador": "CAMPOS LUIZ",
+    "campos": {
+        "cargo": "V DBDBFBDF",
+        "departamento": "VFSVFVSFVSFV",
+        "setor": "DWSDSDS",
+        "chefe": "FDVFBDFB",
+        "unidade": "VSVSVSCVSCS",
+        "escolaridade": "DSDSD",
+        "devolver_em": "13/04/2026",
+        "cursos": "DSDSDSDSS",
+        "objetivo": "CXCDCDDCD"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "DCDCDCD",
+                "Horas": "3 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "SCSCSC",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "SDSDSDDS",
+                "Horas": "3 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "DDDDD",
+                "Setor Envolvido": "DDDD",
+                "Horas": "1 h",
+                "Minutos": "15 min",
+                "Frequência": "S"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "XXXXXXSSSS",
+                "Impacto Esperado": "SSSSS",
+                "Horas": "1 h",
+                "Minutos": "20 min",
+                "Frequência": "S"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "C",
+        "2": "B",
+        "3": "B",
+        "4": "A",
+        "5": "A",
+        "6": "D",
+        "7": "B",
+        "8": "B",
+        "9": "C",
+        "10": "B",
+        "11": "A",
+        "12": "A",
+        "13": "D",
+        "14": "B",
+        "15": "C",
+        "16": "B",
+        "17": "A",
+        "18": "B",
+        "19": "C",
+        "20": "B",
+        "21": "A",
+        "22": "A",
+        "23": "D"
+    }
+}

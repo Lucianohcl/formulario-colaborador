@@ -1,0 +1,347 @@
+{
+    "timestamp": "09/04/2026 14:14:24",
+    "colaborador": "Usuario_Desconhecido",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Fechamento da folha de pagamento (cálculo de salários, encargos, benefícios)",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Apuração e conferência de encargos trabalhistas (INSS, FGTS, IRRF) ",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Envio de obrigações acessórias (eSocial, DCTFWeb, SEFIP) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Controle e gestão de admissões e demissões (rescisões, homologações) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Interpretação e aplicação da legislação trabalhista e convenções coletivas ",
+                "Horas": "0 h",
+                "Minutos": "25 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atendimento internas e externas ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Análise de inconsistências na folha e correção de divergências ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Gestão de benefícios (vale-transporte, vale-alimentação, plano de saúde) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Lançamento de informações para folha de pagamento (horas extras, faltas, adicionais) ",
+                "Horas": "0 h",
+                "Minutos": "25 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Controle de ponto eletrônico e tratamento de inconsistências ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Administração de férias (programação, cálculo e controle) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Cadastro e atualização de dados de colaboradores no sistema ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Controle de afastamentos (INSS, atestados médicos, licenças) ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atendimento a colaboradores para esclarecimento de dúvidas trabalhistas ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Organização e conferência de documentação admissional e demissional ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Apoio no processo de admissão e integração de novos colaboradores ",
+                "Horas": "0 h",
+                "Minutos": "40 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Emissão de relatórios operacionais (folha, ponto, benefícios) ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Controle de benefícios (inclusão, exclusão e ajustes) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Arquivamento e organização de documentos físicos e digitais ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Digitalização de documentos de colaboradores ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atualização simples de planilhas de controle ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Conferência básica de documentos (checklist admissional/demissional) ",
+                "Horas": "0 h",
+                "Minutos": "20 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Emissão de documentos padronizados (declarações, comprovantes) ",
+                "Horas": "0 h",
+                "Minutos": "25 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Apoio no envio de comunicados internos ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Separação de documentos para processos internos ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atualização de cadastros simples no sistema ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Controle de recebimento de documentos pendentes ",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Dependência de informações de outros setores (gestores, ponto, RH) para execução correta das rotinas",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Frequentes alterações na legislação trabalhista e fiscal, exigindo atualização constante",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Inconsistências em registros de ponto e dados cadastrais dos colaboradores",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Ocorrência de retrabalho devido a informações incompletas ou enviadas fora do prazo",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Limitações e instabilidades nos sistemas (folha, ponto, eSocial), principalmente em períodos críticos",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Dificuldade na padronização de processos e fluxos internos",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Acúmulo de atividades operacionais que reduz o tempo disponível para análises estratégicas",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Necessidade constante de conferência detalhada para evitar erros com impacto legal e financeiro",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "Comunicação desafiadora em relação a descontos, benefícios e regras trabalhistas",
+                "Setor Envolvido": "DP",
+                "Horas": "0 h",
+                "Minutos": "35 min",
+                "Frequência": "D"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Implantação de processos padronizados para rotinas de admissão, demissão e fechamento de folha, reduzindo erros e retrabalho",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Criação de um cronograma mensal integrado com todos os setores, garantindo o envio de informações dentro dos prazos",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Investimento em automação de processos (sistemas de folha e ponto), visando maior agilidade e confiabilidade nos dados",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Realização de treinamentos periódicos para gestores e colaboradores sobre rotinas trabalhistas e uso correto do ponto eletrônico",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Melhoria na integração entre os sistemas (folha, ponto e benefícios), evitando divergências de informações",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Desenvolvimento de indicadores (KPIs) para acompanhamento de erros, retrabalho e cumprimento de prazos",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Centralização e digitalização de documentos, facilitando o acesso e reduzindo perdas de informação",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Criação de canais de comunicação mais claros com colaboradores para esclarecimento de dúvidas sobre folha, benefícios e descontos",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Revisão contínua dos processos internos para adequação às mudanças na legislação trabalhista",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Sugestão": "Redução de atividades operacionais por meio de delegação ou automação, permitindo maior foco em análises estratégicas",
+                "Impacto Esperado": "DP",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "C",
+        "2": "A",
+        "3": "C",
+        "4": "D",
+        "5": "C",
+        "6": "A",
+        "7": "B",
+        "8": "A",
+        "9": "A",
+        "10": "D",
+        "11": "B",
+        "12": "D",
+        "13": "C",
+        "14": "C",
+        "15": "D",
+        "16": "D",
+        "17": "D",
+        "18": "A",
+        "19": "D",
+        "20": "A",
+        "21": "A",
+        "22": "A",
+        "23": "A"
+    }
+}

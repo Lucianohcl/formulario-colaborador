@@ -1,0 +1,85 @@
+{
+    "timestamp": "13/04/2026 14:11:41",
+    "colaborador": "ADRIANA MARIA DOS SANTOS",
+    "campos": {
+        "cargo": "Contoladoria",
+        "departamento": "Analista de Custos",
+        "setor": "Financeiro",
+        "chefe": "José da Silva",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "GRADUAÇÃO EM CIÊNCIAS CONTÁBEIS",
+        "devolver_em": "06/04/2026",
+        "cursos": "WRGERGERGRE",
+        "objetivo": "RGEGREGERGR"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "GFGRGRR",
+                "Horas": "4 h",
+                "Minutos": "25 min",
+                "Frequência": "S"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "FEGRGEG",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "FGEREGE",
+                "Horas": "3 h",
+                "Minutos": "20 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "ERGRGRRERG",
+                "Setor Envolvido": "GERGE",
+                "Horas": "2 h",
+                "Minutos": "15 min",
+                "Frequência": "M"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "FFGERG",
+                "Impacto Esperado": "ERGREGER",
+                "Horas": "4 h",
+                "Minutos": "15 min",
+                "Frequência": "S"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "B",
+        "2": "B",
+        "3": "B",
+        "4": "B",
+        "5": "C",
+        "6": "B",
+        "7": "C",
+        "8": "D",
+        "9": "D",
+        "10": "D",
+        "11": "D",
+        "12": "A",
+        "13": "B",
+        "14": "C",
+        "15": "B",
+        "16": "D",
+        "17": "B",
+        "18": "A",
+        "19": "A",
+        "20": "B",
+        "21": "C",
+        "22": "B",
+        "23": "B"
+    }
+}

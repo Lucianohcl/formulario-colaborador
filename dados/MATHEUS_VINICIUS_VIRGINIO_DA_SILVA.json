@@ -1,0 +1,139 @@
+{
+    "timestamp": "15/04/2026 19:38:21",
+    "colaborador": "MATHEUS VINICIUS VIRGINIO DA SILVA",
+    "campos": {
+        "cargo": "Analista Fiscal",
+        "departamento": "Fiscal",
+        "setor": "Fiscal",
+        "chefe": "Tulio Viana",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "Ensino Superior Completo",
+        "devolver_em": "15/04/2026",
+        "cursos": "Superior completo em Ciências Contabeis, Informatica essencial, Excel, Reforma Tributaria.",
+        "objetivo": "Analise de tributação das notas fiscais, emissão de notas fiscais, apuração de ICMS, PIS COFINS, ICMS FRONTEIRA,IRPJ E CSLL, Suporte tributario aos clientes do escritorio, envio de declarações acessorias: Sped ICMS, Sped Contribuições, DMS, DCTFWEB, REINF, MIT, verificação de impostos retidos nas notas fiscais de serviço, apuração ISS RETIDO E ISS NORMAL"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Apuração ICMS",
+                "Horas": "5 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração PIS COFINS",
+                "Horas": "5 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração ICMS FRONTEIRA",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração IRPJ E CSLL",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "ANALISE DE RETENÇÕES FEDERAIS",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Apuração ISS e ISS RETIDO",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Sped ICMS",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Sped PIS COFINS",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "MIT",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "DCTFWEB",
+                "Horas": "0 h",
+                "Minutos": "5 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "DMS",
+                "Horas": "0 h",
+                "Minutos": "5 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Emissão de notas fiscais",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Envio da documentação  no prazo por partes dos clientes",
+                "Setor Envolvido": "Fiscal",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Estagiario",
+                "Impacto Esperado": "Agilidade nos processos",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "A",
+        "2": "A",
+        "3": "B",
+        "4": "D",
+        "5": "D",
+        "6": "B",
+        "7": "D",
+        "8": "A",
+        "9": "A",
+        "10": "D",
+        "11": "C",
+        "12": "C",
+        "13": "C",
+        "14": "C",
+        "15": "D",
+        "16": "D",
+        "17": "B",
+        "18": "A",
+        "19": "B",
+        "20": "A",
+        "21": "A",
+        "22": "A",
+        "23": "B"
+    }
+}

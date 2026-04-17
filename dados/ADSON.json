@@ -1,0 +1,337 @@
+{
+    "timestamp": "15/04/2026 20:59:10",
+    "colaborador": "ADSON",
+    "campos": {
+        "cargo": "GESTOR DE DP",
+        "departamento": "PESSOAL",
+        "setor": "DEPARTAMENTO PESSOAL",
+        "chefe": "RAFAEL VIANA",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "ENSINO SUPERIOR COMPLETO",
+        "devolver_em": "15/04/2025",
+        "cursos": "Ciências Contábeis e administração  - Pós-graduação em Direito do Trabalho e Previdenciário, Pós-graduação em Gestão de Pessoas, Pós-graduação em Gestão Empresarial - Legislação Trabalhista Avançada, eSocial, EFD-Reinf e DCTFWeb, Folha de Pagamento Avançada, Rotinas de Departamento Pessoal - Gestão de Processos , Gestão de Projetos, Atendimento ao Cliente - Word e Excel Avançados, Ferramentas de Gestão (Asana, sistemas de folha como Alterdata e Acessórias), Comunicação Profissional e Escrita Técnica Jurídica.",
+        "objetivo": "Consiste em assegurar o pleno funcionamento do Departamento Pessoal por meio da integração entre a execução operacional e a gestão estratégica das rotinas trabalhistas, atuando de forma direta na condução, conferência e validação de todos os processos inerentes à folha de pagamento, encargos sociais, transmissões obrigatórias ao eSocial, EFD-Reinf e DCTFWeb, bem como nas rotinas de admissão, férias, rescisões contratuais e demais obrigações acessórias, garantindo conformidade com a legislação vigente e mitigação de riscos trabalhistas e previdenciários.\n\nAbrange o controle rigoroso de qualidade e prazos das entregas do setor, por meio da implementação de rotinas de auditoria contínua, validação de informações e acompanhamento sistemático das atividades executadas pela equipe, assegurando precisão nos dados processados e consistência nas informações transmitidas aos órgãos fiscalizadores e aos clientes. Envolve, ainda, a organização, direcionamento e liderança da equipe, com definição clara de responsabilidades, distribuição estratégica de demandas, acompanhamento de desempenho individual e coletivo, e atuação corretiva e preventiva sobre eventuais desvios operacionais.\n\nInclui a gestão estruturada de processos internos, com desenvolvimento, implementação e atualização de Procedimentos Operacionais Padrão (POPs), elaboração de cronogramas operacionais e estabelecimento de fluxos de trabalho eficientes, visando padronização, ganho de produtividade e redução de retrabalho. Compreende também o atendimento técnico e consultivo aos clientes, especialmente em demandas de maior complexidade, que exigem interpretação normativa, posicionamento jurídico e orientação estratégica, assegurando alinhamento entre a prática operacional e os dispositivos legais aplicáveis.\n\nContempla a condução de processos de onboarding de novos clientes, com realização de auditorias detalhadas das informações recebidas, identificação de inconsistências, passivos trabalhistas e riscos operacionais, bem como a adequação dos processos internos para garantir uma transição segura e estruturada. Inclui, ainda, o monitoramento contínuo de indicadores de desempenho do setor, análise de resultados e implementação de ações de melhoria contínua, com foco em eficiência operacional, qualidade das entregas e satisfação dos clientes.\n\nEnvolve o desenvolvimento técnico da equipe e a capacitação dos clientes, por meio de treinamentos direcionados, alinhamentos operacionais e disseminação de boas práticas, fortalecendo o nível de conhecimento e a autonomia dos envolvidos nos processos. Por fim, compreende a atuação estratégica na identificação de oportunidades de melhoria, revisão de processos, prevenção de contingências trabalhistas e fortalecimento da imagem do setor, garantindo que o Departamento Pessoal opere com excelência, segurança jurídica, alto padrão de qualidade e foco contínuo na evolução dos resultados e na valorização dos serviços prestados.\n\n"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Elaborar\n  e validar respostas técnicas com fundamentação jurídica trabalhista para\n  clientes, assegurando alinhamento com a legislação vigente e posicionamento\n  institucional do escritório",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Realizar\n  auditoria completa de folhas de pagamento (internas e de novos clientes), com\n  análise de cálculos, encargos, incidências e identificação de passivos\n  trabalhistas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Gerenciar e conferir de forma avançada as obrigações acessórias (eSocial, EFD-Reinf e DCTFWeb), com análise de inconsistências e correção de divergências sistêmicas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Conduzir o processo de onboarding de novos clientes, com auditoria detalhada das informações recebidas, saneamento de dados e reestruturação operacional",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Diagnosticar\n  e corrigir erros críticos trabalhistas relacionados a cálculos, vínculos,\n  parametrizações sistêmicas e envio de informações fiscais",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Estruturar,\n  implementar e revisar processos internos por meio da criação de POPs, fluxos\n  operacionais e cronogramas estratégicos do setor",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Realizar\n  análise e mitigação de riscos trabalhistas com base em legislação, convenções\n  coletivas e práticas adotadas pelos clientes",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atuar no\n  atendimento consultivo a clientes em demandas complexas, oferecendo\n  orientação técnica preventiva e corretiva",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Gerenciar\n  estrategicamente a equipe de DP, com análise de desempenho, tomada de decisão\n  e implementação de ações corretivas e de desenvolvimento",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Auditar\n  e validar informações provenientes dos sistemas de controle (Alterdata,\n  Acessórias e Asana), garantindo integridade e confiabilidade dos dados",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Consolidar\n  e apresentar resultados do setor por meio de relatórios gerenciais e\n  indicadores de desempenho para diretoria e clientes",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Criar,\n  implementar e acompanhar indicadores de performance do setor, visando\n  melhoria contínua e controle de qualidade",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Conduzir\n  treinamentos técnicos para equipe e clientes, promovendo atualização\n  normativa e padronização dos processos",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Identificar,\n  planejar e implementar melhorias estruturais no setor e nos processos dos\n  clientes, com foco em eficiência operacional, redução de riscos e aumento da\n  qualidade das entregas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Garantir\n  o cumprimento das diretrizes da NR-1 no que se refere à gestão de riscos\n  ocupacionais, preservação da saúde física e mental dos colaboradores, bem\n  como assegurar o sigilo absoluto das informações trabalhistas, pessoais e\n  estratégicas, promovendo um ambiente seguro, ético e em conformidade com as\n  normas legais e institucionais",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Acompanhar\n  a execução das rotinas mensais do setor, garantindo o cumprimento dos prazos\n  estabelecidos no cronograma operacional",
+                "Horas": "4 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Distribuir\n  demandas entre os membros da equipe conforme capacidade técnica e volume de\n  trabalho, assegurando equilíbrio e produtividade",
+                "Horas": "8 h",
+                "Minutos": "0 min",
+                "Frequência": "T"
+            },
+            {
+                "Atividade": "Conferir informações inseridas em sistema de folha antes do fechamento, validando dados cadastrais e eventos lançados",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Monitorar o envio e recebimento de documentos dos clientes, cobrando pendências e assegurando fluxo contínuo de informações",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Acompanhar apontamentos de ponto eletrônico, verificando inconsistências básicas antes da validação final",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Supervisionar\n  o correto preenchimento e atualização das planilhas de controle do setor",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Realizar conferência intermediária de cálculos de folha, férias e rescisões na auditoria final",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Acompanhar a execução das tarefas no sistema de gestão (Asana), garantindo que todas estejam atualizadas e dentro do prazo",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Prestar\n  suporte técnico à equipe em dúvidas operacionais do dia a dia",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Validar documentação admissional e rescisória antes do envio ao cliente ou órgãos competentes",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Acompanhar\n  o cumprimento dos procedimentos operacionais padrão (POPs) pela equipe",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Participar de reuniões internas para alinhamento de atividades, metas e prioridades do setor",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atualizar\n  controles internos com informações operacionais já conferidas e validadas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Monitorar\n  a comunicação com clientes, garantindo clareza, agilidade e padronização nas\n  respostas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Apoiar\n  na organização e preparação de dados para relatórios gerenciais do setor",
+                "Horas": "6 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Atualizar\n  o status das tarefas nos sistemas internos de controle",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Organizar\n  arquivos digitais em pastas conforme padrão do setor",
+                "Horas": "8 h",
+                "Minutos": "0 min",
+                "Frequência": "T"
+            },
+            {
+                "Atividade": "Conferir\n  checklists operacionais para verificação de etapas concluídas",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": " Enviar lembretes de prazos e pendências para\n  clientes",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Realizar\n  baixa de tarefas finalizadas nos sistemas de gestão",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Ajustar\n  e conferir ponto eletronico da JV contabilidade",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Atualizar\n  planilhas com dados já validados pela equipe responsável",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Encaminhar demandas simples para os responsáveis do setor\n",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Registrar observações básicas nas tarefas para acompanhamento interno\n",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Acompanhar\n  respostas de clientes em e-mails ou sistemas de comunicação",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Organizar e manter atualizada a caixa de entrada de e-mails do setor\n",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Realizar admissão e demissão de colaboradores da JV contabilidade\n",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Separar e classificar documentos para processos operacionais\n",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Apoiar\n  na preparação de documentos para envio ao cliente",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": " Responsavel pela folha de pagamento da JV contabilidade\n",
+                "Horas": "8 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "nenhuma dificuldade",
+                "Setor Envolvido": "dp",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "nenhuma melhoria",
+                "Impacto Esperado": "dp",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "A"
+            }
+        ]
+    },
+    "disc": {
+        "0": "B",
+        "1": "A",
+        "2": "A",
+        "3": "D",
+        "4": "C",
+        "5": "B",
+        "6": "B",
+        "7": "A",
+        "8": "A",
+        "9": "D",
+        "10": "D",
+        "11": "D",
+        "12": "C",
+        "13": "B",
+        "14": "C",
+        "15": "B",
+        "16": "B",
+        "17": "A",
+        "18": "D",
+        "19": "D",
+        "20": "C",
+        "21": "A",
+        "22": "C",
+        "23": "B"
+    }
+}

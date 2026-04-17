@@ -1,0 +1,152 @@
+{
+    "timestamp": "06/04/2026 20:00:10",
+    "colaborador": "Usuario_Desconhecido",
+    "campos": {
+        "cargo": "",
+        "departamento": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "cursos": "",
+        "objetivo": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Balancete urgente de empresa sem atualização contábil no ano todo",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Balancete urgente de empresas grandes com atualização mas sem analise contabil no ano",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Relatórios urgentes ( faturamento para banco, distribuição de lucros, razões de contas contábeis)",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "T"
+            },
+            {
+                "Atividade": "Relatórios gerenciais de apontamentos para o cliente",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Análise/atualização de empresas com o movimento 100% fisico",
+                "Horas": "6 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "cobranças de documento ao cliente ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "analise de balancete não urgente ",
+                "Horas": "6 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Salvar/responder emails corriqueiros",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Lançamentos para atualizações das empresas ( folha, notas fiscais, provisões, financeiro, impostos, receitas, aplicações...",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "auxiliar parceiros de equipe",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "separação de documentação fisica ( notas de energia/ notas de serviços para o fiscal, arquivamento desses documentos, abertura de caixas)",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "demandas diversas (salvar um arquivo, preencher algo, verificar recebimento, verificar resposta)",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Dificuldades específicas de cada empresa (falta de documentação, demora para retornar,  particularidades especificas de empresas que ainda não tinha feito) - não consigo mensurar tempo com precisão",
+                "Setor Envolvido": "contabil",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "conversão por parte da empresas, influenciada/direncionada por nós, e para as que têm estrutura, ao drive, anexar os arquivos digitalmente, sem papéis",
+                "Impacto Esperado": "achar os documentos com muito mais facilidade, sem risco de dano ao documento, menos trabalho, e acesso vitálicio",
+                "Horas": "4 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Sugestão": "Cursos de atualização contábil/fiscal ex. reforma tributária  - sem tempo para mensurar",
+                "Impacto Esperado": "maior preparo e capacitação ",
+                "Horas": "0 h",
+                "Minutos": "5 min",
+                "Frequência": "A"
+            },
+            {
+                "Sugestão": "integração DP x CONTÁBIL",
+                "Impacto Esperado": "lançamento automatizado das folhas de pagamentos",
+                "Horas": "6 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ]
+    },
+    "disc": {
+        "0": "C",
+        "1": "D",
+        "2": "A",
+        "3": "D",
+        "4": "C",
+        "5": "D",
+        "6": "D",
+        "7": "D",
+        "8": "A",
+        "9": "D",
+        "10": "D",
+        "11": "D",
+        "12": "C",
+        "13": "C",
+        "14": "D",
+        "15": "C",
+        "16": "D",
+        "17": "D",
+        "18": "A",
+        "19": "D",
+        "20": "C",
+        "21": "D",
+        "22": "A",
+        "23": "D"
+    }
+}

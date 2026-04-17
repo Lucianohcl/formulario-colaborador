@@ -1,0 +1,165 @@
+{
+    "timestamp": "15/04/2026 20:31:42",
+    "colaborador": "Gilberson Ferreira ",
+    "campos": {
+        "cargo": "Analista",
+        "departamento": "Fiscal",
+        "setor": "Fiscal",
+        "chefe": "Tulio ",
+        "unidade": "Jv contabilidade ",
+        "escolaridade": "Superior completo ",
+        "devolver_em": "15042026",
+        "cursos": "Computação Gráfica \nCiências Contabeis \nPlanejamento tributario \nInglês intermediario \n",
+        "objetivo": "Emissão de notas, analise e apuração de impostos estaduais, municipais e federais do lucro simples, presumido e real. Elaboração e entrega de  declarações mensais e relatorios. Execução de rotinas fiscais contábeis"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Retidos federais ",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração de ICMS",
+                "Horas": "5 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "ICMS FRONTEIRAS ",
+                "Horas": "5 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração trimestral IRPJ E CSLL ",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "T"
+            },
+            {
+                "Atividade": "Apuração PIS  e COFINS Presumido",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "Apuração Pis e COFINS Real  ",
+                "Horas": "3 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Emissão de Notas ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Tributação fiscal grupo Marfim ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "SPED ICMS ",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "SPED EFD PIS E COFINS",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "DMS ",
+                "Horas": "0 h",
+                "Minutos": "15 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "ISS ",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "ISS RETIDO ",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "MIT",
+                "Horas": "0 h",
+                "Minutos": "30 min",
+                "Frequência": "M"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "IMPORTAÇÃO DE NOTAS ",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            },
+            {
+                "Dificuldade": "ERRO AO GERAR ARQUIVO EFD ",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            },
+            {
+                "Dificuldade": "ENTREGA DE RELATORIOS DOS CLIENTES ",
+                "Setor Envolvido": "FISCAL",
+                "Horas": "0 h",
+                "Minutos": "10 min",
+                "Frequência": "M"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "IMPORTAÇÃO DE NOTAS SEFAZ/SISTEMA",
+                "Impacto Esperado": "REDUÇÃO DE TEMPO DE ESPERA",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            }
+        ]
+    },
+    "disc": {
+        "0": "B",
+        "1": "A",
+        "2": "D",
+        "3": "D",
+        "4": "D",
+        "5": "D",
+        "6": "D",
+        "7": "D",
+        "8": "D",
+        "9": "D",
+        "10": "D",
+        "11": "B",
+        "12": "B",
+        "13": "C",
+        "14": "B",
+        "15": "B",
+        "16": "B",
+        "17": "B",
+        "18": "A",
+        "19": "C",
+        "20": "A",
+        "21": "B",
+        "22": "D",
+        "23": "C"
+    }
+}
