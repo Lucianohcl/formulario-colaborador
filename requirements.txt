@@ -1,0 +1,12 @@
+PyGithub
+pandas
+streamlit
+reportlab
+pytz
+openai
+plotly
+matplotlib
+requests
+python-dotenv
+python-docx
+fpdf
