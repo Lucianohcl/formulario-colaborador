@@ -49,11 +49,6 @@ st.set_page_config(
 
 )
 
-# 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
-# ============================================================
-# st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
-# st.stop() 
-# ============================================================
 
 
 # Inicialização centralizada
