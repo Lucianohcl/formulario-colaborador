@@ -30,6 +30,10 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from fpdf import FPDF
 import pandas as pd
 
+import streamlit as st
+st.write("---")
+st.header("ESTOU LENDO O ARQUIVO CERTO!")
+st.write("---")
 
 # ============================================================
 
