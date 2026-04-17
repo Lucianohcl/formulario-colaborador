@@ -1,0 +1,533 @@
+{
+    "colaborador": "PEDRO ARTHUR",
+    "timestamp": "13/04/2026 14:46:40",
+    "campos": {
+        "cargo": "Auxiliar",
+        "dep": "T.I",
+        "setor": "T.I",
+        "chefe": "Júlio/Rafael",
+        "unidade": "JV Contabilidade",
+        "escolaridade": "Bacharelado",
+        "devolver_em": "",
+        "cursos": "Uso de inteligência artificial, implementações de melhorias de Infraestrutura (inclusive no ramo contábil).\nArquitetura e gestão de Infraestrutura e datacenters\nLinguagem inglesa",
+        "objetivo": "Manter toda infraestrutura, sistemas e equipamentos voltados para tecnologia do escritório 100% funcional, prestar suporte para todos os usuários, elaborar e estudar inovações que possam melhorar a tecnologia no ramo contábil, tanto para o escritório, tanto para os colaboradores."
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Implementação de infraestrutura completa",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "Integração de sistemas contábeis",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "Gestão de segurança da informação",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Gerenciamento de usuários e permissões",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "Monitoramento e manutenção preventiva",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "Configuração e atualização de softwares",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Suporte básico ao usuário",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Atividade": "Organização de equipamentos e estações de trabalho",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "Execução de rotinas simples de backup e verificação de funcionamento.",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Ás vezes ocorre de ter muitas requisições de chamados, talvez alguns levem um pouco mais de tempo.",
+                "Setor Envolvido": "Geral",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Automações que economizem tempo e trabalho.",
+                "Impacto Esperado": "Melhoria de processos gerais",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Sugestão": "Sistemas focado na organização e simplicidade para o usuário.",
+                "Impacto Esperado": "Melhoria de processos gerais",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ]
+    },
+    "disc": {
+        "0": "A",
+        "1": "C",
+        "2": "C",
+        "3": "D",
+        "4": "D",
+        "5": "C",
+        "6": "D",
+        "7": null,
+        "8": null,
+        "9": null,
+        "10": null,
+        "11": null,
+        "12": null,
+        "13": null,
+        "14": null,
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": null
+    }
+}

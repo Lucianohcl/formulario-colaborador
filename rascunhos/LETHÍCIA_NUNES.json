@@ -1,0 +1,533 @@
+{
+    "colaborador": "LETHÍCIA NUNES",
+    "timestamp": "06/04/2026 20:05:36",
+    "campos": {
+        "cargo": "ANALISTA CONTÁBIL JÚNIOR",
+        "dep": "CONTÁBIL",
+        "setor": "CONTABILIDADE",
+        "chefe": "THALITA",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "SUPERIOR COMPLETO",
+        "devolver_em": "06/04/2026",
+        "cursos": "Bacharelado em ciências contábeis \nCRC ativo\n",
+        "objetivo": "Conciliação e análise de balancetes"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Fechamento de empresas que não estão atualizadas em um curto prazo. Devido a falta de informações no prazo correto esta atividade se torna complexa para finalização em curto prazo. (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Fechamento das demonstrações contábeis (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "24 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Conciliações (Estou a pouco tempo na empresa para determinar um prazo exato)",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Envio de informações do cliente em prazo hábil",
+                "Setor Envolvido": "Financeiro do cliente",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "",
+                "Setor Envolvido": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Devido ao pouco tempo que tenho na empresa ainda não possuo sugestões.",
+                "Impacto Esperado": "Melhoria",
+                "Horas": "0 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "",
+                "Impacto Esperado": "",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ]
+    },
+    "disc": {
+        "0": "B",
+        "1": "C",
+        "2": "A",
+        "3": "C",
+        "4": "C",
+        "5": "D",
+        "6": "C",
+        "7": "B",
+        "8": "A",
+        "9": "A",
+        "10": "D",
+        "11": "B",
+        "12": "A",
+        "13": "C",
+        "14": "C",
+        "15": "B",
+        "16": "D",
+        "17": "C",
+        "18": "A",
+        "19": "B",
+        "20": "C",
+        "21": "A",
+        "22": "D",
+        "23": "A"
+    }
+}

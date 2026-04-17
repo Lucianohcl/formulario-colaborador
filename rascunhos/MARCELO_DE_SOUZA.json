@@ -1,0 +1,85 @@
+{
+    "timestamp": "27/03/2026 12:44:24",
+    "colaborador": {
+        "nome": "Marcelo de Souza",
+        "cargo": "Analista",
+        "departamento": "Controladoria",
+        "escolaridade": "SUPERIOR COMPLETO",
+        "setor": "Financeiro",
+        "chefe": "Jose da Silva",
+        "unidade": "Empresa X",
+        "devolucao": "25/03/2026",
+        "cursos": "DSQIDBI",
+        "objetivo": "WMDVKMKVM"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "CCC",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "CCC",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "Q"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "CCCC",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "AAAAA",
+                "Setor/Parceiro Envolvido": "AAAAA",
+                "Horas": "1 h",
+                "Minutos": "5 min",
+                "Frequência": "Q"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "XSXSXSXSX",
+                "Impacto": "SSSSS",
+                "Horas": "1 h",
+                "Minutos": "5 min",
+                "Frequência": "S"
+            }
+        ]
+    },
+    "perfil_disc": {
+        "p0": "A",
+        "p1": "A",
+        "p2": "B",
+        "p3": "C",
+        "p4": "D",
+        "p5": "C",
+        "p6": "A",
+        "p7": "C",
+        "p8": "B",
+        "p9": "A",
+        "p10": "C",
+        "p11": "C",
+        "p12": "C",
+        "p13": "C",
+        "p14": "B",
+        "p15": "B",
+        "p16": "B",
+        "p17": "B",
+        "p18": "B",
+        "p19": "D",
+        "p20": "A",
+        "p21": "B",
+        "p22": "B",
+        "p23": "C"
+    }
+}
