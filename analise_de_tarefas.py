@@ -1219,34 +1219,44 @@ if st.session_state.pagina == "disc":
         
                 
         # ============================================================
-        # COMPATIBILIDADE CARGO × PERFIL DISC (APENAS MENSAGEM)
+        # ANÁLISE DE ADERÊNCIA AO CARGO (LÓGICA INDEPENDENTE)
         # ============================================================
-
         st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
 
-        cargo_atual = str(form.get("cargo", "")).lower()
+        # Busca o cargo onde quer que ele esteja no JSON
+        c_internos = formulario_sel.get('campos', {})
+        cargo_bruto = c_internos.get('cargo') or formulario_sel.get('cargo') or "N/A"
+        cargo_limpo = str(cargo_bruto).lower()
 
-        # Mapeamento de cargos por perfil dominante
-        compatibilidade = {
-            "D": ["gerente", "diretor", "coordenador", "lider", "gestor"],
-            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação"],
-            "S": ["rh", "suporte", "atendimento", "administrativo", "operacional"],
-            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista"]
+        # Mapeamento Geral de Afinidades (Agnóstico)
+        mapa_afinidade = {
+            "D": ["gerente", "diretor", "coordenador", "lider", "gestor", "executivo", "chefe"],
+            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação", "atendimento", "comercial"],
+            "S": ["rh", "suporte", "administrativo", "operacional", "auxiliar", "assistente", "atendimento"],
+            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista", "dados", "programador"]
         }
 
-        cargos_compatíveis = compatibilidade.get(dominante, [])
-        match = any(c in cargo_atual for c in cargos_compatíveis)
+        # Inteligência Independente: Verifica match com QUALQUER perfil acima de 20%
+        perfis_relevantes = [letra for letra, valor in percentuais.items() if valor > 20]
+        
+        match_confirmado = False
+        eixos_encontrados = []
 
-        # Exibição simplificada em métricas
+        for letra in perfis_relevantes:
+            if any(palavra in cargo_limpo for palavra in mapa_afinidade.get(letra, [])):
+                match_confirmado = True
+                eixos_encontrados.append(letra)
+
+        # Exibição Visual
         colA, colB = st.columns(2)
-        colA.metric("Cargo Atual", form.get("cargo","N/A").title())
-        colB.metric("Perfil Dominante", dominante if dominante else "N/A")
+        colA.metric("Cargo Identificado", str(cargo_bruto).upper())
+        colB.metric("Eixos de Afinidade", "/".join(eixos_encontrados) if eixos_encontrados else "Híbrido/Geral")
 
-        # Mensagem direta sem gráfico
-        if match:
-            st.success(f"**Alta aderência:** O perfil **{dominante}** possui características naturais que favorecem o desempenho em cargos de **{cargo_atual.title()}**.")
+        # Mensagem Baseada em Evidências do Perfil Completo
+        if match_confirmado:
+            st.success(f"**Aderência Identificada:** As competências dos eixos **{'/'.join(eixos_encontrados)}** dão suporte direto às atividades de **{cargo_bruto.upper()}**.")
         else:
-            st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
+            st.info(f"**Perfil Adaptável:** O colaborador possui um estilo que pode agregar perspectivas diferentes às rotinas de **{cargo_bruto.upper()}**, sugerindo versatilidade.")
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES
