@@ -861,20 +861,22 @@ def carregar_todos_formularios(repo_conectado):
 # Só bloqueia o acesso se NÃO estiver logado E NÃO for a página de formulário
 if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     
-    # --- MENSAGEM DE BOAS-VINDAS COLORIDA ---
+    
+    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (MESMAS CORES, TAMANHO REDUZIDO) ---
     st.markdown("""
         <div style="
             background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            padding: 30px;
+            padding: 10px;             /* Reduzido para ocupar menos altura */
+            max-width: 500px;          /* Limita a largura para centralizar */
+            margin: 0 auto 10px auto;  /* Centraliza e aproxima dos campos de login */
             border-radius: 15px;
             text-align: center;
             box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
-            margin-bottom: 25px;
         ">
-            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 2.2rem;">
+            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 1.6rem;">
                 🚀 Bem-vindo ao Sistema
             </h1>
-            <p style="color: white; font-size: 1.2rem; opacity: 0.9; margin-top: 10px;">
+            <p style="color: white; font-size: 0.95rem; opacity: 0.9; margin-top: 5px;">
                 Gestão Estratégica de Análise de Processos e Colaboradores
             </p>
         </div>
@@ -1442,12 +1444,36 @@ if st.session_state.get("pagina") == "visualizar":
                 else:
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
-        # <<< O LOOP 'FOR' DOS COLABORADORES TERMINA AQUI (ALINHADO COM O INÍCIO DO FOR) >>>
-        # --- SEÇÃO DE EXCLUSÃO VIRTUAL (FORA DO LOOP - APARECE UMA VEZ SÓ) ---
+                # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
+                if st.session_state.get("usuario_logado") == "Luciano 123":
+                    st.markdown("---")
+                    st.subheader("⚙️ Painel de Exportação")
+
+                    col1_exp, col2_exp = st.columns(2)
+
+                    data_raw = form.get('timestamp') or 'sem_data'
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+
+                    nome_raw = form.get('colaborador') or 'Colaborador'
+                    nome_clean = str(nome_raw).replace(' ', '_')
+
+                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
+
+                    word_file = gerar_word(form)
+                    pdf_file = gerar_pdf(form)
+
+                    st.download_button(
+                        label="📑 Baixar PDF",
+                        data=gerar_pdf_html(form),
+                        file_name=f"{nome_arquivo}.html",
+                        mime="text/html",
+                        key=f"pdf_unico_{id_atual}_{idx}"
+                    )
+
+        # --- SEÇÃO DE EXCLUSÃO VIRTUAL (FORA DO LOOP) ---
         st.markdown("---")
         st.subheader("🚫 Ocultar formulário da visualização")
 
-        # Gera opções apenas de quem NÃO está escondido ainda
         opcoes_para_esconder = []
         for i, f in enumerate(lista_de_arquivos):
             id_f = f.get('timestamp') or f"form_{i}"
@@ -1458,7 +1484,6 @@ if st.session_state.get("pagina") == "visualizar":
         if opcoes_para_esconder:
             labels = [o["label"] for o in opcoes_para_esconder]
             
-            # MUDAMOS A KEY PARA ALGO TOTALMENTE EXCLUSIVO
             escolha = st.selectbox(
                 "Selecione para ocultar desta sessão:", 
                 labels, 
@@ -1472,43 +1497,9 @@ if st.session_state.get("pagina") == "visualizar":
                 st.rerun()
         
         if st.session_state.get("arquivos_escondidos"):
-            # MUDAMOS TAMBÉM A KEY DO RESET
             if st.button("Resetar Visualização (Mostrar Todos)", key="key_exclusiva_reset_visualizacao_v1"):
                 st.session_state["arquivos_escondidos"] = []
-                st.rerun()
-                
-        # --- LOOP DE EXIBIÇÃO (Este é o início do seu loop atual) ---
-        for idx, form in enumerate(lista_de_arquivos, 1):
-            id_atual = form.get('timestamp') or f"form_{idx}"
-            
-            if id_atual in st.session_state.get("arquivos_escondidos", []):
-                continue
-
-            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=False):
-                # ... (Todo o seu código de cabeçalho, tabelas e DISC aqui dentro) ...
-
-                # --- BLOCO DE EXPORTAÇÃO (AGORA CORRETAMENTE DENTRO DO EXPANDER) ---
-                if st.session_state.get("usuario_logado") == "Luciano 123":
-                    st.markdown("---")
-                    st.subheader("⚙️ Painel de Exportação")
-
-                    col1, col2 = st.columns(2)
-
-                    data_raw = form.get('timestamp') or 'sem_data'
-                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
-                    nome_raw = form.get('colaborador') or 'Colaborador'
-                    nome_clean = str(nome_raw).replace(' ', '_')
-                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
-
-                    st.download_button(
-                        label="📑 Baixar PDF",
-                        data=gerar_pdf_html(form),
-                        file_name=f"{nome_arquivo}.html",
-                        mime="text/html",
-                        key=f"pdf_unico_{id_atual}_{idx}" # Key dinâmica para não dar erro
-                    )
-                
-                                    
+                st.rerun()                                    
 
        
 # ============================================================
