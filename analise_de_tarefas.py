@@ -1515,41 +1515,53 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 5. SCORE DE QUALIFICAÇÃO E MATURIDADE (CHAVES EXATAS)
+        # 5. SCORE DE QUALIFICAÇÃO E MATURIDADE (EXTRATOR UNIVERSAL)
         # ============================================================
         st.markdown("---")
         st.subheader("🎓 Diagnóstico de Qualificação e Maturidade")
 
-        # 1. Captura rigorosa dos campos exatos
-        info = locals().get('dados', locals().get('colaborador', {}))
+        # 1. Tenta encontrar os dados no nível atual do loop (colaborador ou dados)
+        item = locals().get('colaborador', locals().get('dados', locals().get('colab', {})))
         
-        # Normalização: transforma tudo em minúsculo e remove espaços extras
-        txt_cursos = str(info.get("cursos", "")).lower().strip()
-        txt_objetivo = str(info.get("objetivo", "")).lower().strip()
+        # Extrator resiliente: Garante que pegamos o texto mesmo se estiver vazio
+        raw_cursos = item.get("cursos", "")
+        raw_objetivo = item.get("objetivo", "")
 
-        # --- 2. CÁLCULO DE SCORE TÉCNICO (UNIVERSAL) ---
+        # Se vier nulo por erro de nível, tenta buscar dentro de uma subchave 'dados'
+        if not raw_cursos and "dados" in item:
+            raw_cursos = item["dados"].get("cursos", "")
+            raw_objetivo = item["dados"].get("objetivo", "")
+
+        # Normalização Total
+        txt_cursos = str(raw_cursos).lower().strip()
+        txt_objetivo = str(raw_objetivo).lower().strip()
+
+        # --- 2. CÁLCULO DE SCORE TÉCNICO ---
         score = 0
         checks = []
 
-        # Camada de Especialização (Pós, MBA, Mestrado)
-        if any(x in txt_cursos for x in ["pós", "pos", "mba", "especialização", "graduação", "contábeis", "administração"]):
+        # Camada 1: Especialização (Busca ampla por termos acadêmicos)
+        termos_academicos = ["pós", "pos", "mba", "especialização", "graduação", "contábeis", "administração", "bacharel"]
+        if any(x in txt_cursos for x in termos_academicos):
             score += 35
-            checks.append("Maturidade Acadêmica (Ensino Superior/Pós)")
+            checks.append("Maturidade Acadêmica (Formação Superior/Pós)")
         
-        # Camada de Gestão (Processos, Projetos, Liderança)
-        if any(x in txt_cursos for x in ["gestão", "liderança", "processos", "projetos", "pop", "asana", "auditoria"]):
+        # Camada 2: Gestão e Soft Skills (Universal)
+        termos_gestao = ["gestão", "liderança", "processos", "projetos", "pop", "asana", "auditoria", "comunicação"]
+        if any(x in txt_cursos for x in termos_gestao):
             score += 25
-            checks.append("Visão de Gestão e Fluxos Operacionais")
+            checks.append("Visão de Gestão e Fluxos")
 
-        # Camada Técnica Avançada (eSocial, Jurídica, Sistemas, Excel Avançado)
-        if any(x in txt_cursos for x in ["esocial", "reinf", "dctf", "legislação", "jurídica", "avançado", "software"]):
+        # Camada 3: Hard Skills e Ferramentas
+        termos_tecnicos = ["esocial", "reinf", "legislação", "jurídica", "avançado", "excel", "software", "sistema"]
+        if any(x in txt_cursos for x in termos_tecnicos):
             score += 25
-            checks.append("Domínio de Ferramentas e Conformidade")
+            checks.append("Domínio Técnico e Conformidade")
 
-        # Camada de Atualização (Volume de Cursos/Texto)
-        if len(txt_cursos.split(',')) > 3 or len(txt_cursos) > 150:
+        # Camada 4: Densidade (Volume de cursos)
+        if len(txt_cursos) > 100 or "," in txt_cursos:
             score += 15
-            checks.append("Educação Continuada (Múltiplas Certificações)")
+            checks.append("Educação Continuada")
 
         # --- 3. EXIBIÇÃO VISUAL ---
         col_graf, col_info = st.columns([1, 2])
@@ -1557,31 +1569,30 @@ if st.session_state.pagina == "disc":
         with col_graf:
             st.write("**Nível de Autoridade Técnica**")
             score_final = min(score, 100)
-            cor_score = "green" if score_final > 75 else "orange" if score_final > 45 else "red"
+            cor_score = "green" if score_final > 70 else "orange" if score_final > 40 else "red"
             st.markdown(f"<h2 style='color: {cor_score}; text-align: center;'>{score_final}%</h2>", unsafe_allow_html=True)
             st.progress(score_final / 100)
             
         with col_info:
-            st.write("**Pilares Detectados:**")
+            st.write("**Pilares de Competência:**")
             if checks:
-                for item in checks:
-                    st.markdown(f"- {item}")
+                for pilar in checks:
+                    st.markdown(f"- {pilar}")
             else:
-                st.caption("Verifique o preenchimento dos campos 'cursos' e 'objetivo'.")
+                st.warning("⚠️ Dados não mapeados nos campos 'cursos' ou 'objetivo'.")
 
-        # --- 4. ANÁLISE DO OBJETIVO (O TEXTO DE ALTO VALOR) ---
+        # --- 4. ANÁLISE DE IMPACTO DO OBJETIVO ---
         st.markdown("#### 🎯 Alinhamento Estratégico do Objetivo")
         
-        # Termos de Elite que indicam que o colaborador é um Gestor/Estrategista
-        termos_elite = ["estratégica", "mitigação", "auditoria", "conformidade", "onboarding", "performance", "jurídico", "análise"]
+        termos_elite = ["estratégica", "mitigação", "auditoria", "conformidade", "onboarding", "performance", "jurídico", "normativa"]
         match_count = sum(1 for p in termos_elite if p in txt_objetivo)
 
-        if match_count >= 4:
-            st.success("💎 **Perfil Estratégico (High Performance):** O colaborador possui visão de riscos e foca na segurança jurídica do negócio. Perfil de liderança técnica clara.")
+        if match_count >= 3:
+            st.success("💎 **Perfil Estratégico (High Performance):** Visão de prevenção de riscos e segurança jurídica. Colaborador com maturidade de liderança.")
         elif match_count >= 1:
-            st.info("📊 **Perfil Especialista (Tático):** Foco na excelência da entrega técnica e organização dos processos. Demonstra competência e clareza operacional.")
+            st.info("📊 **Perfil Especialista (Tático):** Foco em excelência técnica e organização operacional.")
         else:
-            st.warning("⚠️ **Perfil Execução (Operacional):** O objetivo foca no 'fazer' imediato. Sugere-se treinamento para desenvolver visão sistêmica e impacto nos resultados.")
+            st.warning("⚠️ **Perfil Execução (Operacional):** Foco restrito à rotina imediata. Recomenda-se desenvolver visão sistêmica.")
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
