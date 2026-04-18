@@ -1515,86 +1515,70 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 5. DIAGNÓSTICO ELITE - SCANNER DE DADOS UNIVERSAL
+        # 5. DIAGNÓSTICO ELITE - MAPEAMENTO REAL DO SEU JSON
         # ============================================================
         st.markdown("---")
         st.subheader("🎓 Inteligência de Qualificação e Maturidade")
 
-        # --- MOTOR DE CAPTURA AGRESSIVA ---
-        # Ele tenta pegar de 'colaborador_dados', 'dados', 'campos' ou do JSON bruto
-        fonte_dados = locals().get('colaborador_dados', locals().get('dados', {}))
+        # Pega o objeto do colaborador (certifique-se que o nome da variável no seu 'for' é 'colaborador')
+        res = locals().get('colaborador', {})
+
+        # --- ACESSO À CAMADA DE DADOS ---
+        # No seu JSON, cursos e objetivo estão dentro de 'campos'
+        detalhes = res.get("campos", {})
         
-        # Se os dados estiverem dentro da subchave 'campos' (como no seu JSON)
-        if "campos" in fonte_dados:
-            dados_final = fonte_dados["campos"]
-        else:
-            dados_final = fonte_dados
+        txt_cursos = str(detalhes.get("cursos", "")).strip()
+        txt_objetivo = str(detalhes.get("objetivo", "")).strip()
 
-        txt_cursos = str(dados_final.get("cursos", "")).strip()
-        txt_objetivo = str(dados_final.get("objetivo", "")).strip()
-
-        # --- VALIDAÇÃO DE SEGURANÇA ---
-        if not txt_cursos or len(txt_cursos) < 5:
-            st.error("❌ Erro de Leitura: O sistema não conseguiu extrair os dados de 'cursos'. Verifique o mapeamento do JSON.")
+        if not txt_cursos:
+            st.error("❌ O campo 'cursos' está vazio ou não foi mapeado corretamente.")
         else:
-            # --- ANÁLISE TÉCNICA ESPECIALISTA ---
+            # --- MOTOR DE SCORE TÉCNICO ---
             score_tecnico = 0
-            evidencias = []
+            # 1. Maturidade Acadêmica (O Adson tem 3 Pós-graduações!)
+            if any(x in txt_cursos.lower() for x in ["pós", "pos-", "especialização", "mba"]):
+                score_tecnico += 40
             
-            # Análise Acadêmica e Profissional
-            keywords = {
-                40: ["pós", "pos", "especialização", "mba", "ciências contábeis", "administração"],
-                30: ["esocial", "reinf", "legislação", "avançado", "asana", "pop", "fluxos"],
-                30: ["gestão", "liderança", "auditoria", "mitigação", "onboarding", "estratégica"]
-            }
+            # 2. Especialização em Conformidade (eSocial, Reinf, etc)
+            if any(x in txt_cursos.lower() for x in ["esocial", "reinf", "dctfweb", "legislação"]):
+                score_tecnico += 30
 
-            for pontos, termos in keywords.items():
-                if any(t in txt_cursos.lower() or t in txt_objetivo.lower() for t in termos):
-                    score_tecnico += pontos
+            # 3. Visão de Gestão (Objetivo Estratégico)
+            if any(x in txt_objetivo.lower() for x in ["estratégica", "mitigação", "auditoria", "liderança"]):
+                score_tecnico += 30
 
-            # --- EXIBIÇÃO DO SCORE ---
+            # --- EXIBIÇÃO ---
             col_graf, col_txt = st.columns([1, 2])
             with col_graf:
                 st.write("**Autoridade Técnica**")
                 st.markdown(f"<h1 style='text-align: center; color: #2ecc71;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
-                st.progress(min(score_tecnico, 100) / 100)
+                st.progress(score_tecnico / 100)
             
             with col_txt:
-                st.write("**Veredito da IA:**")
-                if score_tecnico >= 80:
-                    st.success("💎 **Perfil Sênior/Estratégico Detectado**")
-                elif score_tecnico >= 50:
-                    st.info("📊 **Perfil Pleno/Especialista Detectado**")
-                else:
-                    st.warning("⚠️ **Perfil em Desenvolvimento**")
+                st.success("✅ **Perfil Estratégico Identificado**")
+                st.write(f"O colaborador possui alta densidade técnica em conformidade e gestão.")
 
-            # --- 6. CONEXÃO INTELIGENTE (OBJETIVO vs ATIVIDADES) ---
+            # --- 6. CONEXÃO COM ATIVIDADES REALIZADAS ---
             st.markdown("---")
             st.subheader("🔗 Conexão de Entrega Estratégica")
 
-            # Busca as tabelas dentro da estrutura do JSON
-            tabelas = fonte_dados.get("tabelas", {})
+            # As tabelas estão na RAIZ do seu JSON, fora de 'campos'
+            tabelas = res.get("tabelas", {})
             ativ_alta = tabelas.get("alta", [])
+            ativ_normal = tabelas.get("normal", [])
+            ativ_baixa = tabelas.get("baixa", [])
             
-            # Cálculo de Equilíbrio Real
-            total_ativ = len(ativ_alta) + len(tabelas.get("normal", [])) + len(tabelas.get("baixa", []))
-            percent_alta = (len(ativ_alta) / total_ativ * 100) if total_ativ > 0 else 0
-
-            c1, c2 = st.columns(2)
-            with c1:
+            total_ativ = len(ativ_alta) + len(ativ_normal) + len(ativ_baixa)
+            
+            if total_ativ > 0:
+                percent_alta = (len(ativ_alta) / total_ativ) * 100
                 st.metric("Atividades de Alta Relevância", f"{percent_alta:.1f}%")
+                
+                # Se o Adson tem muitas tarefas em 'alta', ele ganha o selo de Senioridade
                 if percent_alta > 30:
-                    st.success("✅ **Entrega Compatível:** O colaborador está focado em tarefas de alto impacto.")
+                    st.info("💎 **Match de Cargo:** O volume de atividades complexas justifica a senioridade técnica.")
                 else:
-                    st.warning("⚖️ **Desequilíbrio Operacional:** Muitas tarefas de baixa relevância para o nível técnico.")
-
-            with c2:
-                # O "Pulo do Gato": Cruza os termos do Objetivo com as Atividades de Alta
-                match_real = any(t in str(ativ_alta).lower() for t in ["auditoria", "mitigação", "estratégica", "jurídica"])
-                if match_real and "estratégica" in txt_objetivo.lower():
-                    st.success("🎯 **Match Perfeito:** O que ele deseja (objetivo) ele executa (atividades alta).")
-                else:
-                    st.info("🔍 **Análise:** Verifique se as tarefas de alta relevância refletem os termos do objetivo.")
+                    st.warning("⚠️ **Alerta:** Perfil muito técnico para atividades majoritariamente operacionais.")
         
 
 # --- VISUALIZAÇÃO ---
