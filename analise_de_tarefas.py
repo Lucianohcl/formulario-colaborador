@@ -1490,42 +1490,45 @@ if st.session_state.pagina == "disc":
         
         
         # ============================================================
-        # 4. DIAGNÓSTICO INTELIGENTE DE DIFICULDADES E SUGESTÕES
+        # 4. DIAGNÓSTICO INTELIGENTE - FILTRO ANTI-RESPOSTA EVASIVA
         # ============================================================
         st.markdown("---")
         
-        # 1. RESET E LIMPEZA TOTAL (Mata qualquer rastro do colaborador anterior)
-        texto_dif = ""
-        texto_sug = ""
+        # 1. RESET TOTAL DE SEGURANÇA
+        texto_dif, texto_sug = "", ""
         
-        # 2. CAPTURA ÚNICA E RIGOROSA (Bebendo apenas da fonte oficial 'form')
-        t_raiz = form.get('tabelas', {})
+        # 2. CAPTURA DO FORM
+        t_alvo = form.get('tabelas', {})
         
-        # Lista de termos que indicam que o colaborador "não quis responder"
-        bloqueio = ["nenhuma", "não tenho", "n/a", "não há", "0", "nenhum", "dp", "null", "nada"]
+        # 3. LISTA NEGRA (O que o Adson escreveu que enganava o sistema)
+        # Se o texto for IGUAL a um desses, o sistema ignora.
+        bloqueio_total = [
+            "nenhuma dificuldade", "nenhuma melhoria", "nenhuma", "não tenho", 
+            "n/a", "não há", "0", "nenhum", "dp", "null", "nada", "n / a", "nenhuma melhoria "
+        ]
 
-        def filtrar(lista, chave):
-            itens = []
-            for d in lista:
-                valor = str(d.get(chave, '')).strip()
-                # Só aceita se tiver mais de 2 letras e não estiver na lista de bloqueio
-                if len(valor) > 2 and valor.lower() not in bloqueio:
-                    itens.append(valor)
-            return " ".join(itens)
+        def validar_real(lista, chave):
+            validos = []
+            for item in lista:
+                valor = str(item.get(chave, '')).strip()
+                # Só aceita se: não for lixo E tiver conteúdo de verdade
+                if valor.lower() not in bloqueio_total and len(valor) > 3:
+                    validos.append(valor)
+            return " ".join(validos)
 
-        # Processa as tabelas do Adson/Pedro de forma isolada
-        texto_dif = filtrar(t_raiz.get('dificuldades', []), 'Dificuldade')
-        texto_sug = filtrar(t_raiz.get('sugestoes', []), 'Sugestão')
+        # Processa as variáveis
+        texto_dif = validar_real(t_alvo.get('dificuldades', []), 'Dificuldade')
+        texto_sug = validar_real(t_alvo.get('sugestoes', []), 'Sugestão')
 
-        # 3. LÓGICA DE EXIBIÇÃO: SE AMBOS VAZIOS -> ERRO (CASO DO ADSON)
+        # ------------------------------------------------------------
+        # 4. A TRAVA: SE FICOU VAZIO APÓS O FILTRO -> ERRO (CASO ADSON)
+        # ------------------------------------------------------------
         if not texto_dif and not texto_sug:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"""
-            A ausência de registros por um perfil **{perfil_dominante}** indica resistência passiva. 
-            O colaborador não detalhou barreiras nem propôs melhorias operacionais.
-            """)
+            st.markdown(f"O colaborador **{perfil_dominante}** preencheu os campos com termos evasivos ou não respondeu.")
+        
         else:
-            # 4. SÓ ENTRA NA ANÁLISE SE TIVER CONTEÚDO REAL (CASO DO PEDRO)
+            # 5. SÓ ENTRA AQUI SE TIVER TEXTO REAL (CASO PEDRO)
             st.markdown(f"#### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
             
             dores_perfil = {
@@ -1543,9 +1546,9 @@ if st.session_state.pagina == "disc":
                     if bateu:
                         st.success(f"✅ **Coerência Alta:** Queixas típicas de um {perfil_dominante}.")
                     else:
-                        st.warning("⚠️ **Alerta Estrutural:** Dificuldades fogem do padrão comportamental.")
+                        st.warning("⚠️ **Alerta Estrutural:** Queixas fogem do padrão comportamental.")
                 else:
-                    st.info("Sem dificuldades relatadas.")
+                    st.info("Vazio.")
 
             with col2:
                 st.subheader("💡 Sugestões vs Inovação")
@@ -1558,7 +1561,7 @@ if st.session_state.pagina == "disc":
                 else:
                     st.error("🚨 **Barreira Propositiva:** Não houve sugestões.")
 
-            st.info(f"**Resumo Executivo:** O perfil {perfil_dominante} foi analisado com base nos textos fornecidos.")
+            st.info(f"**Resumo Executivo:** Análise concluída para o perfil {perfil_dominante}.")
 
 
         
