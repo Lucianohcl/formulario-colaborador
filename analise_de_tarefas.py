@@ -1321,24 +1321,31 @@ if st.session_state.pagina == "disc":
                 de adaptação elevado para esta função específica.
                 """)
 
-        # 4. NOTA DO CONSULTOR ADAPTATIVA (UNIVERSAL)
+        # ============================================================
+        # 💡 NOTA DO CONSULTOR - VERSÃO DEFINITIVA (ADSON vs PEDRO)
+        # ============================================================
         st.write("---")
         st.write("👉 **ANÁLISE DE ADAPTAÇÃO ÀS TAREFAS**")
 
+        # A variável 'is_equilibrado' (amplitude <= 12) mata o erro do Adson
         if is_equilibrado:
-            # Mensagem de Mitigação para o Adson
+            # MENSAGEM EXCLUSIVA PARA O ADSON (HÍBRIDO)
             st.info(f"""
-            💡 **Nota do Consultor (Perfil Híbrido):** Devido à sua distribuição equilibrada de energia (Amplitude: {amplitude:.1f}%), 
-            qualquer necessidade de adaptação para tarefas de alto rigor técnico, auditoria ou conformidade rígida é **significativamente mitigada**. 
-            Sua **flexibilidade nativa** permite transitar entre foco em pessoas e análise de dados com baixo desgaste mental.
+            💡 **Nota do Consultor (Perfil Híbrido):** Identificamos que sua estrutura comportamental é **Multidirecional**. 
+            Diferente de perfis concentrados, você possui uma pontuação equilibrada em todos os eixos (Amplitude: {amplitude:.1f}%). 
+            
+            Isso significa que você tem a **capacidade nativa de transição**: consegue alternar entre o foco em pessoas (I) e o 
+            alto rigor técnico/auditoria (C) sem o desgaste mental típico de outros perfis. Sua versatilidade **mitiga a fadiga**, 
+            permitindo precisão e foco em dados frios com a mesma naturalidade que utiliza na comunicação.
             """)
         else:
-            # Mensagem de Alerta para o Pedro
+            # MENSAGEM PARA O PEDRO (ESPECIALISTA CONCENTRADO)
             perfil_primario = max(percentuais, key=percentuais.get)
             st.warning(f"""
-            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), 
-            tarefas que exigem eixos opostos demandam um **esforço consciente maior**. Recomenda-se organizar a agenda para 
-            intercalar atividades técnicas com outras mais naturais ao seu perfil, evitando fadiga prolongada.
+            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), tarefas que exigem eixos opostos demandam um **esforço consciente maior**. 
+            
+            Neste caso, o foco em auditoria e conformidade rígida pode gerar fadiga ao longo do dia. Recomenda-se 
+            organizar a agenda para intercalar essas atividades técnicas com outras que sejam mais naturais ao seu perfil.
             """)
 
         # ============================================================
