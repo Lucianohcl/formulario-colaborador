@@ -994,11 +994,14 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. FORÇAR LEITURA DIRETA (IGUAL AO VISUALIZAR REGISTROS)
-    # Isso garante que não dependemos de um session_state que pode estar vazio
-    # 1. LEITURA SEGURA (RESOLVE O ERRO DA LINHA 999)
+    # 1. LEITURA SEGURA (RESOLVIDO: Passando o argumento necessário)
     try:
-        lista_fresca = carregar_todos_formularios()
+        # Buscamos o repositório que foi conectado no login
+        repo = st.session_state.get('repo_conectado') 
+        
+        # Passamos o 'repo' para a função não ficar vazia
+        lista_fresca = carregar_todos_formularios(repo)
+        
         if lista_fresca is None:
             lista_fresca = []
     except Exception as e:
