@@ -1380,7 +1380,7 @@ if st.session_state.pagina == "disc":
                             break
 
         # ============================================================
-        # 3. EXIBIÇÃO UNIVERSAL COM LÓGICA DE MITIGAÇÃO
+        # 3. EXIBIÇÃO UNIVERSAL COM EXPLICAÇÃO COMPORTAMENTAL
         # ============================================================
         
         # Garante que as variáveis existam para não quebrar o código
@@ -1394,27 +1394,40 @@ if st.session_state.pagina == "disc":
             # Remove duplicatas e exibe as 3 principais
             unicas_desafio = list(dict.fromkeys(atividades_desafio))
             for ativ in unicas_desafio[:3]:
-                # Limpeza de caracteres e quebras de linha
                 ativ_limpa = str(ativ).replace("\n", " ").strip()
                 st.info(f"👉 {ativ_limpa}")
 
-            # Construção da Nota de Consultoria Dinâmica
-            if hibrido_status:
-                texto_final = (
-                    f"Estes pontos de atenção são identificados com base no seu perfil principal (**{perfil_dominante}**). "
-                    f"No entanto, por você possuir um **Perfil Híbrido** (com bom equilíbrio em **{eixo_conflitante}**), "
-                    f"essa dificuldade natural é significativamente **mitigada**. Isso significa que você possui flexibilidade "
-                    f"para transitar entre diferentes exigências, reduzindo o desgaste mental e mantendo a qualidade técnica."
+            # Lógica de Explicação do Porquê (Baseada no Perfil Principal)
+            if perfil_dominante in ['I', 'S']:
+                razao_conflito = (
+                    f"Como seu perfil principal (**{perfil_dominante}**) é orientado a pessoas, ritmo e comunicação, "
+                    f"tarefas que exigem alto rigor técnico, auditoria, análise de dados frios e conformidade rígida "
+                    f"demandam um esforço consciente maior para manter a precisão e o foco por longos períodos."
                 )
             else:
-                texto_final = (
-                    f"Estas atividades exigem competências de **{eixo_conflitante}**, o que é oposto ao seu perfil natural "
-                    f"**{perfil_dominante}**. Como seu perfil é mais concentrado, essas tarefas podem demandar um alto "
-                    f"investimento de energia. Recomenda-se atenção redobrada e pausas estratégicas durante a execução."
+                razao_conflito = (
+                    f"Como seu perfil principal (**{perfil_dominante}**) é orientado a resultados rápidos e processos objetivos, "
+                    f"tarefas que exigem alta diplomacia, paciência para ritos sociais lentos ou manutenção de rotinas "
+                    f"repetitivas podem ser percebidas como menos produtivas, exigindo alta adaptação comportamental."
+                )
+
+            # Construção da Nota Final com Mitigação
+            if hibrido_status:
+                nota_final = (
+                    f"{razao_conflito} No entanto, por você possuir um **Perfil Híbrido**, essa dificuldade natural é "
+                    f"significativamente **mitigada**. Isso significa que você possui a flexibilidade necessária para "
+                    f"transitar entre o seu estilo natural e a exigência técnica do cargo com menor desgaste mental, "
+                    f"garantindo a qualidade técnica sem comprometer sua energia."
+                )
+            else:
+                nota_final = (
+                    f"{razao_conflito} Como seu perfil é mais concentrado, essas tarefas podem gerar fadiga ao longo do dia. "
+                    f"Recomenda-se atenção redobrada e a organização da agenda para intercalar essas atividades com outras "
+                    f"que sejam mais naturais ao seu perfil."
                 )
             
             # Exibe a nota com formatação de citação
-            st.markdown(f"> **💡 Nota do Consultor:** {texto_final}")
+            st.markdown(f"> **💡 Nota do Consultor:** {nota_final}")
             
         else:
             st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
