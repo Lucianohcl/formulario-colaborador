@@ -1221,6 +1221,11 @@ if st.session_state.pagina == "disc":
         # ============================================================
         # MÓDULO DE INTELIGÊNCIA DE RH: BENCHMARK POR CARGO
         # ============================================================
+        # 0. GARANTE A DEFINIÇÃO DA VARIÁVEL (CORREÇÃO DO ERRO)
+        c_internos = formulario_sel.get('campos', {})
+        cargo_bruto = c_internos.get('cargo') or formulario_sel.get('cargo') or "N/A"
+        cargo_limpo = str(cargo_bruto).lower()
+
         st.markdown(f"### 📑 Consultoria de Perfil: {cargo_bruto.upper()}")
 
         # 1. BASE DE CONHECIMENTO DE RH (Desejado por Cargo)
