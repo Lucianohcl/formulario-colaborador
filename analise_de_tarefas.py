@@ -993,25 +993,26 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. CONEXÃO DIRETA (IGUAL AO VISUALIZAR DADOS)
+    # 1. CONEXÃO DIRETA (AJUSTADO PARA DB_TOKEN)
     try:
-        # Puxa o token direto dos segredos do Streamlit
-        g = Github(st.secrets["GITHUB_TOKEN"])
+        # Puxa o token direto dos segredos do Streamlit (DB_TOKEN)
+        g = Github(st.secrets["DB_TOKEN"])
         
-        # IMPORTANTE: Use exatamente o mesmo caminho que está no Visualizar Dados
-        # Exemplo: "seu-usuario/seu-repositorio"
-        repo = g.get_repo("SEU_USUARIO/SEU_REPOSITORIO") 
+        # IMPORTANTE: Substitua pelo seu caminho real (ex: "luciano/projeto-disc")
+        repo_path = "SEU_USUARIO/SEU_REPOSITORIO" 
+        repo = g.get_repo(repo_path)
         
-        # Sincroniza o estado para garantir que outras funções vejam essa conexão
+        # Mantém a conexão no estado da sessão
         st.session_state.repo_conectado = repo
         
     except Exception as e:
-        st.error(f"❌ Erro ao conectar diretamente: {e}")
+        st.error(f"❌ Erro ao conectar diretamente via DB_TOKEN: {e}")
+        st.info("Certifique-se de que a chave DB_TOKEN está correta nos Secrets do Streamlit.")
         st.stop()
 
-    # 2. LEITURA DOS DADOS (AGORA COM REPO GARANTIDO)
+    # 2. LEITURA DOS DADOS (SINCRONIZADO)
     try:
-        with st.spinner("Buscando dados no GitHub..."):
+        with st.spinner("Sincronizando registros do GitHub..."):
             lista_fresca = carregar_todos_formularios(repo)
         
         if not lista_fresca:
@@ -1019,14 +1020,23 @@ if st.session_state.pagina == "disc":
             st.stop()
             
     except Exception as e:
-        st.error(f"Erro ao acessar os arquivos: {e}")
+        st.error(f"Erro ao acessar os arquivos na pasta /dados/: {e}")
         st.stop()
 
-    # 3. MAPEAMENTO (DAQUI PARA BAIXO SEGUE SEU CÓDIGO NORMAL)
+    # 3. MAPEAMENTO SEGURO
     opcoes_colaboradores = {
         f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
         for f in lista_fresca
     }
+
+    colaborador_chave = st.selectbox(
+        "Escolha o colaborador",
+        options=list(opcoes_colaboradores.keys())
+    )
+
+    formulario_sel = opcoes_colaboradores.get(colaborador_chave)
+    
+    # ... O restante do seu código de geração de análise continua abaixo ...
 
     # ============================================================
     # BOTÃO GERAR ANÁLISE
