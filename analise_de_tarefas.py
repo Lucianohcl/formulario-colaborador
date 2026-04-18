@@ -1101,7 +1101,7 @@ if st.session_state.pagina == "disc":
         p2, v2 = ranking[1]
 
         # Define se é Puro ou Híbrido
-        dominante = f"{p1}/{p2}" if (v1 - v2) < 15 else p1
+        dominante = f"{p1}/{p2}" if (v1 - v2) < 8 else p1
         score = score_disc(percentuais)
 
         # Prepara os textos ANTES de exibir (Garante que info['nome'] nunca seja N/A)
