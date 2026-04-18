@@ -1515,70 +1515,73 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 🧠 DIAGNÓSTICO ESTRATÉGICO (CAMINHO DO JSON CORRIGIDO)
+        # 🧠 DIAGNÓSTICO DE ADERÊNCIA AO CARGO (SCORE DE MATCH)
         # ============================================================
         st.markdown("---")
         with st.container(border=True):
-            st.subheader("🏆 Veredito de Qualificação e Entrega")
+            st.subheader("🏆 Score de Alinhamento: Perfil vs. Cargo")
 
-            # 1. CAPTURA DOS DADOS (Caminho: form -> campos)
+            # 1. CAPTURA DOS DADOS
             dados_pessoais = form.get("campos", {})
             txt_cursos = str(dados_pessoais.get("cursos", "")).lower()
             txt_objetivo = str(dados_pessoais.get("objetivo", "")).lower()
+            cargo = str(dados_pessoais.get("cargo", "")).upper()
 
-            # 2. MOTOR DE SCORE TÉCNICO
-            score_tecnico = 0
-            evidencias = []
-            
-            # Validação de Formação (Baseada no seu JSON real)
-            if any(x in txt_cursos for x in ["pós", "mba", "especialização", "graduação", "contábeis"]):
-                score_tecnico += 40
-                evidencias.append("Maturidade Acadêmica (Pós/Graduação)")
-            
-            # Validação de Domínio Técnico
-            if any(x in txt_cursos for x in ["esocial", "reinf", "dctfweb", "legislação", "auditoria"]):
-                score_tecnico += 30
-                evidencias.append("Autoridade em Conformidade e Normas")
+            # 2. MOTOR DE ANÁLISE INTERNA (SCORE BASEADO EM 3 PILARES)
+            score_alinhamento = 0
+            analise_interna = []
 
-            # Validação de Visão Estratégica (No Objetivo)
-            if any(x in txt_objetivo for x in ["estratégica", "liderança", "gestão", "mitigação", "auditoria"]):
-                score_tecnico += 30
-                evidencias.append("Foco em Gestão e Mitigação de Riscos")
+            # PILAR A: QUALIFICAÇÃO TÉCNICA (Peso 40)
+            # Verifica se os cursos dão base para a complexidade do cargo
+            if any(x in txt_cursos for x in ["pós", "mba", "especialização", "graduação"]):
+                score_alinhamento += 20
+                analise_interna.append("Base acadêmica sólida para o nível do cargo.")
+            if any(x in txt_cursos for x in ["esocial", "reinf", "legislação", "auditoria", "fiscal"]):
+                score_alinhamento += 20
+                analise_interna.append("Domínio técnico específico identificado.")
 
-            # 3. EXIBIÇÃO VISUAL
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.write("**Autoridade Técnica**")
-                st.markdown(f"<h1 style='color: #2ecc71; margin:0;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
-                st.progress(score_tecnico / 100)
+            # PILAR B: CLAREZA E ALINHAMENTO DO OBJETIVO (Peso 40)
+            # Verifica se o que ele quer fazer é o que o cargo exige (Gestão/Estratégia)
+            if any(x in txt_objetivo for x in ["estratégica", "mitigação", "indicadores", "processos", "liderança"]):
+                score_alinhamento += 40
+                analise_interna.append("Objetivos estão alinhados com a visão estratégica do cargo.")
+            elif len(txt_objetivo) > 100: # Se for longo mas não tiver as palavras-chave acima
+                score_alinhamento += 20
+                analise_interna.append("Objetivo detalhado, porém com foco muito operacional.")
+
+            # PILAR C: SOBREQUALIFICAÇÃO / SENIORIDADE (Peso 20)
+            # Verifica se ele entrega mais do que o "básico"
+            if "auditoria" in txt_objetivo and "gestão" in txt_cursos:
+                score_alinhamento += 20
+                analise_interna.append("Potencial de entrega superior (Perfil Consultivo/Sênior).")
+
+            # 3. EXIBIÇÃO DO SCORE FINAL
+            col_score, col_veredito = st.columns([1, 2])
             
-            with col2:
-                st.write("**Evidências Identificadas:**")
-                if evidencias:
-                    for ev in evidencias: st.markdown(f"✅ {ev}")
+            with col_score:
+                st.write("**Índice de Aderência**")
+                cor_score = "#2ecc71" if score_alinhamento >= 70 else "#f1c40f" if score_alinhamento >= 40 else "#e74c3c"
+                st.markdown(f"<h1 style='text-align: center; color: {cor_score};'>{score_alinhamento}%</h1>", unsafe_allow_html=True)
+                st.progress(score_alinhamento / 100)
+
+            with col_veredito:
+                st.write("**Veredito de Qualificação:**")
+                if score_alinhamento >= 80:
+                    st.success(f"💎 **ALTO NÍVEL:** O colaborador possui qualificação superior e objetivos perfeitamente alinhados às exigências de {cargo}.")
+                elif score_alinhamento >= 50:
+                    st.info(f"📊 **ALINHADO:** Perfil técnico adequado. Os objetivos coincidem com as rotinas padrão de {cargo}.")
                 else:
-                    st.info("Perfil em análise de competências.")
+                    st.warning(f"⚠️ **DESALINHADO:** A qualificação ou os objetivos declarados estão aquém da complexidade esperada para {cargo}.")
 
-            # 4. CONEXÃO COM TABELAS (Caminho: form -> tabelas)
-            st.markdown("---")
-            t_data = form.get("tabelas", {})
-            ativ_alta = t_data.get("alta", [])
-            total_ativ = len(ativ_alta) + len(t_data.get("normal", [])) + len(t_data.get("baixa", []))
+            # 4. LISTA DE JUSTIFICATIVAS DO SCORE
+            if analise_interna:
+                st.markdown("---")
+                st.write("**Justificativa do Score:**")
+                for item in analise_interna:
+                    st.markdown(f"🔹 {item}")
+
             
-            if total_ativ > 0:
-                p_alta = (len(ativ_alta) / total_ativ) * 100
-                c_met1, c_met2 = st.columns(2)
-                with c_met1:
-                    st.metric("Entrega de Alta Complexidade", f"{p_alta:.1f}%")
-                with c_met2:
-                    if p_alta > 25 and score_tecnico >= 70:
-                        st.success("💎 **Match de Elite:** Perfil Sênior/Gestor")
-                    elif p_alta < 15 and score_tecnico >= 70:
-                        st.warning("⚠️ **Subutilização:** Potencial técnico mal aproveitado")
-                    else:
-                        st.info("📊 **Análise:** Perfil em equilíbrio operacional")
-            else:
-                st.warning("⚠️ Tabelas de atividades não localizadas para cruzamento.")            
+                      
         
 
 # --- VISUALIZAÇÃO ---
