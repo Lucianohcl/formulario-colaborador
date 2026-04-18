@@ -1523,7 +1523,8 @@ if st.session_state.pagina == "disc":
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
-        if len(texto_dif.strip()) < 5 and len(texto_sug.strip()) < 5:
+        # Considera que houve relato se qualquer um dos campos tiver mais de 2 letras
+        if len(str(texto_dif).strip()) < 2 and len(str(texto_sug).strip()) < 2:
             # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
