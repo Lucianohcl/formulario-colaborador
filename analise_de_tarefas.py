@@ -1515,70 +1515,69 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 5. DIAGNÓSTICO ELITE - MAPEAMENTO REAL DO SEU JSON
+        # 🧠 DIAGNÓSTICO ESTRATÉGICO (ALINHADO COM O CONTEÚDO DO EXPANDER)
         # ============================================================
         st.markdown("---")
-        st.subheader("🎓 Inteligência de Qualificação e Maturidade")
+        with st.container(border=True):
+            st.subheader("🏆 Veredito de Qualificação e Entrega")
 
-        # Pega o objeto do colaborador (certifique-se que o nome da variável no seu 'for' é 'colaborador')
-        res = locals().get('colaborador', {})
+            # Puxando das fontes já tratadas no seu loop (c e t_raiz)
+            txt_cursos = str(c.get("cursos", "")).strip()
+            txt_objetivo = str(c.get("objetivo", "")).strip()
 
-        # --- ACESSO À CAMADA DE DADOS ---
-        # No seu JSON, cursos e objetivo estão dentro de 'campos'
-        detalhes = res.get("campos", {})
-        
-        txt_cursos = str(detalhes.get("cursos", "")).strip()
-        txt_objetivo = str(detalhes.get("objetivo", "")).strip()
-
-        if not txt_cursos:
-            st.error("❌ O campo 'cursos' está vazio ou não foi mapeado corretamente.")
-        else:
-            # --- MOTOR DE SCORE TÉCNICO ---
-            score_tecnico = 0
-            # 1. Maturidade Acadêmica (O Adson tem 3 Pós-graduações!)
-            if any(x in txt_cursos.lower() for x in ["pós", "pos-", "especialização", "mba"]):
-                score_tecnico += 40
-            
-            # 2. Especialização em Conformidade (eSocial, Reinf, etc)
-            if any(x in txt_cursos.lower() for x in ["esocial", "reinf", "dctfweb", "legislação"]):
-                score_tecnico += 30
-
-            # 3. Visão de Gestão (Objetivo Estratégico)
-            if any(x in txt_objetivo.lower() for x in ["estratégica", "mitigação", "auditoria", "liderança"]):
-                score_tecnico += 30
-
-            # --- EXIBIÇÃO ---
-            col_graf, col_txt = st.columns([1, 2])
-            with col_graf:
-                st.write("**Autoridade Técnica**")
-                st.markdown(f"<h1 style='text-align: center; color: #2ecc71;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
-                st.progress(score_tecnico / 100)
-            
-            with col_txt:
-                st.success("✅ **Perfil Estratégico Identificado**")
-                st.write(f"O colaborador possui alta densidade técnica em conformidade e gestão.")
-
-            # --- 6. CONEXÃO COM ATIVIDADES REALIZADAS ---
-            st.markdown("---")
-            st.subheader("🔗 Conexão de Entrega Estratégica")
-
-            # As tabelas estão na RAIZ do seu JSON, fora de 'campos'
-            tabelas = res.get("tabelas", {})
-            ativ_alta = tabelas.get("alta", [])
-            ativ_normal = tabelas.get("normal", [])
-            ativ_baixa = tabelas.get("baixa", [])
-            
-            total_ativ = len(ativ_alta) + len(ativ_normal) + len(ativ_baixa)
-            
-            if total_ativ > 0:
-                percent_alta = (len(ativ_alta) / total_ativ) * 100
-                st.metric("Atividades de Alta Relevância", f"{percent_alta:.1f}%")
+            if not txt_cursos or txt_cursos.lower() == "não informado":
+                st.error("❌ Dados de Qualificação insuficientes para análise.")
+            else:
+                # --- MOTOR DE SCORE TÉCNICO ---
+                score_tecnico = 0
+                evidencias = []
                 
-                # Se o Adson tem muitas tarefas em 'alta', ele ganha o selo de Senioridade
-                if percent_alta > 30:
-                    st.info("💎 **Match de Cargo:** O volume de atividades complexas justifica a senioridade técnica.")
+                if any(x in txt_cursos.lower() for x in ["pós", "pos-", "especialização", "mba", "mestrado"]):
+                    score_tecnico += 40
+                    evidencias.append("Maturidade Acadêmica (Pós/MBA)")
+                
+                if any(x in txt_cursos.lower() for x in ["esocial", "reinf", "dctfweb", "legislação", "auditoria"]):
+                    score_tecnico += 30
+                    evidencias.append("Autoridade em Conformidade e Normas")
+
+                if any(x in txt_objetivo.lower() for x in ["estratégica", "mitigação", "liderança", "gestão", "indicadores"]):
+                    score_tecnico += 30
+                    evidencias.append("Foco em Gestão e Mitigação de Riscos")
+
+                # --- EXIBIÇÃO ---
+                col_graf, col_txt = st.columns([1, 2])
+                with col_graf:
+                    st.write("**Autoridade Técnica**")
+                    st.markdown(f"<h1 style='text-align: center; color: #2ecc71;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
+                    st.progress(score_tecnico / 100)
+                
+                with col_txt:
+                    st.write("**Evidências Identificadas:**")
+                    for ev in evidencias:
+                        st.markdown(f"✅ {ev}")
+
+                # --- CONEXÃO DE ENTREGA (TABELAS) ---
+                st.markdown("---")
+                ativ_alta = t_raiz.get("alta", [])
+                ativ_norm = t_raiz.get("normal", [])
+                ativ_baix = t_raiz.get("baixa", [])
+                total_ativ = len(ativ_alta) + len(ativ_norm) + len(ativ_baix)
+                
+                if total_ativ > 0:
+                    percent_alta = (len(ativ_alta) / total_ativ) * 100
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        st.metric("Atividades de Alta Relevância", f"{percent_alta:.1f}%")
+                        st.progress(percent_alta / 100)
+                    with c2:
+                        if percent_alta > 25 and score_tecnico >= 70:
+                            st.success("💎 **Match de Elite:** Senioridade e Entrega Alinhadas.")
+                        elif percent_alta < 15 and score_tecnico >= 70:
+                            st.warning("⚠️ **Subutilização:** Perfil técnico em tarefas operacionais.")
+                        else:
+                            st.info("📊 **Equilíbrio:** Entrega condizente com o perfil.")
                 else:
-                    st.warning("⚠️ **Alerta:** Perfil muito técnico para atividades majoritariamente operacionais.")
+                    st.warning("⚠️ Sem dados de atividades para cálculo de impacto.")        
         
 
 # --- VISUALIZAÇÃO ---
