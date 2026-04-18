@@ -1474,7 +1474,7 @@ if st.session_state.pagina == "disc":
             st.markdown(f"""
             A ausência de Sugestões de Pontos de Melhoria e também de Dificuldades relatadas por um perfil **{perfil_dominante}** podem indicar um alto nível de **resistência passiva**. 
             
-            O colaborador prefere a manutenção da zona de conforto à exposição de falhas operacionais, o que pode mascarar gargalos críticos e interromper o ciclo de melhoria contínua.
+            O colaborador pode preferir a manutenção da zona de conforto à exposição de falhas operacionais, o que pode mascarar gargalos críticos e interromper o ciclo de melhoria contínua.
             """)
         else:
             # SE HOUVER CONTEÚDO REAL, SEGUE PARA O CRUZAMENTO INTELIGENTE
