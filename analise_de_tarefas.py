@@ -1432,37 +1432,52 @@ if st.session_state.pagina == "disc":
         else:
             st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
 
-
+        
+        
         # ============================================================
         # 4. DIAGNÓSTICO INTELIGENTE DE DIFICULDADES E SUGESTÕES
         # ============================================================
         st.markdown("---")
-        st.markdown("#### 🔍 Análise de Conformidade e Resistência (Cruzamento DISC)")
+        st.markdown("#### 🔍 Análise de Dificuldades e Sugestões (Cruzamento DISC)")
 
-        # Tenta capturar os dados de 'dados' ou 'colaborador' (ajuste conforme seu script principal)
-        # Se 'dados' não existir, ele tenta 'colaborador', se não, cria um dicionário vazio
+        # 1. Captura e Tratamento de Dados
         info_origem = locals().get('dados', locals().get('colaborador', {}))
-        
         lista_dif = info_origem.get("dificuldades", [])
         lista_sug = info_origem.get("sugestoes", [])
         
-        # Consolida textos para análise de palavras-chave
-        texto_dif = " ".join([str(d.get("Dificuldade", "")).lower() for d in lista_dif])
-        texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug])
+        # Lista de termos que o sistema considera como "VAZIO" ou "RESISTÊNCIA"
+        termos_vazios = [
+            "nenhuma", "não tenho", "n/a", "não há", "0", "nenhum", "", " ", 
+            "dp", "nenhuma dificuldade", "nenhuma melhoria", "n / a", "null"
+        ]
 
-        # Flags de validação real (ignora termos vazios)
-        termos_vazios = ["nenhuma", "não tenho", "n/a", "não há", "0", "nenhum"]
-        tem_dif_real = any(str(d.get("Dificuldade", "")).lower().strip() not in termos_vazios for d in lista_dif if d.get("Dificuldade"))
-        tem_sug_real = any(str(s.get("Sugestão", "")).lower().strip() not in termos_vazios for s in lista_sug if s.get("Sugestão"))
+        def validar_conteudo(texto):
+            if not texto: return False
+            t = str(texto).lower().strip()
+            # Se estiver na lista de bloqueio ou for muito curto, não é conteúdo real
+            return t not in termos_vazios and len(t) > 2
 
-        # 2. Lógica de Cruzamento Inteligente
+        # Avaliação das flags de conteúdo real
+        tem_dif_real = any(validar_conteudo(d.get("Dificuldade", "")) for d in lista_dif)
+        tem_sug_real = any(validar_conteudo(s.get("Sugestão", "")) for s in lista_sug)
+
+        # Consolida textos apenas das respostas que passaram na validação para a análise DISC
+        texto_dif = " ".join([str(d.get("Dificuldade", "")).lower() for d in lista_dif if validar_conteudo(d.get("Dificuldade", ""))])
+        texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug if validar_conteudo(s.get("Sugestão", ""))])
+
+        # ------------------------------------------------------------
+        # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
+        # ------------------------------------------------------------
         if not tem_dif_real and not tem_sug_real:
+            # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
-            A ausência de pontos de melhoria relatados por um perfil **{perfil_dominante}** indica um alto nível de **resistência passiva**. 
+            A ausência de Sugestões de Pontos de Melhoria e também de Dificuldades relatadas por um perfil **{perfil_dominante}** podem indicar um alto nível de **resistência passiva**. 
+            
             O colaborador prefere a manutenção da zona de conforto à exposição de falhas operacionais, o que pode mascarar gargalos críticos e interromper o ciclo de melhoria contínua.
             """)
         else:
+            # SE HOUVER CONTEÚDO REAL, SEGUE PARA O CRUZAMENTO INTELIGENTE
             st.markdown(f"**Análise de Coerência com Perfil {perfil_dominante}:**")
             
             # Mapeamento de "Dores Naturais"
@@ -1476,27 +1491,28 @@ if st.session_state.pagina == "disc":
             col_dif, col_sug = st.columns(2)
             
             with col_dif:
-                if any(word in texto_dif for word in dores_perfil.get(perfil_dominante, [])):
-                    st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
-                elif tem_dif_real:
-                    st.warning("⚠️ **Dificuldade Técnica/Processual:** As queixas fogem do padrão do perfil, indicando falhas reais em ferramentas.")
+                if tem_dif_real:
+                    if any(word in texto_dif for word in dores_perfil.get(perfil_dominante, [])):
+                        st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
+                    else:
+                        st.warning("⚠️ **Dificuldade Técnica/Processual:** As queixas fogem do padrão do perfil, indicando falhas reais em ferramentas.")
                 else:
                     st.info("⚪ **Conformidade Passiva:** Baixa inclinação a relatar barreiras.")
 
             with col_sug:
                 if tem_sug_real:
-                    palavras_inovacao = ["mudar", "alterar", "automação", "novo", "criar", "melhorar", "eficiência"]
+                    palavras_inovacao = ["mudar", "alterar", "automação", "novo", "criar", "melhorar", "eficiência", "otimizar"]
                     if any(word in texto_sug for word in palavras_inovacao):
                         st.success("🚀 **Abertura à Inovação:** Sugestões focadas em evolução.")
                     else:
                         st.info("📋 **Melhoria Operacional:** Sugestões de ajuste, mas com foco em manter o status quo.")
                 else:
-                    st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças.")
+                    # Se ele deu dificuldades mas não deu sugestões:
+                    st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças construtivas.")
 
-            # Nota de Hibridismo
+            # Nota de Hibridismo (Apenas se houver algo para analisar)
             if hibrido_status:
-                st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Se não houve sugestões, utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
-        
+                st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
 
 # --- VISUALIZAÇÃO ---
