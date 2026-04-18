@@ -826,32 +826,26 @@ if not os.path.exists(dados_dir):
 
 def carregar_todos_formularios():
     """
-    Lê todos os arquivos .json exclusivamente da pasta /dados/ do projeto.
+    Lê todos os arquivos .json exclusivamente da pasta /dados/ no repositório GitHub.
     """
     lista_formularios = []
-    
-    # Verificação extra de segurança
-    if os.path.exists(dados_dir):
-        # Listamos apenas o que está dentro da pasta /dados/
-        arquivos = [f for f in os.listdir(dados_dir) if f.endswith(".json")]
+    try:
+        # Puxa o conteúdo da pasta /dados/ direto do repositório conectado
+        conteudos = repo.get_contents("dados")
         
-        for nome_arquivo in arquivos:
-            caminho_completo = os.path.join(dados_dir, nome_arquivo)
-            try:
-                with open(caminho_completo, "r", encoding="utf-8") as f:
-                    dados = json.load(f)
+        for item in conteudos:
+            if item.path.endswith(".json"):
+                try:
+                    # Lê e decodifica o arquivo vindo do GitHub
+                    dados = json.loads(item.decoded_content.decode('utf-8'))
                     if isinstance(dados, dict):
                         lista_formularios.append(dados)
-            except Exception as e:
-                # Silencioso para não travar o app se um arquivo estiver corrompido
-                continue
-                
+                except Exception:
+                    continue
+    except Exception as e:
+        st.error(f"Erro ao acessar a pasta /dados/ no GitHub: {e}")
+        
     return lista_formularios
-
-# --- CARREGAMENTO NO SESSION STATE ---
-if "formularios" not in st.session_state:
-    st.session_state["formularios"] = carregar_todos_formularios()
-
 
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
@@ -1343,17 +1337,19 @@ if st.session_state.pagina == "disc":
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
-    # GARANTIA: Sempre recarrega os arquivos do disco ao entrar na aba
-    # Isso evita que o Streamlit mostre dados antigos salvos no navegador
-    lista_de_arquivos = carregar_todos_formularios()
-    st.session_state["formularios"] = lista_de_arquivos
+    # GARANTIA: Recarrega direto do GitHub (ignora cache local)
+    with st.spinner("Lendo banco de dados no GitHub..."):
+        lista_de_arquivos = carregar_todos_formularios()
     
     if not lista_de_arquivos:
-        st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
-        if st.button("🔄 Forçar Releitura do Banco"):
+        st.warning("⚠️ Nenhum formulário finalizado encontrado na pasta /dados/ do GitHub.")
+        if st.button("🔄 Tentar Recarregar"):
             st.rerun()
     else:
-        st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
+        st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários no banco.")
+        
+        # O resto do seu loop de exibição (st.expander, tabelas, DISC) segue igual
+
         
         # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
