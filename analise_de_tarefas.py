@@ -1515,64 +1515,68 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 🧠 DIAGNÓSTICO ESTRATÉGICO (DIRETO DA FONTE 'C')
+        # 🧠 DIAGNÓSTICO ESTRATÉGICO (DIRETO E SEM ERROS)
         # ============================================================
         st.markdown("---")
         with st.container(border=True):
             st.subheader("🏆 Veredito de Qualificação e Entrega")
 
-            # Pega exatamente o que você usa no st.info acima
-            txt_cursos = str(c.get("cursos") or "").strip()
-            txt_objetivo = str(c.get("objetivo") or "").strip()
+            # 1. CAPTURA DOS TEXTOS (Usando 'c' que você já definiu)
+            txt_cursos = str(c.get("cursos", "") if 'c' in locals() else "Não informado")
+            txt_objetivo = str(c.get("objetivo", "") if 'c' in locals() else "Não informado")
 
-            # MOTOR DE SCORE TÉCNICO
+            # 2. MOTOR DE SCORE TÉCNICO
             score_tecnico = 0
             evidencias = []
             
-            # Analisa o que vier, sem trava de tamanho
-            if txt_cursos:
-                c_low = txt_cursos.lower()
-                if any(x in c_low for x in ["pós", "pos-", "especialização", "mba", "mestrado", "graduação"]):
-                    score_tecnico += 40
-                    evidencias.append("Maturidade Acadêmica")
-                if any(x in c_low for x in ["esocial", "reinf", "dctfweb", "legislação", "auditoria", "fiscal"]):
-                    score_tecnico += 30
-                    evidencias.append("Autoridade em Conformidade")
+            c_low = txt_cursos.lower()
+            # Adicionado termos mais abrangentes para evitar o 0%
+            if any(x in c_low for x in ["pós", "mba", "especialização", "graduação", "superior", "bacharel", "técnico"]):
+                score_tecnico += 40
+                evidencias.append("Formação Relevante")
             
-            if txt_objetivo:
-                o_low = txt_objetivo.lower()
-                if any(x in o_low for x in ["estratégica", "mitigação", "liderança", "gestão", "indicadores"]):
-                    score_tecnico += 30
-                    evidencias.append("Foco Estratégico")
+            if any(x in c_low for x in ["esocial", "reinf", "dctfweb", "legislação", "fiscal", "contábil", "dp"]):
+                score_tecnico += 30
+                evidencias.append("Domínio de Normas/Legislação")
 
-            # EXIBIÇÃO
+            if any(txt_objetivo.lower().strip() in x for x in ["estratégica", "liderança", "gestão", "melhoria", "otimizar"]):
+                score_tecnico += 30
+                evidencias.append("Visão Processual/Estratégica")
+
+            # 3. EXIBIÇÃO DA QUALIFICAÇÃO
             col1, col2 = st.columns([1, 2])
             with col1:
                 st.write("**Autoridade Técnica**")
-                st.markdown(f"<h1 style='color: #2ecc71;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
+                st.markdown(f"<h1 style='color: #2ecc71; margin:0;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
                 st.progress(score_tecnico / 100)
-            
             with col2:
-                st.write("**Evidências:**")
                 if evidencias:
                     for ev in evidencias: st.markdown(f"✅ {ev}")
                 else:
-                    st.info("Perfil operacional identificado.")
+                    st.info("Perfil focado em execução operacional.")
 
-            # CONEXÃO COM TABELAS (T_RAIZ)
+            # 4. CONEXÃO COM ATIVIDADES (EVITANDO NAMEERROR)
             st.markdown("---")
-            ativ_alta = t_raiz.get("alta", [])
-            total = len(ativ_alta) + len(t_raiz.get("normal", [])) + len(t_raiz.get("baixa", []))
             
-            if total > 0:
-                p_alta = (len(ativ_alta) / total) * 100
-                st.metric("Impacto em Alta Complexidade", f"{p_alta:.1f}%")
-                if p_alta > 20 and score_tecnico >= 60:
-                    st.success("💎 **Match de Elite:** Entrega condizente com a qualificação.")
-                elif p_alta < 15 and score_tecnico >= 70:
-                    st.warning("⚠️ **Subutilização:** Perfil sênior em tarefas básicas.")
+            # Tenta pegar t_raiz, se não existir, tenta pegar do form diretamente
+            t_data = locals().get('t_raiz', form.get('tabelas', form))
+            
+            if isinstance(t_data, dict):
+                ativ_alta = t_data.get("alta", [])
+                total = len(ativ_alta) + len(t_data.get("normal", [])) + len(t_data.get("baixa", []))
+                
+                if total > 0:
+                    p_alta = (len(ativ_alta) / total) * 100
+                    st.metric("Impacto em Alta Complexidade", f"{p_alta:.1f}%")
+                    
+                    if p_alta > 20 and score_tecnico >= 60:
+                        st.success("💎 **Match de Elite:** Alta senioridade e entrega estratégica.")
+                    elif p_alta < 15 and score_tecnico >= 70:
+                        st.warning("⚠️ **Subutilização:** Perfil sênior alocado em tarefas simples.")
+                else:
+                    st.warning("⚠️ Nenhuma atividade listada para cruzamento.")
             else:
-                st.warning("⚠️ Sem dados de atividades para cruzar.")               
+                st.error("❌ Erro de Estrutura: As tabelas de atividades não foram carregadas.")             
         
 
 # --- VISUALIZAÇÃO ---
