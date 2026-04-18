@@ -862,21 +862,21 @@ def carregar_todos_formularios(repo_conectado):
 if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     
     
-    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (EXTRA LARGA E MAIS GROSSA) ---
+    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (EXTRA LARGA E GROSSURA EQUILIBRADA) ---
     st.markdown("""
         <div style="
             background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            padding: 45px 60px;        /* Aumentei de 10px para 45px para ficar bem grosso */
-            max-width: 1200px;         /* LARGURA MÁXIMA PARA FICAR GIGANTE */
-            margin: 0 auto 5px auto;   /* Margem ajustada para não empurrar o login */
+            padding: 30px 60px;        /* GROSSURA MÉDIA: Equilíbrio para não rolar a tela */
+            max-width: 1200px;         /* LARGURA MÁXIMA */
+            margin: 0 auto 5px auto;   /* Centralizado e colado no login */
             border-radius: 15px;
             text-align: center;
             box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
         ">
-            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 2.2rem;">
+            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 2.0rem;">
                 🚀 Bem-vindo ao Sistema
             </h1>
-            <p style="color: white; font-size: 1.2rem; opacity: 0.9; margin: 15px 0 0 0; line-height: 1.2;">
+            <p style="color: white; font-size: 1.1rem; opacity: 0.9; margin: 10px 0 0 0; line-height: 1.2;">
                 Gestão Estratégica de Análise de Processos e Colaboradores
             </p>
         </div>
