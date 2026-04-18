@@ -1515,68 +1515,73 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 5. SCORE DE QUALIFICAÇÃO E ALINHAMENTO DE OBJETIVOS
+        # 5. SCORE DE QUALIFICAÇÃO E MATURIDADE (CHAVES EXATAS)
         # ============================================================
         st.markdown("---")
         st.subheader("🎓 Diagnóstico de Qualificação e Maturidade")
 
-        cursos = info_origem.get("cursos", "")
-        objetivo = info_origem.get("objetivo", "")
+        # 1. Captura rigorosa dos campos exatos
+        info = locals().get('dados', locals().get('colaborador', {}))
+        
+        # Normalização: transforma tudo em minúsculo e remove espaços extras
+        txt_cursos = str(info.get("cursos", "")).lower().strip()
+        txt_objetivo = str(info.get("objetivo", "")).lower().strip()
 
-        # --- CÁLCULO DE SCORE TÉCNICO (UNIVERSAL) ---
-        # Baseado em camadas: Acadêmica, Técnica, Processos e Ferramentas
+        # --- 2. CÁLCULO DE SCORE TÉCNICO (UNIVERSAL) ---
         score = 0
         checks = []
 
-        if any(x in cursos.lower() for x in ["pós-graduação", "pos-graduacao", "especialização", "mba"]):
+        # Camada de Especialização (Pós, MBA, Mestrado)
+        if any(x in txt_cursos for x in ["pós", "pos", "mba", "especialização", "graduação", "contábeis", "administração"]):
             score += 35
-            checks.append("Maturidade Acadêmica (Pós/MBA)")
+            checks.append("Maturidade Acadêmica (Ensino Superior/Pós)")
         
-        if any(x in cursos.lower() for x in ["gestão", "processos", "projetos", "pop", "auditoria"]):
+        # Camada de Gestão (Processos, Projetos, Liderança)
+        if any(x in txt_cursos for x in ["gestão", "liderança", "processos", "projetos", "pop", "asana", "auditoria"]):
             score += 25
-            checks.append("Visão de Processos e Gestão")
+            checks.append("Visão de Gestão e Fluxos Operacionais")
 
-        if any(x in cursos.lower() for x in ["avançado", "expert", "especialista"]):
-            score += 20
-            checks.append("Domínio de Ferramentas Críticas")
+        # Camada Técnica Avançada (eSocial, Jurídica, Sistemas, Excel Avançado)
+        if any(x in txt_cursos for x in ["esocial", "reinf", "dctf", "legislação", "jurídica", "avançado", "software"]):
+            score += 25
+            checks.append("Domínio de Ferramentas e Conformidade")
 
-        if len(cursos.split(',')) > 5:
-            score += 20
-            checks.append("Atualização Contínua (Múltiplas Certificações)")
+        # Camada de Atualização (Volume de Cursos/Texto)
+        if len(txt_cursos.split(',')) > 3 or len(txt_cursos) > 150:
+            score += 15
+            checks.append("Educação Continuada (Múltiplas Certificações)")
 
-        # --- EXIBIÇÃO VISUAL ---
+        # --- 3. EXIBIÇÃO VISUAL ---
         col_graf, col_info = st.columns([1, 2])
         
         with col_graf:
             st.write("**Nível de Autoridade Técnica**")
-            # Gráfico de progresso estilizado
-            cor_score = "green" if score > 70 else "orange" if score > 40 else "red"
-            st.markdown(f"<h2 style='color: {cor_score}; text-align: center;'>{score}%</h2>", unsafe_allow_html=True)
-            st.progress(score / 100)
+            score_final = min(score, 100)
+            cor_score = "green" if score_final > 75 else "orange" if score_final > 45 else "red"
+            st.markdown(f"<h2 style='color: {cor_score}; text-align: center;'>{score_final}%</h2>", unsafe_allow_html=True)
+            st.progress(score_final / 100)
             
         with col_info:
             st.write("**Pilares Detectados:**")
-            for item in checks:
-                st.markdown(f"- {item}")
+            if checks:
+                for item in checks:
+                    st.markdown(f"- {item}")
+            else:
+                st.caption("Verifique o preenchimento dos campos 'cursos' e 'objetivo'.")
 
-        # --- ANÁLISE SEMÂNTICA DO OBJETIVO ---
-        st.markdown("#### 🎯 Aderência do Objetivo ao Perfil")
+        # --- 4. ANÁLISE DO OBJETIVO (O TEXTO DE ALTO VALOR) ---
+        st.markdown("#### 🎯 Alinhamento Estratégico do Objetivo")
         
-        # Filtro de Intencionalidade: Operacional vs Estratégico
-        palavras_estrategicas = ["mitigação", "estratégica", "indicadores", "liderança", "conformidade", "melhoria contínua", "auditoria"]
-        peso_estrategico = sum(1 for p in palavras_estrategicas if p in objetivo.lower())
+        # Termos de Elite que indicam que o colaborador é um Gestor/Estrategista
+        termos_elite = ["estratégica", "mitigação", "auditoria", "conformidade", "onboarding", "performance", "jurídico", "análise"]
+        match_count = sum(1 for p in termos_elite if p in txt_objetivo)
 
-        if peso_estrategico >= 4:
-            st.success("💎 **Objetivo de Alta Performance:** O colaborador demonstra uma visão sistêmica. Ele não apenas 'executa', ele 'gere' o risco e a qualidade. Alinhamento total com cargos de confiança.")
-        elif peso_estrategico >= 1:
-            st.info("📊 **Objetivo Técnico-Operacional:** Foco em execução com qualidade. Perfil de especialista que garante a entrega do dia a dia.")
+        if match_count >= 4:
+            st.success("💎 **Perfil Estratégico (High Performance):** O colaborador possui visão de riscos e foca na segurança jurídica do negócio. Perfil de liderança técnica clara.")
+        elif match_count >= 1:
+            st.info("📊 **Perfil Especialista (Tático):** Foco na excelência da entrega técnica e organização dos processos. Demonstra competência e clareza operacional.")
         else:
-            st.warning("⚠️ **Objetivo Genérico:** O texto de objetivo carece de termos técnicos ou metas claras. Pode indicar uma fase de desorientação na carreira.")
-
-        # --- VEREDITO DO CONSULTOR ---
-        if score > 85 and peso_estrategico >= 4:
-            st.warning("🚀 **ALERTA DE RETENÇÃO (TOP TALENT):** Este colaborador possui qualificação acima da média de mercado. Se as tarefas atuais forem puramente repetitivas, há alto risco de desmotivação por falta de desafio.")
-
+            st.warning("⚠️ **Perfil Execução (Operacional):** O objetivo foca no 'fazer' imediato. Sugere-se treinamento para desenvolver visão sistêmica e impacto nos resultados.")
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
