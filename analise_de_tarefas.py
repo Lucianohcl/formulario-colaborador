@@ -1523,7 +1523,7 @@ if st.session_state.pagina == "disc":
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
-        if not tem_dif_real and not tem_sug_real:
+        if len(texto_dif.strip()) < 5 and len(texto_sug.strip()) < 5:
             # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
@@ -1566,7 +1566,7 @@ if st.session_state.pagina == "disc":
                     st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças construtivas.")
 
             # Nota de Hibridismo (Apenas se houver algo para analisar)
-            if 'is_hibrido' in locals() and is_hibrido:
+            if is_hibrido == True:
                 st.markdown(f"> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.")
 
         # ============================================================
