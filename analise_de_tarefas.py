@@ -1442,7 +1442,8 @@ if st.session_state.get("pagina") == "visualizar":
                 else:
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
-        #        --- SEÇÃO DE EXCLUSÃO VIRTUAL (AO FINAL DO LOOP) ---
+        # <<< O LOOP 'FOR' DOS COLABORADORES TERMINA AQUI (ALINHADO COM O INÍCIO DO FOR) >>>
+        # --- SEÇÃO DE EXCLUSÃO VIRTUAL (FORA DO LOOP - APARECE UMA VEZ SÓ) ---
         st.markdown("---")
         st.subheader("🚫 Ocultar formulário da visualização")
 
@@ -1450,26 +1451,28 @@ if st.session_state.get("pagina") == "visualizar":
         opcoes_para_esconder = []
         for i, f in enumerate(lista_de_arquivos):
             id_f = f.get('timestamp') or f"form_{i}"
-            if id_f not in st.session_state["arquivos_escondidos"]:
+            if id_f not in st.session_state.get("arquivos_escondidos", []):
                 nome_f = (f.get('colaborador') or f.get('nome') or f"Registro {i}").upper()
                 opcoes_para_esconder.append({"id": id_f, "label": nome_f})
 
         if opcoes_para_esconder:
             labels = [o["label"] for o in opcoes_para_esconder]
-            escolha = st.selectbox("Selecione para ocultar desta sessão:", labels)
+            escolha = st.selectbox(
+                "Selecione para ocultar desta sessão:", 
+                labels, 
+                key="selectbox_ocultar_final"
+            )
 
-            if st.button("👁️‍🗨️ Ocultar Registro"):
+            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_final"):
                 id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
-                st.session_state["arquivos_escondidos"].append(id_sel)
-                st.success("Ocultado da visualização atual!")
+                st.session_state.setdefault("arquivos_escondidos", []).append(id_sel)
+                st.success("Ocultado!")
                 st.rerun()
         
-        # Botão para resetar (voltar a mostrar todos)
-        if st.session_state["arquivos_escondidos"]:
-            if st.button("Resetar Visualização (Mostrar Todos)"):
+        if st.session_state.get("arquivos_escondidos"):
+            if st.button("Resetar Visualização (Mostrar Todos)", key="btn_reset_final"):
                 st.session_state["arquivos_escondidos"] = []
                 st.rerun()
-
                 
 
                 # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
