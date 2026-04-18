@@ -824,19 +824,18 @@ dados_dir = os.path.join(base_dir, "dados")
 if not os.path.exists(dados_dir):
     os.makedirs(dados_dir, exist_ok=True)
 
-def carregar_todos_formularios():
+def carregar_todos_formularios(repo_conectado):
     """
-    Lê todos os arquivos .json exclusivamente da pasta /dados/ no repositório GitHub.
+    Lê todos os arquivos .json da pasta /dados/ usando a conexão do repo.
     """
     lista_formularios = []
     try:
-        # Puxa o conteúdo da pasta /dados/ direto do repositório conectado
-        conteudos = repo.get_contents("dados")
+        # Puxa o conteúdo da pasta /dados/ direto do GitHub
+        conteudos = repo_conectado.get_contents("dados")
         
         for item in conteudos:
             if item.path.endswith(".json"):
                 try:
-                    # Lê e decodifica o arquivo vindo do GitHub
                     dados = json.loads(item.decoded_content.decode('utf-8'))
                     if isinstance(dados, dict):
                         lista_formularios.append(dados)
@@ -846,6 +845,7 @@ def carregar_todos_formularios():
         st.error(f"Erro ao acessar a pasta /dados/ no GitHub: {e}")
         
     return lista_formularios
+
 
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
@@ -1337,19 +1337,14 @@ if st.session_state.pagina == "disc":
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
-    # GARANTIA: Recarrega direto do GitHub (ignora cache local)
-    with st.spinner("Lendo banco de dados no GitHub..."):
-        lista_de_arquivos = carregar_todos_formularios()
+    # Passamos o 'repo' que foi definido no início do seu script
+    lista_de_arquivos = carregar_todos_formularios(repo)
     
     if not lista_de_arquivos:
-        st.warning("⚠️ Nenhum formulário finalizado encontrado na pasta /dados/ do GitHub.")
-        if st.button("🔄 Tentar Recarregar"):
-            st.rerun()
+        st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
     else:
-        st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários no banco.")
-        
-        # O resto do seu loop de exibição (st.expander, tabelas, DISC) segue igual
-
+        st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
+        # ... resto do seu código de exibição ...
         
         # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
