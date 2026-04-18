@@ -1321,37 +1321,34 @@ if st.session_state.pagina == "disc":
                 de adaptação elevado para esta função específica.
                 """)
 
+        
         # ============================================================
-        # 💡 NOTA DO CONSULTOR - DINÂMICA E BLINDADA
+        # 💡 NOTA DO CONSULTOR DINÂMICA (IDENTAÇÃO CORRIGIDA)
         # ============================================================
         st.write("---")
         st.write("👉 **ANÁLISE DE ADAPTAÇÃO ÀS TAREFAS**")
 
         if is_equilibrado:
-            # MENSAGEM DINÂMICA PARA O ADSON (HÍBRIDO)
             st.info(f"""
-            💡 **Nota do Consultor (Perfil Multidirecional):** Sua estrutura comportamental apresenta uma 
-            distribuição equilibrada (Amplitude de {amplitude:.1f}%). 
-            
-            **Diferencial:** Diferente de perfis que possuem um único eixo dominante, você não sofre a "fadiga de adaptação". 
-            Sua capacidade de transitar entre a comunicação e o rigor técnico é **nativa**, o que significa que tarefas 
-            de auditoria e análise de dados são executadas com precisão sem drenar sua energia vital.
+            💡 **Nota do Consultor (Perfil Híbrido):** Sua distribuição de energia é equilibrada (Amplitude: {amplitude:.1f}%). 
+            A necessidade de adaptação para tarefas de alto rigor técnico ou auditoria é **significativamente mitigada**. 
+            Diferente de perfis concentrados, você possui **flexibilidade nativa** para lidar com dados frios e processos 
+            rígidos com baixo desgaste mental e sem a fadiga típica de perfis extremos.
             """)
         else:
-            # MENSAGEM DINÂMICA PARA O PEDRO (ESPECIALISTA)
+            # 1. Primeiro identifica o perfil e o desafio (DENTRO do else)
             perfil_primario = max(percentuais, key=percentuais.get)
             
-            # Define o "oposto" para tornar a frase dinâmica
             if perfil_primario in ['I', 'D']:
                 desafio = "alto rigor técnico, auditoria e análise de dados frios"
             else:
                 desafio = "ritmo acelerado de comunicação, networking e exposição pública"
 
+            # 2. Exibe o aviso usando a variável 'desafio' que acabamos de criar
             st.warning(f"""
-            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), tarefas que exigem **{desafio}** demandam um esforço consciente muito maior.
-            
-            **Atenção:** Por ser um perfil especialista, essas atividades podem gerar fadiga ao longo do dia. 
-            Recomenda-se organizar a agenda para intercalar essas tarefas com outras que sejam naturais ao seu estilo.
+            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}**, 
+            tarefas que exigem **{desafio}** demandam um **esforço consciente maior**. 
+            Para evitar fadiga, recomenda-se intercalar essas atividades com outras mais naturais ao seu perfil.
             """)
 
         # ============================================================
