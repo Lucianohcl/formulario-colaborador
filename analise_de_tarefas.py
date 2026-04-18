@@ -1270,26 +1270,26 @@ if st.session_state.pagina == "disc":
             st.info(f"**Perfil Ideal para o Cargo:**\n{benchmark['perfis']}")
 
         # ============================================================
-        # ⚖️ 3. ANÁLISE COMPARATIVA PONDERADA (EQUILÍBRIO vs ESPECIALIDADE)
+        # ⚖️ 3. ANÁLISE COMPARATIVA PONDERADA (LÓGICA UNIVERSAL)
         # ============================================================
         st.write("---")
         st.subheader("🔍 Diagnóstico do Colaborador")
 
         # 1. MOTOR DE PONDERAÇÃO POR AMPLITUDE
+        # Diferença entre o maior e o menor score define se é Híbrido ou Especialista
         valores_disc = list(percentuais.values())
         maior_score = max(valores_disc)
         menor_score = min(valores_disc)
-        amplitude = maior_score - menor_score # Diferença entre os extremos
+        amplitude = maior_score - menor_score 
 
         # 2. DEFINIÇÃO DA NATUREZA DO PERFIL
-        # Se a amplitude for <= 12%, a distribuição é equilibrada (Caso Adson)
+        # Se a amplitude for <= 12%, é Equilibrado (Caso Adson). Se > 12%, é Especialista (Caso Pedro).
         is_equilibrado = amplitude <= 12
-        perfil_desejado = benchmark["perfis"] # Ex: "D-I-C-S" ou "C"
+        perfil_desejado = benchmark["perfis"] 
 
-        # 3. EXIBIÇÃO DO PARECER REFINADO (LÓGICA UNIVERSAL)
-        
-        # CASO A: PERFIL EQUILIBRADO (ADSON - 25%, 25%, 29%, 21%)
+        # 3. EXIBIÇÃO DO PARECER REFINADO
         if is_equilibrado:
+            # FOCO ADSON (Equilíbrio Nativo)
             st.success(f"✅ **Alta Aderência: Perfil Híbrido Multidirecional**")
             st.write(f"""
             **Parecer do Especialista:** Identificamos uma ponderação de percentuais rara e altamente equilibrada 
@@ -1297,17 +1297,14 @@ if st.session_state.pagina == "disc":
             pois a **mitigação de conflitos entre eixos é nativa**. O colaborador possui versatilidade para agir com comando, 
             influência, segurança e análise sem o desgaste mental da adaptação forçada.
             """)
-
-        # CASO B: PERFIL ESPECIALISTA / CONCENTRADO (PEDRO - Onde um eixo domina)
         else:
-            # Identifica eixos dominantes para o Pedro
+            # FOCO PEDRO (Especialista Concentrado)
             eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 32]
             if not eixos_dominantes: 
                 eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
             
             perfil_real = "/".join(eixos_dominantes)
             
-            # Verifica se a especialidade do Pedro bate com o cargo
             if any(p in perfil_desejado for p in eixos_dominantes):
                 st.info(f"⚖️ **Aderência Funcional: Perfil Especialista ({perfil_real})**")
                 st.write(f"""
@@ -1320,9 +1317,29 @@ if st.session_state.pagina == "disc":
                 st.warning(f"⚠️ **Baixa Aderência: Perfil Desalinhado ({perfil_real})**")
                 st.write(f"""
                 **Parecer do Especialista:** O perfil dominante (**{perfil_real}**) diverge do benchmark esperado 
-                para o cargo de **{cargo_bruto.upper()}**. Diferente de um perfil equilibrado, a alta concentração 
-                em um único eixo exigirá um esforço de adaptação muito elevado para esta função específica.
+                para o cargo de **{cargo_bruto.upper()}**. A alta concentração em um único eixo exigirá um esforço 
+                de adaptação elevado para esta função específica.
                 """)
+
+        # 4. NOTA DO CONSULTOR ADAPTATIVA (UNIVERSAL)
+        st.write("---")
+        st.write("👉 **ANÁLISE DE ADAPTAÇÃO ÀS TAREFAS**")
+
+        if is_equilibrado:
+            # Mensagem de Mitigação para o Adson
+            st.info(f"""
+            💡 **Nota do Consultor (Perfil Híbrido):** Devido à sua distribuição equilibrada de energia (Amplitude: {amplitude:.1f}%), 
+            qualquer necessidade de adaptação para tarefas de alto rigor técnico, auditoria ou conformidade rígida é **significativamente mitigada**. 
+            Sua **flexibilidade nativa** permite transitar entre foco em pessoas e análise de dados com baixo desgaste mental.
+            """)
+        else:
+            # Mensagem de Alerta para o Pedro
+            perfil_primario = max(percentuais, key=percentuais.get)
+            st.warning(f"""
+            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), 
+            tarefas que exigem eixos opostos demandam um **esforço consciente maior**. Recomenda-se organizar a agenda para 
+            intercalar atividades técnicas com outras mais naturais ao seu perfil, evitando fadiga prolongada.
+            """)
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
