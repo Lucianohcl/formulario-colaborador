@@ -1477,33 +1477,37 @@ if st.session_state.get("pagina") == "visualizar":
                 st.session_state["arquivos_escondidos"] = []
                 st.rerun()
                 
+        # --- LOOP DE EXIBIÇÃO (Este é o início do seu loop atual) ---
+        for idx, form in enumerate(lista_de_arquivos, 1):
+            id_atual = form.get('timestamp') or f"form_{idx}"
+            
+            if id_atual in st.session_state.get("arquivos_escondidos", []):
+                continue
 
-        # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
-        if st.session_state.get("usuario_logado") == "Luciano 123":
-            st.markdown("---")
-            st.subheader("⚙️ Painel de Exportação")
+            with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=False):
+                # ... (Todo o seu código de cabeçalho, tabelas e DISC aqui dentro) ...
 
-            col1, col2 = st.columns(2)
+                # --- BLOCO DE EXPORTAÇÃO (AGORA CORRETAMENTE DENTRO DO EXPANDER) ---
+                if st.session_state.get("usuario_logado") == "Luciano 123":
+                    st.markdown("---")
+                    st.subheader("⚙️ Painel de Exportação")
 
-            data_raw = form.get('timestamp') or 'sem_data'
-            data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    col1, col2 = st.columns(2)
 
-            nome_raw = form.get('colaborador') or 'Colaborador'
-            nome_clean = str(nome_raw).replace(' ', '_')
+                    data_raw = form.get('timestamp') or 'sem_data'
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    nome_raw = form.get('colaborador') or 'Colaborador'
+                    nome_clean = str(nome_raw).replace(' ', '_')
+                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
 
-            nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
-
-            # As chamadas das funções devem estar aqui para preparar os arquivos
-            word_file = gerar_word(form)
-            # pdf_file = gerar_pdf(form) # Caso use a função de PDF futuramente
-
-            st.download_button(
-                label="📑 Baixar PDF",
-                data=gerar_pdf_html(form),
-                file_name=f"{nome_arquivo}.html",
-                mime="text/html",
-                key=f"pdf_unico_{id(form)}"
-            )
+                    st.download_button(
+                        label="📑 Baixar PDF",
+                        data=gerar_pdf_html(form),
+                        file_name=f"{nome_arquivo}.html",
+                        mime="text/html",
+                        key=f"pdf_unico_{id_atual}_{idx}" # Key dinâmica para não dar erro
+                    )
+                
                                     
 
        
