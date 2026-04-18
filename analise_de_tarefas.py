@@ -1515,68 +1515,34 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 🧠 DIAGNÓSTICO ESTRATÉGICO (DIRETO E SEM ERROS)
+        # 🧪 TESTE DE CAPTURA (RAIO-X DOS DADOS)
         # ============================================================
-        st.markdown("---")
-        with st.container(border=True):
-            st.subheader("🏆 Veredito de Qualificação e Entrega")
+        with st.expander("🔍 DEBUG: O que o Python está lendo?", expanded=True):
+            st.write("### 1. Dados de Texto (Variável 'c')")
+            st.json({
+                "Cursos Identificados": c.get("cursos", "NÃO ENCONTRADO"),
+                "Objetivo Identificado": c.get("objetivo", "NÃO ENCONTRADO")
+            })
 
-            # 1. CAPTURA DOS TEXTOS (Usando 'c' que você já definiu)
-            txt_cursos = str(c.get("cursos", "") if 'c' in locals() else "Não informado")
-            txt_objetivo = str(c.get("objetivo", "") if 'c' in locals() else "Não informado")
-
-            # 2. MOTOR DE SCORE TÉCNICO
-            score_tecnico = 0
-            evidencias = []
-            
-            c_low = txt_cursos.lower()
-            # Adicionado termos mais abrangentes para evitar o 0%
-            if any(x in c_low for x in ["pós", "mba", "especialização", "graduação", "superior", "bacharel", "técnico"]):
-                score_tecnico += 40
-                evidencias.append("Formação Relevante")
-            
-            if any(x in c_low for x in ["esocial", "reinf", "dctfweb", "legislação", "fiscal", "contábil", "dp"]):
-                score_tecnico += 30
-                evidencias.append("Domínio de Normas/Legislação")
-
-            if any(txt_objetivo.lower().strip() in x for x in ["estratégica", "liderança", "gestão", "melhoria", "otimizar"]):
-                score_tecnico += 30
-                evidencias.append("Visão Processual/Estratégica")
-
-            # 3. EXIBIÇÃO DA QUALIFICAÇÃO
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.write("**Autoridade Técnica**")
-                st.markdown(f"<h1 style='color: #2ecc71; margin:0;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
-                st.progress(score_tecnico / 100)
-            with col2:
-                if evidencias:
-                    for ev in evidencias: st.markdown(f"✅ {ev}")
-                else:
-                    st.info("Perfil focado em execução operacional.")
-
-            # 4. CONEXÃO COM ATIVIDADES (EVITANDO NAMEERROR)
-            st.markdown("---")
-            
-            # Tenta pegar t_raiz, se não existir, tenta pegar do form diretamente
-            t_data = locals().get('t_raiz', form.get('tabelas', form))
-            
-            if isinstance(t_data, dict):
-                ativ_alta = t_data.get("alta", [])
-                total = len(ativ_alta) + len(t_data.get("normal", [])) + len(t_data.get("baixa", []))
+            st.write("### 2. Contagem de Atividades (Variável 't_raiz')")
+            if 't_raiz' in locals() or 't_raiz' in globals():
+                alta = t_raiz.get("alta", [])
+                norm = t_raiz.get("normal", [])
+                baix = t_raiz.get("baixa", [])
                 
-                if total > 0:
-                    p_alta = (len(ativ_alta) / total) * 100
-                    st.metric("Impacto em Alta Complexidade", f"{p_alta:.1f}%")
-                    
-                    if p_alta > 20 and score_tecnico >= 60:
-                        st.success("💎 **Match de Elite:** Alta senioridade e entrega estratégica.")
-                    elif p_alta < 15 and score_tecnico >= 70:
-                        st.warning("⚠️ **Subutilização:** Perfil sênior alocado em tarefas simples.")
-                else:
-                    st.warning("⚠️ Nenhuma atividade listada para cruzamento.")
+                st.write(f"🚀 **Alta:** {len(alta)} itens")
+                st.write(f"📋 **Normal:** {len(norm)} itens")
+                st.write(f"⏳ **Baixa:** {len(baix)} itens")
+                
+                if len(alta) > 0:
+                    st.write("**Exemplo de item em Alta:**", alta[0])
             else:
-                st.error("❌ Erro de Estrutura: As tabelas de atividades não foram carregadas.")             
+                st.error("❌ A variável 't_raiz' NÃO EXISTE neste ponto do código.")
+
+            st.write("### 3. Estrutura Bruta (Variável 'form')")
+            with st.container(border=True):
+                st.write("Se o JSON abaixo estiver vazio ou sem as chaves certas, o erro está na carga do arquivo.")
+                st.json(form)            
         
 
 # --- VISUALIZAÇÃO ---
