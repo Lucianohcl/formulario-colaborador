@@ -1440,7 +1440,6 @@ if st.session_state.pagina == "disc":
         
         # Garante que as variáveis existam para não quebrar o código
         perfil_dominante = dominante if 'dominante' in locals() else "N/A"
-        eixo_conflitante = eixo_conflitante if 'eixo_conflitante' in locals() else ""
         hibrido_status = is_hibrido if 'is_hibrido' in locals() else False
 
         if atividades_desafio:
@@ -1452,7 +1451,7 @@ if st.session_state.pagina == "disc":
                 ativ_limpa = str(ativ).replace("\n", " ").strip()
                 st.info(f"👉 {ativ_limpa}")
 
-            # Lógica de Explicação do Porquê (Baseada no Perfil Principal)
+            # 1. DEFINE A RAZÃO DO CONFLITO (Lógica de I/S vs D/C)
             if perfil_dominante in ['I', 'S']:
                 razao_conflito = (
                     f"Como seu perfil principal (**{perfil_dominante}**) é orientado a pessoas, ritmo e comunicação, "
@@ -1466,35 +1465,27 @@ if st.session_state.pagina == "disc":
                     f"repetitivas podem ser percebidas como menos produtivas, exigindo alta adaptação comportamental."
                 )
 
-            # Construção da Nota Final com Mitigação
-            if hibrido_status:
-                nota_final = (
-                    f"{razao_conflito} No entanto, por você possuir um **Perfil Híbrido**, essa dificuldade natural é "
-                    f"significativamente **mitigada**. Isso significa que você possui a flexibilidade necessária para "
-                    f"transitar entre o seu estilo natural e a exigência técnica do cargo com menor desgaste mental, "
-                    f"garantindo a qualidade técnica sem comprometer sua energia."
-                )
-            else:
-            # Se for equilibrado (Adson), a nota muda completamente para elogiar a versatilidade
+            # 2. CONSTRUÇÃO DA NOTA FINAL (Com a trava para Perfis Equilibrados)
             if is_equilibrado:
                 nota_final = (
                     f"Identificamos que seu perfil é altamente equilibrado (Amplitude: {amplitude:.1f}%). "
-                    f"Isso significa que a fadiga em tarefas técnicas é mitigada pela sua flexibilidade nativa, "
+                    f"Isso significa que a fadiga em tarefas técnicas ou sociais é mitigada pela sua flexibilidade nativa, "
                     f"permitindo transitar entre diferentes exigências com baixo desgaste mental."
                 )
-            # Se for especialista (Pedro), mantém o alerta de fadiga original
             else:
                 nota_final = (
                     f"{razao_conflito} Como seu perfil é mais concentrado, essas tarefas podem gerar fadiga ao longo do dia. "
                     f"Recomenda-se atenção redobrada e a organização da agenda para intercalar essas atividades com outras "
                     f"que sejam mais naturais ao seu perfil."
                 )
-            
-            # Exibe a nota com formatação de citação
+
+            # 3. EXIBE A NOTA NA TELA
             st.markdown(f"> **💡 Nota do Consultor:** {nota_final}")
-            
+
         else:
             st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
+
+        
 
         
         
