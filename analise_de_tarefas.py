@@ -1095,7 +1095,14 @@ if st.session_state.pagina == "disc":
             return max(0, min(score_final, 100))
 
         # 2️⃣ Cálculos
-        percentuais, dominante = calcular_disc(respostas_disc)
+        percentuais, _ = calcular_disc(respostas_disc)
+        # Ordena para verificar se o perfil é Puro ou Híbrido
+        ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
+        p1, v1 = ranking[0]
+        p2, v2 = ranking[1]
+
+        # REGRA UNIVERSAL: Diferença > 15% vira perfil Puro. Menor que isso, Híbrido.
+        dominante = f"{p1}/{p2}" if (v1 - v2) < 15 else p1
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
@@ -1131,9 +1138,9 @@ if st.session_state.pagina == "disc":
                     v = float(str(p).replace('%',''))
                     valores = sorted(percentuais.values(), reverse=True)
                     
-                    # Identifica se a diferença entre os dois maiores é menor que 7%
-                    if (valores[0] - valores[1]) < 7:
-                        return "⚖️ **Perfil Equilibrado / Híbrido**"
+                    # Se a diferença for pequena, é híbrido. Se for grande (caso do Adson), é Puro.
+                    if (valores[0] - valores[1]) < 10:
+                        return "⚖️ **Perfil Híbrido / Versátil**"
                     
                     if v > 80: return "🎯 **Intensidade Muito Alta**"
                     if v > 55: return "✅ **Intensidade Alta**"
@@ -1386,16 +1393,24 @@ if st.session_state.pagina == "disc":
         
         exigencia_final = f"{perfil_exigido_1}-{perfil_exigido_2}" if perfil_exigido_2 else perfil_exigido_1
 
-        # 4. Cálculo de Compatibilidade Real
-        # Verifica se o perfil do colaborador (dominante ou secundário) bate com a exigência
-        meus_perfis = [letra for letra, valor in percentuais.items() if valor > 22]
-        match_real = any(p in exigencia_final for p in meus_perfis)
-        
-        porcentagem_comp = "100%" if match_real else "0%"
+        # 4. Cálculo de Compatibilidade Real (Lógica de Ranking)
+        # 'dominante' já foi calculado lá em cima com a trava de 15%
+        match_real = False
+        if dominante == exigencia_final:
+            porcentagem_comp = "100%"
+            match_real = True
+        elif any(letra in dominante for letra in exigencia_final):
+            # Se o colaborador é D/C e a tarefa pede C (ou vice-versa)
+            porcentagem_comp = "85%"
+            match_real = True
+        else:
+            # Se o colaborador é D puro e a tarefa exige C
+            porcentagem_comp = "60%"
+            match_real = False
 
         # 5. Exibição Visual
         col1, col2, col3 = st.columns(3)
-        col1.metric("Perfil do Colaborador", "/".join(meus_perfis))
+        col1.metric("Perfil do Colaborador", dominante)
         col2.metric("Exigência das Tarefas", exigencia_final)
         col3.metric("Compatibilidade", porcentagem_comp)
 
