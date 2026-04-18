@@ -1523,25 +1523,33 @@ if st.session_state.pagina == "disc":
 
         
 
-        # 1. CAPTURA E LIMPEZA (Garante que o Adson não herde os dados do Pedro)
-        t_raiz = form.get('tabelas', {})
-        dados_dif = t_raiz.get('dificuldades', [])
-        dados_sug = t_raiz.get('sugestoes', [])
+        # RESET TOTAL: Força as variáveis a ficarem vazias antes de ler o colaborador atual
+        texto_dif = ""
+        texto_sug = ""
 
-        # Transforma listas em texto. Se [] -> vira "" (vazio absoluto)
-        texto_dif = " ".join([str(item.get('Dificuldade', '')) for item in dados_dif if item.get('Dificuldade')]).strip()
-        texto_sug = " ".join([str(item.get('Sugestão', '')) for item in dados_sug if item.get('Sugestão')]).strip()
+        # CAPTURA DIRETA
+        t_raiz = form.get('tabelas', {})
+        
+        # Só preenche se houver conteúdo real na lista de dicionários
+        difs_encontradas = [str(d.get('Dificuldade', '')) for d in t_raiz.get('dificuldades', []) if d.get('Dificuldade')]
+        sugs_encontradas = [str(s.get('Sugestão', '')) for s in t_raiz.get('sugestoes', []) if s.get('Sugestão')]
+
+        if difs_encontradas:
+            texto_dif = " ".join(difs_encontradas).strip()
+        
+        if sugs_encontradas:
+            texto_sug = " ".join(sugs_encontradas).strip()
 
         # ------------------------------------------------------------
-        # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE
+        # 2. VALIDAÇÃO: SE AMBAS CONTINUAREM VAZIAS -> ADSON CAI AQUI
         # ------------------------------------------------------------
         if not texto_dif and not texto_sug:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"A ausência de relatos por um perfil **{perfil_dominante}** indica resistência passiva.")
         else:
+            # ANÁLISE PARA QUEM PREENCHEU (PEDRO)
             st.markdown(f"### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
-            
-            # ... (seu código das colunas e mapeamento de dores aqui) ...
+            # ... (seu código das colunas)
             
             # Mapeamento de Dores por Perfil
             dores_perfil = {
