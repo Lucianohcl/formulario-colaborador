@@ -1475,6 +1475,15 @@ if st.session_state.pagina == "disc":
                     f"garantindo a qualidade técnica sem comprometer sua energia."
                 )
             else:
+            # Se for equilibrado (Adson), a nota muda completamente para elogiar a versatilidade
+            if is_equilibrado:
+                nota_final = (
+                    f"Identificamos que seu perfil é altamente equilibrado (Amplitude: {amplitude:.1f}%). "
+                    f"Isso significa que a fadiga em tarefas técnicas é mitigada pela sua flexibilidade nativa, "
+                    f"permitindo transitar entre diferentes exigências com baixo desgaste mental."
+                )
+            # Se for especialista (Pedro), mantém o alerta de fadiga original
+            else:
                 nota_final = (
                     f"{razao_conflito} Como seu perfil é mais concentrado, essas tarefas podem gerar fadiga ao longo do dia. "
                     f"Recomenda-se atenção redobrada e a organização da agenda para intercalar essas atividades com outras "
