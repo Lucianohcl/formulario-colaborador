@@ -1519,7 +1519,7 @@ if st.session_state.pagina == "disc":
         # 2. TRAVA DE EXIBIÇÃO: SE AMBAS VAZIAS -> ALERTA DE RESISTÊNCIA (ADSON)
         if not final_dif and not final_sug:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"A ausência de relatos reais por um perfil **{perfil_dominante}** indica resistência passiva ou preenchimento evasivo.")
+            st.markdown(f"A ausência de Sugestões ou Dificuldades por um perfil **{perfil_dominante}** pode indicar resistência passiva ou preenchimento evasivo.")
         
         else:
             # 3. ANÁLISE REAL: SÓ APARECE SE TIVER CONTEÚDO (PEDRO)
@@ -1537,11 +1537,26 @@ if st.session_state.pagina == "disc":
             with col1:
                 st.subheader("⚠️ Dificuldades vs Perfil")
                 if final_dif:
-                    bateu = any(w in final_dif.lower() for w in dores_perfil.get(perfil_dominante, []))
-                    if bateu:
-                        st.success(f"✅ **Coerência Alta:** Queixas típicas de um {perfil_dominante}.")
+                    texto_analise = final_dif.lower()
+                    
+                    # 1. Identifica quais palavras do perfil aparecem no texto do cara
+                    palavras_detectadas = [w for w in dores_perfil.get(perfil_dominante, []) if w in texto_analise]
+                    
+                    if palavras_detectadas:
+                        # 2. Se achou palavras-chave, a queixa é COERENTE com o DISC dele
+                        evidencias = ", ".join(palavras_detectadas)
+                        st.success(f"""
+                        ✅ **Coerência Alta** **Queixa:** "{final_dif}"  
+                        
+                        **Análise Inteligente:** O relato menciona `{evidencias}`, que são gatilhos clássicos de estresse para o perfil **{perfil_dominante}**. Isso indica que o colaborador está reagindo de forma previsível aos gargalos da função.
+                        """)
                     else:
-                        st.warning("⚠️ **Alerta Estrutural:** As queixas fogem do padrão comportamental.")
+                        # 3. Se não achou palavras do perfil, o problema é real de INFRAESTRUTURA
+                        st.warning(f"""
+                        ⚠️ **Alerta Estrutural** **Queixa:** "{final_dif}"  
+                        
+                        **Análise Inteligente:** As queixas fogem do padrão comportamental do perfil **{perfil_dominante}**. Isso sugere que o problema é uma falha real de infraestrutura ou processo, tão crítica que impacta o colaborador independentemente do perfil dele.
+                        """)
                 else:
                     st.info("Sem dificuldades relatadas.")
 
