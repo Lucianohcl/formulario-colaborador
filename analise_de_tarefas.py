@@ -1521,12 +1521,9 @@ if st.session_state.pagina == "disc":
         texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug if validar_conteudo(s.get("Sugestão", ""))])
 
 
-        # --- BLOCO DE DEBUG (REMOVER DEPOIS) ---
-        with st.expander("🔍 DEBUG: O que o sistema está lendo?"):
-            st.write(f"Texto Dif: '{texto_dif}' | Tamanho: {len(str(texto_dif))}")
-            st.write(f"Texto Sug: '{texto_sug}' | Tamanho: {len(str(texto_sug))}")
-            st.write(f"Tipo Dif: {type(texto_dif)} | Tipo Sug: {type(texto_sug)}")
-        # ---------------------------------------
+        # FORÇAR EXIBIÇÃO NA TELA NO TOPO DE TUDO
+        st.error(f"VALOR DE DIF: >>>{texto_dif}<<<")
+        st.error(f"VALOR DE SUG: >>>{texto_sug}<<<")
 
 
 
@@ -1534,7 +1531,7 @@ if st.session_state.pagina == "disc":
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
         # O .strip() remove espaços vazios. Se sobrar algo, é texto real.
-        if not str(texto_dif).strip() and not str(texto_sug).strip():
+        if len(str(texto_dif or "").strip()) < 3 and len(str(texto_sug or "").strip()) < 3:
             # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
