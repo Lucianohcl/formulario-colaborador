@@ -1547,7 +1547,7 @@ if st.session_state.pagina == "disc":
             
             with col_dif:
                 if tem_dif_real:
-                    if any(word in texto_dif for word in dores_perfil.get(perfil_dominante, [])):
+                    if any(word in texto_dif.lower() for word in dores_perfil.get(perfil_dominante, [])):
                         st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
                     else:
                         st.warning("⚠️ **Dificuldade Técnica/Processual:** As queixas fogem do padrão do perfil, indicando falhas reais em ferramentas.")
@@ -1557,7 +1557,7 @@ if st.session_state.pagina == "disc":
             with col_sug:
                 if tem_sug_real:
                     palavras_inovacao = ["mudar", "alterar", "automação", "novo", "criar", "melhorar", "eficiência", "otimizar"]
-                    if any(word in texto_sug for word in palavras_inovacao):
+                    if any(word in texto_sug.lower() for word in palavras_inovacao):
                         st.success("🚀 **Abertura à Inovação:** Sugestões focadas em evolução.")
                     else:
                         st.info("📋 **Melhoria Operacional:** Sugestões de ajuste, mas com foco em manter o status quo.")
@@ -1566,8 +1566,8 @@ if st.session_state.pagina == "disc":
                     st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças construtivas.")
 
             # Nota de Hibridismo (Apenas se houver algo para analisar)
-            if hibrido_status:
-                st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
+            if 'is_hibrido' in locals() and is_hibrido:
+                st.markdown(f"> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.")
 
         # ============================================================
         # 🧠 DIAGNÓSTICO DE ADERÊNCIA AO CARGO (SCORE DE MATCH)
