@@ -1379,17 +1379,37 @@ if st.session_state.pagina == "disc":
                             atividades_desafio.append(texto_ativ)
                             break
 
-        # 3. EXIBIÇÃO FINAL
+        # ============================================================
+        # 3. EXIBIÇÃO UNIVERSAL COM LÓGICA DE MITIGAÇÃO
+        # ============================================================
         if atividades_desafio:
-            st.markdown("#### ⚠️ ALGUNS PONTOS DE ATENÇÃO EM RELAÇÃO AS TAREFAS DESCRITAS QUE PODEM EXIGIR UM NÍVEL MAIOR DE ADAPTAÇÃO:")
+            st.markdown("#### ⚠️ ALGUNS PONTOS DE ATENÇÃO EM RELAÇÃO ÀS TAREFAS DESCRITAS QUE PODEM EXIGIR UM NÍVEL MAIOR DE ADAPTAÇÃO:")
             
             # Remove duplicatas e exibe as 3 principais
             unicas_desafio = list(dict.fromkeys(atividades_desafio))
             for ativ in unicas_desafio[:3]:
                 ativ_limpa = ativ.replace("\n", " ").replace("  ", " ").strip()
                 st.info(f"👉 {ativ_limpa}")
+
+            # Lógica de Nota Dinâmica (Universal)
+            if is_hibrido:
+                # Caso o colaborador tenha o eixo oposto desenvolvido (Híbrido)
+                nota_texto = f"""
+                > **💡 Nota do Consultor:** Estes pontos de atenção são identificados com base no seu perfil principal (**{perfil_dominante}**). 
+                > No entanto, por você possuir um **Perfil Híbrido** (com bom equilíbrio em **{eixo_conflitante}**), essa dificuldade natural é significativamente **mitigada**. 
+                > Isso significa que você possui flexibilidade para transitar entre diferentes exigências, reduzindo o desgaste mental e mantendo a qualidade técnica.
+                """
+            else:
+                # Caso seja um perfil puro/extremo
+                nota_texto = f"""
+                > **💡 Nota do Consultor:** Estas atividades exigem competências de **{eixo_conflitante}**, o que é oposto ao seu perfil natural **{perfil_dominante}**. 
+                > Como seu perfil é mais concentrado, essas tarefas podem demandar um alto investimento de energia. 
+                > Recomenda-se atenção redobrada e pausas estratégicas durante a execução dessas atividades.
+                """
+            
+            st.markdown(nota_texto)
         else:
-            st.success("✅ As atividades descritas estão alinhadas ao seu perfil natural.")
+            st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
         
 
 
