@@ -1106,7 +1106,23 @@ if st.session_state.pagina == "disc":
 
         # Prepara os textos ANTES de exibir (Garante que info['nome'] nunca seja N/A)
         letra_busca = p1 
+        # Define o dicionário antes para o Python não dar NameError
+        textos_disc = {
+           "D": {"nome": "Dominante", "estilo": "Resultados e Assertividade", "desc": "Decidido e direto. Busca desafios e rapidez.", "cor": "red", "tarefas": "Tomada de decisão, Gestão de crises, Metas."},
+           "I": {"nome": "Influente", "estilo": "Pessoas e Comunicação", "desc": "Entusiasmado e otimista. Busca conexão social.", "cor": "orange", "tarefas": "Apresentações, Networking, Motivação."},
+           "S": {"nome": "Estável", "estilo": "Colaboração e Persistência", "desc": "Paciente e leal. Busca harmonia e segurança.", "cor": "green", "tarefas": "Apoio operacional, Suporte, Processos."},
+           "C": {"nome": "Conformidade", "estilo": "Precisão e Qualidade", "desc": "Analítico e detalhista. Busca lógica e regras.", "cor": "blue", "tarefas": "Auditoria, Análise de dados, Padronização."}
+        }
+
+        # Agora a linha que dava erro vai funcionar:
+        letra_busca = dominante.split('/')[0] if '/' in dominante else dominante
         info = textos_disc.get(letra_busca, {"nome": "N/A", "estilo": "N/A", "desc": "", "cor": "gray", "tarefas": ""}).copy()
+
+        # Ajusta o nome para perfis híbridos
+        if '/' in dominante:
+            letras_hibridas = dominante.split('/')
+            nomes_compostos = [textos_disc.get(l, {}).get('nome', l) for l in letras_hibridas]
+            info['nome'] = " / ".join(nomes_compostos)
         
         if '/' in dominante:
             nomes_hibridos = [textos_disc.get(l, {}).get('nome', l) for l in dominante.split('/')]
