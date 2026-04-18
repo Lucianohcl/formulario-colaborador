@@ -1231,8 +1231,13 @@ if st.session_state.pagina == "disc":
         # 1. BASE DE CONHECIMENTO DE RH (Desejado por Cargo)
         job_benchmarks = {
             "gestor": {
-                "perfis": "Híbrido (D-C-S)",
-                "competencias": ["Liderança e Tomada de Decisão (D)", "Visão Estratégica e Planejamento (S)", "Controle de Processos e Riscos (C)"]
+                "perfis": "Híbrido Multidirecional (D-I-C-S)",
+                "competencias": [
+                    "Liderança e Tomada de Decisão (D)", 
+                    "Comunicação, Empatia e Engajamento (I)", 
+                    "Visão Estratégica e Planejamento (S)", 
+                    "Rigor Técnico, Compliance e Processos (C)"
+                ]
             },
             "vendas": {
                 "perfis": "Influente (I-D)",
