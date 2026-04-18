@@ -993,20 +993,29 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. CONEXÃO E CARREGAMENTO (IGUAL AO VISUALIZAR DADOS)
+    # 1. CONEXÃO E CARREGAMENTO (AJUSTADO PARA GARANTIR O REPO)
     try:
-        # Tenta carregar usando o 'repo' que já deveria estar na memória
+        # Pega o repo da sessão
         repo = st.session_state.get('repo_conectado')
+        
+        # SE O REPO FOR NONE, FORÇA A RECONEXÃO IMEDIATAMENTE
+        if repo is None:
+            g = Github(st.secrets["DB_TOKEN"])
+            repo = g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = repo
+            
+        # Agora sim, chama a lista com a garantia de que o repo existe
         lista_fresca = carregar_todos_formularios(repo)
-    except (NameError, Exception):
-        # Se falhar (NameError ou repo nulo), reconecta do zero igual ao seu outro código
+        
+    except Exception as e:
+        # Se qualquer coisa falhar acima, tenta uma última vez do zero absoluto
         try:
             g = Github(st.secrets["DB_TOKEN"])
             repo = g.get_repo("lucianohcl/formulario-colaborador")
-            st.session_state.repo_conectado = repo # Salva para não dar erro de novo
+            st.session_state.repo_conectado = repo
             lista_fresca = carregar_todos_formularios(repo)
-        except Exception as e:
-            st.error(f"❌ Erro crítico de conexão: {e}")
+        except Exception as e_final:
+            st.error(f"❌ Erro crítico de conexão: {e_final}")
             st.stop()
 
     # 2. VALIDAÇÃO DOS DADOS
@@ -1017,11 +1026,9 @@ if st.session_state.pagina == "disc":
         st.success(f"📊 {len(lista_fresca)} registros sincronizados para análise.")
 
     # 3. MAPEAMENTO PARA O SELECTBOX (EXTRAÇÃO DINÂMICA)
-    # Criamos um dicionário onde a chave é o nome e o valor é o formulário completo
     opcoes_colaboradores = {}
     
     for idx, f in enumerate(lista_fresca):
-        # Busca o nome de forma flexível como você faz no expander
         c = f.get('campos', f)
         nome_bruto = (f.get('colaborador') or 
                       f.get('nome') or 
@@ -1042,6 +1049,7 @@ if st.session_state.pagina == "disc":
     # Este é o formulário que será usado para gerar os gráficos abaixo
     formulario_sel = opcoes_colaboradores.get(colaborador_chave)
 
+    # ABAIXO VOCÊ CONTINUA COM O BLOCO DO BOTÃO "GERAR ANÁLISE DISC"
     # ============================================================
     # BOTÃO GERAR ANÁLISE
     # ============================================================
