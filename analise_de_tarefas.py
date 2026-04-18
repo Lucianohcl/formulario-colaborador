@@ -1523,8 +1523,10 @@ if st.session_state.pagina == "disc":
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
-        # Considera que houve relato se qualquer um dos campos tiver mais de 2 letras
-        if len(str(texto_dif).strip()) < 2 and len(str(texto_sug).strip()) < 2:
+        # Se ele escreveu em QUALQUER um dos campos, o sistema DEVE seguir para o 'else'
+        tem_conteudo = len(str(texto_dif).strip()) > 2 or len(str(texto_sug).strip()) > 2
+        
+        if not tem_conteudo:
             # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
@@ -1547,8 +1549,10 @@ if st.session_state.pagina == "disc":
             col_dif, col_sug = st.columns(2)
             
             with col_dif:
-                if tem_dif_real:
-                    if any(word in texto_dif.lower() for word in dores_perfil.get(perfil_dominante, [])):
+                # Forçamos a verificação real do texto aqui dentro também
+                if len(str(texto_dif).strip()) > 2:
+                    texto_analise = str(texto_dif).lower()
+                    if any(word in texto_analise for word in dores_perfil.get(perfil_dominante, [])):
                         st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
                     else:
                         st.warning("⚠️ **Dificuldade Técnica/Processual:** As queixas fogem do padrão do perfil, indicando falhas reais em ferramentas.")
