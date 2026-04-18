@@ -990,20 +990,29 @@ if st.session_state.pagina == "home" or st.session_state.pagina == "script2":
 if st.session_state.pagina == "disc":
     import plotly.express as px
     import pandas as pd
+    from github import Github # Importante garantir a importação aqui
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. RECUPERAÇÃO DA CONEXÃO (VALIAÇÃO IGUAL À VISUALIZAÇÃO)
+    # 1. RECUPERAÇÃO DA CONEXÃO (BLINDAGEM CONTRA NONETYPE)
     repo = st.session_state.get('repo_conectado')
 
+    # Se estiver vazio, tenta conectar direto igual na página de visualização
     if repo is None:
-        st.error("❌ Erro: Conexão com o GitHub não encontrada.")
-        st.info("Por favor, volte à tela de Login para conectar o sistema.")
-        st.stop()
+        try:
+            g = Github(st.secrets["GITHUB_TOKEN"])
+            # Use exatamente o mesmo caminho que você usa na outra página
+            repo = g.get_repo("SEU_USUARIO/SEU_REPOSITORIO") 
+            st.session_state['repo_conectado'] = repo
+        except Exception as e:
+            st.error("❌ Erro: Conexão com o GitHub não encontrada.")
+            st.info("Por favor, volte à tela de Login ou verifique seus Secrets.")
+            st.stop()
 
-    # 2. LEITURA SEGURA DOS DADOS
+    # 2. LEITURA SEGURA DOS DADOS (AGORA COM REPO GARANTIDO)
     try:
         with st.spinner("Sincronizando dados com a pasta /dados/..."):
+            # Aqui o repo já não é mais NoneType
             lista_fresca = carregar_todos_formularios(repo)
         
         if not lista_fresca:
@@ -1029,7 +1038,6 @@ if st.session_state.pagina == "disc":
 
     # 4. RECUPERAÇÃO DO FORMULÁRIO
     formulario_sel = opcoes_colaboradores.get(colaborador_chave)
-
 
     # ============================================================
     # BOTÃO GERAR ANÁLISE
