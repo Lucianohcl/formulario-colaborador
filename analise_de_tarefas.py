@@ -1478,39 +1478,33 @@ if st.session_state.get("pagina") == "visualizar":
                 st.rerun()
                 
 
-                # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
-                    
-                
-                
+        # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
+        if st.session_state.get("usuario_logado") == "Luciano 123":
+            st.markdown("---")
+            st.subheader("⚙️ Painel de Exportação")
 
-                                
-                                
+            col1, col2 = st.columns(2)
 
-                if st.session_state.get("usuario_logado") == "Luciano 123":
+            data_raw = form.get('timestamp') or 'sem_data'
+            data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
 
-                    st.markdown("---")
-                    st.subheader("⚙️ Painel de Exportação")
+            nome_raw = form.get('colaborador') or 'Colaborador'
+            nome_clean = str(nome_raw).replace(' ', '_')
 
-                    col1, col2 = st.columns(2)
+            nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
 
-                    data_raw = form.get('timestamp') or 'sem_data'
-                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+            # As chamadas das funções devem estar aqui para preparar os arquivos
+            word_file = gerar_word(form)
+            # pdf_file = gerar_pdf(form) # Caso use a função de PDF futuramente
 
-                    nome_raw = form.get('colaborador') or 'Colaborador'
-                    nome_clean = str(nome_raw).replace(' ', '_')
-
-                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
-
-                    word_file = gerar_word(form)
-                    pdf_file = gerar_pdf(form)
-
-                    st.download_button(
-                        label="📑 Baixar PDF",
-                        data=gerar_pdf_html(form),
-                        file_name="relatorio.html",
-                        mime="text/html",
-                        key=f"pdf_unico_{id(form)}"
-                    )                    
+            st.download_button(
+                label="📑 Baixar PDF",
+                data=gerar_pdf_html(form),
+                file_name=f"{nome_arquivo}.html",
+                mime="text/html",
+                key=f"pdf_unico_{id(form)}"
+            )
+                                    
 
        
 # ============================================================
