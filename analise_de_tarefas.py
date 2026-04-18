@@ -993,13 +993,13 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. CONEXÃO DIRETA (AJUSTADO PARA DB_TOKEN)
+    # 1. CONEXÃO DIRETA (DADOS ATUALIZADOS: lucianohcl/formulario-colaborador)
     try:
         # Puxa o token direto dos segredos do Streamlit (DB_TOKEN)
         g = Github(st.secrets["DB_TOKEN"])
         
-        # IMPORTANTE: Substitua pelo seu caminho real (ex: "luciano/projeto-disc")
-        repo_path = "SEU_USUARIO/SEU_REPOSITORIO" 
+        # Caminho oficial do seu repositório conforme informado
+        repo_path = "lucianohcl/formulario-colaborador" 
         repo = g.get_repo(repo_path)
         
         # Mantém a conexão no estado da sessão
@@ -1007,12 +1007,13 @@ if st.session_state.pagina == "disc":
         
     except Exception as e:
         st.error(f"❌ Erro ao conectar diretamente via DB_TOKEN: {e}")
-        st.info("Certifique-se de que a chave DB_TOKEN está correta nos Secrets do Streamlit.")
+        st.info("Certifique-se de que a chave DB_TOKEN está correta nos Secrets do Streamlit Cloud.")
         st.stop()
 
     # 2. LEITURA DOS DADOS (SINCRONIZADO)
     try:
         with st.spinner("Sincronizando registros do GitHub..."):
+            # Chama a função passando o objeto repo que acabamos de criar
             lista_fresca = carregar_todos_formularios(repo)
         
         if not lista_fresca:
@@ -1029,12 +1030,15 @@ if st.session_state.pagina == "disc":
         for f in lista_fresca
     }
 
-    colaborador_chave = st.selectbox(
-        "Escolha o colaborador",
-        options=list(opcoes_colaboradores.keys())
-    )
-
-    formulario_sel = opcoes_colaboradores.get(colaborador_chave)
+    if opcoes_colaboradores:
+        colaborador_chave = st.selectbox(
+            "Escolha o colaborador",
+            options=list(opcoes_colaboradores.keys())
+        )
+        formulario_sel = opcoes_colaboradores.get(colaborador_chave)
+    else:
+        st.error("Não foi possível carregar a lista de colaboradores.")
+        st.stop()
     
     # ... O restante do seu código de geração de análise continua abaixo ...
 
