@@ -1457,20 +1457,23 @@ if st.session_state.get("pagina") == "visualizar":
 
         if opcoes_para_esconder:
             labels = [o["label"] for o in opcoes_para_esconder]
+            
+            # MUDAMOS A KEY PARA ALGO TOTALMENTE EXCLUSIVO
             escolha = st.selectbox(
                 "Selecione para ocultar desta sessão:", 
                 labels, 
-                key="selectbox_ocultar_final"
+                key="key_exclusiva_selectbox_visualizacao_v1"
             )
 
-            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_final"):
+            if st.button("👁️‍🗨️ Ocultar Registro", key="key_exclusiva_botao_visualizacao_v1"):
                 id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
                 st.session_state.setdefault("arquivos_escondidos", []).append(id_sel)
                 st.success("Ocultado!")
                 st.rerun()
         
         if st.session_state.get("arquivos_escondidos"):
-            if st.button("Resetar Visualização (Mostrar Todos)", key="btn_reset_final"):
+            # MUDAMOS TAMBÉM A KEY DO RESET
+            if st.button("Resetar Visualização (Mostrar Todos)", key="key_exclusiva_reset_visualizacao_v1"):
                 st.session_state["arquivos_escondidos"] = []
                 st.rerun()
                 
