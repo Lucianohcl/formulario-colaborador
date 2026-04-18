@@ -1144,7 +1144,7 @@ if st.session_state.pagina == "disc":
             
             st.write(interpretar_valor(score, percentuais))
 
-            st.caption("ℹ️ Score indica a intensidade relativa do perfil dominante em relação aos outros perfis. Quanto maior a diferença, maior a certeza do perfil.")
+            st.caption("ℹ️ Este índice indica o nível de precisão e nitidez do perfil identificado. Scores moderados com perfis equilibrados confirmam uma natureza versátil e adaptável do colaborador.")
 
 
             st.markdown("---")
