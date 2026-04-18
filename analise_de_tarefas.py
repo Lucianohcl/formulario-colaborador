@@ -1523,10 +1523,7 @@ if st.session_state.pagina == "disc":
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
-        # Se ele escreveu em QUALQUER um dos campos, o sistema DEVE seguir para o 'else'
-        tem_conteudo = len(str(texto_dif).strip()) > 2 or len(str(texto_sug).strip()) > 2
-        
-        if not tem_conteudo:
+        if len(str(texto_dif)) <= 3 and len(str(texto_sug)) <= 3:
             # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
@@ -1550,7 +1547,7 @@ if st.session_state.pagina == "disc":
             
             with col_dif:
                 # Forçamos a verificação real do texto aqui dentro também
-                if len(str(texto_dif).strip()) > 2:
+                if len(str(texto_dif)) > 3:
                     texto_analise = str(texto_dif).lower()
                     if any(word in texto_analise for word in dores_perfil.get(perfil_dominante, [])):
                         st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
@@ -1560,7 +1557,7 @@ if st.session_state.pagina == "disc":
                     st.info("⚪ **Conformidade Passiva:** Baixa inclinação a relatar barreiras.")
 
             with col_sug:
-                if tem_sug_real:
+                if len(str(texto_sug)) > 3:
                     palavras_inovacao = ["mudar", "alterar", "automação", "novo", "criar", "melhorar", "eficiência", "otimizar"]
                     if any(word in texto_sug.lower() for word in palavras_inovacao):
                         st.success("🚀 **Abertura à Inovação:** Sugestões focadas em evolução.")
