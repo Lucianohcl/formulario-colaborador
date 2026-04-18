@@ -1514,6 +1514,69 @@ if st.session_state.pagina == "disc":
             if hibrido_status:
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
+        # ============================================================
+        # 5. SCORE DE QUALIFICAÇÃO E ALINHAMENTO DE OBJETIVOS
+        # ============================================================
+        st.markdown("---")
+        st.subheader("🎓 Diagnóstico de Qualificação e Maturidade")
+
+        cursos = info_origem.get("cursos", "")
+        objetivo = info_origem.get("objetivo", "")
+
+        # --- CÁLCULO DE SCORE TÉCNICO (UNIVERSAL) ---
+        # Baseado em camadas: Acadêmica, Técnica, Processos e Ferramentas
+        score = 0
+        checks = []
+
+        if any(x in cursos.lower() for x in ["pós-graduação", "pos-graduacao", "especialização", "mba"]):
+            score += 35
+            checks.append("Maturidade Acadêmica (Pós/MBA)")
+        
+        if any(x in cursos.lower() for x in ["gestão", "processos", "projetos", "pop", "auditoria"]):
+            score += 25
+            checks.append("Visão de Processos e Gestão")
+
+        if any(x in cursos.lower() for x in ["avançado", "expert", "especialista"]):
+            score += 20
+            checks.append("Domínio de Ferramentas Críticas")
+
+        if len(cursos.split(',')) > 5:
+            score += 20
+            checks.append("Atualização Contínua (Múltiplas Certificações)")
+
+        # --- EXIBIÇÃO VISUAL ---
+        col_graf, col_info = st.columns([1, 2])
+        
+        with col_graf:
+            st.write("**Nível de Autoridade Técnica**")
+            # Gráfico de progresso estilizado
+            cor_score = "green" if score > 70 else "orange" if score > 40 else "red"
+            st.markdown(f"<h2 style='color: {cor_score}; text-align: center;'>{score}%</h2>", unsafe_allow_html=True)
+            st.progress(score / 100)
+            
+        with col_info:
+            st.write("**Pilares Detectados:**")
+            for item in checks:
+                st.markdown(f"- {item}")
+
+        # --- ANÁLISE SEMÂNTICA DO OBJETIVO ---
+        st.markdown("#### 🎯 Aderência do Objetivo ao Perfil")
+        
+        # Filtro de Intencionalidade: Operacional vs Estratégico
+        palavras_estrategicas = ["mitigação", "estratégica", "indicadores", "liderança", "conformidade", "melhoria contínua", "auditoria"]
+        peso_estrategico = sum(1 for p in palavras_estrategicas if p in objetivo.lower())
+
+        if peso_estrategico >= 4:
+            st.success("💎 **Objetivo de Alta Performance:** O colaborador demonstra uma visão sistêmica. Ele não apenas 'executa', ele 'gere' o risco e a qualidade. Alinhamento total com cargos de confiança.")
+        elif peso_estrategico >= 1:
+            st.info("📊 **Objetivo Técnico-Operacional:** Foco em execução com qualidade. Perfil de especialista que garante a entrega do dia a dia.")
+        else:
+            st.warning("⚠️ **Objetivo Genérico:** O texto de objetivo carece de termos técnicos ou metas claras. Pode indicar uma fase de desorientação na carreira.")
+
+        # --- VEREDITO DO CONSULTOR ---
+        if score > 85 and peso_estrategico >= 4:
+            st.warning("🚀 **ALERTA DE RETENÇÃO (TOP TALENT):** Este colaborador possui qualificação acima da média de mercado. Se as tarefas atuais forem puramente repetitivas, há alto risco de desmotivação por falta de desafio.")
+
 
 # --- VISUALIZAÇÃO ---
 if st.session_state.get("pagina") == "visualizar":
