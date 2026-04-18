@@ -1297,55 +1297,57 @@ if st.session_state.pagina == "disc":
             st.write(f"O perfil atual apresenta características distintas das desejadas para a função. Sugere-se um Plano de Desenvolvimento focado nas competências listadas acima.")
 
         # ============================================================
-        # PERFIL DISC EXIGIDO PELAS ATIVIDADES
+        # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
         # ============================================================
-
         st.markdown("### 🔹 Perfil DISC Exigido pelas Atividades")
 
-        atividades_lista = [
-            a.get("Atividade Descrita","")
-            for a in form.get("atividades",[])
-        ]
+        # 1. Extração de todas as atividades das tabelas (Alta, Normal, Baixa)
+        tabelas = form.get("tabelas", {})
+        todas_atividades = []
+        for nivel in ["alta", "normal", "baixa"]:
+            for item in tabelas.get(nivel, []):
+                todas_atividades.append(item.get("Atividade", "").lower())
 
-        atividades_texto = " ".join(atividades_lista).lower()
+        atividades_texto = " ".join(todas_atividades)
 
+        # 2. Dicionário de Palavras-Chave Refinado para RH/DP
         compatibilidade_ativ = {
-
-            "D": [
-                "decisão","meta","resultado","liderar","negociar",
-                "estratégia","direcionar","definir","priorizar"
-            ],
-
-            "I": [
-                "apresentar","convencer","comunicar","clientes",
-                "reunião","relacionamento","treinamento"
-            ],
-
-            "S": [
-                "suporte","atender","organizar","rotina",
-                "apoio","assistir","acompanhar","colaborar"
-            ],
-
-            "C": [
-                "analisar","dados","relatório","planilha",
-                "controle","auditar","conferir","classificar",
-                "registrar","custos","informações","base",
-                "indicadores","verificar","validar"
-            ]
-
+            "D": ["gerenciar", "liderar", "tomada de decisão", "estratégico", "diretoria", "negociar", "metas", "implementar"],
+            "I": ["treinamento", "conduzir", "comunicar", "clientes", "reunião", "atendimento consultivo", "apresentar"],
+            "S": ["suporte", "acompanhar", "organizar", "rotina", "processos internos", "apoio", "planejar", "cronograma"],
+            "C": ["auditoria", "conferir", "esocial", "legislac", "juridica", "calculos", "analise", "validar", "fiscal", "folha", "inconsistências"]
         }
 
-        scores = {}
-
+        # 3. Cálculo de Pontuação
+        scores_atividades = {}
         for perfil, palavras in compatibilidade_ativ.items():
+            pontos = sum(atividades_texto.count(p) for p in palavras)
+            scores_atividades[perfil] = pontos
 
-            pontos = sum(
-                atividades_texto.count(p) for p in palavras
-            )
+        # Define os perfis exigidos (Pega os dois maiores para ser Híbrido)
+        perfis_ordenados = sorted(scores_atividades.items(), key=lambda x: x[1], reverse=True)
+        perfil_exigido_1 = perfis_ordenados[0][0]
+        perfil_exigido_2 = perfis_ordenados[1][0] if perfis_ordenados[1][1] > 0 else ""
+        
+        exigencia_final = f"{perfil_exigido_1}-{perfil_exigido_2}" if perfil_exigido_2 else perfil_exigido_1
 
-            scores[perfil] = pontos
+        # 4. Cálculo de Compatibilidade Real
+        # Verifica se o perfil do colaborador (dominante ou secundário) bate com a exigência
+        meus_perfis = [letra for letra, valor in percentuais.items() if valor > 22]
+        match_real = any(p in exigencia_final for p in meus_perfis)
+        
+        porcentagem_comp = "100%" if match_real else "0%"
 
-        perfil_exigido = max(scores, key=scores.get)
+        # 5. Exibição Visual
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Perfil do Colaborador", "/".join(meus_perfis))
+        col2.metric("Exigência das Tarefas", exigencia_final)
+        col3.metric("Compatibilidade", porcentagem_comp)
+
+        if match_real:
+            st.success(f"As atividades de **{cargo_bruto.upper()}** exigem um perfil **{exigencia_final}**, o que é compatível com o comportamento do colaborador.")
+        else:
+            st.warning(f"As atividades atuais puxam muito para o eixo **{exigencia_final}**. O colaborador precisará adaptar seu estilo natural para atender essas demandas técnicas.")
 
         # ============================================================
         # MÉTRICAS
