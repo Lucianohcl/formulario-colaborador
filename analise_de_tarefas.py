@@ -1078,25 +1078,28 @@ if st.session_state.pagina == "disc":
         # PAINEL DISC DO COLABORADOR (AJUSTADO)
         # ============================================================
 
-        # 1️⃣ Função ajustada de cálculo de score
+        # 1️⃣ Função de Índice de Confirmação do Perfil (Baseado em Concentração)
         def score_disc(percentuais):
-            """
-            Calcula a intensidade do perfil dominante considerando a diferença
-            entre ele e o segundo maior perfil.
-            Retorna um valor de 0 a 100, refletindo a certeza relativa.
-            """
             if not percentuais:
                 return 0
             
             valores = sorted(percentuais.values(), reverse=True)
-            dominante_val = valores[0]
-            segundo_val = valores[1] if len(valores) > 1 else 0
+            p1 = valores[0]  # Maior percentual encontrado (qualquer que seja o perfil)
+            p2 = valores[1] if len(valores) > 1 else 0 # Segundo maior
             
-            diff = dominante_val - segundo_val
-            score_normalizado = round((diff / dominante_val) * 100, 1) if dominante_val > 0 else 0
-            score_normalizado = max(0, min(score_normalizado, 100))
+            # 1. Fator de Destaque: Quão acima da média (25%) o perfil está
+            fator_destaque = max(0, (p1 - 25) / 25)
             
-            return score_normalizado
+            # 2. Fator de Distância: A folga entre o 1º e o 2º colocado
+            fator_distancia = (p1 - p2) / p1 if p1 > 0 else 0
+            
+            # Cálculo do Índice de Confirmação (Peso 70% destaque, 30% distância)
+            confirmacao = ((fator_destaque * 0.7) + (fator_distancia * 0.3)) * 100
+            
+            # Ajuste de escala para refletir a nitidez do perfil
+            score_final = round(confirmacao * 1.8, 1) 
+            
+            return max(0, min(score_final, 100))
 
         # 2️⃣ Cálculos
         percentuais, dominante = calcular_disc(respostas_disc)
