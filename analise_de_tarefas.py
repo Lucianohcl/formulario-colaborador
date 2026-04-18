@@ -1322,32 +1322,36 @@ if st.session_state.pagina == "disc":
                 """)
 
         # ============================================================
-        # 💡 NOTA DO CONSULTOR - LÓGICA DE BLINDAGEM ADSON
+        # 💡 NOTA DO CONSULTOR - DINÂMICA E BLINDADA
         # ============================================================
         st.write("---")
         st.write("👉 **ANÁLISE DE ADAPTAÇÃO ÀS TAREFAS**")
 
-        # O segredo é usar a amplitude que calculamos no bloco anterior
-        # Se amplitude <= 12, ele ignora o 'Perfil Principal' e trata como 'Equilibrado'
         if is_equilibrado:
+            # MENSAGEM DINÂMICA PARA O ADSON (HÍBRIDO)
             st.info(f"""
-            💡 **Nota do Consultor (Perfil Híbrido/Equilibrado):** Identificamos que sua estrutura comportamental 
-            é **Multidirecional** (Amplitude: {amplitude:.1f}%). 
+            💡 **Nota do Consultor (Perfil Multidirecional):** Sua estrutura comportamental apresenta uma 
+            distribuição equilibrada (Amplitude de {amplitude:.1f}%). 
             
-            Diferente de perfis concentrados, você possui uma **capacidade nativa de transição**. Isso significa que 
-            tarefas de alto rigor técnico, auditoria e análise de dados **não geram a fadiga típica**, pois seu 
-            eixo de conformidade é equilibrado com seus eixos de comunicação. Sua versatilidade permite manter a 
-            precisão técnica com baixo desgaste mental.
+            **Diferencial:** Diferente de perfis que possuem um único eixo dominante, você não sofre a "fadiga de adaptação". 
+            Sua capacidade de transitar entre a comunicação e o rigor técnico é **nativa**, o que significa que tarefas 
+            de auditoria e análise de dados são executadas com precisão sem drenar sua energia vital.
             """)
         else:
-            # Só entra aqui se for um perfil concentrado como o do Pedro
+            # MENSAGEM DINÂMICA PARA O PEDRO (ESPECIALISTA)
             perfil_primario = max(percentuais, key=percentuais.get)
-            st.warning(f"""
-            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é mais concentrado no eixo **{perfil_primario}**, 
-            tarefas que exigem o extremo oposto demandam um esforço consciente maior. 
             
-            Para manter a performance sem exaustão, recomenda-se organizar a agenda para intercalar atividades 
-            técnicas com momentos de interação, respeitando seu ritmo natural.
+            # Define o "oposto" para tornar a frase dinâmica
+            if perfil_primario in ['I', 'D']:
+                desafio = "alto rigor técnico, auditoria e análise de dados frios"
+            else:
+                desafio = "ritmo acelerado de comunicação, networking e exposição pública"
+
+            st.warning(f"""
+            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), tarefas que exigem **{desafio}** demandam um esforço consciente muito maior.
+            
+            **Atenção:** Por ser um perfil especialista, essas atividades podem gerar fadiga ao longo do dia. 
+            Recomenda-se organizar a agenda para intercalar essas tarefas com outras que sejam naturais ao seu estilo.
             """)
 
         # ============================================================
