@@ -1270,39 +1270,44 @@ if st.session_state.pagina == "disc":
             st.info(f"**Perfil Ideal para o Cargo:**\n{benchmark['perfis']}")
 
         # ============================================================
-        # 🔍 3. ANÁLISE COMPARATIVA DO COLABORADOR (VERSÃO RIGOROSA)
+        # 🔍 3. ANÁLISE COMPARATIVA DO COLABORADOR (AJUSTE DE EQUILÍBRIO)
         # ============================================================
         st.write("---")
         st.subheader("🔍 Diagnóstico do Colaborador")
 
-        # 1. Identifica dominância real (Aumentamos de 22% para 35% para evitar falsos híbridos)
-        eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 35]
-        
-        # Se não houver ninguém acima de 35, pegamos os dois maiores para não ficar vazio
-        if not eixos_dominantes:
-            eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
-            
-        perfil_real = "/".join(eixos_dominantes)
-        is_hibrido = len(eixos_dominantes) >= 2
+        # 1. Identifica os eixos
+        valores = list(percentuais.values())
+        maior = max(valores)
+        menor = min(valores)
+        amplitude = maior - menor # Diferença entre o mais alto e o mais baixo
 
-        # 2. Lógica de Match Real (Comparando com o Benchmark)
-        perfil_desejado = benchmark["perfis"] # Ex: "C" ou "CS"
-        # Conta quantos eixos do colaborador batem COM O DESEJADO
-        acertos = [p for p in eixos_dominantes if p in perfil_desejado]
-        match_count = len(acertos)
-
-        # 3. EXIBIÇÃO DO PARECER
-        if match_count == len(perfil_desejado):
-            st.success(f"✅ **Alta Aderência: Perfil Ideal Identificado ({perfil_real})**")
-            st.write(f"**Parecer do Especialista:** O colaborador apresenta as características exatas exigidas pelo benchmark de **{cargo_bruto.upper()}**. Seu estilo natural é altamente compatível com as demandas da função.")
+        # 2. DEFINIÇÃO DO PERFIL (REGRA DE EQUILÍBRIO)
+        # Se a amplitude for menor que 12%, é um perfil Equilibrado/Híbrido Multidirecional
+        is_equilibrado = amplitude < 12
         
-        elif match_count >= 1:
-            st.info(f"⚖️ **Aderência Funcional: Perfil em Adaptação ({perfil_real})**")
-            st.write(f"**Parecer do Especialista:** O colaborador possui parte das competências de comportamento para **{cargo_bruto.upper()}**, mas precisará de esforço consciente para atender aos requisitos de **{perfil_desejado}** que não são dominantes em sua natureza.")
+        if is_equilibrado:
+            eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 20]
+            perfil_real = "Híbrido Multidirecional (D-I-S-C)"
+        else:
+            eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 32]
+            if not eixos_dominantes: eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
+            perfil_real = "/".join(eixos_dominantes)
+
+        # 3. Lógica de Match com o Benchmark
+        perfil_desejado = benchmark["perfis"]
+        
+        # 4. EXIBIÇÃO DO PARECER REFINADO
+        if is_equilibrado and "D-I-C-S" in perfil_desejado:
+            st.success(f"✅ **Alta Aderência: Perfil Equilibrado Identificado**")
+            st.write(f"**Parecer do Especialista:** O colaborador apresenta uma distribuição de energia rara e altamente equilibrada. Para o cargo de **{cargo_bruto.upper()}**, que exige trânsito entre todos os eixos (D-I-C-S), este perfil é o ideal, pois possui a versatilidade nativa para agir com comando, influência, segurança e análise de forma simultânea.")
+        
+        elif any(p in perfil_desejado for p in eixos_dominantes):
+            st.info(f"⚖️ **Aderência Funcional: Perfil {perfil_real}**")
+            st.write(f"**Parecer do Especialista:** O colaborador possui competências que se sobrepõem às necessidades do cargo. Sua natureza **{perfil_real}** permite atender as demandas principais, exigindo ajustes pontuais apenas em situações de estresse extremo.")
         
         else:
             st.warning(f"⚠️ **Baixa Aderência: Perfil Desalinhado ({perfil_real})**")
-            st.write(f"**Parecer do Especialista:** O perfil atual (**{perfil_real}**) é oposto ou muito distante do ideal (**{perfil_desejado}**) para o cargo de **{cargo_bruto.upper()}**. Isso indica um alto risco de fadiga e necessidade de adaptação extrema para entrega de resultados.")
+            st.write(f"**Parecer do Especialista:** O perfil dominante identificado apresenta divergências significativas com o benchmark esperado para o cargo de **{cargo_bruto.upper()}**.")
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
