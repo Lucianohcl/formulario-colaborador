@@ -1338,7 +1338,13 @@ if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
     # Passamos o 'repo' que foi definido no início do seu script
-    lista_de_arquivos = carregar_todos_formularios(repo)
+    # Tenta usar o repo global, se não achar, tenta pegar do g (que é a conexão)
+    try:
+        lista_de_arquivos = carregar_todos_formularios(repo)
+    except NameError:
+        # Caso ele não ache a variável repo, ele cria ela na hora
+        repo = g.get_repo("lucianohcl/formulario-colaborador")
+        lista_de_arquivos = carregar_todos_formularios(repo)
     
     if not lista_de_arquivos:
         st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
@@ -2681,7 +2687,7 @@ if st.session_state.get("pagina") == "formulario":
     # Conecta ao Github
 
     g = Github(TOKEN)
-
+    
 
 
     # ESSE É O PONTO: Coloque o texto direto aqui para não dar erro de "REPO_NOME not defined"
