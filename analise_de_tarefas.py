@@ -1353,16 +1353,38 @@ if st.session_state.pagina == "disc":
 
         
         # ============================================================
-        # ATIVIDADES QUE EXIGEM ADAPTAÇÃO
+        # ANÁLISE DE ESFORÇO ADAPTATIVO (FOCO NO PERFIL PRINCIPAL)
         # ============================================================
-        # 3. Exibição com o texto solicitado
+        
+        # 0. INICIALIZAÇÃO (Evita NameError)
+        atividades_desafio = []
+        perfil_principal = dominante if 'dominante' in locals() else "N/A"
+        
+        # 1. MAPEAMENTO DE OPOSIÇÃO
+        opostos = {
+            "I": ["C", "D"], "S": ["D", "I"], 
+            "D": ["S", "C"], "C": ["I", "D"]
+        }
+        eixos_desafiadores = opostos.get(perfil_principal, ["C", "D"])
+
+        # 2. BUSCA NAS TABELAS (Garante que 'tabelas' e 'compatibilidade_ativ' existem)
+        if 'tabelas' in locals() and 'compatibilidade_ativ' in locals():
+            for nivel in ["alta", "normal", "baixa"]:
+                for item in tabelas.get(nivel, []):
+                    texto_ativ = item.get("Atividade", "")
+                    texto_lower = texto_ativ.lower()
+                    
+                    for eixo in eixos_desafiadores:
+                        if any(p in texto_lower for p in compatibilidade_ativ.get(eixo, [])):
+                            atividades_desafio.append(texto_ativ)
+                            break
+
+        # 3. EXIBIÇÃO FINAL
         if atividades_desafio:
             st.markdown("#### ⚠️ ALGUNS PONTOS DE ATENÇÃO EM RELAÇÃO AS TAREFAS DESCRITAS QUE PODEM EXIGIR UM NÍVEL MAIOR DE ADAPTAÇÃO:")
             
-            # Remove duplicatas e seleciona as 3 principais
+            # Remove duplicatas e exibe as 3 principais
             unicas_desafio = list(dict.fromkeys(atividades_desafio))
-            
-            # Exibe no máximo 3
             for ativ in unicas_desafio[:3]:
                 ativ_limpa = ativ.replace("\n", " ").replace("  ", " ").strip()
                 st.info(f"👉 {ativ_limpa}")
