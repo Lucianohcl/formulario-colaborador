@@ -1515,20 +1515,20 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 🧠 DIAGNÓSTICO ESTRATÉGICO (ALINHADO COM O CONTEÚDO DO EXPANDER)
+        # 🧠 DIAGNÓSTICO ESTRATÉGICO (RECUO DE 8 ESPAÇOS NA BASE)
         # ============================================================
         st.markdown("---")
         with st.container(border=True):
             st.subheader("🏆 Veredito de Qualificação e Entrega")
 
-            # Puxando das fontes já tratadas no seu loop (c e t_raiz)
+            # Puxando das fontes que você já validou acima
             txt_cursos = str(c.get("cursos", "")).strip()
             txt_objetivo = str(c.get("objetivo", "")).strip()
 
-            if not txt_cursos or txt_cursos.lower() == "não informado":
-                st.error("❌ Dados de Qualificação insuficientes para análise.")
+            if len(txt_cursos) < 5:
+                st.warning("⚠️ Dados de texto insuficientes para análise de autoridade.")
             else:
-                # --- MOTOR DE SCORE TÉCNICO ---
+                # 1. MOTOR DE SCORE TÉCNICO
                 score_tecnico = 0
                 evidencias = []
                 
@@ -1544,7 +1544,7 @@ if st.session_state.pagina == "disc":
                     score_tecnico += 30
                     evidencias.append("Foco em Gestão e Mitigação de Riscos")
 
-                # --- EXIBIÇÃO ---
+                # 2. EXIBIÇÃO VISUAL
                 col_graf, col_txt = st.columns([1, 2])
                 with col_graf:
                     st.write("**Autoridade Técnica**")
@@ -1556,7 +1556,7 @@ if st.session_state.pagina == "disc":
                     for ev in evidencias:
                         st.markdown(f"✅ {ev}")
 
-                # --- CONEXÃO DE ENTREGA (TABELAS) ---
+                # 3. CONEXÃO DE ENTREGA (USANDO T_RAIZ)
                 st.markdown("---")
                 ativ_alta = t_raiz.get("alta", [])
                 ativ_norm = t_raiz.get("normal", [])
@@ -1571,13 +1571,13 @@ if st.session_state.pagina == "disc":
                         st.progress(percent_alta / 100)
                     with c2:
                         if percent_alta > 25 and score_tecnico >= 70:
-                            st.success("💎 **Match de Elite:** Senioridade e Entrega Alinhadas.")
+                            st.success("💎 **Match de Elite:** Perfil sênior com entrega de alto impacto.")
                         elif percent_alta < 15 and score_tecnico >= 70:
-                            st.warning("⚠️ **Subutilização:** Perfil técnico em tarefas operacionais.")
+                            st.warning("⚠️ **Alerta de Subutilização:** Alto potencial técnico em tarefas operacionais.")
                         else:
-                            st.info("📊 **Equilíbrio:** Entrega condizente com o perfil.")
+                            st.info("📊 **Análise:** Perfil em equilíbrio operacional.")
                 else:
-                    st.warning("⚠️ Sem dados de atividades para cálculo de impacto.")        
+                    st.warning("⚠️ Sem atividades mapeadas para análise de impacto.")               
         
 
 # --- VISUALIZAÇÃO ---
