@@ -1349,81 +1349,26 @@ if st.session_state.pagina == "disc":
         else:
             st.warning(f"As atividades atuais puxam muito para o eixo **{exigencia_final}**. O colaborador precisará adaptar seu estilo natural para atender essas demandas técnicas.")
 
-        # ============================================================
-        # MÉTRICAS
-        # ============================================================
+        
 
-        colA, colB, colC = st.columns(3)
-
-        colA.metric("Perfil do Colaborador", dominante if dominante else "N/A")
-        colB.metric("Perfil Exigido pelas Atividades", perfil_exigido)
-
-        total_pontos = sum(scores.values())
-
-        if total_pontos > 0:
-            compat_percent = int((scores.get(dominante,0) / total_pontos) * 100)
-        else:
-            compat_percent = 0
-
-        colC.metric("Compatibilidade", f"{compat_percent}%")
-
-        # ============================================================
-        # MENSAGEM PRINCIPAL
-        # ============================================================
-
-        if perfil_exigido == dominante:
-
-            st.success(
-                f"Alta aderência: As atividades indicam um perfil **{perfil_exigido}**, compatível com o perfil do colaborador."
-            )
-
-        else:
-
-            st.warning(
-                f"As atividades indicam um perfil **{perfil_exigido}**, enquanto o colaborador apresenta perfil **{dominante}**."
-            )
-
+        
         # ============================================================
         # ATIVIDADES QUE EXIGEM ADAPTAÇÃO
         # ============================================================
-
-        atividades_compativeis = compatibilidade_ativ.get(perfil_exigido, [])
-
-        atividades_desvio = []
-
-        for ativ in atividades_lista:
-
-            texto = str(ativ).lower()
-
-            if not any(p in texto for p in atividades_compativeis):
-                atividades_desvio.append(ativ)
-
-
-        ranking_atividades = []
-
-        for ativ in atividades_lista:
-
-            texto = str(ativ).lower()
-
-            if not texto.strip():
-                continue
-
-            score_ativ = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
-
-            ranking_atividades.append((score_ativ, ativ))
-
-
-        ranking_atividades.sort(key=lambda x: x[0])
-
-
-        if ranking_atividades:
-
-            st.markdown("#### ⚠ Lista das principais dificuldades de adaptação")
-
-            limite = min(3, len(ranking_atividades))
-
-            for score_ativ, atividade in ranking_atividades[:limite]:
-                st.write("•", atividade)
+        # 3. Exibição com o texto solicitado
+        if atividades_desafio:
+            st.markdown("#### ⚠️ ALGUNS PONTOS DE ATENÇÃO EM RELAÇÃO AS TAREFAS DESCRITAS QUE PODEM EXIGIR UM NÍVEL MAIOR DE ADAPTAÇÃO:")
+            
+            # Remove duplicatas e seleciona as 3 principais
+            unicas_desafio = list(dict.fromkeys(atividades_desafio))
+            
+            # Exibe no máximo 3
+            for ativ in unicas_desafio[:3]:
+                ativ_limpa = ativ.replace("\n", " ").replace("  ", " ").strip()
+                st.info(f"👉 {ativ_limpa}")
+        else:
+            st.success("✅ As atividades descritas estão alinhadas ao seu perfil natural.")
+        
 
 
 # --- VISUALIZAÇÃO ---
