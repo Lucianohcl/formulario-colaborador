@@ -1382,32 +1382,40 @@ if st.session_state.pagina == "disc":
         # ============================================================
         # 3. EXIBIÇÃO UNIVERSAL COM LÓGICA DE MITIGAÇÃO
         # ============================================================
+        
+        # Garante que as variáveis existam para não quebrar o código
+        perfil_dominante = dominante if 'dominante' in locals() else "N/A"
+        eixo_conflitante = eixo_conflitante if 'eixo_conflitante' in locals() else ""
+        hibrido_status = is_hibrido if 'is_hibrido' in locals() else False
+
         if atividades_desafio:
             st.markdown("#### ⚠️ ALGUNS PONTOS DE ATENÇÃO EM RELAÇÃO ÀS TAREFAS DESCRITAS QUE PODEM EXIGIR UM NÍVEL MAIOR DE ADAPTAÇÃO:")
             
             # Remove duplicatas e exibe as 3 principais
             unicas_desafio = list(dict.fromkeys(atividades_desafio))
             for ativ in unicas_desafio[:3]:
-                ativ_limpa = ativ.replace("\n", " ").replace("  ", " ").strip()
+                # Limpeza de caracteres e quebras de linha
+                ativ_limpa = str(ativ).replace("\n", " ").strip()
                 st.info(f"👉 {ativ_limpa}")
 
-            # Lógica de Nota Dinâmica (Universal)
-            if is_hibrido:
-                # Caso o colaborador tenha o eixo oposto desenvolvido (Híbrido)
-                nota_texto = f"""
-                > **💡 Nota do Consultor:** Estes pontos de atenção são identificados com base no seu perfil principal (**{perfil_dominante}**). 
-                > No entanto, por você possuir um **Perfil Híbrido** (com bom equilíbrio em **{eixo_conflitante}**), essa dificuldade natural é significativamente **mitigada**. 
-                > Isso significa que você possui flexibilidade para transitar entre diferentes exigências, reduzindo o desgaste mental e mantendo a qualidade técnica.
-                """
+            # Construção da Nota de Consultoria Dinâmica
+            if hibrido_status:
+                texto_final = (
+                    f"Estes pontos de atenção são identificados com base no seu perfil principal (**{perfil_dominante}**). "
+                    f"No entanto, por você possuir um **Perfil Híbrido** (com bom equilíbrio em **{eixo_conflitante}**), "
+                    f"essa dificuldade natural é significativamente **mitigada**. Isso significa que você possui flexibilidade "
+                    f"para transitar entre diferentes exigências, reduzindo o desgaste mental e mantendo a qualidade técnica."
+                )
             else:
-                # Caso seja um perfil puro/extremo
-                nota_texto = f"""
-                > **💡 Nota do Consultor:** Estas atividades exigem competências de **{eixo_conflitante}**, o que é oposto ao seu perfil natural **{perfil_dominante}**. 
-                > Como seu perfil é mais concentrado, essas tarefas podem demandar um alto investimento de energia. 
-                > Recomenda-se atenção redobrada e pausas estratégicas durante a execução dessas atividades.
-                """
+                texto_final = (
+                    f"Estas atividades exigem competências de **{eixo_conflitante}**, o que é oposto ao seu perfil natural "
+                    f"**{perfil_dominante}**. Como seu perfil é mais concentrado, essas tarefas podem demandar um alto "
+                    f"investimento de energia. Recomenda-se atenção redobrada e pausas estratégicas durante a execução."
+                )
             
-            st.markdown(nota_texto)
+            # Exibe a nota com formatação de citação
+            st.markdown(f"> **💡 Nota do Consultor:** {texto_final}")
+            
         else:
             st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
         
