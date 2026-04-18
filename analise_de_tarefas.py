@@ -1512,42 +1512,7 @@ if st.session_state.get("pagina") == "visualizar":
                         key=f"pdf_unico_{id(form)}"
                     )                    
 
-        # --- SEÇÃO DE EXCLUSÃO VIRTUAL (SÓ ESCONDE DO APP) ---
-        st.markdown("---")
-        st.subheader("🚫 Esconder formulário da visualização")
-
-        # Inicializa a lista de "escondidos" se não existir
-        if "arquivos_escondidos" not in st.session_state:
-            st.session_state["arquivos_escondidos"] = []
-
-        # Pegamos os nomes dos arquivos que carregamos do GitHub
-        if lista_de_arquivos:
-            # Criamos uma lista de opções baseada nos arquivos que NÃO estão escondidos
-            opcoes_para_esconder = []
-            for idx, form in enumerate(lista_de_arquivos):
-                # Usamos o timestamp ou nome como ID único temporário
-                id_arquivo = form.get('timestamp') or f"form_{idx}"
-                nome_exibir = (form.get('colaborador') or form.get('nome') or "Sem Nome").upper()
-                
-                if id_arquivo not in st.session_state["arquivos_escondidos"]:
-                    opcoes_para_esconder.append({"id": id_arquivo, "label": nome_exibir})
-
-        # --- LINHA 1529 EM DIANTE ---
-        if opcoes_para_esconder:
-            # Tudo aqui dentro precisa de +4 espaços (total 12 se o if está em 8)
-            labels = [o["label"] for o in opcoes_para_esconder]
-            
-            escolha = st.selectbox(
-                "Selecione para ocultar desta sessão:", 
-                labels, 
-                key="selectbox_ocultar_final"
-            )
-
-            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_final"):
-                id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
-                st.session_state["arquivos_escondidos"].append(id_sel)
-                st.success("Ocultado!")
-                st.rerun()
+       
 # ============================================================
 # CALCULAR CARGA HORÁRIA
 # ============================================================
