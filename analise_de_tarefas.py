@@ -1515,34 +1515,70 @@ if st.session_state.pagina == "disc":
                 st.markdown(f"""> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.""")
 
         # ============================================================
-        # 🧪 TESTE DE CAPTURA (RAIO-X DOS DADOS)
+        # 🧠 DIAGNÓSTICO ESTRATÉGICO (CAMINHO DO JSON CORRIGIDO)
         # ============================================================
-        with st.expander("🔍 DEBUG: O que o Python está lendo?", expanded=True):
-            st.write("### 1. Dados de Texto (Variável 'c')")
-            st.json({
-                "Cursos Identificados": c.get("cursos", "NÃO ENCONTRADO"),
-                "Objetivo Identificado": c.get("objetivo", "NÃO ENCONTRADO")
-            })
+        st.markdown("---")
+        with st.container(border=True):
+            st.subheader("🏆 Veredito de Qualificação e Entrega")
 
-            st.write("### 2. Contagem de Atividades (Variável 't_raiz')")
-            if 't_raiz' in locals() or 't_raiz' in globals():
-                alta = t_raiz.get("alta", [])
-                norm = t_raiz.get("normal", [])
-                baix = t_raiz.get("baixa", [])
-                
-                st.write(f"🚀 **Alta:** {len(alta)} itens")
-                st.write(f"📋 **Normal:** {len(norm)} itens")
-                st.write(f"⏳ **Baixa:** {len(baix)} itens")
-                
-                if len(alta) > 0:
-                    st.write("**Exemplo de item em Alta:**", alta[0])
+            # 1. CAPTURA DOS DADOS (Caminho: form -> campos)
+            dados_pessoais = form.get("campos", {})
+            txt_cursos = str(dados_pessoais.get("cursos", "")).lower()
+            txt_objetivo = str(dados_pessoais.get("objetivo", "")).lower()
+
+            # 2. MOTOR DE SCORE TÉCNICO
+            score_tecnico = 0
+            evidencias = []
+            
+            # Validação de Formação (Baseada no seu JSON real)
+            if any(x in txt_cursos for x in ["pós", "mba", "especialização", "graduação", "contábeis"]):
+                score_tecnico += 40
+                evidencias.append("Maturidade Acadêmica (Pós/Graduação)")
+            
+            # Validação de Domínio Técnico
+            if any(x in txt_cursos for x in ["esocial", "reinf", "dctfweb", "legislação", "auditoria"]):
+                score_tecnico += 30
+                evidencias.append("Autoridade em Conformidade e Normas")
+
+            # Validação de Visão Estratégica (No Objetivo)
+            if any(x in txt_objetivo for x in ["estratégica", "liderança", "gestão", "mitigação", "auditoria"]):
+                score_tecnico += 30
+                evidencias.append("Foco em Gestão e Mitigação de Riscos")
+
+            # 3. EXIBIÇÃO VISUAL
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.write("**Autoridade Técnica**")
+                st.markdown(f"<h1 style='color: #2ecc71; margin:0;'>{score_tecnico}%</h1>", unsafe_allow_html=True)
+                st.progress(score_tecnico / 100)
+            
+            with col2:
+                st.write("**Evidências Identificadas:**")
+                if evidencias:
+                    for ev in evidencias: st.markdown(f"✅ {ev}")
+                else:
+                    st.info("Perfil em análise de competências.")
+
+            # 4. CONEXÃO COM TABELAS (Caminho: form -> tabelas)
+            st.markdown("---")
+            t_data = form.get("tabelas", {})
+            ativ_alta = t_data.get("alta", [])
+            total_ativ = len(ativ_alta) + len(t_data.get("normal", [])) + len(t_data.get("baixa", []))
+            
+            if total_ativ > 0:
+                p_alta = (len(ativ_alta) / total_ativ) * 100
+                c_met1, c_met2 = st.columns(2)
+                with c_met1:
+                    st.metric("Entrega de Alta Complexidade", f"{p_alta:.1f}%")
+                with c_met2:
+                    if p_alta > 25 and score_tecnico >= 70:
+                        st.success("💎 **Match de Elite:** Perfil Sênior/Gestor")
+                    elif p_alta < 15 and score_tecnico >= 70:
+                        st.warning("⚠️ **Subutilização:** Potencial técnico mal aproveitado")
+                    else:
+                        st.info("📊 **Análise:** Perfil em equilíbrio operacional")
             else:
-                st.error("❌ A variável 't_raiz' NÃO EXISTE neste ponto do código.")
-
-            st.write("### 3. Estrutura Bruta (Variável 'form')")
-            with st.container(border=True):
-                st.write("Se o JSON abaixo estiver vazio ou sem as chaves certas, o erro está na carga do arquivo.")
-                st.json(form)            
+                st.warning("⚠️ Tabelas de atividades não localizadas para cruzamento.")            
         
 
 # --- VISUALIZAÇÃO ---
