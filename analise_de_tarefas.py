@@ -1219,44 +1219,72 @@ if st.session_state.pagina == "disc":
         
                 
         # ============================================================
-        # ANÁLISE DE ADERÊNCIA AO CARGO (LÓGICA INDEPENDENTE)
+        # MÓDULO DE INTELIGÊNCIA DE RH: BENCHMARK POR CARGO
         # ============================================================
-        st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
+        st.markdown(f"### 📑 Consultoria de Perfil: {cargo_bruto.upper()}")
 
-        # Busca o cargo onde quer que ele esteja no JSON
-        c_internos = formulario_sel.get('campos', {})
-        cargo_bruto = c_internos.get('cargo') or formulario_sel.get('cargo') or "N/A"
-        cargo_limpo = str(cargo_bruto).lower()
-
-        # Mapeamento Geral de Afinidades (Agnóstico)
-        mapa_afinidade = {
-            "D": ["gerente", "diretor", "coordenador", "lider", "gestor", "executivo", "chefe"],
-            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação", "atendimento", "comercial"],
-            "S": ["rh", "suporte", "administrativo", "operacional", "auxiliar", "assistente", "atendimento"],
-            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista", "dados", "programador"]
+        # 1. BASE DE CONHECIMENTO DE RH (Desejado por Cargo)
+        job_benchmarks = {
+            "gestor": {
+                "perfis": "Híbrido (D-C-S)",
+                "competencias": ["Liderança e Tomada de Decisão (D)", "Visão Estratégica e Planejamento (S)", "Controle de Processos e Riscos (C)"]
+            },
+            "vendas": {
+                "perfis": "Influente (I-D)",
+                "competencias": ["Poder de Persuasão (I)", "Foco em Metas e Resultados (D)", "Comunicação Assertiva (I)"]
+            },
+            "analista": {
+                "perfis": "Analítico (C-S)",
+                "competencias": ["Atenção Minuciosa a Detalhes (C)", "Organização e Método (C)", "Constância e Foco em Entrega (S)"]
+            },
+            "rh": {
+                "perfis": "Estável (S-I)",
+                "competencias": ["Escuta Ativa e Empatia (S)", "Mediação de Conflitos (S)", "Comunicação Interpessoal (I)"]
+            }
         }
 
-        # Inteligência Independente: Verifica match com QUALQUER perfil acima de 20%
-        perfis_relevantes = [letra for letra, valor in percentuais.items() if valor > 20]
+        # Busca dinâmica: se não achar o cargo exato, tenta por palavra-chave ou usa um padrão Geral
+        cargo_key = next((k for k in job_benchmarks if k in cargo_limpo), "gestor")
+        benchmark = job_benchmarks[cargo_key]
+
+        # 2. EXPOSIÇÃO DO "GABARITO" DE RH
+        st.subheader("🎯 Perfil e Competências Desejadas")
+        col_bench1, col_bench2 = st.columns(2)
         
-        match_confirmado = False
-        eixos_encontrados = []
+        with col_bench1:
+            st.markdown("**Competências Exigidas pela Função:**")
+            for comp in benchmark["competencias"]:
+                st.markdown(f"• {comp}")
+        
+        with col_bench2:
+            st.info(f"**Perfil Ideal para o Cargo:**\n{benchmark['perfis']}")
 
-        for letra in perfis_relevantes:
-            if any(palavra in cargo_limpo for palavra in mapa_afinidade.get(letra, [])):
-                match_confirmado = True
-                eixos_encontrados.append(letra)
+        # 3. ANÁLISE COMPARATIVA DO COLABORADOR
+        st.write("---")
+        st.subheader("🔍 Diagnóstico do Colaborador")
 
-        # Exibição Visual
-        colA, colB = st.columns(2)
-        colA.metric("Cargo Identificado", str(cargo_bruto).upper())
-        colB.metric("Eixos de Afinidade", "/".join(eixos_encontrados) if eixos_encontrados else "Híbrido/Geral")
+        # Identifica os pontos fortes do colaborador (Eixos acima de 22%)
+        eixos_fortes = [letra for letra, valor in percentuais.items() if valor > 22]
+        is_hibrido = len(eixos_fortes) >= 2
+        perfil_real = "/".join(eixos_fortes)
 
-        # Mensagem Baseada em Evidências do Perfil Completo
-        if match_confirmado:
-            st.success(f"**Aderência Identificada:** As competências dos eixos **{'/'.join(eixos_encontrados)}** dão suporte direto às atividades de **{cargo_bruto.upper()}**.")
+        # Lógica de match inteligente
+        perfil_desejado_letras = benchmark["perfis"]
+        match_count = sum(1 for p in eixos_fortes if p in perfil_desejado_letras)
+
+        if is_hibrido and match_count >= 1:
+            st.success(f"✅ **Alta Aderência: Perfil Híbrido Identificado ({perfil_real})**")
+            st.write(f"""
+            **Parecer do Especialista:** O colaborador possui a versatilidade necessária para o cargo de **{cargo_bruto.upper()}**. 
+            A presença de múltiplos eixos de comportamento indica que ele consegue equilibrar as diferentes demandas da função, 
+            alternando entre foco em pessoas, processos e resultados conforme a necessidade.
+            """)
+        elif match_count >= 1:
+            st.info(f"⚖️ **Aderência Parcial: Perfil Especialista ({perfil_real})**")
+            st.write(f"O colaborador possui competências centrais para o cargo, mas seu perfil é focado. Recomenda-se observar como ele lida com demandas que exijam os eixos complementares do hibridismo ideal.")
         else:
-            st.info(f"**Perfil Adaptável:** O colaborador possui um estilo que pode agregar perspectivas diferentes às rotinas de **{cargo_bruto.upper()}**, sugerindo versatilidade.")
+            st.warning(f"⚠️ **Ponto de Desenvolvimento: Perfil ({perfil_real})**")
+            st.write(f"O perfil atual apresenta características distintas das desejadas para a função. Sugere-se um Plano de Desenvolvimento focado nas competências listadas acima.")
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES
