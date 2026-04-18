@@ -1493,32 +1493,72 @@ if st.session_state.pagina == "disc":
         # 4. DIAGNÓSTICO INTELIGENTE DE DIFICULDADES E SUGESTÕES
         # ============================================================
         st.markdown("---")
-        st.markdown("#### 🔍 Análise de Dificuldades e Sugestões (Cruzamento DISC)")
-
-        # 1. Captura e Tratamento de Dados
-        info_origem = locals().get('dados', locals().get('colaborador', {}))
-        lista_dif = info_origem.get("dificuldades", [])
-        lista_sug = info_origem.get("sugestoes", [])
         
-        # Lista de termos que o sistema considera como "VAZIO" ou "RESISTÊNCIA"
-        termos_vazios = [
-            "nenhuma", "não tenho", "n/a", "não há", "0", "nenhum", "", " ", 
-            "dp", "nenhuma dificuldade", "nenhuma melhoria", "n / a", "null"
-        ]
+        # 1. RESET E LIMPEZA TOTAL (Mata qualquer rastro do colaborador anterior)
+        texto_dif = ""
+        texto_sug = ""
+        
+        # 2. CAPTURA ÚNICA E RIGOROSA (Bebendo apenas da fonte oficial 'form')
+        t_raiz = form.get('tabelas', {})
+        
+        # Lista de termos que indicam que o colaborador "não quis responder"
+        bloqueio = ["nenhuma", "não tenho", "n/a", "não há", "0", "nenhum", "dp", "null", "nada"]
 
-        def validar_conteudo(texto):
-            if not texto: return False
-            t = str(texto).lower().strip()
-            # Se estiver na lista de bloqueio ou for muito curto, não é conteúdo real
-            return t not in termos_vazios and len(t) > 2
+        def filtrar(lista, chave):
+            itens = []
+            for d in lista:
+                valor = str(d.get(chave, '')).strip()
+                # Só aceita se tiver mais de 2 letras e não estiver na lista de bloqueio
+                if len(valor) > 2 and valor.lower() not in bloqueio:
+                    itens.append(valor)
+            return " ".join(itens)
 
-        # Avaliação das flags de conteúdo real
-        tem_dif_real = any(validar_conteudo(d.get("Dificuldade", "")) for d in lista_dif)
-        tem_sug_real = any(validar_conteudo(s.get("Sugestão", "")) for s in lista_sug)
+        # Processa as tabelas do Adson/Pedro de forma isolada
+        texto_dif = filtrar(t_raiz.get('dificuldades', []), 'Dificuldade')
+        texto_sug = filtrar(t_raiz.get('sugestoes', []), 'Sugestão')
 
-        # Consolida textos apenas das respostas que passaram na validação para a análise DISC
-        texto_dif = " ".join([str(d.get("Dificuldade", "")).lower() for d in lista_dif if validar_conteudo(d.get("Dificuldade", ""))])
-        texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug if validar_conteudo(s.get("Sugestão", ""))])
+        # 3. LÓGICA DE EXIBIÇÃO: SE AMBOS VAZIOS -> ERRO (CASO DO ADSON)
+        if not texto_dif and not texto_sug:
+            st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
+            st.markdown(f"""
+            A ausência de registros por um perfil **{perfil_dominante}** indica resistência passiva. 
+            O colaborador não detalhou barreiras nem propôs melhorias operacionais.
+            """)
+        else:
+            # 4. SÓ ENTRA NA ANÁLISE SE TIVER CONTEÚDO REAL (CASO DO PEDRO)
+            st.markdown(f"#### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
+            
+            dores_perfil = {
+                "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema"],
+                "S": ["pressão", "mudança", "conflito", "urgência", "improviso"],
+                "D": ["lentidão", "burocracia", "espera", "autonomia", "internet"],
+                "C": ["falta de dados", "erro", "improviso", "desorganização", "cliente"]
+            }
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.subheader("⚠️ Dificuldades vs Perfil")
+                if texto_dif:
+                    bateu = any(w in texto_dif.lower() for w in dores_perfil.get(perfil_dominante, []))
+                    if bateu:
+                        st.success(f"✅ **Coerência Alta:** Queixas típicas de um {perfil_dominante}.")
+                    else:
+                        st.warning("⚠️ **Alerta Estrutural:** Dificuldades fogem do padrão comportamental.")
+                else:
+                    st.info("Sem dificuldades relatadas.")
+
+            with col2:
+                st.subheader("💡 Sugestões vs Inovação")
+                if texto_sug:
+                    inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
+                    if any(w in texto_sug.lower() for w in inov):
+                        st.success("🚀 **Foco em Eficiência:** Busca soluções tecnológicas.")
+                    else:
+                        st.info("📋 **Foco Operacional:** Sugestões para manutenção do status quo.")
+                else:
+                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões.")
+
+            st.info(f"**Resumo Executivo:** O perfil {perfil_dominante} foi analisado com base nos textos fornecidos.")
 
 
         
