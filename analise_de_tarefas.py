@@ -1078,27 +1078,20 @@ if st.session_state.pagina == "disc":
         # PAINEL DISC DO COLABORADOR (AJUSTADO)
         # ============================================================
 
-        # 1️⃣ Função de Índice de Confirmação do Perfil (Baseado em Concentração)
+        # 1️⃣ Função de Índice de Confirmação (Com detecção de Equilíbrio)
         def score_disc(percentuais):
             if not percentuais:
                 return 0
-            
             valores = sorted(percentuais.values(), reverse=True)
-            p1 = valores[0]  # Maior percentual encontrado (qualquer que seja o perfil)
-            p2 = valores[1] if len(valores) > 1 else 0 # Segundo maior
+            p1 = valores[0]
+            p2 = valores[1] if len(valores) > 1 else 0
             
-            # 1. Fator de Destaque: Quão acima da média (25%) o perfil está
             fator_destaque = max(0, (p1 - 25) / 25)
-            
-            # 2. Fator de Distância: A folga entre o 1º e o 2º colocado
             fator_distancia = (p1 - p2) / p1 if p1 > 0 else 0
             
-            # Cálculo do Índice de Confirmação (Peso 70% destaque, 30% distância)
-            confirmacao = ((fator_destaque * 0.7) + (fator_distancia * 0.3)) * 100
-            
-            # Ajuste de escala para refletir a nitidez do perfil
-            score_final = round(confirmacao * 1.8, 1) 
-            
+            # Ponderação ajustada: 60% destaque, 40% distância
+            confirmacao = ((fator_destaque * 0.6) + (fator_distancia * 0.4)) * 100
+            score_final = round(confirmacao * 1.6, 1) 
             return max(0, min(score_final, 100))
 
         # 2️⃣ Cálculos
@@ -1132,18 +1125,24 @@ if st.session_state.pagina == "disc":
             st.metric("Perfil Dominante", dominante)
             st.metric("Intensidade (Score)", f"{score}%")
             
-            # Interpretação rápida do nível de intensidade
-            def interpretar_valor(p):
+            # Interpretação com detecção de Perfil Híbrido/Equilibrado
+            def interpretar_valor(p, percentuais):
                 try:
                     v = float(str(p).replace('%',''))
-                    if v > 85: return "🎯 **Muito Alta**"
-                    if v > 60: return "✅ **Alta**"
-                    if v > 30: return "⚖️ **Moderada**"
-                    return "⚠️ **Baixa**"
+                    valores = sorted(percentuais.values(), reverse=True)
+                    
+                    # Identifica se a diferença entre os dois maiores é menor que 7%
+                    if (valores[0] - valores[1]) < 7:
+                        return "⚖️ **Perfil Equilibrado / Híbrido**"
+                    
+                    if v > 80: return "🎯 **Intensidade Muito Alta**"
+                    if v > 55: return "✅ **Intensidade Alta**"
+                    if v > 30: return "⚖️ **Intensidade Moderada**"
+                    return "⚠️ **Intensidade Baixa (Indefinido)**"
                 except:
                     return ""
             
-            st.write(interpretar_valor(score))
+            st.write(interpretar_valor(score, percentuais))
 
             st.caption("ℹ️ Score indica a intensidade relativa do perfil dominante em relação aos outros perfis. Quanto maior a diferença, maior a certeza do perfil.")
 
