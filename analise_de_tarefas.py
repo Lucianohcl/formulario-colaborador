@@ -1047,39 +1047,58 @@ if st.session_state.pagina == "disc":
     # ============================================================
 
     if formulario_sel and st.button("🔎 Gerar análise DISC"):
+        # A partir daqui o seu processamento continua normal
         form = formulario_sel
         
         mapa_disc = {
-        "A": "D",
-        "B": "I",
-        "C": "S",
-        "D": "C"
+           "A": "D",
+           "B": "I",
+           "C": "S",
+           "D": "C"
         }
+        
 
+        # Extraímos as respostas garantindo que o dicionário 'disc' existe no JSON
         respostas_raw = form.get("disc", {})
         respostas_disc = {}
+
         for k, v in respostas_raw.items():
             if v in mapa_disc:
                 respostas_disc[k] = mapa_disc[v]
 
-        # 1️⃣ Cálculos de Perfil (Assume que calcular_disc retorna percentuais e dominante)
-        percentuais, dominante = calcular_disc(respostas_disc)
-        
+        # ============================================================
+        # PAINEL DISC DO COLABORADOR (AJUSTADO)
+        # ============================================================
+
+        # 1️⃣ Função ajustada de cálculo de score
         def score_disc(percentuais):
-            if not percentuais: return 0
+            """
+            Calcula a intensidade do perfil dominante considerando a diferença
+            entre ele e o segundo maior perfil.
+            Retorna um valor de 0 a 100, refletindo a certeza relativa.
+            """
+            if not percentuais:
+                return 0
+            
             valores = sorted(percentuais.values(), reverse=True)
             dominante_val = valores[0]
             segundo_val = valores[1] if len(valores) > 1 else 0
+            
             diff = dominante_val - segundo_val
             score_normalizado = round((diff / dominante_val) * 100, 1) if dominante_val > 0 else 0
-            return max(0, min(score_normalizado, 100))
+            score_normalizado = max(0, min(score_normalizado, 100))
+            
+            return score_normalizado
 
+        # 2️⃣ Cálculos
+        percentuais, dominante = calcular_disc(respostas_disc)
         score = score_disc(percentuais)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
 
-        # Gráfico e Métricas lado a lado
+        # 3️⃣ Gráfico e Métricas lado a lado
         col_graf, col_met = st.columns([2,1])
+
         with col_graf:
             fig = px.bar(
                 x=list(percentuais.keys()),
@@ -1089,12 +1108,20 @@ if st.session_state.pagina == "disc":
                 color=list(percentuais.keys()),
                 color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
             )
-            fig.update_layout(yaxis_range=[0,100], height=350, margin=dict(l=20, r=20, t=30, b=20), template="plotly_white", showlegend=False)
+            fig.update_layout(
+                yaxis_range=[0,100], 
+                height=350, 
+                margin=dict(l=20, r=20, t=30, b=20), 
+                template="plotly_white",
+                showlegend=False
+            )
             st.plotly_chart(fig, use_container_width=True)
 
         with col_met:
             st.metric("Perfil Dominante", dominante)
             st.metric("Intensidade (Score)", f"{score}%")
+            
+            # Interpretação rápida do nível de intensidade
             def interpretar_valor(p):
                 try:
                     v = float(str(p).replace('%',''))
@@ -1102,118 +1129,241 @@ if st.session_state.pagina == "disc":
                     if v > 60: return "✅ **Alta**"
                     if v > 30: return "⚖️ **Moderada**"
                     return "⚠️ **Baixa**"
-                except: return ""
+                except:
+                    return ""
+            
             st.write(interpretar_valor(score))
-            st.caption("ℹ️ O score reflete a dominância em relação aos demais perfis.")
 
-        st.markdown("---")
+            st.caption("ℹ️ Score indica a intensidade relativa do perfil dominante em relação aos outros perfis. Quanto maior a diferença, maior a certeza do perfil.")
 
-        # 2. INTERPRETAÇÃO DETALHADA (Resumo)
-        textos_disc_resumo = {
-            "D": {"nome": "Dominante", "estilo": "Resultados", "desc": "Decidido e direto.", "cor": "red", "tarefas": "Decisões e Metas"},
-            "I": {"nome": "Influente", "estilo": "Pessoas", "desc": "Otimista e sociável.", "cor": "orange", "tarefas": "Networking e Motivação"},
-            "S": {"nome": "Estável", "estilo": "Colaboração", "desc": "Paciente e leal.", "cor": "green", "tarefas": "Suporte e Processos"},
-            "C": {"nome": "Conformidade", "estilo": "Precisão", "desc": "Analítico e detalhista.", "cor": "blue", "tarefas": "Análise e Regras"}
+
+            st.markdown("---")
+
+            
+
+        # 2. INTERPRETAÇÃO DETALHADA (Substitui a Base de Conhecimento e o Parecer)
+        textos_disc = {
+           "D": {"nome": "Dominante", "estilo": "Resultados e Assertividade", "desc": "Decidido e direto. Busca desafios e rapidez.", "cor": "red", "tarefas": "Tomada de decisão, Gestão de crises, Metas."},
+           "I": {"nome": "Influente", "estilo": "Pessoas e Comunicação", "desc": "Entusiasmado e otimista. Busca conexão social.", "cor": "orange", "tarefas": "Apresentações, Networking, Motivação."},
+           "S": {"nome": "Estável", "estilo": "Colaboração e Persistência", "desc": "Paciente e leal. Busca harmonia e segurança.", "cor": "green", "tarefas": "Apoio operacional, Suporte, Processos."},
+           "C": {"nome": "Conformidade", "estilo": "Precisão e Qualidade", "desc": "Analítico e detalhista. Busca lógica e regras.", "cor": "blue", "tarefas": "Auditoria, Análise de dados, Padronização."}
         }
-        info = textos_disc_resumo.get(dominante, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""})
+
+        info = textos_disc.get(dominante, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""})
+
         st.markdown(f"### Análise do Perfil: :{info['cor']}[{info['nome']}]")
         st.write(f"**Foco Principal:** {info['estilo']}")
         
         col_desc, col_tar = st.columns(2)
-        with col_desc: st.info(info['desc'])
-        with col_tar: st.warning(f"**Tarefas Sugeridas:**\n{info['tarefas']}")
+        with col_desc:
+            st.info(info['desc'])
+        with col_tar:
+            st.warning(f"**Tarefas Sugeridas:**\n{info['tarefas']}")
 
-        # 3. LEGENDA GERAL
+        # 3. LEGENDA DETALHADA (Final da página)
         with st.expander("🔍 Legenda Geral DISC - Detalhada", expanded=False):
-            for k, v in textos_disc_resumo.items():
-                st.markdown(f"**{k} - {v['nome']}** | {v['estilo']}")
+            textos_disc_legenda = {
+                "D": {
+                    "nome": "Dominante",
+                    "estilo": "Resultados e Assertividade",
+                    "desc": "Decidido e direto. Busca desafios, rapidez e liderança.",
+                    "cargos": "Gerente, Líder de Projeto, Coordenador",
+                    "tarefas_mais": "Tomada de decisão, Gestão de crises, Definir metas",
+                    "tarefas_menos": "Atendimento de rotina, Processos detalhados, Documentação"
+                },
+                "I": {
+                    "nome": "Influente",
+                    "estilo": "Pessoas e Comunicação",
+                    "desc": "Entusiasmado, sociável e persuasivo. Busca conexão e motivação do grupo.",
+                    "cargos": "Marketing, Vendas, Comunicação, Treinamento",
+                    "tarefas_mais": "Apresentações, Networking, Reuniões de equipe, Motivação",
+                    "tarefas_menos": "Tarefas repetitivas, Processos rígidos, Detalhes técnicos"
+                },
+                "S": {
+                    "nome": "Estável",
+                    "estilo": "Colaboração e Persistência",
+                    "desc": "Paciente, leal e confiável. Busca harmonia e segurança.",
+                    "cargos": "Suporte, Administrativo, RH, Atendimento ao Cliente",
+                    "tarefas_mais": "Suporte operacional, Atendimento, Organizar processos",
+                    "tarefas_menos": "Mudanças constantes, Pressão por resultados rápidos, Competição intensa"
+                },
+                "C": {
+                    "nome": "Conformidade",
+                    "estilo": "Precisão e Qualidade",
+                    "desc": "Analítico, detalhista e criterioso. Busca lógica, regras e perfeição.",
+                    "cargos": "Auditoria, Contabilidade, TI, Qualidade",
+                    "tarefas_mais": "Análise de dados, Relatórios, Controle de qualidade, Padronização",
+                    "tarefas_menos": "Decisões rápidas sem dados, Interações sociais constantes, Ambiguidade"
+                }
+            }
+
+            for key, info_leg in textos_disc_legenda.items():
+                st.markdown(f"### **{key} - {info_leg['nome']}**")
+                st.write(f"**Estilo de trabalho:** {info_leg['estilo']}")
+                st.write(f"**Descrição:** {info_leg['desc']}")
+                st.write(f"**Cargos mais compatíveis:** {info_leg['cargos']}")
+                st.write(f"**Atividades que combinam mais:** {info_leg['tarefas_mais']}")
+                st.write(f"**Atividades que combinam menos:** {info_leg['tarefas_menos']}")
                 st.markdown("---")
 
-        # ============================================================
-        # COMPATIBILIDADE CARGO × PERFIL DISC
-        # ============================================================
-        st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
-        cargo_atual = str(form.get("cargo", "")).lower()
-        compatibilidade_cargo = {
-            "D": ["gerente", "diretor", "coordenador", "lider", "gestor"],
-            "I": ["vendas", "marketing", "comercial", "comunicação"],
-            "S": ["rh", "suporte", "administrativo", "operacional"],
-            "C": ["contabilidade", "qualidade", "auditoria", "ti", "analista"]
-        }
-        match_cargo = any(c in cargo_atual for c in compatibilidade_cargo.get(dominante, []))
         
+                
+        # ============================================================
+        # COMPATIBILIDADE CARGO × PERFIL DISC (APENAS MENSAGEM)
+        # ============================================================
+
+        st.markdown("### 🔹 Compatibilidade Cargo × Perfil DISC")
+
+        cargo_atual = str(form.get("cargo", "")).lower()
+
+        # Mapeamento de cargos por perfil dominante
+        compatibilidade = {
+            "D": ["gerente", "diretor", "coordenador", "lider", "gestor"],
+            "I": ["vendas", "marketing", "comercial", "relacionamento", "comunicação"],
+            "S": ["rh", "suporte", "atendimento", "administrativo", "operacional"],
+            "C": ["contabilidade", "qualidade", "auditoria", "financeiro", "ti", "analista"]
+        }
+
+        cargos_compatíveis = compatibilidade.get(dominante, [])
+        match = any(c in cargo_atual for c in cargos_compatíveis)
+
+        # Exibição simplificada em métricas
         colA, colB = st.columns(2)
         colA.metric("Cargo Atual", form.get("cargo","N/A").title())
-        colB.metric("Perfil Dominante", dominante)
+        colB.metric("Perfil Dominante", dominante if dominante else "N/A")
 
-        if match_cargo:
-            st.success(f"**Alta aderência:** O perfil **{dominante}** favorece o desempenho em **{cargo_atual.title()}**.")
+        # Mensagem direta sem gráfico
+        if match:
+            st.success(f"**Alta aderência:** O perfil **{dominante}** possui características naturais que favorecem o desempenho em cargos de **{cargo_atual.title()}**.")
         else:
-            st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir adaptação para **{cargo_atual.title()}**.")
+            st.warning(f"**Ponto de Atenção:** O perfil **{dominante}** pode exigir um esforço maior de adaptação para as rotinas típicas de **{cargo_atual.title()}**.")
 
         # ============================================================
-        # PERFIL DISC EXIGIDO PELAS ATIVIDADES (LÓGICA INDIVIDUALIZADA)
+        # PERFIL DISC EXIGIDO PELAS ATIVIDADES
         # ============================================================
+
         st.markdown("### 🔹 Perfil DISC Exigido pelas Atividades")
 
-        atividades_lista = [a.get("Atividade Descrita","") for a in form.get("atividades",[])]
-        
+        atividades_lista = [
+            a.get("Atividade Descrita","")
+            for a in form.get("atividades",[])
+        ]
+
+        atividades_texto = " ".join(atividades_lista).lower()
+
         compatibilidade_ativ = {
-            "D": ["decisão","meta","resultado","liderar","negociar","estratégia","direcionar","definir","priorizar"],
-            "I": ["apresentar","convencer","comunicar","clientes","reunião","relacionamento","treinamento"],
-            "S": ["suporte","atender","organizar","rotina","apoio","assistir","acompanhar","colaborar"],
-            "C": ["analisar","dados","relatório","planilha","controle","auditar","conferir","classificar","verificar","validar"]
+
+            "D": [
+                "decisão","meta","resultado","liderar","negociar",
+                "estratégia","direcionar","definir","priorizar"
+            ],
+
+            "I": [
+                "apresentar","convencer","comunicar","clientes",
+                "reunião","relacionamento","treinamento"
+            ],
+
+            "S": [
+                "suporte","atender","organizar","rotina",
+                "apoio","assistir","acompanhar","colaborar"
+            ],
+
+            "C": [
+                "analisar","dados","relatório","planilha",
+                "controle","auditar","conferir","classificar",
+                "registrar","custos","informações","base",
+                "indicadores","verificar","validar"
+            ]
+
         }
 
-        # Analisamos o que as tarefas pedem no TOTAL
-        atividades_texto_total = " ".join(atividades_lista).lower()
-        scores_tarefas = {p: sum(atividades_texto_total.count(palavra) for palavra in lista) for p, lista in compatibilidade_ativ.items()}
-        perfil_exigido_total = max(scores_tarefas, key=scores_tarefas.get) if sum(scores_tarefas.values()) > 0 else "N/A"
+        scores = {}
 
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Perfil Colaborador (D)", dominante)
-        col2.metric("Perfil Exigido (Total)", perfil_exigido_total)
-        # Aderência baseada no quanto o colaborador tem do perfil que as tarefas mais pedem
-        aderencia_real = percentuais.get(perfil_exigido_total, 0)
-        col3.metric("Aderência Real", f"{aderencia_real}%")
+        for perfil, palavras in compatibilidade_ativ.items():
+
+            pontos = sum(
+                atividades_texto.count(p) for p in palavras
+            )
+
+            scores[perfil] = pontos
+
+        perfil_exigido = max(scores, key=scores.get)
 
         # ============================================================
-        # RANKING DE ADAPTAÇÃO (INDIVIDUALIZADO POR ATIVIDADE)
+        # MÉTRICAS
         # ============================================================
-        analise_atividades = []
+
+        colA, colB, colC = st.columns(3)
+
+        colA.metric("Perfil do Colaborador", dominante if dominante else "N/A")
+        colB.metric("Perfil Exigido pelas Atividades", perfil_exigido)
+
+        total_pontos = sum(scores.values())
+
+        if total_pontos > 0:
+            compat_percent = int((scores.get(dominante,0) / total_pontos) * 100)
+        else:
+            compat_percent = 0
+
+        colC.metric("Compatibilidade", f"{compat_percent}%")
+
+        # ============================================================
+        # MENSAGEM PRINCIPAL
+        # ============================================================
+
+        if perfil_exigido == dominante:
+
+            st.success(
+                f"Alta aderência: As atividades indicam um perfil **{perfil_exigido}**, compatível com o perfil do colaborador."
+            )
+
+        else:
+
+            st.warning(
+                f"As atividades indicam um perfil **{perfil_exigido}**, enquanto o colaborador apresenta perfil **{dominante}**."
+            )
+
+        # ============================================================
+        # ATIVIDADES QUE EXIGEM ADAPTAÇÃO
+        # ============================================================
+
+        atividades_compativeis = compatibilidade_ativ.get(perfil_exigido, [])
+
+        atividades_desvio = []
+
         for ativ in atividades_lista:
+
             texto = str(ativ).lower()
-            if not texto.strip(): continue
-            
-            # 1. Descobrimos qual perfil ESTA atividade específica exige
-            scores_desta_ativ = {p: sum(texto.count(palavra) for palavra in lista) for p, lista in compatibilidade_ativ.items()}
-            if sum(scores_desta_ativ.values()) == 0: continue
-            
-            perfil_da_atividade = max(scores_desta_ativ, key=scores_desta_ativ.get)
-            
-            # 2. Verificamos qual o "gap": quanto o colaborador tem desse perfil exigido?
-            nivel_colaborador = percentuais.get(perfil_da_atividade, 0)
-            
-            analise_atividades.append({
-                "atividade": ativ,
-                "perfil_exigido": perfil_da_atividade,
-                "match": nivel_colaborador
-            })
 
-        # Ordenamos: as que o colaborador tem MENOR nível vão para o topo (Dificuldades)
-        analise_atividades.sort(key=lambda x: x['match'])
+            if not any(p in texto for p in atividades_compativeis):
+                atividades_desvio.append(ativ)
 
-        if analise_atividades:
-            st.markdown("#### ⚠️ Lista das principais dificuldades de adaptação")
-            st.caption("Atividades que exigem comportamentos que não são predominantes no seu perfil atual.")
-            
-            limite = min(3, len(analise_atividades))
-            for item in analise_atividades[:limite]:
-                # Se o nível do colaborador no perfil exigido for baixo, avisamos
-                status_cor = "red" if item['match'] < 20 else "orange"
-                st.write(f"• :{status_cor}[{item['atividade']}]")
-                st.caption(f"Esta tarefa exige perfil **{item['perfil_exigido']}**, no qual você possui **{item['match']}%** de intensidade.")
 
+        ranking_atividades = []
+
+        for ativ in atividades_lista:
+
+            texto = str(ativ).lower()
+
+            if not texto.strip():
+                continue
+
+            score_ativ = sum(p in texto for p in compatibilidade_ativ.get(dominante, []))
+
+            ranking_atividades.append((score_ativ, ativ))
+
+
+        ranking_atividades.sort(key=lambda x: x[0])
+
+
+        if ranking_atividades:
+
+            st.markdown("#### ⚠ Lista das principais dificuldades de adaptação")
+
+            limite = min(3, len(ranking_atividades))
+
+            for score_ativ, atividade in ranking_atividades[:limite]:
+                st.write("•", atividade)
 
 
 # --- VISUALIZAÇÃO ---
