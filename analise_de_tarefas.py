@@ -1525,63 +1525,67 @@ if st.session_state.pagina == "disc":
 
 
 
-        # 1. CAPTURA E TRATAMENTO DA FONTE (TRANSFORMA LISTA EM TEXTO)
-        t_raiz = form.get('tabelas', {})
-        dados_dif = t_raiz.get('dificuldades', [])
-        dados_sug = t_raiz.get('sugestoes', [])
+        # 1. CAPTURA E TRATAMENTO DA FONTE (Bebendo direto do form)
+    t_raiz = form.get('tabelas', {})
+    dados_dif = t_raiz.get('dificuldades', [])
+    dados_sug = t_raiz.get('sugestoes', [])
 
-        # Extrai apenas o conteúdo das colunas 'Dificuldade' e 'Sugestão'
-        texto_dif = " ".join([item.get('Dificuldade', '') for item in dados_dif]) if isinstance(dados_dif, list) else str(dados_dif)
-        texto_sug = " ".join([item.get('Sugestão', '') for item in dados_sug]) if isinstance(dados_sug, list) else str(dados_sug)
+    # Transforma em texto real. Se for [], vira "" automaticamente.
+    texto_dif = " ".join([str(item.get('Dificuldade', '')) for item in dados_dif if item.get('Dificuldade')]).strip()
+    texto_sug = " ".join([str(item.get('Sugestão', '')) for item in dados_sug if item.get('Sugestão')]).strip()
 
-        # ------------------------------------------------------------
-        # 2. LÓGICA DE EXIBIÇÃO: ALERTA OU ANÁLISE
-        # ------------------------------------------------------------
-        if not texto_dif.strip() and not texto_sug.strip():
-            st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"A ausência de relatos por um perfil **{perfil_dominante}** indica possível resistência passiva.")
-        else:
-            st.markdown(f"### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
-            
-            # Mapeamento de Dores por Perfil
-            dores_perfil = {
-                "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema"],
-                "S": ["pressão", "mudança", "conflito", "urgência", "improviso"],
-                "D": ["lentidão", "burocracia", "espera", "autonomia", "internet"],
-                "C": ["falta de dados", "erro", "improviso", "desorganização", "cliente"]
-            }
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("⚠️ Dificuldades vs Perfil")
-                if texto_dif.strip():
-                    texto_analise = texto_dif.lower()
-                    # Verifica se as palavras do Pedro batem com o perfil dele
-                    bateu_perfil = any(word in texto_analise for word in dores_perfil.get(perfil_dominante, []))
-                    
-                    if bateu_perfil:
-                        st.success(f"✅ **Coerência Alta:** As queixas (ex: {texto_dif[:30]}...) são típicas de um {perfil_dominante}. O estresse é esperado para o cargo.")
-                    else:
-                        st.warning("⚠️ **Alerta Estrutural:** As dificuldades relatadas fogem do padrão comportamental, indicando problemas reais de infraestrutura.")
+    # ------------------------------------------------------------
+    # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE
+    # ------------------------------------------------------------
+
+    # Se AMBOS estiverem vazios (Caso do Adson), mostra o Alerta Vermelho
+    if not texto_dif and not texto_sug:
+        st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
+        st.markdown(f"""
+        A ausência de Sugestões e Dificuldades relatadas por um perfil **{perfil_dominante}** indica um alto nível de **resistência passiva**. 
+        O colaborador pode estar omitindo gargalos para se manter na zona de conforto.
+        """)
+
+    # Se houver QUALQUER conteúdo (Caso do Pedro), entra na análise
+    else:
+        st.markdown(f"### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
+        
+        # Mapeamento de Dores por Perfil
+        dores_perfil = {
+            "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema"],
+            "S": ["pressão", "mudança", "conflito", "urgência", "improviso"],
+            "D": ["lentidão", "burocracia", "espera", "autonomia", "internet"],
+            "C": ["falta de dados", "erro", "improviso", "desorganização", "cliente"]
+        }
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("⚠️ Dificuldades vs Perfil")
+            if texto_dif:
+                texto_analise = texto_dif.lower()
+                bateu_perfil = any(word in texto_analise for word in dores_perfil.get(perfil_dominante, []))
+                
+                if bateu_perfil:
+                    st.success(f"✅ **Coerência Alta:** As queixas são típicas de um {perfil_dominante}. O estresse é esperado para o cargo.")
                 else:
-                    st.info("Sem dificuldades relatadas.")
+                    st.warning("⚠️ **Alerta Estrutural:** As queixas fogem do padrão comportamental, indicando falhas reais de infraestrutura.")
+            else:
+                st.info("Sem dificuldades relatadas.")
 
-            with col2:
-                st.subheader("💡 Sugestões vs Inovação")
-                if texto_sug.strip():
-                    palavras_inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
-                    texto_analise_sug = texto_sug.lower()
-                    
-                    if any(word in texto_analise_sug for word in palavras_inov):
-                        st.success("🚀 **Foco em Eficiência:** O colaborador busca soluções tecnológicas para otimizar o tempo.")
-                    else:
-                        st.info("📋 **Foco Operacional:** Sugestões voltadas à manutenção do processo atual.")
+        with col2:
+            st.subheader("💡 Sugestões vs Inovação")
+            if texto_sug:
+                palavras_inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
+                if any(word in texto_sug.lower() for word in palavras_inov):
+                    st.success("🚀 **Foco em Eficiência:** O colaborador busca soluções tecnológicas.")
                 else:
-                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões de melhoria.")
+                    st.info("📋 **Foco Operacional:** Sugestões voltadas à manutenção do processo atual.")
+            else:
+                st.error("🚨 **Barreira Propositiva:** Não houve sugestões de melhoria.")
 
-            # Correlação com Cargo/Atividades (Exemplo dinâmico)
-            st.info(f"**Resumo Executivo:** Colaborador demonstra incômodo com ferramentas externas (Internet/Sistema) e propõe otimização. Perfil {perfil_dominante} está sendo drenado por fatores técnicos, não por falta de habilidade.")
+        # Resumo Executivo Final
+        st.info(f"**Resumo Executivo:** O perfil **{perfil_dominante}** está reagindo aos gargalos conforme esperado. A análise de coerência indica se os problemas são de adaptação ou falhas do sistema.")
 
         # ============================================================
         # 🧠 DIAGNÓSTICO DE ADERÊNCIA AO CARGO (SCORE DE MATCH)
