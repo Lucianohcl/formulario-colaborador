@@ -996,7 +996,14 @@ if st.session_state.pagina == "disc":
 
     # 1. FORÇAR LEITURA DIRETA (IGUAL AO VISUALIZAR REGISTROS)
     # Isso garante que não dependemos de um session_state que pode estar vazio
-    lista_fresca = carregar_todos_formularios()
+    # 1. LEITURA SEGURA (RESOLVE O ERRO DA LINHA 999)
+    try:
+        lista_fresca = carregar_todos_formularios()
+        if lista_fresca is None:
+            lista_fresca = []
+    except Exception as e:
+        st.error(f"Erro ao conectar com a base de dados: {e}")
+        lista_fresca = []
 
     if not lista_fresca:
         st.warning("Nenhum formulário encontrado na pasta de dados.")
