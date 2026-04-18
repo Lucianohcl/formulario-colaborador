@@ -984,7 +984,7 @@ if st.session_state.pagina == "home" or st.session_state.pagina == "script2":
    
 
 # ============================================================
-# PÁGINA PERFIL DISC (VERSÃO SINCRO)
+# PÁGINA PERFIL DISC (VERSÃO SINCRONIZADA TOTAL)
 # ============================================================
 if st.session_state.pagina == "disc":
     import plotly.express as px
@@ -993,65 +993,54 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. CONEXÃO DIRETA (DADOS ATUALIZADOS: lucianohcl/formulario-colaborador)
+    # 1. CONEXÃO E CARREGAMENTO (IGUAL AO VISUALIZAR DADOS)
     try:
-        # Puxa o token direto dos segredos do Streamlit (DB_TOKEN)
-        g = Github(st.secrets["DB_TOKEN"])
-        
-        # Caminho oficial do seu repositório conforme informado
-        repo_path = "lucianohcl/formulario-colaborador" 
-        repo = g.get_repo(repo_path)
-        
-        # Mantém a conexão no estado da sessão
-        st.session_state.repo_conectado = repo
-        
-    except Exception as e:
-        st.error(f"❌ Erro ao conectar diretamente via DB_TOKEN: {e}")
-        st.info("Certifique-se de que a chave DB_TOKEN está correta nos Secrets do Streamlit Cloud.")
-        st.stop()
-
-    # 2. LEITURA DOS DADOS (SINCRONIZADO COM A PASTA /DADOS/)
-    try:
-        with st.spinner("Buscando registros em lucianohcl/formulario-colaborador/dados..."):
-            # 1. Lista todos os arquivos da pasta 'dados'
-            conteudo_pasta = repo.get_contents("dados")
-            
-            lista_fresca = []
-            import json
-            
-            for arquivo in conteudo_pasta:
-                # 2. Só lê se for arquivo JSON
-                if arquivo.path.endswith(".json"):
-                    raw_data = arquivo.decoded_content.decode("utf-8")
-                    dados_json = json.loads(raw_data)
-                    lista_fresca.append(dados_json)
-        
-        if not lista_fresca:
-            st.warning("⚠️ Nenhum arquivo .json encontrado na pasta /dados/.")
+        # Tenta carregar usando o 'repo' que já deveria estar na memória
+        repo = st.session_state.get('repo_conectado')
+        lista_fresca = carregar_todos_formularios(repo)
+    except (NameError, Exception):
+        # Se falhar (NameError ou repo nulo), reconecta do zero igual ao seu outro código
+        try:
+            g = Github(st.secrets["DB_TOKEN"])
+            repo = g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = repo # Salva para não dar erro de novo
+            lista_fresca = carregar_todos_formularios(repo)
+        except Exception as e:
+            st.error(f"❌ Erro crítico de conexão: {e}")
             st.stop()
-            
-    except Exception as e:
-        st.error(f"Erro ao acessar os arquivos na pasta /dados/: {e}")
-        st.info("Verifique se a pasta 'dados' (letras minúsculas) existe no seu repositório.")
+
+    # 2. VALIDAÇÃO DOS DADOS
+    if not lista_fresca:
+        st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
         st.stop()
-
-    # 3. MAPEAMENTO SEGURO
-    opcoes_colaboradores = {
-        f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
-        for f in lista_fresca
-    }
-
-    if opcoes_colaboradores:
-        colaborador_chave = st.selectbox(
-            "Escolha o colaborador",
-            options=list(opcoes_colaboradores.keys())
-        )
-        formulario_sel = opcoes_colaboradores.get(colaborador_chave)
     else:
-        st.error("Não foi possível carregar a lista de colaboradores.")
-        st.stop()
+        st.success(f"📊 {len(lista_fresca)} registros sincronizados para análise.")
+
+    # 3. MAPEAMENTO PARA O SELECTBOX (EXTRAÇÃO DINÂMICA)
+    # Criamos um dicionário onde a chave é o nome e o valor é o formulário completo
+    opcoes_colaboradores = {}
     
-    # ... O restante do seu código de geração de análise continua abaixo ...
+    for idx, f in enumerate(lista_fresca):
+        # Busca o nome de forma flexível como você faz no expander
+        c = f.get('campos', f)
+        nome_bruto = (f.get('colaborador') or 
+                      f.get('nome') or 
+                      c.get('nome') or 
+                      f"Colaborador {idx+1}")
+        
+        cargo = c.get('cargo', 'Sem Cargo')
+        chave_selectbox = f"{str(nome_bruto).upper()} ({cargo})"
+        
+        opcoes_colaboradores[chave_selectbox] = f
+
+    # 4. INTERFACE DE SELEÇÃO
+    colaborador_chave = st.selectbox(
+        "🎯 Escolha o colaborador para analisar o perfil:",
+        options=list(opcoes_colaboradores.keys())
+    )
+
+    # Este é o formulário que será usado para gerar os gráficos abaixo
+    formulario_sel = opcoes_colaboradores.get(colaborador_chave)
 
     # ============================================================
     # BOTÃO GERAR ANÁLISE
