@@ -809,55 +809,48 @@ def score_disc(disc):
 
 
 # ============================================================
-# DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (AJUSTADO)
+# DEFINIÇÃO E CARREGAMENTO DO BANCO DE DADOS (VERSÃO NUVEM)
 # ============================================================
 import streamlit as st
-import pandas as pd
 import os
 import json
-import sys
 
-import os
-import sys
-import json
-import streamlit as st
-
-# --- DEFINIÇÃO DE CAMINHO À PROVA DE ERROS ---
-if getattr(sys, 'frozen', False):
-    base_dir = os.path.dirname(sys.executable)
-else:
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Definimos o diretório de dados como absoluto
+# --- CAMINHO FIXO PARA O REPOSITÓRIO ---
+# 'os.getcwd()' retorna a raiz do projeto onde o arquivo .py está rodando no Streamlit Cloud
+base_dir = os.getcwd()
 dados_dir = os.path.join(base_dir, "dados")
 
-# Criamos a pasta 'dados' se ela não existir
-os.makedirs(dados_dir, exist_ok=True)
+# Criamos a pasta 'dados' se ela não existir (evita erro de diretório inexistente)
+if not os.path.exists(dados_dir):
+    os.makedirs(dados_dir, exist_ok=True)
 
 def carregar_todos_formularios():
     """
-    Lê todos os arquivos .json da pasta 'dados' individualmente.
+    Lê todos os arquivos .json exclusivamente da pasta /dados/ do projeto.
     """
     lista_formularios = []
-    # Usamos a variável global dados_dir definida acima
+    
+    # Verificação extra de segurança
     if os.path.exists(dados_dir):
-        for nome_arquivo in os.listdir(dados_dir):
-            if nome_arquivo.endswith(".json"):
-                caminho_completo = os.path.join(dados_dir, nome_arquivo)
-                try:
-                    with open(caminho_completo, "r", encoding="utf-8") as f:
-                        dados = json.load(f)
-                        if isinstance(dados, dict):
-                            lista_formularios.append(dados)
-                except Exception:
-                    continue
+        # Listamos apenas o que está dentro da pasta /dados/
+        arquivos = [f for f in os.listdir(dados_dir) if f.endswith(".json")]
+        
+        for nome_arquivo in arquivos:
+            caminho_completo = os.path.join(dados_dir, nome_arquivo)
+            try:
+                with open(caminho_completo, "r", encoding="utf-8") as f:
+                    dados = json.load(f)
+                    if isinstance(dados, dict):
+                        lista_formularios.append(dados)
+            except Exception as e:
+                # Silencioso para não travar o app se um arquivo estiver corrompido
+                continue
+                
     return lista_formularios
 
-# --- CARREGAMENTO INICIAL ---
-# Agora chamamos a função que criamos para ler os arquivos individuais
+# --- CARREGAMENTO NO SESSION STATE ---
 if "formularios" not in st.session_state:
     st.session_state["formularios"] = carregar_todos_formularios()
-
 
 
 # ============================================================
@@ -1350,21 +1343,29 @@ if st.session_state.pagina == "disc":
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
-    # 1. Carrega os dados frescos do disco
+    # GARANTIA: Sempre recarrega os arquivos do disco ao entrar na aba
+    # Isso evita que o Streamlit mostre dados antigos salvos no navegador
     lista_de_arquivos = carregar_todos_formularios()
+    st.session_state["formularios"] = lista_de_arquivos
     
     if not lista_de_arquivos:
-        st.warning("⚠️ Nenhum formulário encontrado.")
+        st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
+        if st.button("🔄 Forçar Releitura do Banco"):
+            st.rerun()
     else:
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
         
         # 3. Exibição limpa
         for idx, form in enumerate(lista_de_arquivos, 1):
-            # Tenta pegar 'colaborador' (novo) ou 'nome' (antigo) ou dentro de 'campos'
-            nome_extraido = form.get('colaborador') or form.get('nome') or form.get('campos', {}).get('nome') or f'Colaborador {idx}'
+            # Tenta pegar o nome do colaborador em qualquer estrutura possível
+            nome_extraido = (form.get('colaborador') or 
+                             form.get('nome') or 
+                             form.get('campos', {}).get('nome') or 
+                             f'Colaborador {idx}')
+            
             nome_exibir = str(nome_extraido).upper()
             
-            # Atalho para acessar os campos internos (se existirem)
+            # Atalho para campos (se 'campos' não existir, usa a raiz do json)
             c = form.get('campos', form) 
             
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=False):
@@ -1384,14 +1385,13 @@ if st.session_state.get("pagina") == "visualizar":
                 col_b.write(f"**Escolaridade:** {c.get('escolaridade', 'N/A')}")
                 
                 st.subheader("🎓 Cursos Obrigatórios ou Diferenciais")
-                st.info(c.get("cursos", "Não informado"))
+                st.info(c.get("cursos") or "Não informado")
 
                 st.subheader("🎯 Trabalho e Principal Objetivo")
-                st.info(c.get("objetivo", "Não informado"))
+                st.info(c.get("objetivo") or "Não informado")
                 
-                # --- 2. TABELAS (NOVO MODELO E ANTIGO) ---
+                # --- 2. TABELAS (PROTEÇÃO CONTRA ERROS) ---
                 st.markdown("---")
-                # Se houver a chave 'tabelas' (novo modelo), usamos ela. Se não, usamos a raiz.
                 t_raiz = form.get('tabelas', form)
                 
                 secoes = {
@@ -1406,39 +1406,38 @@ if st.session_state.get("pagina") == "visualizar":
                 for chave, titulo in secoes.items():
                     dados_tabela = t_raiz.get(chave)
                     if dados_tabela and isinstance(dados_tabela, list):
-                        st.subheader(titulo)
-                        df = pd.DataFrame(dados_tabela)
-                        df = df.replace("", None).dropna(how='all')
-                        if not df.empty:
-                            st.table(df)
-                        st.markdown("---")
+                        try:
+                            df = pd.DataFrame(dados_tabela)
+                            # Limpeza de dados nulos para visualização
+                            df = df.replace("", None).dropna(how='all').fillna("")
+                            
+                            if not df.empty:
+                                st.subheader(titulo)
+                                st.table(df)
+                                st.markdown("---")
+                        except Exception:
+                            continue # Pula tabelas corrompidas sem travar o app
 
-                # --- 3. QUESTIONÁRIO DISC (PERGUNTAS + RESPOSTAS) ---
+                # --- 3. QUESTIONÁRIO DISC ---
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC Detalhada")
                 
-                # Pegamos o dicionário de respostas do JSON (chaves "0", "1", etc)
                 respostas_json = form.get("disc", {})
 
                 if respostas_json:
-                    # Percorre a sua lista de perguntas oficial
+                    # 'perguntas_disc' deve estar definida globalmente no seu código
                     for i, pergunta in enumerate(perguntas_disc):
-                        # Tenta buscar a resposta pela chave string (ex: "0") ou número (0)
                         letra_resposta = respostas_json.get(str(i)) or respostas_json.get(i)
                         
+                        st.write(f"**{i+1}. {pergunta}**")
                         if letra_resposta:
-                            # Exibe a pergunta e a resposta destacada
-                            st.write(f"**{i+1}. {pergunta}**")
                             st.info(f"✅ Resposta selecionada: **{letra_resposta}**")
                         else:
-                            # Caso alguma pergunta específica não tenha sido respondida
-                            st.write(f"**{i+1}. {pergunta}**")
                             st.warning("⚠️ Resposta não encontrada para esta pergunta.")
                         
-                        st.divider() # Linha sutil entre as perguntas
+                        st.divider() 
                 else:
                     st.error("❌ Nenhuma resposta DISC encontrada para este colaborador.")
-
                 
 
                 # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
