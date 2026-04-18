@@ -1527,20 +1527,20 @@ if st.session_state.get("pagina") == "visualizar":
                     opcoes_para_esconder.append({"id": id_arquivo, "label": nome_exibir})
 
             if opcoes_para_esconder:
-                labels = [o["label"] for o in opcoes_para_esconder]
-                escolha = st.selectbox("Selecione para ocultar desta sessão:", labels)
-
-                if st.button("👁️‍🗨️ Ocultar Registro"):
-                    id_escolhido = opcoes_para_esconder[labels.index(escolha)]["id"]
-                    st.session_state["arquivos_escondidos"].append(id_escolhido)
-                    st.success("Registro ocultado com sucesso!")
-                    st.rerun()
+            labels = [o["label"] for o in opcoes_para_esconder]
             
-            # Botão para mostrar tudo de novo
-            if st.session_state["arquivos_escondidos"]:
-                if st.button("Resetar Visualização (Mostrar Todos)"):
-                    st.session_state["arquivos_escondidos"] = []
-                    st.rerun()
+            # ADICIONADO A KEY ÚNICA AQUI:
+            escolha = st.selectbox(
+                "Selecione para ocultar desta sessão:", 
+                labels, 
+                key="selectbox_ocultar_visualizacao"
+            )
+
+            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_visualizacao"):
+                id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
+                st.session_state["arquivos_escondidos"].append(id_sel)
+                st.success("Ocultado!")
+                st.rerun()
 # ============================================================
 # CALCULAR CARGA HORÁRIA
 # ============================================================
