@@ -1269,32 +1269,40 @@ if st.session_state.pagina == "disc":
         with col_bench2:
             st.info(f"**Perfil Ideal para o Cargo:**\n{benchmark['perfis']}")
 
-        # 3. ANÁLISE COMPARATIVA DO COLABORADOR
+        # ============================================================
+        # 🔍 3. ANÁLISE COMPARATIVA DO COLABORADOR (VERSÃO RIGOROSA)
+        # ============================================================
         st.write("---")
         st.subheader("🔍 Diagnóstico do Colaborador")
 
-        # Identifica os pontos fortes do colaborador (Eixos acima de 22%)
-        eixos_fortes = [letra for letra, valor in percentuais.items() if valor > 22]
-        is_hibrido = len(eixos_fortes) >= 2
-        perfil_real = "/".join(eixos_fortes)
+        # 1. Identifica dominância real (Aumentamos de 22% para 35% para evitar falsos híbridos)
+        eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 35]
+        
+        # Se não houver ninguém acima de 35, pegamos os dois maiores para não ficar vazio
+        if not eixos_dominantes:
+            eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
+            
+        perfil_real = "/".join(eixos_dominantes)
+        is_hibrido = len(eixos_dominantes) >= 2
 
-        # Lógica de match inteligente
-        perfil_desejado_letras = benchmark["perfis"]
-        match_count = sum(1 for p in eixos_fortes if p in perfil_desejado_letras)
+        # 2. Lógica de Match Real (Comparando com o Benchmark)
+        perfil_desejado = benchmark["perfis"] # Ex: "C" ou "CS"
+        # Conta quantos eixos do colaborador batem COM O DESEJADO
+        acertos = [p for p in eixos_dominantes if p in perfil_desejado]
+        match_count = len(acertos)
 
-        if is_hibrido and match_count >= 1:
-            st.success(f"✅ **Alta Aderência: Perfil Híbrido Identificado ({perfil_real})**")
-            st.write(f"""
-            **Parecer do Especialista:** O colaborador possui a versatilidade necessária para o cargo de **{cargo_bruto.upper()}**. 
-            A presença de múltiplos eixos de comportamento indica que ele consegue equilibrar as diferentes demandas da função, 
-            alternando entre foco em pessoas, processos e resultados conforme a necessidade.
-            """)
+        # 3. EXIBIÇÃO DO PARECER
+        if match_count == len(perfil_desejado):
+            st.success(f"✅ **Alta Aderência: Perfil Ideal Identificado ({perfil_real})**")
+            st.write(f"**Parecer do Especialista:** O colaborador apresenta as características exatas exigidas pelo benchmark de **{cargo_bruto.upper()}**. Seu estilo natural é altamente compatível com as demandas da função.")
+        
         elif match_count >= 1:
-            st.info(f"⚖️ **Aderência Parcial: Perfil Especialista ({perfil_real})**")
-            st.write(f"O colaborador possui competências centrais para o cargo, mas seu perfil é focado. Recomenda-se observar como ele lida com demandas que exijam os eixos complementares do hibridismo ideal.")
+            st.info(f"⚖️ **Aderência Funcional: Perfil em Adaptação ({perfil_real})**")
+            st.write(f"**Parecer do Especialista:** O colaborador possui parte das competências de comportamento para **{cargo_bruto.upper()}**, mas precisará de esforço consciente para atender aos requisitos de **{perfil_desejado}** que não são dominantes em sua natureza.")
+        
         else:
-            st.warning(f"⚠️ **Ponto de Desenvolvimento: Perfil ({perfil_real})**")
-            st.write(f"O perfil atual apresenta características distintas das desejadas para a função. Sugere-se um Plano de Desenvolvimento focado nas competências listadas acima.")
+            st.warning(f"⚠️ **Baixa Aderência: Perfil Desalinhado ({perfil_real})**")
+            st.write(f"**Parecer do Especialista:** O perfil atual (**{perfil_real}**) é oposto ou muito distante do ideal (**{perfil_desejado}**) para o cargo de **{cargo_bruto.upper()}**. Isso indica um alto risco de fadiga e necessidade de adaptação extrema para entrega de resultados.")
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
