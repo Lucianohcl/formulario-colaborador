@@ -1270,44 +1270,59 @@ if st.session_state.pagina == "disc":
             st.info(f"**Perfil Ideal para o Cargo:**\n{benchmark['perfis']}")
 
         # ============================================================
-        # 🔍 3. ANÁLISE COMPARATIVA DO COLABORADOR (AJUSTE DE EQUILÍBRIO)
+        # ⚖️ 3. ANÁLISE COMPARATIVA PONDERADA (EQUILÍBRIO vs ESPECIALIDADE)
         # ============================================================
         st.write("---")
         st.subheader("🔍 Diagnóstico do Colaborador")
 
-        # 1. Identifica os eixos
-        valores = list(percentuais.values())
-        maior = max(valores)
-        menor = min(valores)
-        amplitude = maior - menor # Diferença entre o mais alto e o mais baixo
+        # 1. MOTOR DE PONDERAÇÃO POR AMPLITUDE
+        valores_disc = list(percentuais.values())
+        maior_score = max(valores_disc)
+        menor_score = min(valores_disc)
+        amplitude = maior_score - menor_score # Diferença entre os extremos
 
-        # 2. DEFINIÇÃO DO PERFIL (REGRA DE EQUILÍBRIO)
-        # Se a amplitude for menor que 12%, é um perfil Equilibrado/Híbrido Multidirecional
-        is_equilibrado = amplitude < 12
+        # 2. DEFINIÇÃO DA NATUREZA DO PERFIL
+        # Se a amplitude for <= 12%, a distribuição é equilibrada (Caso Adson)
+        is_equilibrado = amplitude <= 12
+        perfil_desejado = benchmark["perfis"] # Ex: "D-I-C-S" ou "C"
+
+        # 3. EXIBIÇÃO DO PARECER REFINADO (LÓGICA UNIVERSAL)
         
+        # CASO A: PERFIL EQUILIBRADO (ADSON - 25%, 25%, 29%, 21%)
         if is_equilibrado:
-            eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 20]
-            perfil_real = "Híbrido Multidirecional (D-I-S-C)"
-        else:
-            eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 32]
-            if not eixos_dominantes: eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
-            perfil_real = "/".join(eixos_dominantes)
+            st.success(f"✅ **Alta Aderência: Perfil Híbrido Multidirecional**")
+            st.write(f"""
+            **Parecer do Especialista:** Identificamos uma ponderação de percentuais rara e altamente equilibrada 
+            (Amplitude de apenas {amplitude:.1f}%). Para o cargo de **{cargo_bruto.upper()}**, este perfil é o ideal, 
+            pois a **mitigação de conflitos entre eixos é nativa**. O colaborador possui versatilidade para agir com comando, 
+            influência, segurança e análise sem o desgaste mental da adaptação forçada.
+            """)
 
-        # 3. Lógica de Match com o Benchmark
-        perfil_desejado = benchmark["perfis"]
-        
-        # 4. EXIBIÇÃO DO PARECER REFINADO
-        if is_equilibrado and "D-I-C-S" in perfil_desejado:
-            st.success(f"✅ **Alta Aderência: Perfil Equilibrado Identificado**")
-            st.write(f"**Parecer do Especialista:** O colaborador apresenta uma distribuição de energia rara e altamente equilibrada. Para o cargo de **{cargo_bruto.upper()}**, que exige trânsito entre todos os eixos (D-I-C-S), este perfil é o ideal, pois possui a versatilidade nativa para agir com comando, influência, segurança e análise de forma simultânea.")
-        
-        elif any(p in perfil_desejado for p in eixos_dominantes):
-            st.info(f"⚖️ **Aderência Funcional: Perfil {perfil_real}**")
-            st.write(f"**Parecer do Especialista:** O colaborador possui competências que se sobrepõem às necessidades do cargo. Sua natureza **{perfil_real}** permite atender as demandas principais, exigindo ajustes pontuais apenas em situações de estresse extremo.")
-        
+        # CASO B: PERFIL ESPECIALISTA / CONCENTRADO (PEDRO - Onde um eixo domina)
         else:
-            st.warning(f"⚠️ **Baixa Aderência: Perfil Desalinhado ({perfil_real})**")
-            st.write(f"**Parecer do Especialista:** O perfil dominante identificado apresenta divergências significativas com o benchmark esperado para o cargo de **{cargo_bruto.upper()}**.")
+            # Identifica eixos dominantes para o Pedro
+            eixos_dominantes = [letra for letra, valor in percentuais.items() if valor >= 32]
+            if not eixos_dominantes: 
+                eixos_dominantes = sorted(percentuais, key=percentuais.get, reverse=True)[:2]
+            
+            perfil_real = "/".join(eixos_dominantes)
+            
+            # Verifica se a especialidade do Pedro bate com o cargo
+            if any(p in perfil_desejado for p in eixos_dominantes):
+                st.info(f"⚖️ **Aderência Funcional: Perfil Especialista ({perfil_real})**")
+                st.write(f"""
+                **Parecer do Especialista:** O colaborador possui foco concentrado no eixo **{perfil_real}**. 
+                Embora possua a competência técnica exigida para **{cargo_bruto.upper()}**, sua natureza não é híbrida 
+                (Amplitude de {amplitude:.1f}%). Ele entregará resultados excelentes nas tarefas de sua dominância, 
+                mas poderá sentir fadiga em atividades que exijam os eixos secundários.
+                """)
+            else:
+                st.warning(f"⚠️ **Baixa Aderência: Perfil Desalinhado ({perfil_real})**")
+                st.write(f"""
+                **Parecer do Especialista:** O perfil dominante (**{perfil_real}**) diverge do benchmark esperado 
+                para o cargo de **{cargo_bruto.upper()}**. Diferente de um perfil equilibrado, a alta concentração 
+                em um único eixo exigirá um esforço de adaptação muito elevado para esta função específica.
+                """)
 
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
