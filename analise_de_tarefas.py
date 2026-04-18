@@ -1490,45 +1490,39 @@ if st.session_state.pagina == "disc":
         
         
         # ============================================================
-        # 4. DIAGNÓSTICO INTELIGENTE - FILTRO ANTI-RESPOSTA EVASIVA
+        # 4. DIAGNÓSTICO INTELIGENTE - ÚNICO E BLINDADO
         # ============================================================
         st.markdown("---")
         
-        # 1. RESET TOTAL DE SEGURANÇA
-        texto_dif, texto_sug = "", ""
+        # 1. RESET E CAPTURA LIMPA
+        t_raiz = form.get('tabelas', {})
         
-        # 2. CAPTURA DO FORM
-        t_alvo = form.get('tabelas', {})
-        
-        # 3. LISTA NEGRA (O que o Adson escreveu que enganava o sistema)
-        # Se o texto for IGUAL a um desses, o sistema ignora.
+        # Lista de termos evasivos que devem ser ignorados
         bloqueio_total = [
             "nenhuma dificuldade", "nenhuma melhoria", "nenhuma", "não tenho", 
-            "n/a", "não há", "0", "nenhum", "dp", "null", "nada", "n / a", "nenhuma melhoria "
+            "n/a", "não há", "0", "nenhum", "dp", "null", "nada", "n / a", ""
         ]
 
-        def validar_real(lista, chave):
+        def filtrar_conteudo(lista, chave):
             validos = []
-            for item in lista:
-                valor = str(item.get(chave, '')).strip()
-                # Só aceita se: não for lixo E tiver conteúdo de verdade
+            for d in lista:
+                valor = str(d.get(chave, '')).strip()
+                # Só aceita se não estiver no bloqueio e tiver mais de 3 letras
                 if valor.lower() not in bloqueio_total and len(valor) > 3:
                     validos.append(valor)
             return " ".join(validos)
 
-        # Processa as variáveis
-        texto_dif = validar_real(t_alvo.get('dificuldades', []), 'Dificuldade')
-        texto_sug = validar_real(t_alvo.get('sugestoes', []), 'Sugestão')
+        # Gera as strings finais - Se for Adson, ficarão vazias ""
+        final_dif = filtrar_conteudo(t_raiz.get('dificuldades', []), 'Dificuldade')
+        final_sug = filtrar_conteudo(t_raiz.get('sugestoes', []), 'Sugestão')
 
-        # ------------------------------------------------------------
-        # 4. A TRAVA: SE FICOU VAZIO APÓS O FILTRO -> ERRO (CASO ADSON)
-        # ------------------------------------------------------------
-        if not texto_dif and not texto_sug:
+        # 2. TRAVA DE EXIBIÇÃO: SE AMBAS VAZIAS -> ALERTA DE RESISTÊNCIA (ADSON)
+        if not final_dif and not final_sug:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"O colaborador **{perfil_dominante}** preencheu os campos com termos evasivos ou não respondeu.")
+            st.markdown(f"A ausência de relatos reais por um perfil **{perfil_dominante}** indica resistência passiva ou preenchimento evasivo.")
         
         else:
-            # 5. SÓ ENTRA AQUI SE TIVER TEXTO REAL (CASO PEDRO)
+            # 3. ANÁLISE REAL: SÓ APARECE SE TIVER CONTEÚDO (PEDRO)
             st.markdown(f"#### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
             
             dores_perfil = {
@@ -1539,97 +1533,31 @@ if st.session_state.pagina == "disc":
             }
             
             col1, col2 = st.columns(2)
+            
             with col1:
                 st.subheader("⚠️ Dificuldades vs Perfil")
-                if texto_dif:
-                    bateu = any(w in texto_dif.lower() for w in dores_perfil.get(perfil_dominante, []))
+                if final_dif:
+                    bateu = any(w in final_dif.lower() for w in dores_perfil.get(perfil_dominante, []))
                     if bateu:
                         st.success(f"✅ **Coerência Alta:** Queixas típicas de um {perfil_dominante}.")
                     else:
-                        st.warning("⚠️ **Alerta Estrutural:** Queixas fogem do padrão comportamental.")
-                else:
-                    st.info("Vazio.")
-
-            with col2:
-                st.subheader("💡 Sugestões vs Inovação")
-                if texto_sug:
-                    inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
-                    if any(w in texto_sug.lower() for w in inov):
-                        st.success("🚀 **Foco em Eficiência:** Busca soluções tecnológicas.")
-                    else:
-                        st.info("📋 **Foco Operacional:** Sugestões para manutenção do status quo.")
-                else:
-                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões.")
-
-            st.info(f"**Resumo Executivo:** Análise concluída para o perfil {perfil_dominante}.")
-
-
-        
-
-        # RESET TOTAL: Força as variáveis a ficarem vazias antes de ler o colaborador atual
-        texto_dif = ""
-        texto_sug = ""
-
-        # CAPTURA DIRETA
-        t_raiz = form.get('tabelas', {})
-        
-        # Só preenche se houver conteúdo real na lista de dicionários
-        difs_encontradas = [str(d.get('Dificuldade', '')) for d in t_raiz.get('dificuldades', []) if d.get('Dificuldade')]
-        sugs_encontradas = [str(s.get('Sugestão', '')) for s in t_raiz.get('sugestoes', []) if s.get('Sugestão')]
-
-        if difs_encontradas:
-            texto_dif = " ".join(difs_encontradas).strip()
-        
-        if sugs_encontradas:
-            texto_sug = " ".join(sugs_encontradas).strip()
-
-        # ------------------------------------------------------------
-        # 2. VALIDAÇÃO: SE AMBAS CONTINUAREM VAZIAS -> ADSON CAI AQUI
-        # ------------------------------------------------------------
-        if not texto_dif and not texto_sug:
-            st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"A ausência de relatos por um perfil **{perfil_dominante}** indica resistência passiva.")
-        else:
-            # ANÁLISE PARA QUEM PREENCHEU (PEDRO)
-            st.markdown(f"### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
-            # ... (seu código das colunas)
-            
-            # Mapeamento de Dores por Perfil
-            dores_perfil = {
-                "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema"],
-                "S": ["pressão", "mudança", "conflito", "urgência", "improviso"],
-                "D": ["lentidão", "burocracia", "espera", "autonomia", "internet"],
-                "C": ["falta de dados", "erro", "improviso", "desorganização", "cliente"]
-            }
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("⚠️ Dificuldades vs Perfil")
-                if texto_dif:
-                    texto_analise = texto_dif.lower()
-                    bateu_perfil = any(word in texto_analise for word in dores_perfil.get(perfil_dominante, []))
-                    
-                    if bateu_perfil:
-                        st.success(f"✅ **Coerência Alta:** As queixas são típicas de um {perfil_dominante}. O estresse é esperado para o cargo.")
-                    else:
-                        st.warning("⚠️ **Alerta Estrutural:** As queixas fogem do padrão comportamental, indicando falhas reais de infraestrutura.")
+                        st.warning("⚠️ **Alerta Estrutural:** As queixas fogem do padrão comportamental.")
                 else:
                     st.info("Sem dificuldades relatadas.")
 
             with col2:
                 st.subheader("💡 Sugestões vs Inovação")
-                if texto_sug:
-                    palavras_inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
-                    if any(word in texto_sug.lower() for word in palavras_inov):
+                if final_sug:
+                    inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
+                    if any(w in final_sug.lower() for w in inov):
                         st.success("🚀 **Foco em Eficiência:** O colaborador busca soluções tecnológicas.")
                     else:
-                        st.info("📋 **Foco Operacional:** Sugestões voltadas à manutenção do processo atual.")
+                        st.info("📋 **Foco Operacional:** Sugestões voltadas à manutenção do processo.")
                 else:
-                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões de melhoria.")
+                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões.")
 
-            # Resumo Executivo Final
-            st.info(f"**Resumo Executivo:** O perfil **{perfil_dominante}** está reagindo aos gargalos conforme esperado. A análise de coerência indica se os problemas são de adaptação ou falhas do sistema.")
+            # Resumo Executivo ÚNICO
+            st.info(f"**Resumo Executivo:** O perfil {perfil_dominante} foi analisado com base nas evidências fornecidas nas tabelas.")
 
         
 
