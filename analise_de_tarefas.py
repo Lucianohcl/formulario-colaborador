@@ -49,6 +49,14 @@ st.set_page_config(
 
 )
 
+
+# 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
+# Isso garante que 'g' e 'repo' existam em qualquer parte do script
+TOKEN = st.secrets["DB_TOKEN"]
+g = Github(TOKEN)
+repo = g.get_repo("lucianohcl/formulario-colaborador")
+
+
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
 # st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
