@@ -1345,12 +1345,10 @@ if st.session_state.pagina == "disc":
 if st.session_state.get("pagina") == "visualizar":
     st.title("👁️ Visualização de Registros")
     
-    # Passamos o 'repo' que foi definido no início do seu script
-    # Tenta usar o repo global, se não achar, tenta pegar do g (que é a conexão)
+    # 1. CONEXÃO E CARREGAMENTO
     try:
         lista_de_arquivos = carregar_todos_formularios(repo)
     except NameError:
-        # Caso ele não ache a variável repo, ele cria ela na hora
         repo = g.get_repo("lucianohcl/formulario-colaborador")
         lista_de_arquivos = carregar_todos_formularios(repo)
     
@@ -1358,24 +1356,32 @@ if st.session_state.get("pagina") == "visualizar":
         st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
     else:
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
-        # ... resto do seu código de exibição ...
-        
-        # 3. Exibição limpa
+
+        # 2. INICIALIZAÇÃO DA LISTA DE OCULTOS
+        if "arquivos_escondidos" not in st.session_state:
+            st.session_state["arquivos_escondidos"] = []
+
+        # 3. LOOP DE EXIBIÇÃO COM FILTRO VIRTUAL
         for idx, form in enumerate(lista_de_arquivos, 1):
-            # Tenta pegar o nome do colaborador em qualquer estrutura possível
+            # Identificador único para ocultar (usa o timestamp ou index)
+            id_atual = form.get('timestamp') or f"form_{idx}"
+            
+            # --- FILTRO VIRTUAL: PULA SE ESTIVER NA LISTA ---
+            if id_atual in st.session_state.get("arquivos_escondidos", []):
+                continue
+
+            # Extração de Identificação
             nome_extraido = (form.get('colaborador') or 
                              form.get('nome') or 
                              form.get('campos', {}).get('nome') or 
                              f'Colaborador {idx}')
             
             nome_exibir = str(nome_extraido).upper()
-            
-            # Atalho para campos (se 'campos' não existir, usa a raiz do json)
             c = form.get('campos', form) 
             
             with st.expander(f"👤 FORMULÁRIO DE: {nome_exibir}", expanded=False):
                 
-                # --- 1. CABEÇALHO ---
+                # --- CABEÇALHO ---
                 st.subheader("📝 Informações de Identificação")
                 col1, col2 = st.columns(2)
                 col1.write(f"**Data de Envio:** {form.get('timestamp') or form.get('data_envio', 'N/A')}")
@@ -1395,15 +1401,14 @@ if st.session_state.get("pagina") == "visualizar":
                 st.subheader("🎯 Trabalho e Principal Objetivo")
                 st.info(c.get("objetivo") or "Não informado")
                 
-                # --- 2. TABELAS (PROTEÇÃO CONTRA ERROS) ---
+                # --- TABELAS ---
                 st.markdown("---")
                 t_raiz = form.get('tabelas', form)
-                
                 secoes = {
-                    "alta": "📋 Atividades de Alta Complexidade",
-                    "normal": "📋 Atividades de Complexidade Normal",
-                    "baixa": "📋 Atividades de Baixa Complexidade",
-                    "atividades": "📋 Atividades Executadas (Modelo Antigo)",
+                    "alta": "🚀 Alta Complexidade",
+                    "normal": "📋 Complexidade Normal",
+                    "baixa": "⏳ Baixa Complexidade",
+                    "atividades": "📋 Atividades Executadas (Antigo)",
                     "dificuldades": "⚠️ Dificuldades e Bloqueios",
                     "sugestoes": "💡 Sugestões de Melhoria"
                 }
@@ -1413,36 +1418,58 @@ if st.session_state.get("pagina") == "visualizar":
                     if dados_tabela and isinstance(dados_tabela, list):
                         try:
                             df = pd.DataFrame(dados_tabela)
-                            # Limpeza de dados nulos para visualização
                             df = df.replace("", None).dropna(how='all').fillna("")
-                            
                             if not df.empty:
                                 st.subheader(titulo)
                                 st.table(df)
-                                st.markdown("---")
-                        except Exception:
-                            continue # Pula tabelas corrompidas sem travar o app
+                        except:
+                            continue
 
-                # --- 3. QUESTIONÁRIO DISC ---
+                # --- QUESTIONÁRIO DISC ---
                 st.markdown("---")
                 st.subheader("📊 Avaliação DISC Detalhada")
-                
                 respostas_json = form.get("disc", {})
 
                 if respostas_json:
-                    # 'perguntas_disc' deve estar definida globalmente no seu código
                     for i, pergunta in enumerate(perguntas_disc):
                         letra_resposta = respostas_json.get(str(i)) or respostas_json.get(i)
-                        
                         st.write(f"**{i+1}. {pergunta}**")
                         if letra_resposta:
                             st.info(f"✅ Resposta selecionada: **{letra_resposta}**")
                         else:
-                            st.warning("⚠️ Resposta não encontrada para esta pergunta.")
-                        
+                            st.warning("⚠️ Resposta não encontrada.")
                         st.divider() 
                 else:
-                    st.error("❌ Nenhuma resposta DISC encontrada para este colaborador.")
+                    st.error("❌ Nenhuma resposta DISC encontrada.")
+
+        #        --- SEÇÃO DE EXCLUSÃO VIRTUAL (AO FINAL DO LOOP) ---
+        st.markdown("---")
+        st.subheader("🚫 Ocultar formulário da visualização")
+
+        # Gera opções apenas de quem NÃO está escondido ainda
+        opcoes_para_esconder = []
+        for i, f in enumerate(lista_de_arquivos):
+            id_f = f.get('timestamp') or f"form_{i}"
+            if id_f not in st.session_state["arquivos_escondidos"]:
+                nome_f = (f.get('colaborador') or f.get('nome') or f"Registro {i}").upper()
+                opcoes_para_esconder.append({"id": id_f, "label": nome_f})
+
+        if opcoes_para_esconder:
+            labels = [o["label"] for o in opcoes_para_esconder]
+            escolha = st.selectbox("Selecione para ocultar desta sessão:", labels)
+
+            if st.button("👁️‍🗨️ Ocultar Registro"):
+                id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
+                st.session_state["arquivos_escondidos"].append(id_sel)
+                st.success("Ocultado da visualização atual!")
+                st.rerun()
+        
+        # Botão para resetar (voltar a mostrar todos)
+        if st.session_state["arquivos_escondidos"]:
+            if st.button("Resetar Visualização (Mostrar Todos)"):
+                st.session_state["arquivos_escondidos"] = []
+                st.rerun()
+
                 
 
                 # --- BLOCO DE EXPORTAÇÃO (SÓ WORD E PDF) ---
@@ -1479,31 +1506,41 @@ if st.session_state.get("pagina") == "visualizar":
                         key=f"pdf_unico_{id(form)}"
                     )                    
 
-        # --- SEÇÃO DE EXCLUSÃO (FINAL DO LOOP) ---
+        # --- SEÇÃO DE EXCLUSÃO VIRTUAL (SÓ ESCONDE DO APP) ---
         st.markdown("---")
-        st.subheader("🗑️ Excluir formulário específico")
-        arquivos_json = [f for f in os.listdir(dados_dir) if f.endswith(".json")]
+        st.subheader("🚫 Esconder formulário da visualização")
 
-        if arquivos_json:
-            opcoes = []
-            for arquivo in arquivos_json:
-                caminho = os.path.join(dados_dir, arquivo)
-                with open(caminho, "r", encoding="utf-8") as f:
-                    try:
-                        d = json.load(f)
-                        nome_colab = d.get("colaborador") or d.get("nome") or d.get("campos", {}).get("nome") or "Colaborador Desconhecido"
-                        opcoes.append((arquivo, nome_colab))
-                    except:
-                        continue
+        # Inicializa a lista de "escondidos" se não existir
+        if "arquivos_escondidos" not in st.session_state:
+            st.session_state["arquivos_escondidos"] = []
 
-            nomes_para_select = [f"{n} ({arq})" for arq, n in opcoes]
-            escolha = st.selectbox("Selecione para excluir:", nomes_para_select)
+        # Pegamos os nomes dos arquivos que carregamos do GitHub
+        if lista_de_arquivos:
+            # Criamos uma lista de opções baseada nos arquivos que NÃO estão escondidos
+            opcoes_para_esconder = []
+            for idx, form in enumerate(lista_de_arquivos):
+                # Usamos o timestamp ou nome como ID único temporário
+                id_arquivo = form.get('timestamp') or f"form_{idx}"
+                nome_exibir = (form.get('colaborador') or form.get('nome') or "Sem Nome").upper()
+                
+                if id_arquivo not in st.session_state["arquivos_escondidos"]:
+                    opcoes_para_esconder.append({"id": id_arquivo, "label": nome_exibir})
 
-            if st.button("❌ Excluir formulário selecionado"):
-                arquivo_escolhido = opcoes[nomes_para_select.index(escolha)][0]
-                os.remove(os.path.join(dados_dir, arquivo_escolhido))
-                st.success("✅ Excluído!")
-                st.rerun()
+            if opcoes_para_esconder:
+                labels = [o["label"] for o in opcoes_para_esconder]
+                escolha = st.selectbox("Selecione para ocultar desta sessão:", labels)
+
+                if st.button("👁️‍🗨️ Ocultar Registro"):
+                    id_escolhido = opcoes_para_esconder[labels.index(escolha)]["id"]
+                    st.session_state["arquivos_escondidos"].append(id_escolhido)
+                    st.success("Registro ocultado com sucesso!")
+                    st.rerun()
+            
+            # Botão para mostrar tudo de novo
+            if st.session_state["arquivos_escondidos"]:
+                if st.button("Resetar Visualização (Mostrar Todos)"):
+                    st.session_state["arquivos_escondidos"] = []
+                    st.rerun()
 # ============================================================
 # CALCULAR CARGA HORÁRIA
 # ============================================================
