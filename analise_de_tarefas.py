@@ -1521,9 +1521,7 @@ if st.session_state.pagina == "disc":
         texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug if validar_conteudo(s.get("Sugestão", ""))])
 
 
-        # FORÇAR EXIBIÇÃO NA TELA NO TOPO DE TUDO
-        st.error(f"VALOR DE DIF: >>>{texto_dif}<<<")
-        st.error(f"VALOR DE SUG: >>>{texto_sug}<<<")
+        
 
 
 
