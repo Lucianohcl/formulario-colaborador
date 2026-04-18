@@ -983,7 +983,6 @@ if st.session_state.pagina == "home" or st.session_state.pagina == "script2":
 
    
 
-
 # ============================================================
 # PÁGINA PERFIL DISC (VERSÃO SINCRO)
 # ============================================================
@@ -994,27 +993,30 @@ if st.session_state.pagina == "disc":
 
     st.title("🧠 Análise de Perfil DISC")
 
-    # 1. LEITURA SEGURA (RESOLVIDO: Passando o argumento necessário)
-    try:
-        # Buscamos o repositório que foi conectado no login
-        repo = st.session_state.get('repo_conectado') 
-        
-        # Passamos o 'repo' para a função não ficar vazia
-        lista_fresca = carregar_todos_formularios(repo)
-        
-        if lista_fresca is None:
-            lista_fresca = []
-    except Exception as e:
-        st.error(f"Erro ao conectar com a base de dados: {e}")
-        lista_fresca = []
+    # 1. RECUPERAÇÃO DA CONEXÃO (VALIAÇÃO IGUAL À VISUALIZAÇÃO)
+    repo = st.session_state.get('repo_conectado')
 
-    if not lista_fresca:
-        st.warning("Nenhum formulário encontrado na pasta de dados.")
-        if st.button("♻️ Tentar recarregar dados"):
-            st.rerun()
+    if repo is None:
+        st.error("❌ Erro: Conexão com o GitHub não encontrada.")
+        st.info("Por favor, volte à tela de Login para conectar o sistema.")
         st.stop()
 
-    # 2. MAPEAMENTO SEGURO
+    # 2. LEITURA SEGURA DOS DADOS
+    try:
+        with st.spinner("Sincronizando dados com a pasta /dados/..."):
+            lista_fresca = carregar_todos_formularios(repo)
+        
+        if not lista_fresca:
+            st.warning("⚠️ Nenhum formulário encontrado na pasta de dados.")
+            if st.button("♻️ Tentar recarregar dados"):
+                st.rerun()
+            st.stop()
+
+    except Exception as e:
+        st.error(f"Erro ao acessar a base de dados: {e}")
+        st.stop()
+
+    # 3. MAPEAMENTO SEGURO
     opcoes_colaboradores = {
         f"{f.get('nome', 'Sem Nome')} - {f.get('cargo', 'Sem Cargo')}": f 
         for f in lista_fresca
@@ -1025,8 +1027,9 @@ if st.session_state.pagina == "disc":
         options=list(opcoes_colaboradores.keys())
     )
 
-    # 3. RECUPERAÇÃO DO FORMULÁRIO
+    # 4. RECUPERAÇÃO DO FORMULÁRIO
     formulario_sel = opcoes_colaboradores.get(colaborador_chave)
+
 
     # ============================================================
     # BOTÃO GERAR ANÁLISE
