@@ -862,21 +862,21 @@ def carregar_todos_formularios(repo_conectado):
 if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     
     
-    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (MESMAS CORES, TAMANHO REDUZIDO) ---
+    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (LARGA E COMPACTA) ---
     st.markdown("""
         <div style="
             background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            padding: 10px;             /* Reduzido para ocupar menos altura */
-            max-width: 500px;          /* Limita a largura para centralizar */
-            margin: 0 auto 10px auto;  /* Centraliza e aproxima dos campos de login */
+            padding: 12px 40px;        /* Menos altura, mais largura interna */
+            max-width: 900px;          /* Card bem mais largo */
+            margin: 0 auto 5px auto;   /* Centralizado e quase colado no login */
             border-radius: 15px;
             text-align: center;
             box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
         ">
-            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 1.6rem;">
+            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 1.8rem;">
                 🚀 Bem-vindo ao Sistema
             </h1>
-            <p style="color: white; font-size: 0.95rem; opacity: 0.9; margin-top: 5px;">
+            <p style="color: white; font-size: 1rem; opacity: 0.9; margin: 5px 0 0 0; line-height: 1.2;">
                 Gestão Estratégica de Análise de Processos e Colaboradores
             </p>
         </div>
