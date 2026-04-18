@@ -1096,14 +1096,21 @@ if st.session_state.pagina == "disc":
 
         # 2️⃣ Cálculos
         percentuais, _ = calcular_disc(respostas_disc)
-        # Ordena para verificar se o perfil é Puro ou Híbrido
         ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
         p1, v1 = ranking[0]
         p2, v2 = ranking[1]
 
-        # REGRA UNIVERSAL: Diferença > 15% vira perfil Puro. Menor que isso, Híbrido.
+        # Define se é Puro ou Híbrido
         dominante = f"{p1}/{p2}" if (v1 - v2) < 15 else p1
         score = score_disc(percentuais)
+
+        # Prepara os textos ANTES de exibir (Garante que info['nome'] nunca seja N/A)
+        letra_busca = p1 
+        info = textos_disc.get(letra_busca, {"nome": "N/A", "estilo": "N/A", "desc": "", "cor": "gray", "tarefas": ""}).copy()
+        
+        if '/' in dominante:
+            nomes_hibridos = [textos_disc.get(l, {}).get('nome', l) for l in dominante.split('/')]
+            info['nome'] = " / ".join(nomes_hibridos)
 
         st.markdown("## 🔹 Painel DISC do Colaborador")
 
@@ -1166,7 +1173,15 @@ if st.session_state.pagina == "disc":
            "C": {"nome": "Conformidade", "estilo": "Precisão e Qualidade", "desc": "Analítico e detalhista. Busca lógica e regras.", "cor": "blue", "tarefas": "Auditoria, Análise de dados, Padronização."}
         }
 
-        info = textos_disc.get(dominante, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""})
+        # Identifica a letra principal para busca no dicionário
+        letra_busca = dominante.split('/')[0] if '/' in dominante else dominante
+        info = textos_disc.get(letra_busca, {"nome": "N/A", "estilo": "", "desc": "", "cor": "gray", "tarefas": ""}).copy()
+
+        # Se for híbrido, monta o nome composto (ex: Dominante / Conformidade)
+        if '/' in dominante:
+            letras = dominante.split('/')
+            nomes = [textos_disc.get(l, {}).get('nome', l) for l in letras]
+            info['nome'] = " / ".join(nomes)
 
         st.markdown(f"### Análise do Perfil: :{info['cor']}[{info['nome']}]")
         st.write(f"**Foco Principal:** {info['estilo']}")
