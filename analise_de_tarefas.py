@@ -1431,6 +1431,68 @@ if st.session_state.pagina == "disc":
             
         else:
             st.success("✅ As atividades descritas estão em total harmonia com seu perfil natural.")
+
+
+        # ============================================================
+        # 4. DIAGNÓSTICO INTELIGENTE DE DIFICULDADES E SUGESTÕES
+        # ============================================================
+        st.markdown("---")
+        st.markdown("#### 🔍 Análise de Conformidade e Resistência (Cruzamento DISC)")
+
+        # 1. Preparação dos Dados
+        lista_dif = dados.get("dificuldades", [])
+        lista_sug = dados.get("sugestoes", [])
+        
+        texto_dif = " ".join([str(d.get("Dificuldade", "")).lower() for d in lista_dif])
+        texto_sug = " ".join([str(s.get("Sugestão", "")).lower() for s in lista_sug])
+
+        tem_dif_real = any(word not in texto_dif for word in ["nenhuma", "não tenho", "n/a"])
+        tem_sug_real = any(word not in texto_sug for word in ["nenhuma", "não há", "n/a"])
+
+        # 2. Lógica de Cruzamento Inteligente
+        if not tem_dif_real and not tem_sug_real:
+            # Caso de Resistência Total
+            st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
+            st.markdown(f"""
+            A ausência de pontos de melhoria relatados por um perfil **{perfil_dominante}** indica um alto nível de **resistência passiva**. 
+            O colaborador prefere a zona de conforto à exposição de falhas, o que interrompe o ciclo de melhoria contínua.
+            """)
+        else:
+            # Caso existam dados, cruzamos com o perfil
+            st.markdown(f"**Análise de Coerência com Perfil {perfil_dominante}:**")
+            
+            # Mapeamento de "Dores Naturais" de cada perfil
+            dores_perfil = {
+                "I": ["processo", "planilha", "burocracia", "isolamento", "detalhe"],
+                "S": ["pressão", "mudança", "conflito", "urgência", "rápido"],
+                "D": ["lentidão", "burocracia", "espera", "falta de autonomia"],
+                "C": ["falta de dados", "desorganização", "erro", "improviso"]
+            }
+            
+            paineis = st.columns(2)
+            
+            # Analisando Dificuldades vs Perfil
+            with paineis[0]:
+                if any(word in texto_dif for word in dores_perfil.get(perfil_dominante, [])):
+                    st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do seu perfil. O desgaste é comportamental.")
+                elif tem_dif_real:
+                    st.warning("⚠️ **Dificuldade Técnica:** As queixas não são naturais do seu perfil, indicando um gap de processo ou ferramenta.")
+                else:
+                    st.info("⚪ **Ausência de Crítica:** Resistência leve a apontar falhas.")
+
+            # Analisando Sugestões vs Perfil
+            with paineis[1]:
+                if tem_sug_real:
+                    if any(word in texto_sug for word in ["automação", "rápido", "melhorar", "mudar"]):
+                        st.success("🚀 **Proatividade Evolutiva:** Sugestões focadas em eficiência.")
+                    else:
+                        st.info("📋 **Proatividade Operacional:** Sugestões focadas em manter o que já existe.")
+                else:
+                    st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças.")
+
+            # NOTA DE MITIGAÇÃO DA RESISTÊNCIA
+            if hibrido_status and (not tem_dif_real or not tem_sug_real):
+                st.markdown(f"""> **💡 Observação de Hibridismo:** Embora haja uma tendência à resistência, seu lado **híbrido** pode ser estimulado para converter esse silêncio em análise técnica. Ele precisa de segurança para sugerir mudanças.""")
         
 
 
