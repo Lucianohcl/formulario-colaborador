@@ -1322,30 +1322,32 @@ if st.session_state.pagina == "disc":
                 """)
 
         # ============================================================
-        # 💡 NOTA DO CONSULTOR - VERSÃO DEFINITIVA (ADSON vs PEDRO)
+        # 💡 NOTA DO CONSULTOR - LÓGICA DE BLINDAGEM ADSON
         # ============================================================
         st.write("---")
         st.write("👉 **ANÁLISE DE ADAPTAÇÃO ÀS TAREFAS**")
 
-        # A variável 'is_equilibrado' (amplitude <= 12) mata o erro do Adson
+        # O segredo é usar a amplitude que calculamos no bloco anterior
+        # Se amplitude <= 12, ele ignora o 'Perfil Principal' e trata como 'Equilibrado'
         if is_equilibrado:
-            # MENSAGEM EXCLUSIVA PARA O ADSON (HÍBRIDO)
             st.info(f"""
-            💡 **Nota do Consultor (Perfil Híbrido):** Identificamos que sua estrutura comportamental é **Multidirecional**. 
-            Diferente de perfis concentrados, você possui uma pontuação equilibrada em todos os eixos (Amplitude: {amplitude:.1f}%). 
+            💡 **Nota do Consultor (Perfil Híbrido/Equilibrado):** Identificamos que sua estrutura comportamental 
+            é **Multidirecional** (Amplitude: {amplitude:.1f}%). 
             
-            Isso significa que você tem a **capacidade nativa de transição**: consegue alternar entre o foco em pessoas (I) e o 
-            alto rigor técnico/auditoria (C) sem o desgaste mental típico de outros perfis. Sua versatilidade **mitiga a fadiga**, 
-            permitindo precisão e foco em dados frios com a mesma naturalidade que utiliza na comunicação.
+            Diferente de perfis concentrados, você possui uma **capacidade nativa de transição**. Isso significa que 
+            tarefas de alto rigor técnico, auditoria e análise de dados **não geram a fadiga típica**, pois seu 
+            eixo de conformidade é equilibrado com seus eixos de comunicação. Sua versatilidade permite manter a 
+            precisão técnica com baixo desgaste mental.
             """)
         else:
-            # MENSAGEM PARA O PEDRO (ESPECIALISTA CONCENTRADO)
+            # Só entra aqui se for um perfil concentrado como o do Pedro
             perfil_primario = max(percentuais, key=percentuais.get)
             st.warning(f"""
-            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é concentrado no eixo **{perfil_primario}** (Amplitude: {amplitude:.1f}%), tarefas que exigem eixos opostos demandam um **esforço consciente maior**. 
+            💡 **Nota do Consultor (Perfil Especialista):** Como seu perfil é mais concentrado no eixo **{perfil_primario}**, 
+            tarefas que exigem o extremo oposto demandam um esforço consciente maior. 
             
-            Neste caso, o foco em auditoria e conformidade rígida pode gerar fadiga ao longo do dia. Recomenda-se 
-            organizar a agenda para intercalar essas atividades técnicas com outras que sejam mais naturais ao seu perfil.
+            Para manter a performance sem exaustão, recomenda-se organizar a agenda para intercalar atividades 
+            técnicas com momentos de interação, respeitando seu ritmo natural.
             """)
 
         # ============================================================
