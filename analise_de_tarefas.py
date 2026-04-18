@@ -1010,18 +1010,29 @@ if st.session_state.pagina == "disc":
         st.info("Certifique-se de que a chave DB_TOKEN está correta nos Secrets do Streamlit Cloud.")
         st.stop()
 
-    # 2. LEITURA DOS DADOS (SINCRONIZADO)
+    # 2. LEITURA DOS DADOS (SINCRONIZADO COM A PASTA /DADOS/)
     try:
-        with st.spinner("Sincronizando registros do GitHub..."):
-            # Chama a função passando o objeto repo que acabamos de criar
-            lista_fresca = carregar_todos_formularios(repo)
+        with st.spinner("Buscando registros em lucianohcl/formulario-colaborador/dados..."):
+            # 1. Lista todos os arquivos da pasta 'dados'
+            conteudo_pasta = repo.get_contents("dados")
+            
+            lista_fresca = []
+            import json
+            
+            for arquivo in conteudo_pasta:
+                # 2. Só lê se for arquivo JSON
+                if arquivo.path.endswith(".json"):
+                    raw_data = arquivo.decoded_content.decode("utf-8")
+                    dados_json = json.loads(raw_data)
+                    lista_fresca.append(dados_json)
         
         if not lista_fresca:
-            st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
+            st.warning("⚠️ Nenhum arquivo .json encontrado na pasta /dados/.")
             st.stop()
             
     except Exception as e:
         st.error(f"Erro ao acessar os arquivos na pasta /dados/: {e}")
+        st.info("Verifique se a pasta 'dados' (letras minúsculas) existe no seu repositório.")
         st.stop()
 
     # 3. MAPEAMENTO SEGURO
