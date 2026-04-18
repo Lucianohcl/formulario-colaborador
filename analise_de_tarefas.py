@@ -1523,33 +1523,25 @@ if st.session_state.pagina == "disc":
 
         
 
-        # 0. SEGURANÇA: Busca o formulário selecionado se a variável 'form' não existir
-        form = form if 'form' in locals() else st.session_state.get('form_selecionado', {})
-
-        # 1. CAPTURA E TRATAMENTO DA FONTE (Bebendo direto do form)
+        # 1. CAPTURA E LIMPEZA (Garante que o Adson não herde os dados do Pedro)
         t_raiz = form.get('tabelas', {})
         dados_dif = t_raiz.get('dificuldades', [])
         dados_sug = t_raiz.get('sugestoes', [])
 
-        # Transforma em texto real. Se for [], vira "" automaticamente.
+        # Transforma listas em texto. Se [] -> vira "" (vazio absoluto)
         texto_dif = " ".join([str(item.get('Dificuldade', '')) for item in dados_dif if item.get('Dificuldade')]).strip()
         texto_sug = " ".join([str(item.get('Sugestão', '')) for item in dados_sug if item.get('Sugestão')]).strip()
 
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE
         # ------------------------------------------------------------
-
-        # Se AMBOS estiverem vazios (Caso do Adson), mostra o Alerta Vermelho
         if not texto_dif and not texto_sug:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
-            st.markdown(f"""
-            A ausência de Sugestões e Dificuldades relatadas por um perfil **{perfil_dominante}** indica um alto nível de **resistência passiva**. 
-            O colaborador pode estar omitindo gargalos para se manter na zona de conforto.
-            """)
-
-        # Se houver QUALQUER conteúdo (Caso do Pedro), entra na análise
+            st.markdown(f"A ausência de relatos por um perfil **{perfil_dominante}** indica resistência passiva.")
         else:
             st.markdown(f"### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
+            
+            # ... (seu código das colunas e mapeamento de dores aqui) ...
             
             # Mapeamento de Dores por Perfil
             dores_perfil = {
