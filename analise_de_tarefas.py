@@ -1526,17 +1526,18 @@ if st.session_state.get("pagina") == "visualizar":
                 if id_arquivo not in st.session_state["arquivos_escondidos"]:
                     opcoes_para_esconder.append({"id": id_arquivo, "label": nome_exibir})
 
-            if opcoes_para_esconder:
+        # --- LINHA 1529 EM DIANTE ---
+        if opcoes_para_esconder:
+            # Tudo aqui dentro precisa de +4 espaços (total 12 se o if está em 8)
             labels = [o["label"] for o in opcoes_para_esconder]
             
-            # ADICIONADO A KEY ÚNICA AQUI:
             escolha = st.selectbox(
                 "Selecione para ocultar desta sessão:", 
                 labels, 
-                key="selectbox_ocultar_visualizacao"
+                key="selectbox_ocultar_final"
             )
 
-            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_visualizacao"):
+            if st.button("👁️‍🗨️ Ocultar Registro", key="btn_ocultar_final"):
                 id_sel = opcoes_para_esconder[labels.index(escolha)]["id"]
                 st.session_state["arquivos_escondidos"].append(id_sel)
                 st.success("Ocultado!")
