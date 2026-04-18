@@ -1527,24 +1527,29 @@ if st.session_state.pagina == "disc":
 
 
 
+        # 1. CAPTURA DIRETA DA FONTE (O "Aspirador" de dados)
+        t_raiz = form.get('tabelas', {})
+        texto_dif = t_raiz.get('dificuldades', "")
+        texto_sug = t_raiz.get('sugestoes', "")
+
+        # --- DEBUG PARA O PRÓXIMO PUSH ---
+        st.write(f"🔍 FONTE LIDA: DIF='{texto_dif}' | SUG='{texto_sug}'")
+
         # ------------------------------------------------------------
         # 2. LÓGICA DE EXIBIÇÃO: ALERTA DE RESISTÊNCIA OU ANÁLISE CRÍTICA
         # ------------------------------------------------------------
-        # O .strip() remove espaços vazios. Se sobrar algo, é texto real.
-        # Só dá erro se AMBOS estiverem vazios (ou quase vazios)
-        if str(texto_dif).strip() in ["", "None", "nan", "nan "] and str(texto_sug).strip() in ["", "None", "nan", "nan "]:
-            # ESTE BLOCO APARECE QUANDO O COLABORADOR TENTA "DRIBLAR" O FORMULÁRIO
+        # Verificação se AMBOS estão vazios
+        if str(texto_dif).strip() in ["", "None", "nan"] and str(texto_sug).strip() in ["", "None", "nan"]:
             st.error(f"🚨 **ALERTA DE RESISTÊNCIA À MUDANÇA (STATUS QUO)**")
             st.markdown(f"""
-            A ausência de Sugestões de Pontos de Melhoria e também de Dificuldades relatadas por um perfil **{perfil_dominante}** podem indicar um alto nível de **resistência passiva**. 
+            A ausência de Sugestões e Dificuldades relatadas por um perfil **{perfil_dominante}** podem indicar um alto nível de **resistência passiva**. 
             
-            O colaborador pode preferir a manutenção da zona de conforto à exposição de falhas operacionais, o que pode mascarar gargalos críticos e interromper o ciclo de melhoria contínua.
+            O colaborador pode preferir a manutenção da zona de conforto à exposição de falhas operacionais.
             """)
         else:
-            # SE HOUVER CONTEÚDO REAL, SEGUE PARA O CRUZAMENTO INTELIGENTE
-            st.markdown(f"**Análise de Coerência com Perfil {perfil_dominante}:**")
+            # SE HOUVER CONTEÚDO REAL, SEGUE PARA O CRUZAMENTO
+            st.markdown(f"### **Análise de Coerência com Perfil {perfil_dominante}:**")
             
-            # Mapeamento de "Dores Naturais"
             dores_perfil = {
                 "I": ["processo", "planilha", "burocracia", "isolamento", "detalhe", "rotina"],
                 "S": ["pressão", "mudança", "conflito", "urgência", "rápido", "improviso"],
@@ -1555,31 +1560,28 @@ if st.session_state.pagina == "disc":
             col_dif, col_sug = st.columns(2)
             
             with col_dif:
-                # Forçamos a verificação real do texto aqui dentro também
-                if str(texto_dif).strip() not in ["", "None", "nan", "nan "]:
+                if str(texto_dif).strip() not in ["", "None", "nan"]:
                     texto_analise = str(texto_dif).lower()
                     if any(word in texto_analise for word in dores_perfil.get(perfil_dominante, [])):
-                        st.success("✅ **Dificuldade Coerente:** As dores relatadas são típicas do perfil. O desgaste é comportamental.")
+                        st.success("✅ **Dificuldade Coerente:** Dores típicas do perfil.")
                     else:
-                        st.warning("⚠️ **Dificuldade Técnica/Processual:** As queixas fogem do padrão do perfil, indicando falhas reais em ferramentas.")
+                        st.warning("⚠️ **Dificuldade Técnica:** Queixa foge do padrão comportamental.")
                 else:
-                    st.info("⚪ **Conformidade Passiva:** Baixa inclinação a relatar barreiras.")
+                    st.info("⚪ **Conformidade Passiva:** Sem barreiras relatadas.")
 
             with col_sug:
-                if str(texto_sug).strip() not in ["", "None", "nan", "nan "]:
+                if str(texto_sug).strip() not in ["", "None", "nan"]:
                     palavras_inovacao = ["mudar", "alterar", "automação", "novo", "criar", "melhorar", "eficiência", "otimizar"]
-                    if any(word in texto_sug.lower() for word in palavras_inovacao):
-                        st.success("🚀 **Abertura à Inovação:** Sugestões focadas em evolução.")
+                    if any(word in str(texto_sug).lower() for word in palavras_inovacao):
+                        st.success("🚀 **Abertura à Inovação:** Foco em evolução.")
                     else:
-                        st.info("📋 **Melhoria Operacional:** Sugestões de ajuste, mas com foco em manter o status quo.")
+                        st.info("📋 **Melhoria Operacional:** Foco em manter o status quo.")
                 else:
-                    # Se ele deu dificuldades mas não deu sugestões:
-                    st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças construtivas.")
+                    st.error("🚨 **Barreira de Inovação:** Resistência a propor mudanças.")
 
-            # Nota de Hibridismo (Apenas se houver algo para analisar)
-            # Garante que a variável existe no código antes de tentar ler
+            # Nota de Hibridismo
             if 'is_hibrido' in locals() and is_hibrido:
-                st.markdown(f"> **💡 Nota sobre Hibridismo:** Sua característica híbrida permite que você analise o setor com mais equilíbrio. Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos de forma imparcial.")
+                st.markdown(f"> **💡 Nota sobre Hibridismo:** Utilize seu lado secundário (**{eixo_conflitante}**) para auditar processos.")
 
         # ============================================================
         # 🧠 DIAGNÓSTICO DE ADERÊNCIA AO CARGO (SCORE DE MATCH)
