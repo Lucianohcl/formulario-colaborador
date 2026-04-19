@@ -3486,49 +3486,43 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA (VERSÃO RESTAURADA E MELHORADA) ---
+# --- MOTOR DE AUDITORIA (VERSÃO RESTAURADA E MATEMATICAMENTE CORRETA) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# Buscamos da memória global exatamente como estava antes
+# Pega os dados exatamente de onde eles estavam quando funcionava
 base_auditoria = st.session_state.get('base_auditoria')
 
 if base_auditoria:
     mapa_auditoria = {}
     for idx, f in enumerate(base_auditoria):
-        # Lógica original de extração de nome
-        n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
+        # Lógica de extração de nome idêntica à que funcionava
+        n_extraido = (f.get('colaborador') or f.get('nome') or (f.get('campos', {}) or {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
         mapa_auditoria[nome_chave] = f
 
     nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    colab_alvo = st.selectbox(
-        f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", 
-        nomes_disponiveis
-    )
+    colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
 
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # --- FUNÇÃO DE AUDITORIA (TEMPO E FREQUÊNCIA) ---
     def auditar_tabela_v2(lista):
         total_dia = 0.0
         detalhes = []
         for i in lista:
             try:
-                # Captura a descrição (usando 'i' corretamente)
+                # 1. Busca os campos usando 'i' (corrigido para não quebrar)
                 desc = i.get('Atividade') or i.get('Dificuldade') or i.get('Sugestão') or "Item"
-                
-                # Limpa e converte Horas e Minutos (trata "1 h" e "0 min")
                 h = float(str(i.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                 m = float(str(i.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                
-                # Captura a frequência
                 f = str(i.get('Frequência', 'D')).upper().strip()
                 
-                # Somas as horas + (minutos/60) e divide pelo divisor de frequência (S/5, M/20)
+                # 2. FRACIONAMENTO (S/5, M/20) - O que você pediu
                 divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
                 divisor = divisores.get(f, 1)
+                
+                # 3. SOMA DOS MINUTOS E ACÚMULO
                 valor_diario = (h + (m / 60)) / divisor
                 total_dia += valor_diario
                 
@@ -3540,7 +3534,7 @@ if base_auditoria:
             except: continue
         return total_dia, detalhes
 
-    # Processamento
+    # Processamento por categoria
     h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
     h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
     h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
@@ -3548,45 +3542,27 @@ if base_auditoria:
     
     h_total = h_alta + h_norm + h_baix
 
-    # --- SCORE E GRÁFICO BONITO ---
+    # Dashboard de Score
     score = 100
-    if h_total > 12: score -= 40
-    if h_total > 15: score -= 40
+    if h_total > 9: score -= 40
+    if h_total > 11: score -= 50
     score = max(0, score)
 
     import plotly.graph_objects as go
     fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = score,
-        gauge = {
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#2E3192"},
-            'steps': [
-                {'range': [0, 45], 'color': "#ff4b4b"},
-                {'range': [45, 80], 'color': "#ffa500"},
-                {'range': [80, 100], 'color': "#00c853"}
-            ]
-        }
-    ))
+        mode = "gauge+number", value = score,
+        gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#2E3192"},
+                 'steps': [{'range': [0, 45], 'color': "#ff4b4b"}, {'range': [45, 80], 'color': "#ffa500"}, {'range': [80, 100], 'color': "#00c853"}]}))
     fig.update_layout(height=250, margin=dict(l=20, r=20, t=20, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- RELATÓRIO DO TEMPO DESCRITO EM CADA TABELA ---
     st.subheader("📋 Detalhamento por Categoria")
-    
-    secoes = [
-        ("🔴 Alta Complexidade", det_alta, h_alta),
-        ("🟡 Complexidade Normal", det_norm, h_norm),
-        ("🟢 Baixa Complexidade", det_baix, h_baix),
-        ("⚠️ Dificuldades", det_dif, h_dif)
-    ]
+    secoes = [("🔴 Alta Complexidade", det_alta, h_alta), ("🟡 Complexidade Normal", det_norm, h_norm), ("🟢 Baixa Complexidade", det_baix, h_baix), ("⚠️ Dificuldades", det_dif, h_dif)]
 
     for titulo, dados, subtotal in secoes:
         with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
-            if dados:
-                st.table(dados)
-            else:
-                st.write("Sem registros.")
+            if dados: st.table(dados)
+            else: st.write("Sem registros.")
 else:
-    st.info("💡 Por favor, carregue os arquivos para ativar a Auditoria.")
+    st.info("💡 Por favor, suba os arquivos JSON novamente para ativar a Auditoria.")
 
