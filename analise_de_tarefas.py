@@ -1547,7 +1547,12 @@ if st.session_state.pagina == "disc":
         if match_real:
             st.success(f"✅ **Alta Aderência Inteligente:** O colaborador {form.get('nome','').split()[0]} possui talento natural para **{info_dominante['estilo']}**, que atende bem à exigência de **{exigencia_final}** das atividades.")
         else:
-            st.warning(f"⚠️ **Ponto de Atenção:** As atividades pedem um foco em **{info_exigido['estilo']}**, mas o colaborador {form.get('nome','').split()[0]} terá que se esforçar para sair do seu estilo natural de **{info_dominante['estilo']}**.")
+            # 1. Garante que o nome existe antes de tentar o split (12 espaços)
+            nome_raw = form.get('nome', 'Colaborador')
+            nome_curto = nome_raw.split()[0] if nome_raw and nome_raw.strip() else "Colaborador"
+
+            # 2. A linha corrigida (12 espaços):
+            st.warning(f"⚠️ **Ponto de Atenção:** As atividades pedem um foco em **{info_exigido['estilo']}**, mas o colaborador {nome_curto} terá que se esforçar para sair do seu estilo natural de **{info_dominante['estilo']}**.")    
 
 
         # ============================================================
