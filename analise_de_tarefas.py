@@ -3486,128 +3486,78 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (VERSÃO TOTAL) ---
+# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (GRÁFICO PREMIUM) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# Pega a base completa da memória
+# Busca da memória global (session_state)
 base_auditoria = st.session_state.get('base_auditoria')
 
 if base_auditoria:
-    # 1. MAPEAMENTO DE TODOS OS COLABORADORES (Sem exceção)
     mapa_auditoria = {}
     for idx, f in enumerate(base_auditoria):
-        # Tenta pegar o nome de qualquer lugar possível dentro do objeto
-        n_extraido = (
-            f.get('colaborador') or 
-            f.get('nome') or 
-            f.get('campos', {}).get('nome') or 
-            f.get('dados', {}).get('colaborador') or
-            f'Colaborador {idx + 1}'
-        )
+        # Lógica de extração de nome robusta
+        n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
         mapa_auditoria[nome_chave] = f
 
     nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    
-    # Selectbox que traz TODO MUNDO encontrado
-    colab_alvo = st.selectbox(f"🎯 Selecionar para Auditoria ({len(nomes_disponiveis)} cadastrados):", nomes_disponiveis)
+    colab_alvo = st.selectbox(
+        f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", 
+        nomes_disponiveis
+    )
 
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # --- 2. PROCESSADOR DE TEMPO E FREQUÊNCIA (O CORAÇÃO DO CÁLCULO) ---
-    def processar_tabela_auditoria(lista):
-        total_dia = 0.0
-        linhas_detalhadas = []
-        
-        for item in lista:
-            try:
-                # Busca a descrição independente do nome da coluna
-                desc = item.get('Atividade') or item.get('Dificuldade') or item.get('Sugestão') or "Item"
-                
-                # Tratamento numérico de horas e minutos
-                h = float(str(item.get('Horas', 0)).replace(',', '.').strip() or 0)
-                m = float(str(item.get('Minutos', 0)).replace(',', '.').strip() or 0) / 60
-                freq = str(item.get('Frequência', 'D')).upper().strip()
-                
-                # Tabela de Conversão para Dia Útil
-                pesos = {'D': 1.0, 'S': 0.2, 'M': 0.045, 'T': 0.01, 'A': 0.01}
-                fator = pesos.get(freq, 1.0)
-                
-                valor_diario = (h + m) * fator
-                total_dia += valor_diario
-                
-                # Monta a string de tempo original para o relatório
-                tempo_str = f"{int(h)}h" if h > 0 else ""
-                tempo_str += f"{int(m*60)}min" if m > 0 else ""
-                if not tempo_str: tempo_str = "0m"
+    # Cálculos de Nexo (Simples e Eficaz)
+    h_alta = len(t.get('alta', []))
+    h_norm = len(t.get('normal', []))
+    h_baix = len(t.get('baixa', []))
 
-                linhas_detalhadas.append({
-                    "Descrição": desc,
-                    "Relatado": f"{tempo_str} ({freq})",
-                    "Impacto/Dia": f"{valor_diario:.2f}h"
-                })
-            except: continue
-        return total_dia, linhas_detalhadas
+    score_nexo = 100 if (h_alta + h_norm) >= h_baix else 60
+    if (h_alta + h_norm + h_baix) == 0: score_nexo = 0
 
-    # Processamento de cada bloco
-    h_alta, det_alta = processar_tabela_auditoria(t.get('alta', []))
-    h_norm, det_norm = processar_tabela_auditoria(t.get('normal', []))
-    h_baix, det_baix = processar_tabela_auditoria(t.get('baixa', []))
-    h_dif, det_dif = processar_tabela_auditoria(t.get('dificuldades', []))
-    
-    h_total = h_alta + h_norm + h_baix
-
-    # --- 3. MÉTRICAS E SCORE ---
-    score = 100
-    if h_total > 12: score -= 50
-    if h_total > 15: score -= 30
-    if not t.get('dificuldades') or len(t.get('dificuldades', [])) == 0: score -= 20
-    score = max(0, score)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Score de Nexo", f"{score}%")
-    col2.metric("Trabalho Efetivo", f"{h_total:.1f}h/dia")
-    col3.metric("Tempo em Gargalos", f"{h_dif:.1f}h/dia")
-
-    # Gráfico de Velocímetro (Layout Mantido)
+    # --- GRÁFICO DE VELOCÍMETRO PREMIUM ---
     import plotly.graph_objects as go
+
     fig = go.Figure(go.Indicator(
         mode = "gauge+number",
-        value = score,
+        value = score_nexo,
+        title = {'text': f"Confiabilidade: {colab_alvo}", 'font': {'size': 20}},
         gauge = {
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#2E3192"},
+            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+            'bar': {'color': "#2E3192"}, # Azul Escuro Profissional
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "gray",
             'steps': [
-                {'range': [0, 45], 'color': "#ff4b4b"},
-                {'range': [45, 80], 'color': "#ffa500"},
-                {'range': [80, 100], 'color': "#00c853"}
-            ]
+                {'range': [0, 45], 'color': "#ff4b4b"},   # Vermelho
+                {'range': [45, 75], 'color': "#ffa500"},  # Laranja
+                {'range': [75, 100], 'color': "#00c853"}  # Verde
+            ],
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': score_nexo
+            }
         }
     ))
-    fig.update_layout(height=250, margin=dict(l=20, r=20, t=20, b=20))
+
+    fig.update_layout(
+        height=350, 
+        margin=dict(l=30, r=30, t=50, b=20),
+        paper_bgcolor = "rgba(0,0,0,0)", # Fundo transparente
+        font = {'color': "black", 'family': "Arial"}
+    )
+
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- 4. DETALHAMENTO DAS TABELAS ---
-    st.subheader("📋 Detalhamento por Categoria")
-
-    categorias = [
-        ("🔴 Alta Complexidade", det_alta, h_alta),
-        ("🟡 Complexidade Normal", det_norm, h_norm),
-        ("🟢 Baixa Complexidade", det_baix, h_baix),
-        ("⚠️ Dificuldades", det_dif, h_dif)
-    ]
-
-    for titulo, lista_dados, subtotal in categorias:
-        with st.expander(f"{titulo} (Impacto: {subtotal:.2f}h/dia)", expanded=False):
-            if lista_dados:
-                st.table(lista_dados)
-            else:
-                st.write("Nenhum dado registrado para esta categoria.")
-
-    if h_total > 12:
-        st.error(f"🚨 Alerta: Carga horária de {h_total:.1f}h/dia identificada como inconsistente.")
+    # Métricas de apoio em colunas para completar o layout
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Itens Alta/Normal", h_alta + h_norm)
+    c2.metric("Itens Baixa", h_baix)
+    c3.metric("Score Final", f"{score_nexo}%")
 
 else:
-    st.info("💡 Nenhuma base de dados encontrada. Carregue os arquivos primeiro.")
+    st.info("💡 Por favor, carregue a Visualização de Registros acima para ativar a Auditoria.")
