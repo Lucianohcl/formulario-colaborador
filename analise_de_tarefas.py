@@ -1424,19 +1424,29 @@ if st.session_state.pagina == "disc":
 
         col_dif, col_sug = st.columns(2)
 
-        # --- TRAVA DE SEGURANÇA: ALERTA DE RESISTÊNCIA ---
-        bloqueio_check = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não", "nenhuma melhoria"]
+        # --- DICIONÁRIO DE BLOQUEIO (REDE LARGA) ---
+        bloqueio_check = [
+            "nenhuma", "nenhum", "nada", "n", "ñ", "nao", "não", "0", "zero",
+            "n/a", "na", "ok", "tudo ok", "tudo certo", "sem sugestões", 
+            "sem sugestao", "sem dificuldades", "sem dificuldade",
+            "nenhuma melhoria", "nenhuma dificuldade", "não tenho", 
+            "não há", "nanhuma", "nemhum", "vazio", "---", ".", ".."
+        ]
         
-        # Pega o que foi escrito nos dois lados
+        # Pega o que foi escrito, limpa espaços e joga para minúsculo
         difs_texto = [str(d.get('Dificuldade', '')).lower().strip() for d in dificuldades_lista]
         sugs_texto = [str(s.get('Sugestão', '')).lower().strip() for s in form.get('tabelas', {}).get('sugestoes', [])]
 
-        # Verifica se ambos estão "limpos" (sem conteúdo real)
+        # Verifica se existe pelo menos UMA resposta que NÃO esteja no dicionário de bloqueio
         tem_algo_dif = any(d for d in difs_texto if d not in bloqueio_check and len(d) > 3)
         tem_algo_sug = any(s for s in sugs_texto if s not in bloqueio_check and len(s) > 3)
 
+        # SE AMBOS FOREM "NADA" -> DISPARA O ALERTA DE RESISTÊNCIA
         if not tem_algo_dif and not tem_algo_sug:
             st.warning("⚠️ **Alerta de Resistência:** O colaborador não reportou dificuldades nem sugeriu melhorias. Isso pode indicar resistência a mudanças, postura defensiva ou proteção de falhas nos processos atuais.")
+        
+        # Sincroniza o filtro das colunas com o novo dicionário
+        bloqueio_total = bloqueio_check
         
         # --- SEU CÓDIGO COMEÇA ABAIXO (NÃO MEXA) ---
         bloqueio_total = bloqueio_check # Garante que as duas listas de filtro sejam iguais
