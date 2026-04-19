@@ -3586,3 +3586,50 @@ else:
     else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
+
+    # --- ANÁLISE AVANÇADA DE INCONSISTÊNCIAS ---
+    st.markdown("---")
+    st.subheader("🕵️ Análise de Inconsistências (Auditoria Inteligente)")
+
+    def analisar_inconsistencias(detalhes_gerais, h_total):
+        alertas = []
+        
+        for item in detalhes_gerais:
+            desc = item["Descrição"]
+            # Extrai o valor numérico do impacto (ex: "0.025 h/dia" -> 0.025)
+            impacto = float(item["Impacto Real (Dia)"].split()[0])
+            relatado = item["Relatado"]
+
+            # 1. Alerta de Impacto Irrelevante (Tarefa "Invisível")
+            if 0 < impacto < 0.020:
+                alertas.append(f"❓ **{desc}**: O impacto de {impacto:.3f}h/dia é quase irrelevante. Avalie se esta tarefa deve ser agrupada ou se a frequência '{relatado}' está subestimada.")
+
+            # 2. Alerta de Tempo muito alto para Frequência Diária
+            if "(D)" in relatado and impacto > 4:
+                alertas.append(f"📢 **{desc}**: {impacto:.1f}h todo santo dia em uma única tarefa? Verifique se não há inflacionamento de horas.")
+
+            # 3. Alerta de tarefas complexas com pouco tempo
+            if "Apuração" in desc or "Análise" in desc:
+                if impacto < 0.1:
+                    alertas.append(f"🔍 **{desc}**: Tarefas de análise costumam exigir mais tempo. O impacto relatado ({impacto:.3f}h/dia) parece baixo para a complexidade.")
+
+        # 4. Alerta de Ociosidade ou Sobrecarga Total
+        if h_total < 4:
+            alertas.append("📉 **Alerta de Baixa Ocupação**: A soma total das atividades não preenche nem 50% de uma jornada padrão de 8h.")
+        elif h_total > 10:
+            alertas.append("🚨 **Alerta de Sobrecarga Crítica**: A carga horária diluída ultrapassa 10h/dia. Risco alto de erro humano e fadiga.")
+
+        return alertas
+
+    # Junta todos os detalhes para a análise
+    todos_detalhes = det_alta + det_norm + det_baix + det_dif
+    lista_alertas = analisar_inconsistencias(todos_detalhes, h_total)
+
+    if lista_alertas:
+        for alerta in lista_alertas:
+            st.warning(alerta)
+    else:
+        st.success("✅ Nenhuma inconsistência lógica detectada nos tempos relatados.")
+
+    # --- FIM DA ANÁLISE ---
+
