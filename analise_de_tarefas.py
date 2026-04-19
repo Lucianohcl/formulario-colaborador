@@ -856,26 +856,42 @@ def carregar_todos_formularios(repo_conectado):
         
     return lista_formularios
 
-
 # ============================================================
 # LOGIN (Com Bypass para o Formulário)
 # ============================================================
-# Só bloqueia o acesso se NÃO estiver logado E NÃO for a página de formulário
 if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     
-    
-    # --- MENSAGEM DE BOAS-VINDAS COLORIDA (EXTRA LARGA E GROSSURA EQUILIBRADA) ---
+    # --- ADICIONE ESTE BLOCO CSS AQUI ---
+    st.markdown("""
+        <style>
+        div.stButton > button[key="login_button"] {
+            background-color: #FF4B4B; /* Cor Vermelha */
+            color: white;
+            border-radius: 10px;
+            border: none;
+            height: 3em;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        div.stButton > button[key="login_button"]:hover {
+            background-color: #D32F2F; /* Vermelho mais escuro ao passar o mouse */
+            color: white;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # --- MENSAGEM DE BOAS-VINDAS ---
     st.markdown("""
         <div style="
             background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            padding: 30px 60px;        /* GROSSURA MÉDIA: Equilíbrio para não rolar a tela */
-            max-width: 1200px;         /* LARGURA MÁXIMA */
-            margin: 0 auto 5px auto;   /* Centralizado e colado no login */
+            padding: 30px 60px;
+            max-width: 1200px;
+            margin: 0 auto 5px auto;
             border-radius: 15px;
             text-align: center;
             box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
         ">
-            <h1 style="color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; font-size: 2.0rem;">
+            <h1 style="color: white; font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 2.0rem;">
                 🚀 Bem-vindo ao Sistema
             </h1>
             <p style="color: white; font-size: 1.1rem; opacity: 0.9; margin: 10px 0 0 0; line-height: 1.2;">
@@ -884,11 +900,12 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
         </div>
     """, unsafe_allow_html=True)
     
-    # --- INTERFACE DE ACESSO ---
-    st.title("🔐 Acesso")
-    
-    col_login, _ = st.columns([1, 1]) # Centraliza um pouco a largura
-    with col_login:
+    # --- INTERFACE DE ACESSO CENTRALIZADA ---
+    col_lateral_esq, col_central, col_lateral_dir = st.columns([1, 2, 1])
+
+    with col_central:
+        st.markdown("<h2 style='text-align: center;'>🔐 Acesso</h2>", unsafe_allow_html=True)
+        
         usuario = st.text_input("Usuário")
         senha = st.text_input("Senha", type="password")
 
@@ -898,7 +915,6 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
                 st.session_state.user_nome = usuario
                 st.session_state.is_admin = True
                 
-                # ATUALIZAÇÃO: Definimos a variável que o painel de exportação espera
                 if usuario == "Luciano":
                     st.session_state["usuario_logado"] = "Luciano 123"
                 else:
@@ -908,8 +924,9 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
             else:
                 st.error("Usuário ou senha incorretos")
     
-    # Trava o script aqui para quem não está logado
     st.stop()
+
+
 # ============================================================
 # SIDEBAR
 # ============================================================
