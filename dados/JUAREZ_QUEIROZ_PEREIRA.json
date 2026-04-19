@@ -1,15 +1,16 @@
 {
-    "timestamp": "09/04/2026 14:14:24",
-    "colaborador": "Usuario_Desconhecido",
+    "timestamp": "19/04/2026 03:28:55",
+    "colaborador": "JUAREZ QUEIROZ PEREIRA",
     "campos": {
-        "cargo": "",
-        "departamento": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "escolaridade": "",
-        "cursos": "",
-        "objetivo": ""
+        "cargo": "ANALISTA DEPARTAMENTO PESSOAL",
+        "departamento": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "NÍVEL SUPERIOR COMPLETO",
+        "devolver_em": "09/04/2026",
+        "cursos": "Ciências Contábeis, Pacote Office Avançado, Sistemas Folhas Pagamento: RM Sistema Totvs, ERP/RM,\\n Questor, Alterdata, Domínios, GCI, RH3, RH3 Ponto, Ferramenta Pontomais, RH3 Benefícios, RH3 Gerador de\\nRelatórios, EBS Cordilheira, Microsiga, Rubi, Ponto Eletrônico Radar, Chronos Labore e Honda Portaria 1510,\\nAtualizado com o E-SOCIAL, FGTS Digital, Power BI, Curso SENAI Competências Transversais em Legislação\\nTrabalhista, Financeiro SAP, Windows, Word, Excel Avançado.",
+        "objetivo": "Meu trabalho no Departamento Pessoal (DP) consiste em cuidar de toda a parte administrativa e legal relacionada aos colaboradores de uma empresa e clientes. Isso envolve garantir que a relação entre empresa e funcionário esteja sempre de acordo com a legislação trabalhista.\\nAdmissão e demissão de funcionários, Controle de ponto (horas trabalhadas, atrasos, faltas, Processamento da folha de pagamento, Cálculo de férias, 13º salário e rescisões\\nGestão de benefícios (vale-transporte, vale alimentação, Envio de obrigações legais ao governo como e Social.\\nAssegurar que todos os direitos e deveres trabalhistas sejam cumpridos corretamente, tanto para a empresa quanto para os colaboradores.\\nAlém disso, o DP busca:\\nEvitar problemas legais e trabalhistas , manter a organização e transparência nos processos internos, garantir que os funcionários recebam corretamente seus pagamentos e benefícios.\\nResumindo: o Departamento Pessoal é essencial para manter a empresa regularizada, organizada e justa nas relações de trabalho."
     },
     "tabelas": {
         "alta": [
@@ -64,43 +65,43 @@
         ],
         "normal": [
             {
-                "Atividade": "Lançamento de informações para folha de pagamento (horas extras, faltas, adicionais) ",
+                "Atividade": " Lançamento de informações para folha de pagamento (horas extras, faltas, adicionais) ",
                 "Horas": "0 h",
                 "Minutos": "25 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Controle de ponto eletrônico e tratamento de inconsistências ",
+                "Atividade": "Controle de ponto eletrônico e tratamento de inconsistências",
                 "Horas": "0 h",
                 "Minutos": "15 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Administração de férias (programação, cálculo e controle) ",
+                "Atividade": "Administração de férias (programação, cálculo e controle)",
                 "Horas": "0 h",
                 "Minutos": "20 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Cadastro e atualização de dados de colaboradores no sistema ",
+                "Atividade": "Cadastro e atualização de dados de colaboradores no sistema",
                 "Horas": "0 h",
                 "Minutos": "10 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Controle de afastamentos (INSS, atestados médicos, licenças) ",
+                "Atividade": "Controle de afastamentos (INSS, atestados médicos, licenças)",
                 "Horas": "0 h",
                 "Minutos": "15 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Atendimento a colaboradores para esclarecimento de dúvidas trabalhistas ",
+                "Atividade": "Atendimento a colaboradores para esclarecimento de dúvidas trabalhistas",
                 "Horas": "0 h",
                 "Minutos": "20 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Organização e conferência de documentação admissional e demissional ",
+                "Atividade": "Organização e conferência de documentação admissional e demissional",
                 "Horas": "0 h",
                 "Minutos": "20 min",
                 "Frequência": "D"
@@ -112,7 +113,7 @@
                 "Frequência": "D"
             },
             {
-                "Atividade": "Emissão de relatórios operacionais (folha, ponto, benefícios) ",
+                "Atividade": "Emissão de relatórios operacionais (folha, ponto, benefícios)",
                 "Horas": "0 h",
                 "Minutos": "10 min",
                 "Frequência": "D"
@@ -144,19 +145,19 @@
                 "Frequência": "D"
             },
             {
-                "Atividade": "Conferência básica de documentos (checklist admissional/demissional) ",
+                "Atividade": "Conferência básica de documentos (checklist admissional/demissional)",
                 "Horas": "0 h",
                 "Minutos": "20 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Emissão de documentos padronizados (declarações, comprovantes) ",
+                "Atividade": "Emissão de documentos padronizados (declarações, comprovantes)",
                 "Horas": "0 h",
                 "Minutos": "25 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Apoio no envio de comunicados internos ",
+                "Atividade": "Apoio no envio de comunicados internos",
                 "Horas": "0 h",
                 "Minutos": "15 min",
                 "Frequência": "D"
@@ -168,13 +169,13 @@
                 "Frequência": "D"
             },
             {
-                "Atividade": "Atualização de cadastros simples no sistema ",
+                "Atividade": "Atualização de cadastros simples no sistema",
                 "Horas": "0 h",
                 "Minutos": "15 min",
                 "Frequência": "D"
             },
             {
-                "Atividade": "Controle de recebimento de documentos pendentes ",
+                "Atividade": "Controle de recebimento de documentos pendentes",
                 "Horas": "0 h",
                 "Minutos": "10 min",
                 "Frequência": "D"
