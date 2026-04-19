@@ -3535,9 +3535,7 @@ else:
             except: continue
         return total_dia, detalhes
 
-    # Resto do processamento (Gráfico e Expansores) segue igual...
-
-    # --- PROCESSAMENTO DOS SUBTOTAIS ---
+    # --- PROCESSAMENTO DOS SUBTOTAIS (Identado dentro do if base_auditoria) ---
     h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
     h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
     h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
@@ -3586,4 +3584,5 @@ else:
             else:
                 st.write("Sem registros.")
 else:
+    # Este else volta para a margem zero (alinhado com o IF inicial)
     st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
