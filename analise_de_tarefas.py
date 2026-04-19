@@ -3658,3 +3658,68 @@ else:
     elif h_total > 9:
         st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
 
+    # --- ANÁLISE TÉCNICA DE DIFICULDADES (FINAL DO SCRIPT) ---
+    st.markdown("---")
+    st.subheader("⚠️ Auditoria de Gargalos e Impedimentos")
+
+    def analisar_dificuldades_rigoroso(dificuldades_lista):
+        check_dif = []
+        if not dificuldades_lista or len(dificuldades_lista) == 0:
+            return [{"Status": "✅", "Dificuldade": "Nenhuma relatada", "Impacto": "0.00h", "Análise": "Fluxo livre de impedimentos."}]
+
+        for d in dificuldades_lista:
+            # Extração e limpeza de dados
+            desc_dif = (d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
+            setor = d.get('Setor Envolvido') or "N/A"
+            
+            # Cálculo de impacto (seguindo a regra rigorosa de divisores)
+            h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+            m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+            f_d = str(d.get('Frequência', 'M')).upper().strip()
+            
+            div_d = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+            divisor_d = div_d.get(f_d, 1)
+            
+            impacto_d = (h_d + (m_d / 60)) / divisor_d
+
+            alertas_d = []
+            
+            # --- CRITÉRIOS DE SUPER INTELIGÊNCIA ---
+            # 1. Alerta de inconsistência: Dificuldade "vazia" ou sem sentido
+            if desc_dif.lower() in ["nenhuma", "não", "vazio", ".", "n/a"]:
+                continue # Pula itens vazios para não poluir a tabela
+
+            # 2. Alerta de impacto desproporcional
+            if impacto_d > 1.0:
+                alertas_d.append("Bloqueio Crítico: Este problema consome mais de 1h/dia da jornada.")
+            
+            # 3. Análise semântica: Reclamações de terceiros (Clientes/Outros Setores)
+            if any(p in desc_dif.lower() for p in ["cliente", "atraso", "demora", "prazo"]):
+                alertas_d.append("Gargalo Externo: Dependência de terceiros afetando o Nexo Causal.")
+
+            # 4. Rigor na descrição
+            if len(desc_dif) < 15:
+                alertas_d.append("Descrição insuficiente para diagnóstico de melhoria.")
+
+            status_d = "🚩" if alertas_d else "✅"
+            analise_d = "Impedimento monitorado" if not alertas_d else " | ".join(alertas_d)
+
+            check_dif.append({
+                "Status": status_d,
+                "Setor": setor,
+                "Dificuldade": desc_dif[:65] + "...",
+                "Impacto Diário": f"{impacto_d:.3f} h/dia",
+                "Veredito do Perito": analise_d
+            })
+        
+        return check_dif
+
+    # Executa a auditoria de dificuldades
+    gargalos_encontrados = analisar_dificuldades_rigoroso(t.get('dificuldades', []))
+    
+    if gargalos_encontrados:
+        st.table(gargalos_encontrados)
+    else:
+        st.success("✅ Nenhuma dificuldade técnica ou operacional foi registrada por este colaborador.")
+
+    # --- FIM DO SCRIPT ---
