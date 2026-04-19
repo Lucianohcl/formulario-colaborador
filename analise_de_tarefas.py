@@ -3526,16 +3526,15 @@ if base_auditoria:
                 # Captura a frequência
                 f = str(i.get('Frequência', 'D')).upper().strip()
                 
-                # Dimensionamento Proporcional (D=1 | S=0.2 | M=0.0454 | T=0.015 | A=0.0038)
-                fator = {'D': 1.0, 'S': 0.2, 'M': 0.0454, 'T': 0.015, 'A': 0.0038}.get(f, 1.0)
-                
-                # Cálculo do impacto real diário
-                valor_diario = (h + (m / 60)) * fator
+                # Somas as horas + (minutos/60) e divide pelo divisor de frequência (S/5, M/20)
+                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+                divisor = divisores.get(f, 1)
+                valor_diario = (h + (m / 60)) / divisor
                 total_dia += valor_diario
                 
                 detalhes.append({
                     "Descrição": desc,
-                    "Relatado": f"{int(h)}h{int(m)}m ({f})",
+                    "Relatado": f"{int(h)}h {int(m)}min ({f})",
                     "Impacto Real (Dia)": f"{valor_diario:.3f} h/dia"
                 })
             except: continue
