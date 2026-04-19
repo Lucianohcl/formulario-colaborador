@@ -3536,3 +3536,54 @@ else:
         return total_dia, detalhes
 
     # Resto do processamento (Gráfico e Expansores) segue igual...
+
+    # --- PROCESSAMENTO DOS SUBTOTAIS ---
+    h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
+    h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
+    h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
+    h_dif, det_dif = auditar_tabela_v2(t.get('dificuldades', []))
+    
+    h_total = h_alta + h_norm + h_baix
+
+    # --- SCORE E GRÁFICO ---
+    score = 100
+    if h_total > 9: score -= 40
+    if h_total > 11: score -= 50
+    score = max(0, score)
+
+    import plotly.graph_objects as go
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number", 
+        value = score,
+        title = {'text': f"Nexo Causal: {h_total:.2f}h/dia"},
+        gauge = {
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "#2E3192"},
+            'steps': [
+                {'range': [0, 45], 'color': "#ff4b4b"},
+                {'range': [45, 80], 'color': "#ffa500"},
+                {'range': [80, 100], 'color': "#00c853"}
+            ]
+        }
+    ))
+    fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
+    st.plotly_chart(fig, use_container_width=True)
+
+    # --- DETALHAMENTO POR CATEGORIA ---
+    st.subheader("📋 Detalhamento por Categoria")
+    
+    secoes = [
+        ("🔴 Alta Complexidade", det_alta, h_alta),
+        ("🟡 Complexidade Normal", det_norm, h_norm),
+        ("🟢 Baixa Complexidade", det_baix, h_baix),
+        ("⚠️ Dificuldades", det_dif, h_dif)
+    ]
+
+    for titulo, dados, subtotal in secoes:
+        with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
+            if dados:
+                st.table(dados)
+            else:
+                st.write("Sem registros.")
+else:
+    st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
