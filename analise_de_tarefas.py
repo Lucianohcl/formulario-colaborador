@@ -1424,6 +1424,23 @@ if st.session_state.pagina == "disc":
 
         col_dif, col_sug = st.columns(2)
 
+        # --- TRAVA DE SEGURANÇA: ALERTA DE RESISTÊNCIA ---
+        bloqueio_check = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não", "nenhuma melhoria"]
+        
+        # Pega o que foi escrito nos dois lados
+        difs_texto = [str(d.get('Dificuldade', '')).lower().strip() for d in dificuldades_lista]
+        sugs_texto = [str(s.get('Sugestão', '')).lower().strip() for s in form.get('tabelas', {}).get('sugestoes', [])]
+
+        # Verifica se ambos estão "limpos" (sem conteúdo real)
+        tem_algo_dif = any(d for d in difs_texto if d not in bloqueio_check and len(d) > 3)
+        tem_algo_sug = any(s for s in sugs_texto if s not in bloqueio_check and len(s) > 3)
+
+        if not tem_algo_dif and not tem_algo_sug:
+            st.warning("⚠️ **Alerta de Resistência:** O colaborador não reportou dificuldades nem sugeriu melhorias. Isso pode indicar resistência a mudanças, postura defensiva ou proteção de falhas nos processos atuais.")
+        
+        # --- SEU CÓDIGO COMEÇA ABAIXO (NÃO MEXA) ---
+        bloqueio_total = bloqueio_check # Garante que as duas listas de filtro sejam iguais
+
         with col_dif:
             st.subheader("⚠️ Dificuldades vs Perfil")
             # Busca e filtra dificuldades válidas do banco
@@ -1558,7 +1575,11 @@ if st.session_state.pagina == "disc":
         info_exigido = textos_disc.get(perfil_exigido_1, {"nome": "N/A", "estilo": "N/A"})
 
         if match_real:
-            st.success(f"✅ **Alta Aderência Inteligente:** O colaborador {form.get('nome','').split()[0]} possui talento natural para **{info_dominante['estilo']}**, que atende bem à exigência de **{exigencia_final}** das atividades.")
+            # Pega o nome de forma segura, se falhar usa "Colaborador"
+            nome_raw = form.get('colaborador', form.get('nome', 'Colaborador'))
+            primeiro_nome = nome_raw.split()[0] if nome_raw and nome_raw.split() else "Colaborador"
+
+            st.success(f"✅ **Alta Aderência Inteligente:** O colaborador {primeiro_nome} possui um perfil com foco em resultados.")
         else:
             # 1. Garante que o nome existe antes de tentar o split (12 espaços)
             nome_raw = form.get('nome', 'Colaborador')
