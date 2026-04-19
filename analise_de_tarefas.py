@@ -1447,31 +1447,32 @@ if st.session_state.pagina == "disc":
         with col_sug:
             st.subheader("💡 Sugestões vs Inovação")
             
-            # --- CONDICIONAL DE SEGURANÇA 1: GARANTIR A ORIGEM DOS DADOS ---
-            # Isso garante que 'sugestoes_lista' não chegue vazia aqui
+            # 1. FORÇA O RESGATE DOS DADOS (O CANTO CERTO)
+            # Isso garante que a lista não chegue vazia aqui
             t_origem = form.get('tabelas', {})
-            sugestoes_lista = t_origem.get('sugestoes', [])
+            lista_para_busca = t_origem.get('sugestoes', [])
             
-            # --- CONDICIONAL DE SEGURANÇA 2: FILTRAGEM DE LIXO ---
-            bloqueio_total = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não"]
+            # 2. CONDICIONAIS DE SEGURANÇA (LIMPEZA)
+            bloqueio = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não"]
 
-            # --- CONDICIONAL DE SEGURANÇA 3: VALIDAÇÃO DE CONTEÚDO REAL ---
-            sugs_validas = [s.get('Sugestão', '') for s in sugestoes_lista 
-                            if str(s.get('Sugestão', '')).lower() not in bloqueio_total 
-                            and len(str(s.get('Sugestão', ''))) > 3]
-            
-            # --- EXECUÇÃO: EXIBE O QUE O CARA ESCREVEU ---
-            if sugs_validas:
-                for sug in sugs_validas:
-                    # ISSO TRAZ O TEXTO DE VOLTA:
-                    st.info(f"📝 **O colaborador escreveu:** {sug}")
+            # 3. FILTRAGEM E BUSCA DO TEXTO REAL
+            # Pegamos o que o cara escreveu na coluna 'Sugestão'
+            sugestoes_reais = [s.get('Sugestão', '') for s in lista_para_busca 
+                               if str(s.get('Sugestão', '')).lower() not in bloqueio 
+                               and len(str(s.get('Sugestão', ''))) > 3]
+
+            # 4. EXIBIÇÃO DINÂMICA (SEM FRASES PRONTAS SOZINHAS)
+            if sugestoes_reais:
+                for texto_do_cara in sugestoes_reais:
+                    # ISSO MOSTRA O QUE ELE ESCREVEU:
+                    st.info(f"📝 **O colaborador sugeriu:** {texto_do_cara}")
                     
-                    # --- CONDICIONAL DE SEGURANÇA 4: GATILHOS DE INOVAÇÃO ---
-                    if any(w in sug.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste", "tecnologia"]):
-                        st.success("🚀 **Foco em Eficiência:** Esta sugestão propõe evolução nos processos.")
+                    # SÓ MOSTRA O FOGUETINHO SE O TEXTO DELE TIVER GATILHOS
+                    if any(w in texto_do_cara.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste", "tecnologia"]):
+                        st.success("🚀 **Foco em Eficiência:** Esta proposta visa evolução dos processos.")
             else:
-                # Se cair aqui, é porque as condicionais 2 e 3 filtraram tudo (ou a tabela estava vazia)
-                st.error("🚨 **Barreira Propositiva:** Sem sugestões válidas nos dados buscados.")
+                # SE NÃO TIVER NADA NO BANCO, ELE AVISA
+                st.error("🚨 **Barreira Propositiva:** Nenhuma sugestão válida encontrada nos dados.")
 
         # ============================================================
         # 💡 SUGESTÃO FINAL PARA O GESTOR (CONTEÚDO DE RH)
