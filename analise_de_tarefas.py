@@ -1389,6 +1389,85 @@ if st.session_state.pagina == "disc":
             Para evitar fadiga, recomenda-se intercalar essas atividades com outras mais naturais ao seu perfil.
             """)
 
+        # GARANTE QUE A VARIÁVEL DOMINANTE EXISTE PARA A BUSCA FUNCIONAR
+        if 'dominante' not in locals():
+            dominante = max(percentuais, key=percentuais.get)
+
+
+        # ============================================================
+        # 🔍 BUSCA ATIVA: SUGESTÕES E DIFICULDADES (DADOS REAIS)
+        # ============================================================
+        st.markdown("---")
+        st.markdown(f"### 🧠 Diagnóstico de Coerência: {form.get('nome','').split()[0]}")
+        
+        # 1. ACESSA AS TABELAS DIRETAMENTE NO OBJETO BUSCADO
+        t_raiz = form.get('tabelas', {})
+        sugestoes_lista = t_raiz.get('sugestoes', [])
+        dificuldades_lista = t_raiz.get('dificuldades', [])
+        
+        # Lista de termos para ignorar (limpeza de dados)
+        bloqueio_total = ["nenhuma dificuldade", "nenhuma melhoria", "nenhuma", "não tenho", "n/a", "não há", "0", "nenhum", "nada", "", "ok", "n"]
+
+        # 2. MAPEAMENTO DE DORES (Para o sistema usar na busca lógica)
+        dores_perfil = {
+            "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema", "repetitivo"],
+            "S": ["pressão", "mudança", "conflito", "urgência", "improviso", "rápido"],
+            "D": ["lentidão", "burocracia", "espera", "autonomia", "parado", "lento"],
+            "C": ["falta de dados", "erro", "improviso", "desorganização", "bagunça", "cliente"]
+        }
+
+        col_dif, col_sug = st.columns(2)
+
+        with col_dif:
+            st.subheader("⚠️ Dificuldades vs Perfil")
+            # Busca e filtra dificuldades válidas do banco
+            difs_validas = [d.get('Dificuldade', '') for d in dificuldades_lista 
+                            if str(d.get('Dificuldade', '')).lower() not in bloqueio_total and len(str(d.get('Dificuldade', ''))) > 3]
+            
+            if difs_validas:
+                for dif in difs_validas:
+                    st.warning(f"**Relatado:** {dif}")
+                    # Usa a variável de perfil (letra_busca ou perfil_primario) para validar
+                    letra_v = perfil_primario if 'perfil_primario' in locals() else dominante[0]
+                    matches = [w for w in dores_perfil.get(letra_v, []) if w in dif.lower()]
+                    
+                    if matches:
+                        st.success(f"✅ **Coerente:** Gatilhos `{', '.join(matches)}` confirmam o perfil.")
+                    else:
+                        st.error("⚠️ **Estrutural:** Queixa não ligada ao perfil comportamental.")
+            else:
+                st.info("Nenhuma dificuldade detectada na busca.")
+
+        with col_sug:
+            st.subheader("💡 Sugestões vs Inovação")
+            # Busca e filtra sugestões válidas do banco
+            sugs_validas = [s.get('Sugestão', '') for s in sugestoes_lista 
+                            if str(s.get('Sugestão', '')).lower() not in bloqueio_total and len(str(s.get('Sugestão', ''))) > 3]
+            
+            if sugs_validas:
+                for sug in sugs_validas:
+                    st.info(f"**Sugestão:** {sug}")
+                    if any(w in sug.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste"]):
+                        st.success("🚀 **Foco em Eficiência:** Busca evolução nos processos.")
+            else:
+                st.error("🚨 **Barreira Propositiva:** Sem sugestões nos dados buscados.")
+
+        # ============================================================
+        # 💡 SUGESTÃO FINAL PARA O GESTOR (CONTEÚDO DE RH)
+        # ============================================================
+        st.markdown("---")
+        dicionario_gestao = {
+            "D": "Dar autonomia e focar em resultados. Evite microgestão.",
+            "I": "Promover interação e reconhecimento público. Utilize sua persuasão.",
+            "S": "Manter rotinas claras e dar apoio em momentos de mudanças.",
+            "C": "Alocar em tarefas de análise, precisão técnica e conformidade."
+        }
+        
+        # Puxa a letra para a sugestão final
+        letra_final = perfil_primario if 'perfil_primario' in locals() else dominante[0]
+        txt_gestao = dicionario_gestao.get(letra_final, "Acompanhar adaptação.")
+        st.info(f"**Dica para o Gestor de {cargo_bruto.upper()}:** {txt_gestao}")
+
         # ============================================================
         # PERFIL DISC EXIGIDO PELAS ATIVIDADES (VERSÃO INTELIGENTE)
         # ============================================================
