@@ -3701,34 +3701,41 @@ def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_ati
             if freq_raw not in ['D', 'S']:
                 alertas.append(f"Incoerência: Relata ser 'constante' mas a frequência é {freq_raw}.")
 
-        # --- TESTE 3: MATRIZ DE CORRELAÇÃO SEMÂNTICA (NEXO TÉCNICO) ---
-        # Definimos o que "puxa" o que entre Dificuldade e Atividade
+        # --- TESTE 3: MATRIZ DE CORRELAÇÃO SEMÂNTICA (AJUSTADO) ---
         matriz_nexo = {
-            "retrabalho": ["conferência", "lançamento", "cálculo", "análise", "ajuste", "correção", "fechamento"],
-            "legislação": ["aplicação", "consultivo", "clt", "convenção", "sindicato", "fiscal"],
-            "ponto": ["horário", "jornada", "batida", "espelho", "tratamento", "biometria"],
-            "sistema": ["alterdata", "esocial", "plataforma", "software", "lento", "instabilidade"],
-            "cliente": ["atendimento", "reunião", "envio", "cobrança", "recebimento", "documento"],
-            "informação": ["cadastro", "atualização", "dados", "planilha", "input"],
-            "prazo": ["entrega", "vencimento", "guia", "imposto", "social", "transmissão"]
+            "retrabalho": ["conferência", "lançamento", "cálculo", "análise", "ajuste", "correção", "fechamento", "erro", "inconsistência"],
+            "conferência": ["apuração", "análise", "conferir", "checklist", "verificação", "validação", "divergência", "detalhada"],
+            "acúmulo": ["fechamento", "envio", "atendimento", "cadastro", "lançamento", "gestão", "operacional", "reduz"],
+            "padronização": ["processos", "fluxos", "organização", "método", "rotina", "interno"],
+            "legislação": ["aplicação", "consultivo", "clt", "convenção", "sindicato", "fiscal", "alteração"],
+            "sistema": ["alterdata", "esocial", "plataforma", "instabilidade", "lento", "limitação"],
+            "comunicação": ["atendimento", "esclarecimento", "dúvidas", "internas", "externas", "desafio"],
+            "informação": ["cadastro", "atualização", "dados", "planilha", "setor", "dependência"]
         }
 
         achou_nexo = False
-        # 1. Checa se a palavra da dificuldade está na matriz
+        
+        # 1. Contagem de volume para validar 'Acúmulo' automaticamente
+        total_atividades = sum(len(tabelas_dict.get(cat, [])) for cat in ['alta', 'normal', 'baixa'])
+
+        # 2. Lógica de busca na Matriz
         for palavra_chave, correlatas in matriz_nexo.items():
             if palavra_chave in desc:
-                # Se a palavra-chave OU qualquer correlata dela estiver nas atividades, o nexo existe
+                # Se a palavra-chave OU qualquer correlata dela estiver nas atividades
                 if any(corr in texto_atividades for corr in correlatas) or palavra_chave in texto_atividades:
                     achou_nexo = True
                     break
-        
-        # 2. Validação de Rigor de Tempo vs. Frequência
-        # Se o impacto diário é alto (>0.5h) mas a dificuldade é descrita em 2 palavras, é suspeito.
-        if impacto_diario > 0.5 and len(desc_pura) < 25:
-            alertas.append("Subdetalhamento: Impacto alto (>30min/dia) para uma descrição tão genérica.")
+                
+        # 3. Regra de Ouro para 'Acúmulo' e 'Volume'
+        if any(p in desc for p in ["acúmulo", "volume", "quantidade", "muita"]):
+            if total_atividades > 12: # Se tem mais de 12 tarefas, o nexo de acúmulo é real
+                achou_nexo = True
+
+        # 4. Validação de Rigor de Tempo vs. Frequência
+        if impacto_diario > 0.8 and len(desc_pura) < 20:
+            alertas.append("Subdetalhamento: Impacto crítico para uma descrição tão curta.")
 
         if not achou_nexo and len(desc) > 15:
-            # Se não achou na matriz, faz uma busca genérica por termos de gestão
             if not any(x in desc for x in ["equipe", "gestão", "processo", "comunicação", "demanda"]):
                 alertas.append("Desconexão: Esta dificuldade não possui correlação técnica com as tarefas listadas.")
 
