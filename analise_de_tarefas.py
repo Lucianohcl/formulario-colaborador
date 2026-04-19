@@ -3664,9 +3664,26 @@ else:
 
         return checklist
 
-    # --- NOVO PARECER DE EXTRAPOLAÇÃO ---
-    res_final = auditoria_super_inteligente(t, h_total)
-    st.table(res_final)
+    
+    
+    # --- NOVO PARECER DE EXTRAPOLAÇÃO (FILTRADO E IDENTADO) ---
+    # 1. Mapeia nomes de dificuldades para exclusão
+    nomes_difs = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
+
+    # 2. Cria dicionário limpo apenas com Atividades reais
+    t_limpo = {
+        cat: [
+            i for i in t.get(cat, []) 
+            if str(i.get('Atividade','')).strip().lower() not in nomes_difs 
+            and str(i.get('Atividade','')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
+        ] for cat in ['alta', 'normal', 'baixa']
+    }
+
+    # 3. Gera a tabela de Status/Análise Crítica sem as duplicatas
+    res_final = auditoria_super_inteligente(t_limpo, h_total)
+    
+    if res_final:
+        st.table(res_final)
 
     st.markdown("### 📝 Parecer do Perito Digital")
     
