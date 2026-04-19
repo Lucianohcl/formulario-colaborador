@@ -3516,20 +3516,27 @@ if base_auditoria:
         detalhes = []
         for i in lista:
             try:
+                # Captura a descrição (usando 'i' corretamente)
                 desc = i.get('Atividade') or i.get('Dificuldade') or i.get('Sugestão') or "Item"
-                h = float(str(i.get('Horas', 0)).replace(',', '.').strip() or 0)
-                m = float(str(i.get('Minutos', 0)).replace(',', '.').strip() or 0) / 60
+                
+                # Limpa e converte Horas e Minutos (trata "1 h" e "0 min")
+                h = float(str(i.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                m = float(str(i.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                
+                # Captura a frequência
                 f = str(i.get('Frequência', 'D')).upper().strip()
                 
-                # Conversão para impacto diário
-                fator = {'D': 1.0, 'S': 0.2, 'M': 0.045, 'T': 0.01, 'A': 0.01}.get(f, 1.0)
-                valor_diario = (h + m) * fator
+                # Dimensionamento Proporcional (D=1 | S=0.2 | M=0.0454 | T=0.015 | A=0.0038)
+                fator = {'D': 1.0, 'S': 0.2, 'M': 0.0454, 'T': 0.015, 'A': 0.0038}.get(f, 1.0)
+                
+                # Cálculo do impacto real diário
+                valor_diario = (h + (m / 60)) * fator
                 total_dia += valor_diario
                 
                 detalhes.append({
                     "Descrição": desc,
-                    "Relatado": f"{int(h)}h{int(m*60)}m ({f})",
-                    "Impacto/Dia": f"{valor_diario:.2f}h"
+                    "Relatado": f"{int(h)}h{int(m)}m ({f})",
+                    "Impacto Real (Dia)": f"{valor_diario:.3f} h/dia"
                 })
             except: continue
         return total_dia, detalhes
