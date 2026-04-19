@@ -1446,17 +1446,32 @@ if st.session_state.pagina == "disc":
 
         with col_sug:
             st.subheader("💡 Sugestões vs Inovação")
-            # Busca e filtra sugestões válidas do banco
-            sugs_validas = [s.get('Sugestão', '') for s in sugestoes_lista 
-                            if str(s.get('Sugestão', '')).lower() not in bloqueio_total and len(str(s.get('Sugestão', ''))) > 3]
             
+            # --- CONDICIONAL DE SEGURANÇA 1: GARANTIR A ORIGEM DOS DADOS ---
+            # Isso garante que 'sugestoes_lista' não chegue vazia aqui
+            t_origem = form.get('tabelas', {})
+            sugestoes_lista = t_origem.get('sugestoes', [])
+            
+            # --- CONDICIONAL DE SEGURANÇA 2: FILTRAGEM DE LIXO ---
+            bloqueio_total = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não"]
+
+            # --- CONDICIONAL DE SEGURANÇA 3: VALIDAÇÃO DE CONTEÚDO REAL ---
+            sugs_validas = [s.get('Sugestão', '') for s in sugestoes_lista 
+                            if str(s.get('Sugestão', '')).lower() not in bloqueio_total 
+                            and len(str(s.get('Sugestão', ''))) > 3]
+            
+            # --- EXECUÇÃO: EXIBE O QUE O CARA ESCREVEU ---
             if sugs_validas:
                 for sug in sugs_validas:
-                    st.info(f"**Sugestão:** {sug}")
-                    if any(w in sug.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste"]):
-                        st.success("🚀 **Foco em Eficiência:** Busca evolução nos processos.")
+                    # ISSO TRAZ O TEXTO DE VOLTA:
+                    st.info(f"📝 **O colaborador escreveu:** {sug}")
+                    
+                    # --- CONDICIONAL DE SEGURANÇA 4: GATILHOS DE INOVAÇÃO ---
+                    if any(w in sug.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste", "tecnologia"]):
+                        st.success("🚀 **Foco em Eficiência:** Esta sugestão propõe evolução nos processos.")
             else:
-                st.error("🚨 **Barreira Propositiva:** Sem sugestões nos dados buscados.")
+                # Se cair aqui, é porque as condicionais 2 e 3 filtraram tudo (ou a tabela estava vazia)
+                st.error("🚨 **Barreira Propositiva:** Sem sugestões válidas nos dados buscados.")
 
         # ============================================================
         # 💡 SUGESTÃO FINAL PARA O GESTOR (CONTEÚDO DE RH)
