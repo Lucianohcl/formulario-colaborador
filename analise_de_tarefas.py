@@ -3667,8 +3667,19 @@ def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_ati
     
     # Consolida atividades para cruzamento semântico
     texto_atividades = ""
+    # 1. Cria lista de nomes das dificuldades para exclusão
+    nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in dificuldades_lista]
+
     for cat in ['alta', 'normal', 'baixa']:
         if cat in tabelas_dict:
+            # Filtramos a lista para remover o que é "Vazio" ou o que já é "Dificuldade"
+            tabelas_dict[cat] = [
+                item for item in tabelas_dict[cat] 
+                if str(item.get('Atividade', '')).strip().lower() not in ["vazio", "vazio...", "", "none"]
+                and str(item.get('Atividade', '')).strip().lower() not in nomes_dificuldades
+            ]
+            
+            # 2. Agora sim, cria o blocão de texto apenas com o que sobrou (Atividades Reais)
             for item in tabelas_dict[cat]:
                 texto_atividades += str(item.get('Atividade', '')).lower() + " "
 
