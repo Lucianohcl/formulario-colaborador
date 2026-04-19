@@ -1469,19 +1469,7 @@ if st.session_state.pagina == "disc":
             else:
                 st.warning("🚨 Nenhuma sugestão encontrada.")
 
-            # 3. SEÇÃO DE CURSOS E OBJETIVOS (Campos)
-            st.markdown("---")
-            dados_gerais = form.get('campos', {})
             
-            st.subheader("🎓 Qualificações e Cursos")
-            cursos_brutos = dados_gerais.get('cursos', 'Não informado.')
-            # Limpa as quebras de linha vindas do JSON
-            st.write(cursos_brutos.replace('\\n', '\n'))
-            
-            st.subheader("🚩 Objetivo Profissional")
-            obj_bruto = dados_gerais.get('objetivo', 'Não informado.')
-            # Limpa as quebras de linha vindas do JSON
-            st.write(obj_bruto.replace('\\n', '\n'))
 
         # ============================================================
         # 💡 SUGESTÃO FINAL PARA O GESTOR (CONTEÚDO DE RH)
@@ -1712,57 +1700,7 @@ if st.session_state.pagina == "disc":
             st.markdown(f"A ausência de Sugestões ou Dificuldades por um perfil **{perfil_dominante}** pode indicar resistência passiva ou preenchimento evasivo.")
         
         else:
-            # 3. ANÁLISE REAL: SÓ APARECE SE TIVER CONTEÚDO (PEDRO)
-            st.markdown(f"#### 🧠 Análise Crítica de Coerência ({perfil_dominante})")
-            
-            dores_perfil = {
-                "I": ["processo", "planilha", "burocracia", "rotina", "detalhe", "sistema"],
-                "S": ["pressão", "mudança", "conflito", "urgência", "improviso"],
-                "D": ["lentidão", "burocracia", "espera", "autonomia", "internet"],
-                "C": ["falta de dados", "erro", "improviso", "desorganização", "cliente"]
-            }
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("⚠️ Dificuldades vs Perfil")
-                if final_dif:
-                    texto_analise = final_dif.lower()
-                    
-                    # 1. Identifica quais palavras do perfil aparecem no texto do cara
-                    palavras_detectadas = [w for w in dores_perfil.get(perfil_dominante, []) if w in texto_analise]
-                    
-                    if palavras_detectadas:
-                        # 2. Se achou palavras-chave, a queixa é COERENTE com o DISC dele
-                        evidencias = ", ".join(palavras_detectadas)
-                        st.success(f"""
-                        ✅ **Coerência Alta** **Queixa:** "{final_dif}"  
-                        
-                        **Análise Inteligente:** O relato menciona `{evidencias}`, que são gatilhos clássicos de estresse para o perfil **{perfil_dominante}**. Isso indica que o colaborador está reagindo de forma previsível aos gargalos da função.
-                        """)
-                    else:
-                        # 3. Se não achou palavras do perfil, o problema é real de INFRAESTRUTURA
-                        st.warning(f"""
-                        ⚠️ **Alerta Estrutural** **Queixa:** "{final_dif}"  
-                        
-                        **Análise Inteligente:** As queixas fogem do padrão comportamental do perfil **{perfil_dominante}**. Isso sugere que o problema é uma falha real de infraestrutura ou processo, tão crítica que impacta o colaborador independentemente do perfil dele.
-                        """)
-                else:
-                    st.info("Sem dificuldades relatadas.")
-
-            with col2:
-                st.subheader("💡 Sugestões vs Inovação")
-                if final_sug:
-                    inov = ["otimizar", "sistema", "automação", "reduzir", "tempo", "melhorar", "novo"]
-                    if any(w in final_sug.lower() for w in inov):
-                        st.success("🚀 **Foco em Eficiência:** O colaborador busca soluções tecnológicas.")
-                    else:
-                        st.info("📋 **Foco Operacional:** Sugestões voltadas à manutenção do processo.")
-                else:
-                    st.error("🚨 **Barreira Propositiva:** Não houve sugestões.")
-
-            # Resumo Executivo ÚNICO
-            st.info(f"**Resumo Executivo:** O perfil {perfil_dominante} foi analisado com base nas evidências fornecidas nas tabelas.")
+            pass  # O 'pass' diz ao Python: "não faça nada, mas siga as regras"
 
         
 
