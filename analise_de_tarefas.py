@@ -3587,49 +3587,71 @@ else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
 
-    # --- ANÁLISE AVANÇADA DE INCONSISTÊNCIAS ---
+    # --- MOTOR DE COERÊNCIA LINHA A LINHA ---
     st.markdown("---")
-    st.subheader("🕵️ Análise de Inconsistências (Auditoria Inteligente)")
+    st.subheader("🕵️ Checklist de Coerência Técnica")
 
-    def analisar_inconsistencias(detalhes_gerais, h_total):
-        alertas = []
+    def verificar_linha_a_linha(tabelas_dict):
+        checklist = []
         
-        for item in detalhes_gerais:
-            desc = item["Descrição"]
-            # Extrai o valor numérico do impacto (ex: "0.025 h/dia" -> 0.025)
-            impacto = float(item["Impacto Real (Dia)"].split()[0])
-            relatado = item["Relatado"]
+        # Mapeamento de regras por categoria
+        regras = {
+            'alta': {'min_h': 0.5, 'max_h_dia': 6, 'msg': "Complexidade Alta exige mais tempo ou frequência."},
+            'normal': {'min_h': 0.1, 'max_h_dia': 8, 'msg': "Tempo fora do padrão para atividade normal."},
+            'baixa': {'min_h': 0, 'max_h_dia': 4, 'msg': "Atividade baixa ocupando muito espaço no dia."}
+        }
 
-            # 1. Alerta de Impacto Irrelevante (Tarefa "Invisível")
-            if 0 < impacto < 0.020:
-                alertas.append(f"❓ **{desc}**: O impacto de {impacto:.3f}h/dia é quase irrelevante. Avalie se esta tarefa deve ser agrupada ou se a frequência '{relatado}' está subestimada.")
+        for cat, titulo_cat in [('alta', 'Alta'), ('normal', 'Normal'), ('baixa', 'Baixa')]:
+            itens = tabelas_dict.get(cat, [])
+            for i, item in enumerate(itens):
+                desc = item.get('Atividade') or "Sem descrição"
+                freq = str(item.get('Frequência', 'D')).upper().strip()
+                
+                # Conversão para cálculo de impacto
+                h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+                impacto = (h + (m / 60)) / divisores.get(freq, 1)
 
-            # 2. Alerta de Tempo muito alto para Frequência Diária
-            if "(D)" in relatado and impacto > 4:
-                alertas.append(f"📢 **{desc}**: {impacto:.1f}h todo santo dia em uma única tarefa? Verifique se não há inflacionamento de horas.")
+                # --- CRITÉRIOS DE VERIFICAÇÃO ---
+                erros = []
+                
+                # 1. Checa se o impacto é desprezível (menos de 3 min/dia)
+                if impacto < 0.05 and freq != 'D':
+                    erros.append(f"Tempo diluído ({impacto:.3f}h) é irrelevante para análise.")
+                
+                # 2. Checa se o tempo total da tarefa é zero
+                if h == 0 and m == 0:
+                    erros.append("Tempo não preenchido.")
 
-            # 3. Alerta de tarefas complexas com pouco tempo
-            if "Apuração" in desc or "Análise" in desc:
-                if impacto < 0.1:
-                    alertas.append(f"🔍 **{desc}**: Tarefas de análise costumam exigir mais tempo. O impacto relatado ({impacto:.3f}h/dia) parece baixo para a complexidade.")
+                # 3. Lógica de Cargo vs Atividade (Exemplo: Fiscal não pode ter zero de Apuração)
+                if cat == 'alta' and impacto < 0.1:
+                    erros.append("Tarefa de Alta Complexidade com tempo subestimado.")
 
-        # 4. Alerta de Ociosidade ou Sobrecarga Total
-        if h_total < 4:
-            alertas.append("📉 **Alerta de Baixa Ocupação**: A soma total das atividades não preenche nem 50% de uma jornada padrão de 8h.")
-        elif h_total > 10:
-            alertas.append("🚨 **Alerta de Sobrecarga Crítica**: A carga horária diluída ultrapassa 10h/dia. Risco alto de erro humano e fadiga.")
+                # --- MONTAGEM DO STATUS ---
+                if not erros:
+                    checklist.append({"status": "✅", "item": f"{titulo_cat}: {desc}", "obs": "Coerente"})
+                else:
+                    checklist.append({"status": "❌", "item": f"{titulo_cat}: {desc}", "obs": " | ".join(erros)})
 
-        return alertas
+        return checklist
 
-    # Junta todos os detalhes para a análise
-    todos_detalhes = det_alta + det_norm + det_baix + det_dif
-    lista_alertas = analisar_inconsistencias(todos_detalhes, h_total)
+    # Executa a análise
+    verificacao_final = verificar_linha_a_linha(t)
 
-    if lista_alertas:
-        for alerta in lista_alertas:
-            st.warning(alerta)
-    else:
-        st.success("✅ Nenhuma inconsistência lógica detectada nos tempos relatados.")
-
-    # --- FIM DA ANÁLISE ---
+    # Exibição em formato de tabela/checklist
+    if verificacao_final:
+        df_check = pd.DataFrame(verificacao_final)
+        
+        # Estilização básica para o Streamlit
+        st.table(df_check)
+        
+        # Resumo Crítico
+        erros_totais = len([x for x in verificacao_final if x['status'] == "❌"])
+        if erros_totais > 0:
+            st.error(f"🚨 Atenção: Encontramos {erros_totais} inconsistências que podem distorcer o Nexo Causal.")
+        else:
+            st.success("💎 Todos os lançamentos seguem uma lógica técnica aceitável.")
+    
+    # --- FIM DA ANÁLISE LINHA A LINHA ---
 
