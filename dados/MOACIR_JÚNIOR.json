@@ -1,0 +1,109 @@
+{
+    "timestamp": "19/04/2026 04:34:01",
+    "colaborador": "MOACIR JÚNIOR",
+    "campos": {
+        "cargo": "ANALISTA DEPARTAMENTO PESSOAL",
+        "departamento": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "José da Silva",
+        "escolaridade": "DADOS CORRROMPIDOS",
+        "devolver_em": "06/04/2026",
+        "cursos": "DADOS CORRROMPIDOS",
+        "objetivo": "DADOS CORRROMPIDOS"
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Fechamento de folha",
+                "Horas": "4 h",
+                "Minutos": "0 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Rescisões",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "D"
+            },
+            {
+                "Atividade": "Cálculos de encargos trabalhistas",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "normal": [
+            {
+                "Atividade": "Admissão",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Férias",
+                "Horas": "1 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "Cálculo da quinzena",
+                "Horas": "2 h",
+                "Minutos": "30 min",
+                "Frequência": "Q"
+            }
+        ],
+        "baixa": [
+            {
+                "Atividade": "Recalculos",
+                "Horas": "2 h",
+                "Minutos": "10 min",
+                "Frequência": "S"
+            }
+        ],
+        "dificuldades": [
+            {
+                "Dificuldade": "Certificados e senhas",
+                "Setor Envolvido": "Processos",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Mais comunicação dos setores",
+                "Impacto Esperado": "Melhoria certa",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "DVD"
+            }
+        ]
+    },
+    "disc": {
+        "0": "C",
+        "1": "D",
+        "2": "A",
+        "3": "A",
+        "4": "C",
+        "5": "B",
+        "6": "C",
+        "7": "D",
+        "8": "D",
+        "9": "A",
+        "10": "A",
+        "11": "C",
+        "12": "D",
+        "13": "B",
+        "14": "D",
+        "15": "A",
+        "16": "A",
+        "17": "C",
+        "18": "D",
+        "19": "D",
+        "20": "C",
+        "21": "D",
+        "22": "C",
+        "23": "A"
+    }
+}
