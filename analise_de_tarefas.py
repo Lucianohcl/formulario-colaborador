@@ -3587,18 +3587,14 @@ else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
 
-    # --- SUPER MOTOR DE AUDITORIA (RIGOR MÁXIMO + CORREÇÃO T/A) ---
-    st.markdown("---")
-    st.subheader("🕵️ Auditoria de Nexo Causal e Coerência Técnica")
-
     def auditoria_super_inteligente(tabelas_dict, h_total_calculada):
         checklist = []
         
-        # Benchmarks de Complexidade vs Tempo Mínimo de Foco (em horas)
+        # --- DICIONÁRIO DE PESOS SEMÂNTICOS ---
         pesos = {
-            "pesada": ["auditoria", "onboarding", "reestruturação", "diagnóstico", "implantação", "treinamento", "fundamentação"],
-            "gestao": ["gerenciar", "planejar", "coordenar", "estratégico", "liderar", "conduzir", "estruturar"],
-            "operacional": ["organizar", "arquivar", "enviar", "lembretes", "baixa", "status", "encaminhar"]
+            "estrategico": ["gerenciar", "estratégico", "implementar", "planejar", "reestruturação", "onboarding", "diretrizes"],
+            "tecnico_pesado": ["auditoria", "fundamentação", "diagnosticar", "mitigação", "validar", "conduzir"],
+            "operacional": ["atualizar", "organizar", "baixar", "enviar", "lembretes", "conferir checklists", "separar", "status"]
         }
 
         for cat, itens in tabelas_dict.items():
@@ -3607,61 +3603,58 @@ else:
                 desc = desc_pura.lower()
                 freq = str(item.get('Frequência', 'D')).upper().strip()
                 
-                # Conversão Numérica com Divisores Corretos
                 h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                 m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
                 
-                # DIVISORES TÉCNICOS: D=1, S=5, M=20, T=60 (Trimestre), A=240 (Ano)
                 divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
                 divisor = divisores.get(freq, 1)
-                
                 tempo_execucao = h + (m / 60)
                 impacto_diario = tempo_execucao / divisor
 
                 alertas = []
 
-                # --- 1. RIGOR DE NATUREZA (VERBO VS TEMPO) ---
-                if any(p in desc for p in pesos["pesada"]) and tempo_execucao < 1.0:
-                    alertas.append("Complexidade subestimada: Atividade robusta requer mais de 1h/execução.")
+                # --- RIGOR 1: PADRONIZAÇÃO SUSPEITA (O EFEITO "1 HORA") ---
+                # Se o cara coloca 1h em tudo, ele não parou para pensar, ele apenas preencheu para acabar logo.
+                if h == 1 and m == 0:
+                    alertas.append("Lançamento Padronizado (1h): Indica falta de precisão no preenchimento.")
+
+                # --- RIGOR 2: INCOERÊNCIA DE NATUREZA ---
+                # Atividades estratégicas/pesadas NÃO levam o mesmo tempo que operacionais.
+                if any(p in desc for p in pesos["estrategico"]) and tempo_execucao <= 1.0:
+                    alertas.append("Complexidade Estratégica: Tempo relatado insuficiente para a profundidade da tarefa.")
                 
-                if any(p in desc for p in pesos["operacional"]) and impacto_diario > 1.0:
-                    alertas.append("Inchaço Operacional: Tempo excessivo para tarefa de baixo valor agregado.")
+                if any(p in desc for p in pesos["operacional"]) and tempo_execucao >= 1.0:
+                    alertas.append("Inchaço Operacional: Tarefa simples consumindo muito tempo por execução.")
 
-                # --- 2. RIGOR DE DENSIDADE TEXTUAL ---
-                if len(desc_pura) > 150 and impacto_diario < 0.05:
-                    alertas.append("Pomposidade: Descrição prolixa para um impacto real irrelevante.")
-
-                # --- 3. RIGOR DE CATEGORIA ---
+                # --- RIGOR 3: CONTRADIÇÃO DE CATEGORIA ---
                 if cat == 'alta' and impacto_diario < 0.2:
-                    alertas.append("Alta Complexidade Irrelevante: Impacto diário não justifica a classificação.")
+                    alertas.append("Classificada como 'Alta', mas o impacto é de tarefa de suporte.")
 
-                # --- 4. VEREDITO POR LINHA ---
+                # --- RIGOR 4: TAREFAS VAZIAS OU GENÉRICAS ---
+                if "vazio" in desc or len(desc_pura) < 5:
+                    alertas.append("Descrição insuficiente para auditoria.")
+
                 status = "✅" if not alertas else "❌"
                 veredito = "Coerente" if not alertas else " | ".join(alertas)
                 
                 checklist.append({
                     "Status": status,
-                    "Atividade": desc_pura[:65] + "...",
+                    "Atividade": desc_pura[:60] + "...",
                     "Impacto": f"{impacto_diario:.3f} h/dia",
                     "Análise Crítica": veredito
                 })
 
         return checklist
 
-    # Execução da Auditoria
+    # --- NOVO PARECER DE EXTRAPOLAÇÃO ---
     res_final = auditoria_super_inteligente(t, h_total)
     st.table(res_final)
 
-    # --- PARECER FINAL DE INVIABILIDADE (A SUPER INTELIGÊNCIA FALA) ---
     st.markdown("### 📝 Parecer do Perito Digital")
     
-    if h_total > 9.5:
-        st.error(f"""
-        **🚨 INVIABILIDADE OCUPACIONAL DETECTADA** Mesmo que as atividades acima pareçam coerentes individualmente, a soma total de **{h_total:.2f}h/dia** extrapola o limite físico e cognitivo humano para uma jornada sustentável. 
-        Este colaborador está em estado de 'Overload' ou houve erro na percepção de frequência das tarefas.
-        """)
-    elif h_total < 4.0:
-        st.warning(f"**📉 SUB-OCUPAÇÃO OU OMISSÃO:** A carga de **{h_total:.2f}h/dia** indica capacidade ociosa ou falta de detalhamento de tarefas rotineiras.")
-    else:
-        st.success(f"**⚖️ EQUILÍBRIO OPERACIONAL:** A carga de **{h_total:.2f}h/dia** é compatível com uma jornada saudável.")
+    # Lógica de análise de volume
+    if h_total > 12:
+        st.error(f"🚨 **INVIABILIDADE MATEMÁTICA:** O colaborador relata **{h_total:.2f}h** de trabalho por dia. É fisicamente impossível manter essa carga com qualidade. O formulário foi preenchido com superestimação de tempos ou erro crasso de frequência.")
+    elif h_total > 9:
+        st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
 
