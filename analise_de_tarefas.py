@@ -1450,7 +1450,36 @@ if st.session_state.pagina == "disc":
         else:
             st.warning(f"As atividades atuais puxam muito para o eixo **{exigencia_final}**. O colaborador precisará adaptar seu estilo natural para atender essas demandas técnicas.")
 
+        # ============================================================
+        # MENSAGEM PRINCIPAL (VERSÃO INTEGRADA)
+        # ============================================================
+        # Puxa as descrições do dicionário textos_disc que você já tem no código
+        info_dominante = textos_disc.get(dominante, {"nome": "N/A", "estilo": "N/A"})
         
+        # Usa o primeiro perfil exigido para buscar a descrição
+        info_exigido = textos_disc.get(perfil_exigido_1, {"nome": "N/A", "estilo": "N/A"})
+
+        if match_real:
+            st.success(f"✅ **Alta Aderência Inteligente:** O colaborador {form.get('nome','').split()[0]} possui talento natural para **{info_dominante['estilo']}**, que atende bem à exigência de **{exigencia_final}** das atividades.")
+        else:
+            st.warning(f"⚠️ **Ponto de Atenção:** As atividades pedem um foco em **{info_exigido['estilo']}**, mas o colaborador {form.get('nome','').split()[0]} terá que se esforçar para sair do seu estilo natural de **{info_dominante['estilo']}**.")
+
+
+        # ============================================================
+        # SUGESTÕES DE GESTÃO (FINAL)
+        # ============================================================
+        st.markdown("---")
+        st.markdown("#### 💡 Sugestão para o Gestor")
+        
+        dicionario_sugestoes = {
+            "D": "Focar em autonomia e entrega de resultados rápidos. Evitar microgestão.",
+            "I": "Promover interação com o time e utilizar sua capacidade de convencimento.",
+            "S": "Manter rotinas claras e dar suporte em momentos de mudanças bruscas.",
+            "C": "Alocar em tarefas que exijam conformidade, análise de dados e precisão técnica."
+        }
+        
+        sugestao_final = dicionario_sugestoes.get(dominante, "Acompanhar adaptação às tarefas.")
+        st.info(f"**Dica de Performance:** {sugestao_final}")
 
         
         # ============================================================
