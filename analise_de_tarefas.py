@@ -857,72 +857,60 @@ def carregar_todos_formularios(repo_conectado):
     return lista_formularios
 
 # ============================================================
-# LOGIN (Com Bypass para o Formulário)
+# LOGIN (CENTRALIZADO E COM BOTÃO VERMELHO FORÇADO)
 # ============================================================
 if not st.session_state.logged_in and st.session_state.pagina != "formulario":
     
-    # --- ADICIONE ESTE BLOCO CSS AQUI ---
+    # CSS Injetado para forçar a cor e o alinhamento
     st.markdown("""
         <style>
-        div.stButton > button[key="login_button"] {
-            background-color: #FF4B4B; /* Cor Vermelha */
-            color: white;
-            border-radius: 10px;
-            border: none;
-            height: 3em;
-            font-weight: bold;
-            transition: 0.3s;
+        /* Força a cor do botão vermelho */
+        div.stButton > button {
+            background-color: #FF4B4B !important;
+            color: white !important;
+            border-radius: 10px !important;
+            height: 3em !important;
+            width: 100% !important;
+            font-weight: bold !important;
         }
-        div.stButton > button[key="login_button"]:hover {
-            background-color: #D32F2F; /* Vermelho mais escuro ao passar o mouse */
-            color: white;
+        
+        /* Centraliza os inputs de texto */
+        .stTextInput > div > div > input {
+            text-align: center;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # --- MENSAGEM DE BOAS-VINDAS ---
+    # Banner de Boas-vindas com a Mensagem Estratégica
     st.markdown("""
-        <div style="
-            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
-            padding: 30px 60px;
-            max-width: 1200px;
-            margin: 0 auto 5px auto;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0px 10px 20px rgba(0,0,0,0.1);
-        ">
-            <h1 style="color: white; font-family: 'Segoe UI', sans-serif; margin: 0; font-size: 2.0rem;">
-                🚀 Bem-vindo ao Sistema
-            </h1>
-            <p style="color: white; font-size: 1.1rem; opacity: 0.9; margin: 10px 0 0 0; line-height: 1.2;">
+        <div style="background: linear-gradient(to right, #4facfe, #00f2fe); padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+            <h2 style="color: white; margin: 0;">🚀 Bem-vindo ao Sistema</h2>
+            <p style="color: white; font-size: 1.1rem; opacity: 0.9; margin-top: 10px; font-weight: 300;">
                 Gestão Estratégica de Análise de Processos e Colaboradores
             </p>
         </div>
     """, unsafe_allow_html=True)
-    
-    # --- INTERFACE DE ACESSO CENTRALIZADA ---
-    col_lateral_esq, col_central, col_lateral_dir = st.columns([1, 2, 1])
 
-    with col_central:
-        st.markdown("<h2 style='text-align: center;'>🔐 Acesso</h2>", unsafe_allow_html=True)
+    # Centralização Real usando Colunas Largas
+    col1, col2, col3 = st.columns([1, 1.5, 1])
+
+    with col2:
+        st.markdown("<h3 style='text-align: center;'>🔐 Acesso</h3>", unsafe_allow_html=True)
         
-        usuario = st.text_input("Usuário")
-        senha = st.text_input("Senha", type="password")
-
-        if st.button("Entrar", key="login_button", use_container_width=True):
+        usuario = st.text_input("Usuário", placeholder="Digite seu usuário")
+        senha = st.text_input("Senha", type="password", placeholder="Digite sua senha")
+        
+        st.write("") # Espaçador
+        
+        if st.button("Entrar", key="login_button"):
             if (usuario == "admin" and senha == "admin123") or (usuario == "Luciano" and senha == "123"):
                 st.session_state.logged_in = True
                 st.session_state.user_nome = usuario
                 st.session_state.is_admin = True
-                
-                if usuario == "Luciano":
-                    st.session_state["usuario_logado"] = "Luciano 123"
-                else:
-                    st.session_state["usuario_logado"] = usuario
-                    
+                st.session_state["usuario_logado"] = "Luciano 123" if usuario == "Luciano" else usuario
                 st.rerun()
             else:
-                st.error("Usuário ou senha incorretos")
+                st.error("❌ Usuário ou senha incorretos")
     
     st.stop()
 
