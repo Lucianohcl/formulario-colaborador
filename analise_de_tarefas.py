@@ -3486,344 +3486,348 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
-st.markdown("---")
-st.title("⚖️ Motor de Auditoria de Nexo Causal")
+# 1. Este IF serve como uma "parede"
+if st.session_state.pagina == "disc":
 
-# Puxa os dados que foram carregados do GitHub na visualização lá em cima
-base_auditoria = st.session_state.get('base_auditoria', [])
 
-if not base_auditoria:
-    st.info("💡 Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
-else:
-    mapa_auditoria = {}
-    for idx, f in enumerate(base_auditoria):
-        # Mesma lógica de extração de nome da Visualização
-        n_extraido = (f.get('colaborador') or f.get('nome') or (f.get('campos', {}) or {}).get('nome') or f'Colaborador {idx}')
-        nome_chave = str(n_extraido).upper().strip()
-        mapa_auditoria[nome_chave] = f
+    # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
+    st.markdown("---")
+    st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-    nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
+    # Puxa os dados que foram carregados do GitHub na visualização lá em cima
+    base_auditoria = st.session_state.get('base_auditoria', [])
 
-    dados_alvo = mapa_auditoria[colab_alvo]
-    t = dados_alvo.get('tabelas', {})
-    
-    # --- FUNÇÃO DE AUDITORIA (MATEMÁTICA CORRIGIDA S/5, M/20) ---
-    def auditar_tabela_v2(lista):
-        total_dia = 0.0
-        detalhes = []
-        for i in lista:
-            try:
-                desc = i.get('Atividade') or i.get('Dificuldade') or i.get('Sugestão') or "Item"
-                h = float(str(i.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-                m = float(str(i.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                f = str(i.get('Frequência', 'D')).upper().strip()
-                
-                # Divisores exatos: Semanal por 5, Mensal por 20
-                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-                divisor = divisores.get(f, 1)
-                
-                valor_diario = (h + (m / 60)) / divisor
-                total_dia += valor_diario
-                
-                detalhes.append({
-                    "Descrição": desc,
-                    "Relatado": f"{int(h)}h {int(m)}min ({f})",
-                    "Impacto Real (Dia)": f"{valor_diario:.3f} h/dia"
-                })
-            except: continue
-        return total_dia, detalhes
+    if not base_auditoria:
+        st.info("💡 Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
+    else:
+        mapa_auditoria = {}
+        for idx, f in enumerate(base_auditoria):
+            # Mesma lógica de extração de nome da Visualização
+            n_extraido = (f.get('colaborador') or f.get('nome') or (f.get('campos', {}) or {}).get('nome') or f'Colaborador {idx}')
+            nome_chave = str(n_extraido).upper().strip()
+            mapa_auditoria[nome_chave] = f
 
-    # --- PROCESSAMENTO DOS SUBTOTAIS (Identado dentro do if base_auditoria) ---
-    h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
-    h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
-    h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
-    h_dif, det_dif = auditar_tabela_v2(t.get('dificuldades', []))
-    
-    h_total = h_alta + h_norm + h_baix + h_dif
+        nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
+        colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
 
-    # --- SCORE E GRÁFICO ---
-    score = 100
-    if h_total > 9: score -= 40
-    if h_total > 11: score -= 50
-    score = max(0, score)
+        dados_alvo = mapa_auditoria[colab_alvo]
+        t = dados_alvo.get('tabelas', {})
+        
+        # --- FUNÇÃO DE AUDITORIA (MATEMÁTICA CORRIGIDA S/5, M/20) ---
+        def auditar_tabela_v2(lista):
+            total_dia = 0.0
+            detalhes = []
+            for i in lista:
+                try:
+                    desc = i.get('Atividade') or i.get('Dificuldade') or i.get('Sugestão') or "Item"
+                    h = float(str(i.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m = float(str(i.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    f = str(i.get('Frequência', 'D')).upper().strip()
+                    
+                    # Divisores exatos: Semanal por 5, Mensal por 20
+                    divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+                    divisor = divisores.get(f, 1)
+                    
+                    valor_diario = (h + (m / 60)) / divisor
+                    total_dia += valor_diario
+                    
+                    detalhes.append({
+                        "Descrição": desc,
+                        "Relatado": f"{int(h)}h {int(m)}min ({f})",
+                        "Impacto Real (Dia)": f"{valor_diario:.3f} h/dia"
+                    })
+                except: continue
+            return total_dia, detalhes
 
-    import plotly.graph_objects as go
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number", 
-        value = score,
-        title = {'text': f"Nexo Causal: {h_total:.2f}h/dia"},
-        gauge = {
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#2E3192"},
-            'steps': [
-                {'range': [0, 45], 'color': "#ff4b4b"},
-                {'range': [45, 80], 'color': "#ffa500"},
-                {'range': [80, 100], 'color': "#00c853"}
-            ]
-        }
-    ))
-    fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
-    st.plotly_chart(fig, use_container_width=True)
+        # --- PROCESSAMENTO DOS SUBTOTAIS (Identado dentro do if base_auditoria) ---
+        h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
+        h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
+        h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
+        h_dif, det_dif = auditar_tabela_v2(t.get('dificuldades', []))
+        
+        h_total = h_alta + h_norm + h_baix + h_dif
 
-    # --- DETALHAMENTO POR CATEGORIA (IDENTAÇÃO CORRIGIDA) ---
-    st.subheader("📋 Detalhamento por Categoria")
+        # --- SCORE E GRÁFICO ---
+        score = 100
+        if h_total > 9: score -= 40
+        if h_total > 11: score -= 50
+        score = max(0, score)
 
-    # 1. Pegamos os nomes das dificuldades para servir de filtro
-    nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
+        import plotly.graph_objects as go
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number", 
+            value = score,
+            title = {'text': f"Nexo Causal: {h_total:.2f}h/dia"},
+            gauge = {
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "#2E3192"},
+                'steps': [
+                    {'range': [0, 45], 'color': "#ff4b4b"},
+                    {'range': [45, 80], 'color': "#ffa500"},
+                    {'range': [80, 100], 'color': "#00c853"}
+                ]
+            }
+        ))
+        fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
+        st.plotly_chart(fig, use_container_width=True)
 
-    secoes = [
-        ("🔴 Alta Complexidade", det_alta, h_alta),
-        ("🟡 Complexidade Normal", det_norm, h_norm),
-        ("🟢 Baixa Complexidade", det_baix, h_baix),
-        ("⚠️ Dificuldades", det_dif, h_dif)
-    ]
+        # --- DETALHAMENTO POR CATEGORIA (IDENTAÇÃO CORRIGIDA) ---
+        st.subheader("📋 Detalhamento por Categoria")
 
-    for titulo, dados, subtotal in secoes:
-        with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
-            if dados:
-                # 2. FILTRAGEM EM TEMPO REAL:
-                # Se não for a seção de Dificuldades, removemos o que for lixo ou duplicata
-                if "Dificuldades" not in titulo:
-                    dados_limpos = [
-                        d for d in dados 
-                        if str(d.get('Descrição', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
-                        and str(d.get('Descrição', '')).strip().lower() not in nomes_dificuldades
-                    ]
-                    if dados_limpos:
-                        st.table(dados_limpos)
+        # 1. Pegamos os nomes das dificuldades para servir de filtro
+        nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
+
+        secoes = [
+            ("🔴 Alta Complexidade", det_alta, h_alta),
+            ("🟡 Complexidade Normal", det_norm, h_norm),
+            ("🟢 Baixa Complexidade", det_baix, h_baix),
+            ("⚠️ Dificuldades", det_dif, h_dif)
+        ]
+
+        for titulo, dados, subtotal in secoes:
+            with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
+                if dados:
+                    # 2. FILTRAGEM EM TEMPO REAL:
+                    # Se não for a seção de Dificuldades, removemos o que for lixo ou duplicata
+                    if "Dificuldades" not in titulo:
+                        dados_limpos = [
+                            d for d in dados 
+                            if str(d.get('Descrição', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
+                            and str(d.get('Descrição', '')).strip().lower() not in nomes_dificuldades
+                        ]
+                        if dados_limpos:
+                            st.table(dados_limpos)
+                        else:
+                            st.write("Sem atividades relevantes nesta categoria.")
                     else:
-                        st.write("Sem atividades relevantes nesta categoria.")
+                        # Na seção de Dificuldades, mostra tudo normal
+                        st.table(dados)
                 else:
-                    # Na seção de Dificuldades, mostra tudo normal
-                    st.table(dados)
-            else:
-                st.write("Sem registros.")
-            
-    else:
-        # Este else volta para a margem zero (alinhado com o IF inicial)
-        st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
+                    st.write("Sem registros.")
+                
+        else:
+            # Este else volta para a margem zero (alinhado com o IF inicial)
+            st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
 
-    def auditoria_super_inteligente(tabelas_dict, h_total_calculada):
-        checklist = []
+        def auditoria_super_inteligente(tabelas_dict, h_total_calculada):
+            checklist = []
+            
+            # --- DICIONÁRIO DE PESOS SEMÂNTICOS ---
+            pesos = {
+                "estrategico": ["gerenciar", "estratégico", "implementar", "planejar", "reestruturação", "onboarding", "diretrizes"],
+                "tecnico_pesado": ["auditoria", "fundamentação", "diagnosticar", "mitigação", "validar", "conduzir"],
+                "operacional": ["atualizar", "organizar", "baixar", "enviar", "lembretes", "conferir checklists", "separar", "status"]
+            }
+
+            for cat, itens in tabelas_dict.items():
+                for item in itens:
+                    desc_pura = (item.get('Atividade') or item.get('Dificuldade') or "Vazio")
+                    desc = desc_pura.lower()
+                    freq = str(item.get('Frequência', 'D')).upper().strip()
+                    
+                    h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    
+                    divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+                    divisor = divisores.get(freq, 1)
+                    tempo_execucao = h + (m / 60)
+                    impacto_diario = tempo_execucao / divisor
+
+                    alertas = []
+
+                    # --- RIGOR 1: PADRONIZAÇÃO SUSPEITA (O EFEITO "1 HORA") ---
+                    # Se o cara coloca 1h em tudo, ele não parou para pensar, ele apenas preencheu para acabar logo.
+                    if h == 1 and m == 0:
+                        alertas.append("Lançamento Padronizado (1h): Indica falta de precisão no preenchimento.")
+
+                    # --- RIGOR 2: INCOERÊNCIA DE NATUREZA ---
+                    # Atividades estratégicas/pesadas NÃO levam o mesmo tempo que operacionais.
+                    if any(p in desc for p in pesos["estrategico"]) and tempo_execucao <= 1.0:
+                        alertas.append("Complexidade Estratégica: Tempo relatado insuficiente para a profundidade da tarefa.")
+                    
+                    if any(p in desc for p in pesos["operacional"]) and tempo_execucao >= 1.0:
+                        alertas.append("Inchaço Operacional: Tarefa simples consumindo muito tempo por execução.")
+
+                    # --- RIGOR 3: CONTRADIÇÃO DE CATEGORIA ---
+                    if cat == 'alta' and impacto_diario < 0.2:
+                        alertas.append("Classificada como 'Alta', mas o impacto é de tarefa de suporte.")
+
+                    # --- RIGOR 4: TAREFAS VAZIAS OU GENÉRICAS ---
+                    if "vazio" in desc or len(desc_pura) < 5:
+                        alertas.append("Descrição insuficiente para auditoria.")
+
+                    status = "✅" if not alertas else "❌"
+                    veredito = "Coerente" if not alertas else " | ".join(alertas)
+                    
+                    checklist.append({
+                        "Status": status,
+                        "Atividade": desc_pura[:60] + "...",
+                        "Impacto": f"{impacto_diario:.3f} h/dia",
+                        "Análise Crítica": veredito
+                    })
+
+            return checklist
+
         
-        # --- DICIONÁRIO DE PESOS SEMÂNTICOS ---
-        pesos = {
-            "estrategico": ["gerenciar", "estratégico", "implementar", "planejar", "reestruturação", "onboarding", "diretrizes"],
-            "tecnico_pesado": ["auditoria", "fundamentação", "diagnosticar", "mitigação", "validar", "conduzir"],
-            "operacional": ["atualizar", "organizar", "baixar", "enviar", "lembretes", "conferir checklists", "separar", "status"]
+        
+        # --- NOVO PARECER DE EXTRAPOLAÇÃO (FILTRADO E IDENTADO) ---
+        # 1. Mapeia nomes de dificuldades para exclusão
+        nomes_difs = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
+
+        # 2. Cria dicionário limpo apenas com Atividades reais
+        t_limpo = {
+            cat: [
+                i for i in t.get(cat, []) 
+                if str(i.get('Atividade','')).strip().lower() not in nomes_difs 
+                and str(i.get('Atividade','')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
+            ] for cat in ['alta', 'normal', 'baixa']
         }
 
-        for cat, itens in tabelas_dict.items():
-            for item in itens:
-                desc_pura = (item.get('Atividade') or item.get('Dificuldade') or "Vazio")
-                desc = desc_pura.lower()
-                freq = str(item.get('Frequência', 'D')).upper().strip()
+        # 3. Gera a tabela de Status/Análise Crítica sem as duplicatas
+        res_final = auditoria_super_inteligente(t_limpo, h_total)
+        
+        if res_final:
+            st.table(res_final)
+
+        st.markdown("### 📝 Parecer do Perito Digital")
+        
+        # Lógica de análise de volume
+        if h_total > 12:
+            st.error(f"🚨 **INVIABILIDADE MATEMÁTICA:** O colaborador relata **{h_total:.2f}h** de trabalho por dia. É fisicamente impossível manter essa carga com qualidade. O formulário foi preenchido com superestimação de tempos ou erro crasso de frequência.")
+        elif h_total > 9:
+            st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
+
+
+
+    # --- MOTOR DE PERÍCIA DE DIFICULDADES (LINHA DURA - SEM FILTROS) ---
+    st.markdown("---")
+    st.subheader("⚠️ Auditoria de Gargalos e Nexo de Coerência")
+
+    def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
+        check_dif = []
+        
+        # Consolida atividades para cruzamento semântico
+        texto_atividades = ""
+        # 1. Cria lista de nomes das dificuldades para exclusão
+        nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in dificuldades_lista]
+
+        for cat in ['alta', 'normal', 'baixa']:
+            if cat in tabelas_dict:
+                # FILTRAGEM ATIVA: Remove vazios e remove o que for dificuldade
+                tabelas_dict[cat] = [
+                    item for item in tabelas_dict[cat] 
+                    if str(item.get('Atividade', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
+                    and str(item.get('Atividade', '')).strip().lower() not in nomes_dificuldades
+                ]
                 
-                h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-                m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                
-                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-                divisor = divisores.get(freq, 1)
-                tempo_execucao = h + (m / 60)
-                impacto_diario = tempo_execucao / divisor
+                # 2. Concatena apenas as atividades que sobraram
+                for item in tabelas_dict[cat]:
+                    texto_atividades += str(item.get('Atividade', '')).lower() + " "
 
-                alertas = []
+        if not dificuldades_lista:
+            return []
 
-                # --- RIGOR 1: PADRONIZAÇÃO SUSPEITA (O EFEITO "1 HORA") ---
-                # Se o cara coloca 1h em tudo, ele não parou para pensar, ele apenas preencheu para acabar logo.
-                if h == 1 and m == 0:
-                    alertas.append("Lançamento Padronizado (1h): Indica falta de precisão no preenchimento.")
-
-                # --- RIGOR 2: INCOERÊNCIA DE NATUREZA ---
-                # Atividades estratégicas/pesadas NÃO levam o mesmo tempo que operacionais.
-                if any(p in desc for p in pesos["estrategico"]) and tempo_execucao <= 1.0:
-                    alertas.append("Complexidade Estratégica: Tempo relatado insuficiente para a profundidade da tarefa.")
-                
-                if any(p in desc for p in pesos["operacional"]) and tempo_execucao >= 1.0:
-                    alertas.append("Inchaço Operacional: Tarefa simples consumindo muito tempo por execução.")
-
-                # --- RIGOR 3: CONTRADIÇÃO DE CATEGORIA ---
-                if cat == 'alta' and impacto_diario < 0.2:
-                    alertas.append("Classificada como 'Alta', mas o impacto é de tarefa de suporte.")
-
-                # --- RIGOR 4: TAREFAS VAZIAS OU GENÉRICAS ---
-                if "vazio" in desc or len(desc_pura) < 5:
-                    alertas.append("Descrição insuficiente para auditoria.")
-
-                status = "✅" if not alertas else "❌"
-                veredito = "Coerente" if not alertas else " | ".join(alertas)
-                
-                checklist.append({
-                    "Status": status,
-                    "Atividade": desc_pura[:60] + "...",
-                    "Impacto": f"{impacto_diario:.3f} h/dia",
-                    "Análise Crítica": veredito
-                })
-
-        return checklist
-
-    
-    
-    # --- NOVO PARECER DE EXTRAPOLAÇÃO (FILTRADO E IDENTADO) ---
-    # 1. Mapeia nomes de dificuldades para exclusão
-    nomes_difs = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
-
-    # 2. Cria dicionário limpo apenas com Atividades reais
-    t_limpo = {
-        cat: [
-            i for i in t.get(cat, []) 
-            if str(i.get('Atividade','')).strip().lower() not in nomes_difs 
-            and str(i.get('Atividade','')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
-        ] for cat in ['alta', 'normal', 'baixa']
-    }
-
-    # 3. Gera a tabela de Status/Análise Crítica sem as duplicatas
-    res_final = auditoria_super_inteligente(t_limpo, h_total)
-    
-    if res_final:
-        st.table(res_final)
-
-    st.markdown("### 📝 Parecer do Perito Digital")
-    
-    # Lógica de análise de volume
-    if h_total > 12:
-        st.error(f"🚨 **INVIABILIDADE MATEMÁTICA:** O colaborador relata **{h_total:.2f}h** de trabalho por dia. É fisicamente impossível manter essa carga com qualidade. O formulário foi preenchido com superestimação de tempos ou erro crasso de frequência.")
-    elif h_total > 9:
-        st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
-
-
-
-# --- MOTOR DE PERÍCIA DE DIFICULDADES (LINHA DURA - SEM FILTROS) ---
-st.markdown("---")
-st.subheader("⚠️ Auditoria de Gargalos e Nexo de Coerência")
-
-def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
-    check_dif = []
-    
-    # Consolida atividades para cruzamento semântico
-    texto_atividades = ""
-    # 1. Cria lista de nomes das dificuldades para exclusão
-    nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in dificuldades_lista]
-
-    for cat in ['alta', 'normal', 'baixa']:
-        if cat in tabelas_dict:
-            # FILTRAGEM ATIVA: Remove vazios e remove o que for dificuldade
-            tabelas_dict[cat] = [
-                item for item in tabelas_dict[cat] 
-                if str(item.get('Atividade', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
-                and str(item.get('Atividade', '')).strip().lower() not in nomes_dificuldades
-            ]
+        for d in dificuldades_lista:
+            # 1. Coleta de dados com limpeza
+            desc_pura = str(d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
+            desc = desc_pura.lower()
+            setor = str(d.get('Setor Envolvido') or "N/A").upper()
             
-            # 2. Concatena apenas as atividades que sobraram
-            for item in tabelas_dict[cat]:
-                texto_atividades += str(item.get('Atividade', '')).lower() + " "
+            # 2. Cálculo de Impacto (Rigor nos Divisores)
+            h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+            m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+            freq_raw = str(d.get('Frequência', 'M')).upper().strip()
+            
+            divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+            divisor = divisores.get(freq_raw, 20)
+            impacto_diario = (h_d + (m_d / 60)) / divisor
 
-    if not dificuldades_lista:
-        return []
+            alertas = []
 
-    for d in dificuldades_lista:
-        # 1. Coleta de dados com limpeza
-        desc_pura = str(d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
-        desc = desc_pura.lower()
-        setor = str(d.get('Setor Envolvido') or "N/A").upper()
-        
-        # 2. Cálculo de Impacto (Rigor nos Divisores)
-        h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-        m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-        freq_raw = str(d.get('Frequência', 'M')).upper().strip()
-        
-        divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-        divisor = divisores.get(freq_raw, 20)
-        impacto_diario = (h_d + (m_d / 60)) / divisor
+            # --- TESTE 1: NEXO DE IMPACTO ---
+            if impacto_diario < 0.05: # Menos de 3 min/dia
+                alertas.append("Irrelevante: Impacto temporal muito baixo para ser considerado gargalo.")
 
-        alertas = []
+            # --- TESTE 2: CONTRADIÇÃO TEMPORAL ---
+            if any(p in desc for p in ["frequente", "constante", "sempre", "todo dia"]):
+                if freq_raw not in ['D', 'S']:
+                    alertas.append(f"Incoerência: Relata ser 'constante' mas a frequência é {freq_raw}.")
 
-        # --- TESTE 1: NEXO DE IMPACTO ---
-        if impacto_diario < 0.05: # Menos de 3 min/dia
-            alertas.append("Irrelevante: Impacto temporal muito baixo para ser considerado gargalo.")
+            # --- TESTE 3: MATRIZ DE CORRELAÇÃO SEMÂNTICA (AJUSTADO) ---
+            matriz_nexo = {
+                "retrabalho": ["conferência", "lançamento", "cálculo", "análise", "ajuste", "correção", "fechamento", "erro", "inconsistência"],
+                "conferência": ["apuração", "análise", "conferir", "checklist", "verificação", "validação", "divergência", "detalhada"],
+                "acúmulo": ["fechamento", "envio", "atendimento", "cadastro", "lançamento", "gestão", "operacional", "reduz"],
+                "padronização": ["processos", "fluxos", "organização", "método", "rotina", "interno"],
+                "legislação": ["aplicação", "consultivo", "clt", "convenção", "sindicato", "fiscal", "alteração"],
+                "sistema": ["alterdata", "esocial", "plataforma", "instabilidade", "lento", "limitação"],
+                "comunicação": ["atendimento", "esclarecimento", "dúvidas", "internas", "externas", "desafio"],
+                "informação": ["cadastro", "atualização", "dados", "planilha", "setor", "dependência"]
+            }
 
-        # --- TESTE 2: CONTRADIÇÃO TEMPORAL ---
-        if any(p in desc for p in ["frequente", "constante", "sempre", "todo dia"]):
-            if freq_raw not in ['D', 'S']:
-                alertas.append(f"Incoerência: Relata ser 'constante' mas a frequência é {freq_raw}.")
+            achou_nexo = False
+            
+            # 1. Contagem de volume para validar 'Acúmulo' automaticamente
+            total_atividades = sum(len(tabelas_dict.get(cat, [])) for cat in ['alta', 'normal', 'baixa'])
 
-        # --- TESTE 3: MATRIZ DE CORRELAÇÃO SEMÂNTICA (AJUSTADO) ---
-        matriz_nexo = {
-            "retrabalho": ["conferência", "lançamento", "cálculo", "análise", "ajuste", "correção", "fechamento", "erro", "inconsistência"],
-            "conferência": ["apuração", "análise", "conferir", "checklist", "verificação", "validação", "divergência", "detalhada"],
-            "acúmulo": ["fechamento", "envio", "atendimento", "cadastro", "lançamento", "gestão", "operacional", "reduz"],
-            "padronização": ["processos", "fluxos", "organização", "método", "rotina", "interno"],
-            "legislação": ["aplicação", "consultivo", "clt", "convenção", "sindicato", "fiscal", "alteração"],
-            "sistema": ["alterdata", "esocial", "plataforma", "instabilidade", "lento", "limitação"],
-            "comunicação": ["atendimento", "esclarecimento", "dúvidas", "internas", "externas", "desafio"],
-            "informação": ["cadastro", "atualização", "dados", "planilha", "setor", "dependência"]
-        }
-
-        achou_nexo = False
-        
-        # 1. Contagem de volume para validar 'Acúmulo' automaticamente
-        total_atividades = sum(len(tabelas_dict.get(cat, [])) for cat in ['alta', 'normal', 'baixa'])
-
-        # 2. Lógica de busca na Matriz
-        for palavra_chave, correlatas in matriz_nexo.items():
-            if palavra_chave in desc:
-                # Se a palavra-chave OU qualquer correlata dela estiver nas atividades
-                if any(corr in texto_atividades for corr in correlatas) or palavra_chave in texto_atividades:
+            # 2. Lógica de busca na Matriz
+            for palavra_chave, correlatas in matriz_nexo.items():
+                if palavra_chave in desc:
+                    # Se a palavra-chave OU qualquer correlata dela estiver nas atividades
+                    if any(corr in texto_atividades for corr in correlatas) or palavra_chave in texto_atividades:
+                        achou_nexo = True
+                        break
+                    
+            # 3. Regra de Ouro para 'Acúmulo' e 'Volume'
+            if any(p in desc for p in ["acúmulo", "volume", "quantidade", "muita"]):
+                if total_atividades > 12: # Se tem mais de 12 tarefas, o nexo de acúmulo é real
                     achou_nexo = True
-                    break
-                
-        # 3. Regra de Ouro para 'Acúmulo' e 'Volume'
-        if any(p in desc for p in ["acúmulo", "volume", "quantidade", "muita"]):
-            if total_atividades > 12: # Se tem mais de 12 tarefas, o nexo de acúmulo é real
-                achou_nexo = True
 
-        # 4. Validação de Rigor de Tempo vs. Frequência
-        if impacto_diario > 0.8 and len(desc_pura) < 20:
-            alertas.append("Subdetalhamento: Impacto crítico para uma descrição tão curta.")
+            # 4. Validação de Rigor de Tempo vs. Frequência
+            if impacto_diario > 0.8 and len(desc_pura) < 20:
+                alertas.append("Subdetalhamento: Impacto crítico para uma descrição tão curta.")
 
-        if not achou_nexo and len(desc) > 15:
-            if not any(x in desc for x in ["equipe", "gestão", "processo", "comunicação", "demanda"]):
-                alertas.append("Desconexão: Esta dificuldade não possui correlação técnica com as tarefas listadas.")
+            if not achou_nexo and len(desc) > 15:
+                if not any(x in desc for x in ["equipe", "gestão", "processo", "comunicação", "demanda"]):
+                    alertas.append("Desconexão: Esta dificuldade não possui correlação técnica com as tarefas listadas.")
 
-        # --- TESTE 4: RECLAMAÇÃO DE VOLUME ---
-        if any(p in desc for p in ["acúmulo", "sobrecarga", "volume"]):
-            if h_total_atividades < 7.0:
-                alertas.append(f"Falso Alerta: Reclama de volume, mas o Nexo de Atividades é de apenas {h_total_atividades:.2f}h.")
+            # --- TESTE 4: RECLAMAÇÃO DE VOLUME ---
+            if any(p in desc for p in ["acúmulo", "sobrecarga", "volume"]):
+                if h_total_atividades < 7.0:
+                    alertas.append(f"Falso Alerta: Reclama de volume, mas o Nexo de Atividades é de apenas {h_total_atividades:.2f}h.")
 
-        # Montagem do Resultado
-        status = "🚩" if alertas else "✅"
-        veredito = "Nexo Causal Confirmado" if not alertas else " | ".join(alertas)
+            # Montagem do Resultado
+            status = "🚩" if alertas else "✅"
+            veredito = "Nexo Causal Confirmado" if not alertas else " | ".join(alertas)
 
-        check_dif.append({
-            "Status": status,
-            "Setor": setor,
-            "Dificuldade": desc_pura[:60] + "...",
-            "Impacto Diário": f"{impacto_diario:.3f} h/dia",
-            "Análise do Perito": veredito
-        })
-    
-    return check_dif
+            check_dif.append({
+                "Status": status,
+                "Setor": setor,
+                "Dificuldade": desc_pura[:60] + "...",
+                "Impacto Diário": f"{impacto_diario:.3f} h/dia",
+                "Análise do Perito": veredito
+            })
+        
+        return check_dif
 
-# --- CHAMADA E EXIBIÇÃO ---
+    # --- CHAMADA E EXIBIÇÃO ---
 
-# 1. Tente encontrar a variável correta (se não for 't', mude para o nome que você usa)
-dados_para_analise = locals().get('t') or locals().get('dados') or locals().get('registro')
+    # 1. Tente encontrar a variável correta (se não for 't', mude para o nome que você usa)
+    dados_para_analise = locals().get('t') or locals().get('dados') or locals().get('registro')
 
-if dados_para_analise:
-    # 2. Garante que h_total existe (ou define como 0 se não existir)
-    horas_v = locals().get('h_total', 0)
-    
-    res_dificuldades = analisar_dificuldades_rigoroso(
-        dados_para_analise.get('dificuldades', []), 
-        dados_para_analise, 
-        horas_v
-    )
+    if dados_para_analise:
+        # 2. Garante que h_total existe (ou define como 0 se não existir)
+        horas_v = locals().get('h_total', 0)
+        
+        res_dificuldades = analisar_dificuldades_rigoroso(
+            dados_para_analise.get('dificuldades', []), 
+            dados_para_analise, 
+            horas_v
+        )
 
-    if res_dificuldades:
-        st.table(res_dificuldades)
+        if res_dificuldades:
+            st.table(res_dificuldades)
+        else:
+            st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
     else:
-        st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
-else:
-    st.error("⚠️ Erro técnico: A variável de dados (t) não foi encontrada no script.")
+        st.error("⚠️ Erro técnico: A variável de dados (t) não foi encontrada no script.")
