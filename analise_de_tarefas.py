@@ -3600,8 +3600,7 @@ else:
                     st.table(dados)
             else:
                 st.write("Sem registros.")
-            else:
-                st.write("Sem registros.")
+            
     else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
