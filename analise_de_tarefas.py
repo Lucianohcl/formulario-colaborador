@@ -3567,9 +3567,12 @@ else:
     fig.update_layout(height=250, margin=dict(l=20, r=20, t=50, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
-    # --- DETALHAMENTO POR CATEGORIA ---
+    # --- DETALHAMENTO POR CATEGORIA (IDENTAÇÃO CORRIGIDA) ---
     st.subheader("📋 Detalhamento por Categoria")
-    
+
+    # 1. Pegamos os nomes das dificuldades para servir de filtro
+    nomes_dificuldades = [str(d.get('Dificuldade', '')).strip().lower() for d in t.get('dificuldades', [])]
+
     secoes = [
         ("🔴 Alta Complexidade", det_alta, h_alta),
         ("🟡 Complexidade Normal", det_norm, h_norm),
@@ -3580,7 +3583,23 @@ else:
     for titulo, dados, subtotal in secoes:
         with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
             if dados:
-                st.table(dados)
+                # 2. FILTRAGEM EM TEMPO REAL:
+                # Se não for a seção de Dificuldades, removemos o que for lixo ou duplicata
+                if "Dificuldades" not in titulo:
+                    dados_limpos = [
+                        d for d in dados 
+                        if str(d.get('Descrição', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
+                        and str(d.get('Descrição', '')).strip().lower() not in nomes_dificuldades
+                    ]
+                    if dados_limpos:
+                        st.table(dados_limpos)
+                    else:
+                        st.write("Sem atividades relevantes nesta categoria.")
+                else:
+                    # Na seção de Dificuldades, mostra tudo normal
+                    st.table(dados)
+            else:
+                st.write("Sem registros.")
             else:
                 st.write("Sem registros.")
     else:
