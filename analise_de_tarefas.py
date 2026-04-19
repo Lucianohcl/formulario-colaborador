@@ -3587,80 +3587,81 @@ else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
 
-    # --- MOTOR DE AUDITORIA ANALÍTICA (LINHA DURA) ---
+    # --- SUPER MOTOR DE AUDITORIA (RIGOR MÁXIMO + CORREÇÃO T/A) ---
     st.markdown("---")
-    st.subheader("🕵️ Checklist de Coerência Técnico-Temporal")
+    st.subheader("🕵️ Auditoria de Nexo Causal e Coerência Técnica")
 
-    def auditoria_linha_dura(tabelas_dict):
+    def auditoria_super_inteligente(tabelas_dict, h_total_calculada):
         checklist = []
         
-        # Benchmarks de esforço (Natureza da Atividade)
-        natureza = {
-            "pesada": ["auditoria", "onboarding", "reestruturação", "diagnóstico", "implantação", "treinamento"],
-            "gestao": ["gerenciar", "planejar", "coordenar", "estratégico", "liderar", "conduzir"],
-            "conferencia": ["validar", "conferir", "analisar", "verificar", "monitorar"]
+        # Benchmarks de Complexidade vs Tempo Mínimo de Foco (em horas)
+        pesos = {
+            "pesada": ["auditoria", "onboarding", "reestruturação", "diagnóstico", "implantação", "treinamento", "fundamentação"],
+            "gestao": ["gerenciar", "planejar", "coordenar", "estratégico", "liderar", "conduzir", "estruturar"],
+            "operacional": ["organizar", "arquivar", "enviar", "lembretes", "baixa", "status", "encaminhar"]
         }
 
         for cat, itens in tabelas_dict.items():
             for item in itens:
-                # Normalização de dados
                 desc_pura = (item.get('Atividade') or item.get('Dificuldade') or "Vazio")
                 desc = desc_pura.lower()
                 freq = str(item.get('Frequência', 'D')).upper().strip()
+                
+                # Conversão Numérica com Divisores Corretos
                 h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                 m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
                 
-                tempo_por_execucao = h + (m / 60)
-                divisores = {'D': 1, 'S': 5, 'M': 20}
-                impacto_diario = tempo_por_execucao / divisores.get(freq, 1)
+                # DIVISORES TÉCNICOS: D=1, S=5, M=20, T=60 (Trimestre), A=240 (Ano)
+                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+                divisor = divisores.get(freq, 1)
+                
+                tempo_execucao = h + (m / 60)
+                impacto_diario = tempo_execucao / divisor
 
                 alertas = []
 
-                # --- 1. CRÍTICA DE NATUREZA VS TEMPO ---
-                # Atividades "Pesadas" não podem levar menos de 1 hora por execução
-                if any(p in desc for p in natureza["pesada"]) and tempo_por_execucao < 1.0:
-                    alertas.append("Natureza 'Pesada' com tempo insuficiente por execução.")
+                # --- 1. RIGOR DE NATUREZA (VERBO VS TEMPO) ---
+                if any(p in desc for p in pesos["pesada"]) and tempo_execucao < 1.0:
+                    alertas.append("Complexidade subestimada: Atividade robusta requer mais de 1h/execução.")
+                
+                if any(p in desc for p in pesos["operacional"]) and impacto_diario > 1.0:
+                    alertas.append("Inchaço Operacional: Tempo excessivo para tarefa de baixo valor agregado.")
 
-                # --- 2. CRÍTICA DE DENSIDADE ---
-                # Se a descrição é muito longa mas o impacto diário é pífio
-                if len(desc_pura) > 120 and impacto_diario < 0.1:
-                    alertas.append("Descrição inflada para um impacto diário irrelevante.")
+                # --- 2. RIGOR DE DENSIDADE TEXTUAL ---
+                if len(desc_pura) > 150 and impacto_diario < 0.05:
+                    alertas.append("Pomposidade: Descrição prolixa para um impacto real irrelevante.")
 
-                # --- 3. CRÍTICA DE CATEGORIA (ALTA) ---
-                if cat == 'alta':
-                    if impacto_diario < 0.2: # Menos de 12 min/dia
-                        alertas.append("Alta complexidade 'fantasma': impacto diário desprezível.")
-                    if freq == 'D' and impacto_diario > 4:
-                        alertas.append("Inconsistência: Carga diária de alta complexidade humanamente improvável.")
+                # --- 3. RIGOR DE CATEGORIA ---
+                if cat == 'alta' and impacto_diario < 0.2:
+                    alertas.append("Alta Complexidade Irrelevante: Impacto diário não justifica a classificação.")
 
-                # --- 4. CRÍTICA DE REPETIÇÃO (BAIXA) ---
-                if cat == 'baixa' and impacto_diario > 1.5:
-                    alertas.append("Atividade operacional consumindo tempo de analista.")
-
-                # Montagem do Resultado
+                # --- 4. VEREDITO POR LINHA ---
                 status = "✅" if not alertas else "❌"
-                analise = "Coerente" if not alertas else " | ".join(alertas)
+                veredito = "Coerente" if not alertas else " | ".join(alertas)
                 
                 checklist.append({
                     "Status": status,
-                    "Natureza/Atividade": desc_pura[:70] + "...",
+                    "Atividade": desc_pura[:65] + "...",
                     "Impacto": f"{impacto_diario:.3f} h/dia",
-                    "Veredito": analise
+                    "Análise Crítica": veredito
                 })
 
         return checklist
 
-    # Execução e Exibição
-    resultado_pericia = auditoria_linha_dura(t)
-    df_pericia = pd.DataFrame(resultado_pericia)
-    
-    # Exibe a tabela com cores para facilitar o olho do auditor
-    st.table(df_pericia)
+    # Execução da Auditoria
+    res_final = auditoria_super_inteligente(t, h_total)
+    st.table(res_final)
 
-    # Resumo Final
-    reprovados = len([x for x in resultado_pericia if x['Status'] == "❌"])
-    if reprovados > 0:
-        st.error(f"🚩 O Perito Digital encontrou {reprovados} divergências entre a natureza da tarefa e o tempo relatado.")
+    # --- PARECER FINAL DE INVIABILIDADE (A SUPER INTELIGÊNCIA FALA) ---
+    st.markdown("### 📝 Parecer do Perito Digital")
+    
+    if h_total > 9.5:
+        st.error(f"""
+        **🚨 INVIABILIDADE OCUPACIONAL DETECTADA** Mesmo que as atividades acima pareçam coerentes individualmente, a soma total de **{h_total:.2f}h/dia** extrapola o limite físico e cognitivo humano para uma jornada sustentável. 
+        Este colaborador está em estado de 'Overload' ou houve erro na percepção de frequência das tarefas.
+        """)
+    elif h_total < 4.0:
+        st.warning(f"**📉 SUB-OCUPAÇÃO OU OMISSÃO:** A carga de **{h_total:.2f}h/dia** indica capacidade ociosa ou falta de detalhamento de tarefas rotineiras.")
     else:
-        st.success("💎 Nexo Causal validado: A natureza das atividades condiz com o tempo e frequência.")
+        st.success(f"**⚖️ EQUILÍBRIO OPERACIONAL:** A carga de **{h_total:.2f}h/dia** é compatível com uma jornada saudável.")
 
