@@ -3486,227 +3486,117 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import json
-import re
-from datetime import datetime
 
 # =================================================================
-# 🧠 CLASSE MESTRE: AUDITORIA PROFUNDA E NEXO CAUSAL (O MOTOR)
+# 🧠 MOTOR DE CÁLCULO DE NEXO CAUSAL (A BASE)
 # =================================================================
-class MotorAuditoriaCompleto:
-    def __init__(self, dados):
-        self.dados = dados
-        self.campos = dados.get('campos', {})
-        self.tabelas = dados.get('tabelas', {})
-        self.score = 100
-        self.alertas = []
-        self.insights = []
-        self.plano_acao = []
-        self.diagnostico_setorial = ""
+def calcular_nexo_causal(dados):
+    tabelas = dados.get('tabelas', {})
+    
+    # 1. Extração dos Blocos (Fatiamento)
+    alta = [a for a in tabelas.get('alta', []) if a.get('Atividade')]
+    norm = [n for n in tabelas.get('normal', []) if n.get('Atividade')]
+    baix = [b for b in tabelas.get('baixa', []) if b.get('Atividade')]
+    
+    # 2. Lógica de Pontuação (Exemplo Base)
+    # Quanto mais equilibrado entre Alta/Normal e Baixa, maior o Nexo
+    score = 100
+    total_atividades = len(alta) + len(norm) + len(baix)
+    
+    if total_atividades == 0:
+        return 0, (alta, norm, baix)
+    
+    # Penalidade se só houver tarefas de baixa complexidade
+    if len(baix) > (len(alta) + len(norm)) * 2:
+        score -= 30
         
-        # Extração e Limpeza de Blocos (Fatiamento)
-        self.alta = [a for a in self.tabelas.get('alta', []) if a.get('Atividade')]
-        self.norm = [n for n in self.tabelas.get('normal', []) if n.get('Atividade')]
-        self.baix = [b for b in self.tabelas.get('baixa', []) if b.get('Atividade')]
-        self.difs = [d for d in self.tabelas.get('dificuldades', []) if d.get('Dificuldade')]
-        self.sugs = [s for s in self.tabelas.get('sugestoes', []) if s.get('Sugestão')]
-        
-        # Metadados do Colaborador
-        self.nome = str(self.campos.get('colaborador') or self.campos.get('nome', 'N/A')).upper()
-        self.cargo = str(self.campos.get('cargo', '')).upper()
-        self.setor = str(self.campos.get('dep') or self.campos.get('setor', '')).upper()
+    # Penalidade por excesso de volume (inconsistência de preenchimento)
+    if total_atividades > 25:
+        score -= 20
 
-    def calcular_horas(self, lista):
-        total = 0
-        for item in lista:
-            try:
-                h = float(str(item.get('Horas', '0')).replace(',', '.') or 0)
-                m = float(str(item.get('Minutos', '0')).replace(',', '.') or 0) / 60
-                f = str(item.get('Frequência', 'D')).upper()
-                peso = 1.0 if 'D' in f else 0.22 if 'S' in f else 0.045
-                total += (h + m) * peso
-            except: continue
-        return total
-
-    # ---------------------------------------------------------
-    # SUB-MOTOR 01: AUDITORIA JURÍDICA E DE JORNADA
-    # ---------------------------------------------------------
-    def auditoria_juridica(self, h_total):
-        # Validação de Excesso de Jornada
-        if h_total > 10:
-            self.score -= 30
-            self.alertas.append("🚨 **CRÍTICO:** Jornada extrapola limites legais (Risco Trabalhista).")
-            self.plano_acao.append("👉 Implementar controle rígido de horas extras para evitar passivos.")
-        elif h_total < 4:
-            self.score -= 15
-            self.alertas.append("🟡 **AVISO:** Carga horária relatada muito abaixo do padrão contratual.")
-
-        # Validação de Intervalos (Baseado em Volume de Atividades)
-        total_atividades = len(self.alta) + len(self.norm) + len(self.baix)
-        if total_atividades > 15:
-            self.insights.append("📉 **PRODUTIVIDADE:** Alto volume de micro-tarefas detectado. Risco de fadiga mental.")
-
-    # ---------------------------------------------------------
-    # SUB-MOTOR 02: AUDITORIA DE NEXO POR CARGO
-    # ---------------------------------------------------------
-    def auditoria_nexo_cargo(self):
-        # Regras para Liderança
-        if any(x in self.cargo for x in ["COORDENADOR", "GESTOR", "GERENTE", "CHEFE"]):
-            if len(self.baix) > len(self.alta):
-                self.score -= 20
-                self.alertas.append("⚠️ **NEXO FALHO:** Líder focado em tarefas operacionais de baixa complexidade.")
-                self.plano_acao.append("👉 Treinar subordinados para assumir rotinas de baixa complexidade.")
-        
-        # Regras para Operacional
-        if any(x in self.cargo for x in ["AUXILIAR", "ASSISTENTE"]):
-            if len(self.alta) > 3:
-                self.insights.append("⭐ **POTENCIAL:** Colaborador operacional executando muitas tarefas de alta complexidade (Promissor).")
-
-    # ---------------------------------------------------------
-    # SUB-MOTOR 03: AUDITORIA DE SETORES ESPECÍFICOS (DP/RH/FIN)
-    # ---------------------------------------------------------
-    def auditoria_setorial(self):
-        txt_total = str(self.dados).lower()
-        
-        if "DP" in self.setor or "PESSOAL" in self.setor:
-            keywords = ["esocial", "folha", "admissão", "rescisão", "férias"]
-            encontradas = [k for k in keywords if k in txt_total]
-            if len(encontradas) < 2:
-                self.alertas.append("📋 **ALERTA DP:** Relatório não detalha processos críticos de Folha/eSocial.")
-                self.score -= 5
-
-        if "FINANCEIRO" in self.setor:
-            if "conciliação" not in txt_total and "pagamento" not in txt_total:
-                self.alertas.append("💰 **ALERTA FIN:** Ausência de rotinas de fluxo de caixa ou pagamentos.")
-
-    # ---------------------------------------------------------
-    # SUB-MOTOR 04: AUDITORIA SEMÂNTICA E DE DIFICULDADES
-    # ---------------------------------------------------------
-    def auditoria_semantica(self):
-        if not self.difs:
-            self.score -= 10
-            self.alertas.append("🛡️ **POSTURA DEFENSIVA:** Nenhuma dificuldade técnica reportada. Pouca transparência.")
-        
-        # Cruzamento: Dificuldade vs Solução
-        if len(self.difs) > 0 and len(self.sugs) == 0:
-            self.alertas.append("❓ **INCONSISTÊNCIA:** Colaborador aponta problemas, mas não sugere soluções.")
-            self.score -= 5
-
-    # ---------------------------------------------------------
-    # EXECUÇÃO DO PROCESSAMENTO
-    # ---------------------------------------------------------
-    def processar(self):
-        h_a = self.calcular_horas(self.alta)
-        h_n = self.calcular_horas(self.norm)
-        h_b = self.calcular_horas(self.baix)
-        h_total = h_a + h_n + h_b
-        
-        # Roda os sub-motores
-        self.auditoria_juridica(h_total)
-        self.auditoria_nexo_cargo()
-        self.auditoria_setorial()
-        self.auditoria_semantica()
-        
-        # Gera Diagnóstico Final
-        if self.score > 85: self.diagnostico_setorial = "EXCELENTE: Dados consistentes e nexo causal forte."
-        elif self.score > 60: self.diagnostico_setorial = "ATENÇÃO: Existem pontos de melhoria no nexo das atividades."
-        else: self.diagnostico_setorial = "CRÍTICO: Relatório com baixo nexo causal ou riscos operacionais."
-
-        return {
-            "score": max(self.score, 0),
-            "h_total": h_total,
-            "h_alta": h_a, "h_norm": h_n, "h_baix": h_b,
-            "alertas": self.alertas,
-            "insights": self.insights,
-            "plano": self.plano_acao,
-            "diagnostico": self.diagnostico_setorial
-        }
+    return max(score, 0), (alta, norm, baix)
 
 # =================================================================
-# 🖥️ INTERFACE INTEGRADA (TRAZ TODOS OS COLABORADORES)
+# 🖥️ INTERFACE: VARREDURA TOTAL DE COLABORADORES
 # =================================================================
 if st.session_state.get("pagina") == "analise":
-    st.markdown("<h1 style='color: #4facfe;'>🧠 Auditoria Giganter 360°</h1>", unsafe_allow_html=True)
+    st.title("🛡️ Auditoria: Base de Nexo Causal")
 
-    # 1. VARREDURA TOTAL (IGUAL À VISUALIZAÇÃO)
+    # --- VARREDURA COMPLETA DA PASTA 'DADOS' ---
     try:
+        # Acesse o repositório (ajuste o nome se necessário)
         repo = g.get_repo("lucianohcl/formulario-colaborador")
-        arquivos = repo.get_contents("dados")
-        banco_total = []
-        for f in arquivos:
-            if f.name.endswith(".json"):
-                d = json.loads(f.decoded_content.decode("utf-8"))
-                # Garante que temos um ID de nome para o seletor
-                id_nome = (d.get('colaborador') or d.get('nome') or 
-                           d.get('campos', {}).get('colaborador') or f.name)
-                d['ID_REF'] = str(id_nome).upper().strip()
-                banco_total.append(d)
-    except:
-        st.error("Erro ao acessar base do GitHub.")
-        banco_total = []
-
-    if banco_total:
-        # Seletor de Colaborador (Puxa todos)
-        lista_nomes = sorted(list(set([x['ID_REF'] for x in banco_total])))
-        colab_alvo = st.sidebar.selectbox("👤 Colaborador para Auditoria:", lista_nomes)
+        arquivos_pasta = repo.get_contents("dados")
         
-        dados_colab = next(x for x in banco_total if x['ID_REF'] == colab_alvo)
-
-        # 2. DISPARO DO MOTOR
-        auditor = MotorAuditoriaCompleto(dados_colab)
-        resultado = auditor.processar()
-
-        # 3. CABEÇALHO DE PERFORMANCE
-        st.markdown(f"## 📊 Diagnóstico: {colab_alvo}")
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Score de Nexo", f"{resultado['score']}%")
-        c2.metric("Carga Horária", f"{resultado['h_total']:.1f}h/dia")
-        c3.metric("Fidelidade", "ALTA" if resultado['score'] > 80 else "BAIXA")
-
-        st.divider()
-
-        # 4. FATIAMENTO POR COMPLEXIDADE (BLOCO A BLOCO)
-        st.subheader("📝 Fatiamento de Atividades")
-        tab1, tab2, tab3 = st.tabs(["🔥 ALTA", "⚖️ NORMAL", "⏳ BAIXA"])
+        # Dicionário para armazenar TODOS os colaboradores encontrados
+        base_colaboradores = {}
         
-        with tab1:
-            if auditor.alta: st.table(pd.DataFrame(auditor.alta))
-            else: st.info("Sem registros de alta complexidade.")
-        with tab2:
-            if auditor.norm: st.table(pd.DataFrame(auditor.norm))
-            else: st.info("Sem registros de complexidade normal.")
-        with tab3:
-            if auditor.baix: st.table(pd.DataFrame(auditor.baix))
-            else: st.info("Sem registros de baixa complexidade.")
+        for item in arquivos_pasta:
+            if item.name.endswith(".json"):
+                # Lê o conteúdo de cada arquivo
+                conteudo_raw = item.decoded_content.decode("utf-8")
+                dados_json = json.loads(conteudo_raw)
+                
+                # Captura o nome (procurando em vários campos para não falhar)
+                nome_colab = (dados_json.get('colaborador') or 
+                              dados_json.get('nome') or 
+                              dados_json.get('campos', {}).get('colaborador') or 
+                              item.name).upper().strip()
+                
+                # Adiciona ao dicionário global
+                base_colaboradores[nome_colab] = dados_json
 
-        # 5. BLOCO DE DIFICULDADES E SOLUÇÕES (CRUZADO)
-        st.divider()
-        col_esq, col_dir = st.columns(2)
-        with col_esq:
-            st.subheader("⚠️ Dificuldades Reportadas")
-            if auditor.difs: st.warning([d.get('Dificuldade') for d in auditor.difs])
-            else: st.success("Nenhuma dificuldade técnica listada.")
-        with col_dir:
-            st.subheader("💡 Soluções Sugeridas")
-            if auditor.sugs: st.info([s.get('Sugestão') for s in auditor.sugs])
-            else: st.info("Colaborador não propôs melhorias.")
+    except Exception as e:
+        st.error(f"Erro ao conectar com a base de dados: {e}")
+        base_colaboradores = {}
 
-        # 6. ANÁLISE DE ALERTAS E PLANO DE AÇÃO (O PULO DO GATO)
-        st.divider()
-        st.subheader("🔍 Veredito da Auditoria")
-        st.markdown(f"**Situação:** `{resultado['diagnostico']}`")
+    # --- SELETOR E EXIBIÇÃO ---
+    if base_colaboradores:
+        nomes_lista = sorted(list(base_colaboradores.keys()))
         
-        for a in resultado['alertas']: st.error(a)
-        for i in resultado['insights']: st.info(i)
-        for p in resultado['plano']: st.success(p)
+        st.sidebar.header("Configurações")
+        escolha = st.sidebar.selectbox(
+            f"👥 Colaboradores ({len(nomes_lista)}):", 
+            nomes_lista
+        )
 
-        # 7. GRÁFICO TÉCNICO
-        fig = go.Figure(go.Bar(
-            x=['Alta', 'Normal', 'Baixa'],
-            y=[resultado['h_alta'], resultado['h_norm'], resultado['h_baix']],
-            marker_color=['#ff4b4b', '#ffa500', '#4facfe']
+        # Recupera os dados do colaborador selecionado
+        dados_alvo = base_colaboradores[escolha]
+        
+        # Calcula o Nexo Causal
+        score_nexo, blocos = calcular_nexo_causal(dados_alvo)
+        alta, norm, baix = blocos
+
+        # --- GRÁFICO DE NEXO CAUSAL (GAUGE CHART) ---
+        st.subheader(f"Análise de Nexo: {escolha}")
+        
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = score_nexo,
+            title = {'text': "Índice de Nexo Causal (%)"},
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            gauge = {
+                'axis': {'range': [None, 100]},
+                'bar': {'color': "#4facfe"},
+                'steps': [
+                    {'range': [0, 50], 'color': "#ff4b4b"},
+                    {'range': [50, 85], 'color': "#ffa500"},
+                    {'range': [85, 100], 'color': "#00c853"}
+                ],
+                'threshold': {
+                    'line': {'color': "black", 'width': 4},
+                    'thickness': 0.75,
+                    'value': score_nexo}
+            }
         ))
-        fig.update_layout(title="Distribuição de Horas por Complexidade")
+        
         st.plotly_chart(fig, use_container_width=True)
 
-        # 8. GERADOR DE RELATÓRIO PDF/TEXTO
-        st.download_button("📥 Exportar Dossiê Completo", str(resultado), file_name=f"auditoria_{colab_alvo}.txt")
+        # Exibição rápida do fatiamento (opcional, apenas para conferência)
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Tarefas Alta", len(alta))
+        col2.metric("Tarefas Normal", len(norm))
+        col3.metric("Tarefas Baixa", len(baix))
+
+    else:
+        st.warning("Nenhum colaborador encontrado na pasta 'dados'.")
