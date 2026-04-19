@@ -1,20 +1,21 @@
 {
-    "timestamp": "06/04/2026 19:19:35",
+    "timestamp": "19/04/2026 03:55:10",
     "colaborador": "VERONICA RODRIGUES GUIMARÃES",
     "campos": {
-        "cargo": "",
-        "departamento": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "escolaridade": "",
-        "cursos": "",
-        "objetivo": ""
+        "cargo": "Analista Contábil Sênior",
+        "departamento": "Contábil",
+        "setor": "Contabilidade",
+        "chefe": "Thalita Gusmão",
+        "unidade": "JV Contabillidade",
+        "escolaridade": "Superior Completo",
+        "devolver_em": "06/04/2026",
+        "cursos": "Bacharelado em Ciências Contábeis (com CRC Ativo) / Excel intermediário / Conhecimento básico em relatórios gerenciais e financeiros",
+        "objetivo": "Objetivo/atividades: fechar/entregar balanços, demais demonstrativos e relatórios devidamente conferidos , além de assistir aos clientes e colegas de equipe, garantindo que ambos sejam atendidos, cada qual em sua necessidade. Preciso garantir que o cliente tenha sua informação clara e completa, sobre o serviço que nos propomos fazer/entregar.  E sobre a equipe, preciso me certificar  que nossos colegas estão sendo escutados, orientados, capacitados e monitorados, para que possam entregar seu melhor resultado.  Escutar é imprescindível para conseguir atendê-los da melhor forma e dentro das condições possíveis, assim como, para aprender com eles."
     },
     "tabelas": {
         "alta": [
             {
-                "Atividade": "Confeccionar demonstrativos urgentes, para empresas que não estão com a escrituração contábil em dia - que estão com os fechamentos mensais atrasados. A complexidade não tem relação com dificuldade, tem relação com o volume de análise em atraso, para colocar em dia, num prazo, que mesmo que não tenha sido mensurado, eu sei que tem urgência.  Então, mensurar o tempo que eu gasto nessas atividades, é complicado, pois iniciamos uma, paramos; pegamos outra, paramos; voltamos à anterior - e por aí vai. Sei que essa é a rotina num escritório e também sei que agora é que está chegando mais pessoas à equipe, mas como preciso descrever algo, isso é o que considero como \"alta complexidade\", devido à urgência num prazo relativamente curto.   Preencherei o campo \"tempo\" porque precisa ser preenchido, mas cada empresa dessa tem um tempo diferente - então colocarei o máximo permitido, mas com certeza para esse tipo de situação, preciso tentar cronometrar cada empresa feita. E com certeza há empresas que ultrapassam 24h, pois várias delas foi preciso revisar e/ou analisar um ano inteiro.  ",
+                "Atividade": "Confeccionar demonstrativos urgentes, para empresas que não estão com a escrituração contábil em dia - que estão com os fechamentos mensais atrasados. A complexidade não tem relação com dificuldade, tem relação com o volume de análise em atraso, para colocar em dia num prazo, que mesmo que não tenha sido mensurado, eu sei que tem urgência.  Então, mensurar o tempo que eu gasto nessas atividades, é complicado, pois iniciamos uma, paramos; pegamos outra, paramos; voltamos à anterior - e por aí vai. Sei que essa é a rotina num escritório e também sei que agora é que está chegando mais gente à equipe, mas como preciso descrever algo, isso é o que considero como \"alta complexidade\", devido à urgência num prazo relativamente curto.   Preencherei o campo \"tempo\" porque precisa ser preenchido, mas cada empresa dessa tem um tempo diferente - então colocarei o máximo permitido, mas com certeza para esse tipo de situação, preciso tentar cronometrar cada empresa feita.",
                 "Horas": "24 h",
                 "Minutos": "55 min",
                 "Frequência": "A"
@@ -28,13 +29,13 @@
                 "Frequência": "M"
             },
             {
-                "Atividade": "Fechar balancetes mensais de lucro real -  empresa com movimento médio e quantidade de análises moderadas. Requer mais conciliações que uma de menor movimento(ex.: Ativa Comércio- aumentou o nível de análise depois que passamos a importar os pagamentos com cartão de crédito e isso tem demandado bastante tempo). Dependendo de quem feche, o tempo vai ultrapassar 3 dias.",
+                "Atividade": "Fechar balancetes mensais de lucro real -  empresa com movimento médio e quantidade de análises moderadas, pois requer mais conciliações que uma de menor movimento ou com contas básicas e poucas para conciliar (ex.: Ativa Comércio- aumentou o nível de análise depois que passamos a importar os pagamentos com cartão de crédito).",
                 "Horas": "24 h",
                 "Minutos": "0 min",
                 "Frequência": "M"
             },
             {
-                "Atividade": "Confeccionar Balanços de empresas que estão com a escrituração contábil em dia - para essas empresas ainda não consegui perceber qual a periodicidade, então colocarei anual.",
+                "Atividade": "Confeccionar Balanços de empresas que estão com a escrituração contábil em dia - para essas empresas ainda não consegui perceber qual a periodicidade, então colocarei anual",
                 "Horas": "3 h",
                 "Minutos": "0 min",
                 "Frequência": "A"
@@ -42,13 +43,13 @@
         ],
         "baixa": [
             {
-                "Atividade": "Escutar e orientar meus colegas, de acordo com o que eles sinalizarem que é sua dificuldade ou dúvida sobre determinada atividade. Vale ressaltar, que por mais que seja de baixa complexidade, demanda tempo. Requer parar várias vezes o que eu estiver fazendo, para atendê-los.  Procuro atendê-los na mesma hora, pois na maioria das vezes eles precisam desse retorno para dar continuidade ao que estão fazendo.  O único momento em que eu não paro, é se eu estiver em uma ligação.  \nAssim como várias outras atividades, é difícil mensurar tempo. Acabamos de admitir uma analista e ela tem conhecimento, talvez básico/intermediário e precisa de suporte neste momento. Então o tempo gasto com ela hoje está um pouco maior, mas em breve isso vai reduzir. Foi necessário parar diversas vezes, tanto para explicar, como para fazer com ela e depois conferir.  Difícil mensurar tempo, porque também varia.",
+                "Atividade": "Escutar e orientar meus colegas, de acordo com o que eles sinalizarem que é sua dificuldade ou dúvida sobre determinada atividade. Vale ressaltar, que por mais que seja de baixa complexidade, demanda tempo. Requer parar várias vezes o que eu estiver fazendo, para atendê-los.  E não posso deixar para atendê-los depois, pois na maioria das vezes eles precisam desse retorno para dar continuidade ao que estão fazendo.  O único momento em que eu não paro, é se eu estiver em uma ligação.  Exceto por isso, paro sim, porque entendo que é necessário - para isso, hoje eu sinto que é difícil mensurar tempo, pois acabamos de admitir uma analista e ela tem conhecimento, talvez intermediário e precisa de bastante orientação. Então o tempo gasto com ela, mesmo considerando que ela assistiu alguns vídeos, com certeza é maior do que alguém que tem mais experiência. E parei diversas vezes, tanto para explicar, como para fazer com ela e depois e conferir, para ela corrigir o que precisava.  Difícil mensurar tempo, porque também varia.",
                 "Horas": "5 h",
                 "Minutos": "0 min",
                 "Frequência": "DVD"
             },
             {
-                "Atividade": "Atender às ligações e ligar para os clientes:  o tempo para isso é relativo.  Enquanto não colocarmos as empresas em dia, para conseguirmos repassar relatórios e marcar com os clientes para discutir seus números, hoje as ligações são basicamente para tirar dúvidas ou solicitar documentos.  Então, entendo que hoje o tempo gasto com ligações é bem pouco.",
+                "Atividade": "Atender às ligações e ligar para os clientes:  o tempo para isso é relativo.  Enquanto não colocarmos as empresas em dia, para conseguirmos repassar relatórios e marcar com os clientes para discutir seus números, hoje as ligações são para tirar dúvidas ou solicitar documentos.  Então, entendo que hoje o tempo gasto com ligações é bem pouco.",
                 "Horas": "1 h",
                 "Minutos": "0 min",
                 "Frequência": "S"
@@ -56,7 +57,7 @@
         ],
         "dificuldades": [
             {
-                "Dificuldade": "Clientes : o gargalo é a falta de qualidade nas informações e/ou a falta destas. Também sei que isso faz parte da rotina dos escritórios, mas preciso evidenciar que é algo \"normal\", mas que compromete o tempo que gastamos para conciliar, assim como, algumas vezes não permite que as conciliações não sejam realizadas 100% da forma como deveria ser. Exemplo: pagamentos com nome de fornecedor, mas não tem nota fiscal sendo mencionada; pagamentos via SISPAG, com valores fechados e que precisa de detalhamento e não recebemos ou não temos acesso a esse detalhamento, etc.\nSaber que os clientes, talvez em sua maioria, sejam assim, faz com que eu tenha paciência, mas isso não diminui a nossa necessidade de obter informações com mais clareza. Só complementando esse gargalo, há clientes que não enviam as informações; ou as enviam parcialmente;  ou até enviam total, mas com históricos incompletos ou que não possuem informação que agregue ao nosso trabalho de conciliação; e, há os que enviam tudo certinho (aparentemente a minoria). \n- Outra atividade difícil de mensurar tempo, porque isso se aplica a várias empresas e tem a ver com a cultura dela. É meio que um trabalho de formiguinha ajudar o cliente a aperfeiçoar sua forma de trabalhar.",
+                "Dificuldade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas preciso evidenciar.  Saber que é assim, me faz ter mais paciência, mas continuo precisando da informação.   Há clientes que não enviam as informações; as enviam parcialmente;  enviam total, mas com históricos incompletos ou que não possuem informação que agregue ao nosso trabalho de conciliação; e, há os que enviam tudo certinho (aparentemente a minoria manda tudo e com os históricos trabalháveis). - Outra atividade difícil de mensurar tempo, porque isso se aplica a várias empresas e tem a ver com a cultura dela. É meio que um trabalho de formiguinha ajudar o cliente a aperfeiçoar sua forma de trabalhar.",
                 "Setor Envolvido": "Setor Financeiro do Cliente",
                 "Horas": "2 h",
                 "Minutos": "0 min",
@@ -65,8 +66,8 @@
         ],
         "sugestoes": [
             {
-                "Sugestão": "Não usei todos os controles existentes na JV, então não sei dizer se existe algo feito o que vou sugerir:   inicialmente, tomando como base os check list's que enviamos aos clientes todo início de mês, dá para levantarmos quais são os clientes que enviam tudo e os que são mais difíceis, e só enviam algo quando são cobrados.    E, de posse dessa informação, podemos criar um controle de cobrança, que a meu ver, se estiver corretamente preenchido, agora que a equipe está aumentando, ou um estagiário contábil, ou alguém de fora da equipe, pode fazer esta cobrança.\nComo mensalmente enviamos o check list, acredito que muitos clientes nem olham mais. Por isso, eu acredito que cobranças durante o mês podem dar resultado.  Por ser uma sugestão, não faço ideia de quanto tempo isso demandaria, mas vou sugerir o tempo gasto diário para esta atividade, que a meu ver, envolve não somente um e-mail e mensagem por whatsApp, mas ligação para conversar com o responsável do setor financeiro das empresas, para entender o porquê deles não enviarem tudo em tempo hábil e da forma adequada.\nFazemos isso pontualmente no início do mês, mas penso que pode ser intensificado. Exemplo: uma empresa que não envia todas as informações e precisa, para ontem, do balanço fechado.  Mensalmente só fazemos a cobrança do check list, que é uma vez no início do mês e depois só falamos nisso um mês depois. A ideia seria que essa atividade fosse duas ou 3x no mês.",
-                "Impacto Esperado": "De posse das informações, mesmo que não fechemos todos os  balancetes mensalmente, ao menos teremos todas as informações \"em casa\", para trabalhar com elas posteriormente e até com cronograma, justamente por estarmos com tudo. Isso evitaria a cobrança ao cliente, meses depois, que é o que geralmente acontece.",
+                "Sugestão": "Não usei todos os controles existentes na JV, então não sei dizer se existe algo feito o que vou sugerir:   inicialmente, tomando como base os check list's que enviamos aos clientes todo início de mês, dá para levantarmos quais são os que enviam tudo e os que são mais difíceis, e só enviam algo quando são cobrados.\nDe posse dessa informação, podemos criar um controle de cobrança, que a meu ver, se estiver corretamente preenchido, agora que a equipe está aumentando, ou um estagiário contábil, ou alguém de fora da equipe, que não sei se essa atividade seria pertinente a esta pessoa de fora, pois não sei o escopo de seu trabalho e de suas atividades, que seria Isabella, poderia nos ajudar com esta cobrança.    Escrevi isso tudo, para sugerir que tenhamos um setor de cobrança de documentos, que o faça não apenas no início do mês, mas durante o mês.  Por ser uma sugestão, não faço ideia de quanto tempo isso demandaria, mas vou sugerir o tempo gasto diário para esta atividade, que a meu ver, envolve não somente um e-mail e mensagem por whatsApp, mas ligação para conversar com o responsável do setor financeiro das empresas, para entender o porquê deles não enviarem tudo em tempo hábil e da forma adequada.\nFazemos isso pontualmente no início do mês, mas penso que pode ser intensificado. Exemplo: uma empresa que não envia todas as informações e precisa, para ontem, do balanço fechado.  Mensalmente só fazemos a cobrança do check list, que é uma vez no início do mês e depois só falamos nisso um mês depois. Com esse trabalho de cobrança, considerando que ela seria periódica, por exemplo, 3x no mês, sem considerar o check list, acho que podemos ter um resultado melhor, porque acredito que o cliente está acostumado com o check list",
+                "Impacto Esperado": "de posse das informações, mesmo que não fechemos todos os  balancetes mensalmente, ao menos teremos todas as informações \"em casa\", para trabalhar com elas posteriormente e até com cronograma, justamente por estarmos com tudo. Isso evitaria a cobrança ao cliente, meses depois, que é o que geralmente acontece.",
                 "Horas": "4 h",
                 "Minutos": "0 min",
                 "Frequência": "S"
