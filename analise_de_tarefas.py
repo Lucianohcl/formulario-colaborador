@@ -3482,121 +3482,76 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-import streamlit as st
-import pandas as pd
-import plotly.graph_objects as go
-import json
+# --- FINAL DO CÓDIGO (ABAIXO DA VISUALIZAÇÃO) ---
 
-# =================================================================
-# 🧠 MOTOR DE CÁLCULO DE NEXO CAUSAL (A BASE)
-# =================================================================
-def calcular_nexo_causal(dados):
-    tabelas = dados.get('tabelas', {})
+st.markdown("---")
+st.title("⚖️ Motor de Auditoria de Nexo Causal")
+
+# 1. SEGURANÇA TOTAL: USAMOS A MESMA LISTA QUE A VISUALIZAÇÃO ACABOU DE CARREGAR
+if 'lista_de_arquivos' in locals() and lista_de_arquivos:
     
-    # 1. Extração dos Blocos (Fatiamento)
-    alta = [a for a in tabelas.get('alta', []) if a.get('Atividade')]
-    norm = [n for n in tabelas.get('normal', []) if n.get('Atividade')]
-    baix = [b for b in tabelas.get('baixa', []) if b.get('Atividade')]
+    # Criamos um mapa (dicionário) para garantir que TODOS apareçam no seletor
+    # sem risco de um sobrescrever o outro
+    mapa_auditoria = {}
+    for idx, f in enumerate(lista_de_arquivos):
+        # Pegamos o nome exatamente como você faz no expander
+        n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
+        nome_chave = str(n_extraido).upper().strip()
+        
+        # Guardamos o formulário inteiro vinculado ao nome
+        mapa_auditoria[nome_chave] = f
+
+    # 2. SELETOR LATERAL OU CENTRAL (COM TODOS OS NOMES)
+    nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
     
-    # 2. Lógica de Pontuação (Exemplo Base)
-    # Quanto mais equilibrado entre Alta/Normal e Baixa, maior o Nexo
-    score = 100
-    total_atividades = len(alta) + len(norm) + len(baix)
+    colab_alvo = st.selectbox(
+        f"🎯 Selecione para Auditoria de Nexo ({len(nomes_disponiveis)} colaboradores encontrados):", 
+        nomes_disponiveis,
+        key="selector_auditoria_causal"
+    )
+
+    # 3. RECUPERAÇÃO DOS DADOS DO SELECIONADO
+    dados_alvo = mapa_auditoria[colab_alvo]
+    t = dados_alvo.get('tabelas', {})
     
-    if total_atividades == 0:
-        return 0, (alta, norm, baix)
+    # Fatiamento por Complexidade (Exatamente como você tem no JSON)
+    h_alta = len(t.get('alta', []))
+    h_norm = len(t.get('normal', []))
+    h_baix = len(t.get('baixa', []))
+
+    # 4. CÁLCULO DO SCORE DE NEXO (LÓGICA BASE)
+    score_nexo = 100
+    total = h_alta + h_norm + h_baix
     
-    # Penalidade se só houver tarefas de baixa complexidade
-    if len(baix) > (len(alta) + len(norm)) * 2:
-        score -= 30
-        
-    # Penalidade por excesso de volume (inconsistência de preenchimento)
-    if total_atividades > 25:
-        score -= 20
-
-    return max(score, 0), (alta, norm, baix)
-
-# =================================================================
-# 🖥️ INTERFACE: VARREDURA TOTAL DE COLABORADORES
-# =================================================================
-if st.session_state.get("pagina") == "analise":
-    st.title("🛡️ Auditoria: Base de Nexo Causal")
-
-    # --- VARREDURA COMPLETA DA PASTA 'DADOS' ---
-    try:
-        # Acesse o repositório (ajuste o nome se necessário)
-        repo = g.get_repo("lucianohcl/formulario-colaborador")
-        arquivos_pasta = repo.get_contents("dados")
-        
-        # Dicionário para armazenar TODOS os colaboradores encontrados
-        base_colaboradores = {}
-        
-        for item in arquivos_pasta:
-            if item.name.endswith(".json"):
-                # Lê o conteúdo de cada arquivo
-                conteudo_raw = item.decoded_content.decode("utf-8")
-                dados_json = json.loads(conteudo_raw)
-                
-                # Captura o nome (procurando em vários campos para não falhar)
-                nome_colab = (dados_json.get('colaborador') or 
-                              dados_json.get('nome') or 
-                              dados_json.get('campos', {}).get('colaborador') or 
-                              item.name).upper().strip()
-                
-                # Adiciona ao dicionário global
-                base_colaboradores[nome_colab] = dados_json
-
-    except Exception as e:
-        st.error(f"Erro ao conectar com a base de dados: {e}")
-        base_colaboradores = {}
-
-    # --- SELETOR E EXIBIÇÃO ---
-    if base_colaboradores:
-        nomes_lista = sorted(list(base_colaboradores.keys()))
-        
-        st.sidebar.header("Configurações")
-        escolha = st.sidebar.selectbox(
-            f"👥 Colaboradores ({len(nomes_lista)}):", 
-            nomes_lista
-        )
-
-        # Recupera os dados do colaborador selecionado
-        dados_alvo = base_colaboradores[escolha]
-        
-        # Calcula o Nexo Causal
-        score_nexo, blocos = calcular_nexo_causal(dados_alvo)
-        alta, norm, baix = blocos
-
-        # --- GRÁFICO DE NEXO CAUSAL (GAUGE CHART) ---
-        st.subheader(f"Análise de Nexo: {escolha}")
-        
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = score_nexo,
-            title = {'text': "Índice de Nexo Causal (%)"},
-            domain = {'x': [0, 1], 'y': [0, 1]},
-            gauge = {
-                'axis': {'range': [None, 100]},
-                'bar': {'color': "#4facfe"},
-                'steps': [
-                    {'range': [0, 50], 'color': "#ff4b4b"},
-                    {'range': [50, 85], 'color': "#ffa500"},
-                    {'range': [85, 100], 'color': "#00c853"}
-                ],
-                'threshold': {
-                    'line': {'color': "black", 'width': 4},
-                    'thickness': 0.75,
-                    'value': score_nexo}
-            }
-        ))
-        
-        st.plotly_chart(fig, use_container_width=True)
-
-        # Exibição rápida do fatiamento (opcional, apenas para conferência)
-        col1, col2, col3 = st.columns(3)
-        col1.metric("Tarefas Alta", len(alta))
-        col2.metric("Tarefas Normal", len(norm))
-        col3.metric("Tarefas Baixa", len(baix))
-
+    if total > 0:
+        # Se tiver muita tarefa de baixa complexidade e pouca alta, o nexo cai
+        if h_baix > (h_alta + h_norm) * 2:
+            score_nexo = 60
     else:
-        st.warning("Nenhum colaborador encontrado na pasta 'dados'.")
+        score_nexo = 0
+
+    # 5. O GRÁFICO QUE VOCÊ PEDIU (VELOCÍMETRO)
+    fig_nexo = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = score_nexo,
+        title = {'text': f"Índice de Nexo: {colab_alvo}"},
+        gauge = {
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "#4facfe"},
+            'steps': [
+                {'range': [0, 50], 'color': "#ff4b4b"},
+                {'range': [50, 85], 'color': "#ffa500"},
+                {'range': [85, 100], 'color': "#00c853"}
+            ],
+            'threshold': {
+                'line': {'color': "black", 'width': 4},
+                'thickness': 0.75,
+                'value': score_nexo
+            }
+        }
+    ))
+    
+    st.plotly_chart(fig_nexo, use_container_width=True)
+
+else:
+    st.error("❌ Erro Crítico: A lista de arquivos não foi carregada pelo sistema.")
