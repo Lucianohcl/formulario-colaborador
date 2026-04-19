@@ -3487,7 +3487,7 @@ if st.session_state.get("pagina") == "formulario":
 
 
 # 1. Este IF serve como uma "parede"
-if st.session_state.pagina == "disc":
+if st.session_state.pagina == "visualizar":
 
 
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
