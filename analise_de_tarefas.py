@@ -3482,152 +3482,181 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-import os
-import json
+# ============================================================
+# 🛸 MOTOR DE AUDITORIA ULTRA-GIGANTE E NEXO CAUSAL (FINAL)
+# ============================================================
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
+import json
 
-# ============================================================
-# 🧠 O CÉREBRO: MOTOR DE NEXO CAUSAL E AUDITORIA GIGANTE
-# ============================================================
-
-def carregar_dados_completos():
-    caminho = "dados"
-    data = []
-    if os.path.exists(caminho):
-        for arq in os.listdir(caminho):
-            if arq.endswith(".json"):
-                with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
-                    data.append(json.load(f))
-    return data
-
-def motor_auditoria_avancada(full_data):
-    # Setup de Inteligência
+def calcular_indice_nexo_avancado(dados):
+    """Cérebro de Auditoria: Analisa inconsistências entre falas e fatos."""
     score = 100
     alertas = []
-    recomendas = []
+    insights = []
     
-    campos = full_data.get('campos', {})
-    tabelas = full_data.get('tabelas', {})
+    # Extração Massiva
+    campos = dados.get('campos', {})
+    tabelas = dados.get('tabelas', {})
     cargo = str(campos.get('cargo', '')).upper()
+    setor = str(campos.get('setor', '')).upper()
+    objetivo = str(campos.get('objetivo', '')).lower()
     
-    # Unificar atividades
-    todas_ativs = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
+    # Unificação de Atividades
+    alta = tabelas.get('alta', [])
+    normal = tabelas.get('normal', [])
+    baixa = tabelas.get('baixa', [])
+    todas = alta + normal + baixa
     
-    # 1. CÁLCULO DE CARGA HORÁRIA (O choque de realidade)
-    horas_diarias = 0
-    for a in todas_ativs:
+    # 1. ANÁLISE DE CARGA HORÁRIA (CONFLITO DE REALIDADE)
+    h_dia = 0
+    for a in todas:
         try:
             h = float(str(a.get('Horas', '0')).split()[0].replace(',', '.'))
-            f = a.get('Frequência', 'D').upper()
-            if f == 'D': horas_diarias += h
-            elif f == 'S': horas_diarias += (h / 5)
-            elif f == 'M': horas_diarias += (h / 22)
+            f = str(a.get('Frequência', 'D')).upper()
+            if 'D' in f: h_dia += h
+            elif 'S' in f: h_dia += (h / 5)
+            elif 'M' in f: h_dia += (h / 22)
         except: continue
 
-    if horas_diarias > 10:
-        score -= 20
-        alertas.append(f"🚨 **SOBRECARGA CRÍTICA:** Carga declarada de **{horas_diarias:.1f}h/dia**. Inviável operacionalmente.")
-    elif horas_diarias < 4:
-        score -= 10
-        alertas.append(f"⚠️ **SUB-OCUPAÇÃO:** Apenas **{horas_diarias:.1f}h/dia** mapeadas. Risco de ociosidade.")
-
-    # 2. ANÁLISE DE NEXO (Dificuldades vs Sugestões)
-    difs = [d.get('Dificuldade') for d in tabelas.get('dificuldades', []) if d.get('Dificuldade')]
-    sugs = [s.get('Sugestão') for s in tabelas.get('sugestoes', []) if s.get('Sugestão')]
-    
-    if len(difs) == 0:
+    if h_dia > 11:
+        score -= 30
+        alertas.append(f"🚨 **CONFLITO DE VEROSSIMILHANÇA:** Carga de **{h_dia:.1f}h/dia**. Matematicamente improvável manter qualidade.")
+    elif h_dia < 5 and h_dia > 0:
         score -= 15
-        alertas.append("🛡️ **BARREIRA DE TRANSPARÊNCIA:** Nenhuma dificuldade relatada. Possível mascaramento de processos.")
+        alertas.append(f"⚠️ **CAPACIDADE OCIOSA:** Apenas **{h_dia:.1f}h/dia** preenchidas. Risco de subutilização.")
+
+    # 2. NEXO CAUSAL: DIFICULDADES VS ATIVIDADES
+    dificuldades_lista = [str(d.get('Dificuldade', '')).lower() for d in tabelas.get('dificuldades', []) if d.get('Dificuldade')]
+    sugestoes_lista = [str(s.get('Sugestão', '')).lower() for s in tabelas.get('sugestoes', []) if s.get('Sugestão')]
+    texto_atividades = " ".join([str(a.get('Atividade', '')).lower() for a in todas])
+
+    # Se o cara é GESTOR mas faz muita tarefa BAIXA (Caso de delegação falha)
+    if "GESTOR" in cargo and len(baixa) > len(alta):
+        score -= 20
+        alertas.append("📉 **ERRO DE DELEGAÇÃO:** Gestor sobrecarregado com tarefas de baixa complexidade.")
+        insights.append("💡 **Ação:** Delegar tarefas de arquivo e conferência simples.")
+
+    # Nexo de Dificuldade Vazia (Caso Adson)
+    if not dificuldades_lista or all(len(x) < 3 for x in dificuldades_lista):
+        score -= 25
+        alertas.append("🛡️ **RESISTÊNCIA À AUDITORIA:** O colaborador omitiu dificuldades. Indica postura defensiva ou falta de autocrítica.")
+
+    # 3. DETECTOR DE AUTOMAÇÃO (EFEITO UAU)
+    palavras_chave = {
+        "conferir": "🤖 Automação de Conferência Digital (Malha Fina)",
+        "planilha": "📊 Migração de Excel para Dashboard em Tempo Real",
+        "email": "📧 Implementação de Central de Tickets/CRM",
+        "e-social": "⚖️ Auditoria Eletrônica de Eventos Previdenciários",
+        "manual": "⚡ RPA (Robotic Process Automation) para tarefas repetitivas"
+    }
     
-    # 3. NEXO DE CARGO (Estratégico vs Operacional)
-    txt_operacional = " ".join([str(a.get('Atividade')).lower() for a in tabelas.get('baixa', [])])
-    if "GESTOR" in cargo or "COORDENADOR" in cargo:
-        if horas_diarias > 0 and (len(tabelas.get('baixa', [])) / len(todas_ativs)) > 0.4:
-            score -= 10
-            alertas.append("📉 **DESVIO DE FUNÇÃO:** Gestor focado excessivamente em tarefas de Baixa Complexidade.")
+    for chave, sugestao in palavras_chave.items():
+        if chave in texto_atividades or chave in str(dificuldades_lista):
+            insights.append(sugestao)
 
-    # 4. SUGESTÕES DE AUTOMAÇÃO (Efeito Uau)
-    texto_total = (" ".join([str(a.get('Atividade')) for a in todas_ativs])).lower()
-    if "planilha" in texto_total or "excel" in texto_total:
-        recomendas.append("🤖 **AUTOMAÇÃO:** Substituir planilhas manuais por integração via API/Python.")
-    if "conferir" in texto_total or "conferência" in texto_total:
-        recomendas.append("🔍 **AUDITORIA DIGITAL:** Implementar robôs de validação para reduzir tempo de conferência.")
-    if "e-mail" in texto_total or "whatsapp" in texto_total:
-        recomendas.append("📧 **COMUNICAÇÃO:** Centralizar atendimentos em CRM para evitar perda de prazos.")
+    return score, alertas, insights, h_dia, todas
 
-    return score, alertas, recomendas, horas_diarias, todas_ativs
+# --- RENDERIZAÇÃO DA PÁGINA ---
+if st.session_state.get("pagina") == "analise":
+    st.markdown("<h1 style='text-align: center; color: #4facfe;'>🚀 Motor de Auditoria GIGANTE</h1>", unsafe_allow_html=True)
+    st.markdown("---")
 
-# --- INTERFACE STREAMLIT ---
-if st.session_state.pagina == "analise":
-    st.markdown("# 🧠 Motor de Auditoria Ultra-Inteligente")
-    st.info("Análise de Nexo Causal, Verossimilhança e Eficiência Operacional.")
+    # Conexão GitHub Integrada
+    try:
+        repo_auditoria = g.get_repo("lucianohcl/formulario-colaborador")
+        base_bruta = carregar_todos_formularios(repo_auditoria)
+        # Blindagem: Garante que só entram dicionários válidos
+        lista_final = [d for d in base_bruta if isinstance(d, dict) and (d.get('colaborador') or d.get('nome'))]
+    except Exception as e:
+        st.error(f"Erro de Conexão: {e}")
+        lista_final = []
 
-    base = carregar_dados_completos()
-    
-    if base:
-        colabs = [b.get('colaborador', 'N/A') for b in base]
-        escolha = st.sidebar.selectbox("🎯 Selecione para Auditoria:", colabs)
-        dados_colab = next((b for b in base if b.get('colaborador') == escolha), None)
+    if not lista_final:
+        st.warning("⚠️ Aguardando dados do GitHub para processar a auditoria...")
+    else:
+        # Seletor de Colaborador no Sidebar
+        nomes_opcoes = [str(f.get('colaborador') or f.get('nome')).upper() for f in lista_final]
+        colab_alvo = st.sidebar.selectbox("🎯 Escolha o Alvo da Análise:", nomes_opcoes)
+        
+        # Localiza os dados
+        dados_colab = next((f for f in lista_final if str(f.get('colaborador') or f.get('nome')).upper() == colab_alvo), None)
 
         if dados_colab:
-            score, alertas, recs, h_dia, ativs_list = motor_auditoria_avancada(dados_colab)
+            score, alertas, insights, h_dia, ativs_list = calcular_indice_nexo_avancado(dados_colab)
 
-            # 📊 GRÁFICO DE SCORE (O IMPACTO VISUAL)
+            # 📊 VELOCÍMETRO DE CONFORMIDADE
             fig = go.Figure(go.Indicator(
-                mode = "gauge+number",
+                mode = "gauge+number+delta",
                 value = score,
-                domain = {'x': [0, 1], 'y': [0, 1]},
+                title = {'text': f"Nível de Nexo Causal: {colab_alvo}", 'font': {'size': 24}},
+                delta = {'reference': 80, 'increasing': {'color': "green"}},
                 gauge = {
-                    'axis': {'range': [None, 100], 'tickwidth': 1},
-                    'bar': {'color': "darkblue"},
+                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                    'bar': {'color': "#4facfe"},
+                    'bgcolor': "white",
+                    'borderwidth': 2,
+                    'bordercolor': "gray",
                     'steps': [
-                        {'range': [0, 50], 'color': "red"},
-                        {'range': [50, 80], 'color': "yellow"},
-                        {'range': [80, 100], 'color': "green"}]
-                },
-                title = {'text': f"Índice de Conformidade: {escolha}"}
+                        {'range': [0, 50], 'color': '#ff4b4b'},
+                        {'range': [50, 80], 'color': '#ffa500'},
+                        {'range': [80, 100], 'color': '#00c853'}]
+                }
             ))
             st.plotly_chart(fig, use_container_width=True)
 
-            # 📋 PAINEL DE CONTROLE
-            c1, c2 = st.columns(2)
-            with c1:
-                st.subheader("⚠️ Inconformidades de Nexo")
-                for a in alertas: st.error(a)
-                if not alertas: st.success("Nexo Causal Perfeito!")
+            # 📑 PAINEL DE CONTROLE EXECUTIVO
+            col1, col2 = st.columns([1, 1])
+            
+            with col1:
+                st.markdown("### 🚨 Inconformidades Detectadas")
+                if alertas:
+                    for a in alertas:
+                        st.error(a)
+                else:
+                    st.success("✅ Nenhuma discrepância de nexo encontrada.")
                 
-                st.metric("Carga Horária Estimada", f"{h_dia:.1f} h/dia", delta=f"{h_dia - 8.8:.1f}h vs Limite", delta_color="inverse")
+                st.metric("Carga Horária Analisada", f"{h_dia:.1f} h/dia", 
+                          delta=f"{h_dia-8.8:.1f}h" if h_dia > 8.8 else f"{h_dia-8.8:.1f}h", 
+                          delta_color="inverse")
 
-            with c2:
-                st.subheader("🚀 Plano de Upgrade (UAU)")
-                for r in recs: st.info(r)
-                if not recs: st.write("Processos já otimizados.")
+            with col2:
+                st.markdown("### 💡 Oportunidades de Upgrade")
+                if insights:
+                    for i in insights:
+                        st.info(i)
+                else:
+                    st.write("Processos estáveis conforme mapeamento.")
 
-            # 🛠️ POP AUTOMÁTICO
+            # 🛠️ GERADOR DE POP (O CORAÇÃO DO PROJETO)
             st.markdown("---")
-            st.subheader("📋 POP Gerencial Personalizado")
-            pop_data = []
+            st.subheader("📋 Plano de Operação Padrão (POP) e Otimização")
+            
+            pop_rows = []
             for a in ativs_list:
                 try:
-                    h_original = float(str(a.get('Horas', '1')).split()[0].replace(',','.'))
-                    # Lógica de otimização: Reduzir 30% de tarefas pesadas
-                    tempo_meta = h_original * 0.7 if h_original >= 1 else h_original
-                    pop_data.append({
-                        "Atividade": a.get('Atividade')[:70] + "...",
-                        "Freq": a.get('Frequência'),
-                        "T. Real": f"{h_original}h",
-                        "T. Meta (UAU)": f"{tempo_meta:.1f}h",
-                        "Ação Sugerida": "Automatizar" if h_original >= 1 else "Manter"
+                    h_val = float(str(a.get('Horas', '1')).split()[0].replace(',', '.'))
+                    # Lógica UAU: Sugere redução de 25% no tempo se houver automação
+                    tempo_otimizado = h_val * 0.75 if h_val >= 1 else h_val
+                    pop_rows.append({
+                        "Tarefa": a.get('Atividade', '')[:80],
+                        "Freq.": a.get('Frequência', 'D'),
+                        "Tempo Real": f"{h_val:.1f}h",
+                        "Meta UAU": f"{tempo_otimizado:.1f}h",
+                        "Status": "🔴 Crítico" if h_val > 2 else "🟢 Ok"
                     })
                 except: continue
             
-            st.table(pd.DataFrame(pop_data))
-            
-            # Botão de Exportação
-            st.download_button("📥 Exportar Relatório de Auditoria", 
-                               data=json.dumps(dados_colab, indent=4), 
-                               file_name=f"auditoria_{escolha}.json")
-    else:
-        st.warning("Aguardando carregamento da pasta 'dados'...")
+            st.table(pd.DataFrame(pop_rows))
+
+            # 🏆 RELATÓRIO FINAL PARA DOWNLOAD
+            st.markdown("---")
+            resumo_executivo = f"""
+            RELATÓRIO DE AUDITORIA - {colab_alvo}
+            Score de Nexo: {score}%
+            Carga Horária: {h_dia:.1f}h
+            Inconformidades: {len(alertas)}
+            Sugestões de Automação: {len(insights)}
+            """
+            st.download_button("📥 Baixar Relatório de Auditoria (TXT)", resumo_executivo, file_name=f"auditoria_{colab_alvo}.txt")
