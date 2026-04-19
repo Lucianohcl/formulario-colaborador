@@ -3486,7 +3486,7 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA (NO FINAL DO ARQUIVO) ---
+# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (ATUALIZADO) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
@@ -3500,81 +3500,94 @@ if base_auditoria:
         mapa_auditoria[nome_chave] = f
 
     nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)}):", nomes_disponiveis)
+    colab_alvo = st.selectbox(f"🎯 Selecionar para Auditoria de Carga:", nomes_disponiveis)
 
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # --- 1. CÁLCULO DE HORAS REAIS (O PULO DO GATO) ---
-    def somar_horas(lista):
-        total = 0
-        for i in lista:
+    # --- FUNÇÃO DE CÁLCULO MESTRE (TEMPO X FREQUÊNCIA) ---
+    def calcular_impacto_diario(lista):
+        total_dia = 0.0
+        for item in lista:
             try:
-                h = float(str(i.get('Horas', 0)).replace(',', '.'))
-                m = float(str(i.get('Minutos', 0)).replace(',', '.')) / 60
-                total += (h + m)
+                h = float(str(item.get('Horas', 0)).replace(',', '.').strip() or 0)
+                m = float(str(item.get('Minutos', 0)).replace(',', '.').strip() or 0) / 60
+                freq = str(item.get('Frequência', 'D')).upper().strip()
+                
+                # Normalização Base: 22 dias úteis/mês | 5 dias/semana
+                if freq == 'D': peso = 1.0
+                elif freq == 'S': peso = 0.2
+                elif freq == 'M': peso = 0.045
+                elif freq == 'T' or freq == 'A': peso = 0.01 # Trimestral/Avulso
+                else: peso = 1.0
+                
+                total_dia += (h + m) * peso
             except: continue
-        return total
+        return total_dia
 
-    h_alta = somar_horas(t.get('alta', []))
-    h_norm = somar_horas(t.get('normal', []))
-    h_baix = somar_horas(t.get('baixa', []))
-    h_total_dia = h_alta + h_norm + h_baix
+    # Processamento de todas as frentes
+    h_alta = calcular_impacto_diario(t.get('alta', []))
+    h_norm = calcular_impacto_diario(t.get('normal', []))
+    h_baix = calcular_impacto_diario(t.get('baixa', []))
+    h_dificuldades = calcular_impacto_diario(t.get('dificuldades', []))
+    
+    h_total_trabalho = h_alta + h_norm + h_baix
+    h_total_com_gargalos = h_total_trabalho + h_dificuldades
 
-    # --- 2. MOTOR DE REGRAS CRÍTICAS ---
+    # --- MOTOR DE REGRAS ---
     score = 100
     alertas = []
 
-    # Regra A: Jornada Impossível (O erro do Adson)
-    if h_total_dia > 12:
-        penalidade = 40 if h_total_dia < 16 else 70
+    # 1. Validação de Jornada (Regra Adson)
+    if h_total_trabalho > 12:
+        penalidade = 40 if h_total_trabalho <= 15 else 75
         score -= penalidade
-        alertas.append(f"🚨 **JORNADA IMPOSSÍVEL:** Relatado {h_total_dia:.1f}h/dia. Dados inflados.")
+        alertas.append(f"🚨 **JORNADA IMPOSSÍVEL:** Atividades somam {h_total_trabalho:.1f}h úteis/dia. Dados inflados.")
 
-    # Regra B: Perfil Defensivo (Dificuldades Vazias)
-    difs = str(dados_alvo.get('dificuldades', '')).lower()
-    if "nenhuma" in difs or "não informado" in difs or len(t.get('dificuldades', [])) == 0:
+    # 2. Validação de Dificuldades (Perfil Defensivo ou Inconsistente)
+    texto_dif = str(t.get('dificuldades', [])).lower()
+    if "nenhuma" in texto_dif or not t.get('dificuldades'):
         score -= 20
-        alertas.append("🛡️ **PERFIL DEFENSIVO:** Omissão de dificuldades/gargalos operacionais.")
-
-    # Regra C: Concentração de Complexidade
-    if h_alta > (h_norm + h_baix) * 3:
+        alertas.append("🛡️ **PERFIL DEFENSIVO:** Omissão de gargalos (improvável para a senioridade).")
+    elif h_dificuldades > 4:
         score -= 15
-        alertas.append("⚠️ **DESVIO ANALÍTICO:** Excesso de tarefas em Alta Complexidade (Inverossímil).")
+        alertas.append(f"⚠️ **GARGALO CRÍTICO:** Dificuldades consomem {h_dificuldades:.1f}h/dia. Risco operacional alto.")
 
-    score = max(0, score) # Garante que não seja negativo
+    # 3. Concentração de Complexidade
+    if h_alta > (h_norm + h_baix) * 2:
+        score -= 15
+        alertas.append("⚠️ **DESVIO DE FUNÇÃO:** Carga excessiva em Alta Complexidade sugere centralização.")
 
-    # --- 3. INTERFACE E GRÁFICO ---
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        st.metric("Score de Nexo", f"{score}%")
-        st.metric("Horas Totais/Dia", f"{h_total_dia:.1f}h")
-        
-    with col2:
-        fig = go.Figure(go.Indicator(
-            mode = "gauge+number",
-            value = score,
-            title = {'text': "Confiabilidade do Relato"},
-            gauge = {
-                'axis': {'range': [0, 100]},
-                'bar': {'color': "#4facfe" if score > 50 else "#ff4b4b"},
-                'steps': [
-                    {'range': [0, 40], 'color': "#ff4b4b"},
-                    {'range': [40, 75], 'color': "#ffa500"},
-                    {'range': [75, 100], 'color': "#00c853"}
-                ],
-                'threshold': {'line': {'color': "black", 'width': 4}, 'value': score}
-            }
-        ))
-        fig.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
-        st.plotly_chart(fig, use_container_width=True)
+    score = max(0, score)
 
-    # Exibição dos Alertas
+    # --- EXIBIÇÃO ---
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Score de Nexo", f"{score}%")
+    c2.metric("Trabalho Efetivo", f"{h_total_trabalho:.1f}h/dia")
+    c3.metric("Tempo em Gargalos", f"{h_dificuldades:.1f}h/dia")
+
+    # Gráfico de Confiabilidade
+    import plotly.graph_objects as go
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = score,
+        gauge = {
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "black"},
+            'steps': [
+                {'range': [0, 45], 'color': "#ff4b4b"},
+                {'range': [45, 80], 'color': "#ffa500"},
+                {'range': [80, 100], 'color': "#00c853"}
+            ]
+        }
+    ))
+    fig.update_layout(height=250, margin=dict(l=20, r=20, t=20, b=20))
+    st.plotly_chart(fig, use_container_width=True)
+
     if alertas:
-        st.markdown("### 🔍 Diagnóstico do Auditor")
+        st.subheader("🔍 Diagnóstico do Auditor")
         for a in alertas:
-            st.write(a)
-
+            st.markdown(a)
+            
 else:
-    st.info("💡 Carregue a Visualização acima primeiro.")
+    st.info("💡 Aguardando carregamento de dados para auditoria.")
