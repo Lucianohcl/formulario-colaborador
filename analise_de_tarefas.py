@@ -3658,6 +3658,8 @@ else:
     elif h_total > 9:
         st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
 
+
+
 # --- MOTOR DE PERÍCIA DE DIFICULDADES (LINHA DURA - SEM FILTROS) ---
 st.markdown("---")
 st.subheader("⚠️ Auditoria de Gargalos e Nexo de Coerência")
@@ -3769,10 +3771,24 @@ def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_ati
     
     return check_dif
 
-# --- CHAMADA E EXIBIÇÃO (CERTIFIQUE-SE DE QUE ESTÁ NA MARGEM ESQUERDA) ---
-res_dificuldades = analisar_dificuldades_rigoroso(t.get('dificuldades', []), t, h_total)
+# --- CHAMADA E EXIBIÇÃO ---
 
-if res_dificuldades:
-    st.table(res_dificuldades)
+# 1. Tente encontrar a variável correta (se não for 't', mude para o nome que você usa)
+dados_para_analise = locals().get('t') or locals().get('dados') or locals().get('registro')
+
+if dados_para_analise:
+    # 2. Garante que h_total existe (ou define como 0 se não existir)
+    horas_v = locals().get('h_total', 0)
+    
+    res_dificuldades = analisar_dificuldades_rigoroso(
+        dados_para_analise.get('dificuldades', []), 
+        dados_para_analise, 
+        horas_v
+    )
+
+    if res_dificuldades:
+        st.table(res_dificuldades)
+    else:
+        st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
 else:
-    st.info("ℹ️ Nenhuma dificuldade encontrada nos dados processados.")    
+    st.error("⚠️ Erro técnico: A variável de dados (t) não foi encontrada no script.")
