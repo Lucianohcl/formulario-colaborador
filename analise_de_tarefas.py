@@ -3658,94 +3658,83 @@ else:
     elif h_total > 9:
         st.warning(f"⚠️ **SOBRECARGA DETECTADA:** Carga de **{h_total:.2f}h/dia**. Excede a jornada legal e indica risco de burnout ou erros técnicos.")
 
-    # --- ANÁLISE TÉCNICA DE DIFICULDADES (FINAL DO SCRIPT) ---
-    st.markdown("---")
-    st.subheader("⚠️ Auditoria de Gargalos e Impedimentos")
+# --- MOTOR DE PERÍCIA DE DIFICULDADES (LINHA DURA - SEM FILTROS) ---
+st.markdown("---")
+st.subheader("⚠️ Auditoria de Gargalos e Nexo de Coerência")
 
-    def analisar_dificuldades_rigoroso(dificuldades_lista):
-        check_dif = []
-        if not dificuldades_lista or len(dificuldades_lista) == 0:
-            return [{"Status": "✅", "Dificuldade": "Nenhuma relatada", "Impacto": "0.00h", "Análise": "Fluxo livre de impedimentos."}]
+def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
+    check_dif = []
+    
+    # Consolida atividades para cruzamento semântico
+    texto_atividades = ""
+    for cat in ['alta', 'normal', 'baixa']:
+        if cat in tabelas_dict:
+            for item in tabelas_dict[cat]:
+                texto_atividades += str(item.get('Atividade', '')).lower() + " "
 
-        for d in dificuldades_lista:
-            # Extração e limpeza de dados
-            desc_dif = (d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
-            setor = d.get('Setor Envolvido') or "N/A"
-            
-            # Cálculo de impacto (seguindo a regra rigorosa de divisores)
-            h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-            m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-            f_d = str(d.get('Frequência', 'M')).upper().strip()
-            
-            div_d = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-            divisor_d = div_d.get(f_d, 1)
-            
-            impacto_d = (h_d + (m_d / 60)) / divisor_d
+    if not dificuldades_lista:
+        return []
 
-            alertas_d = []
-            
-            def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
-                check_dif = []
+    for d in dificuldades_lista:
+        # 1. Coleta de dados com limpeza
+        desc_pura = str(d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
+        desc = desc_pura.lower()
+        setor = str(d.get('Setor Envolvido') or "N/A").upper()
         
-        # Consolida atividades para cruzamento
-        texto_atividades = ""
-        for cat in ['alta', 'normal', 'baixa']:
-            for item in tabelas_dict.get(cat, []):
-                texto_atividades += (item.get('Atividade', '')).lower() + " "
-
-        if not dificuldades_lista:
-            return []
-
-        for d in dificuldades_lista:
-            desc_pura = (d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
-            desc = desc_pura.lower()
-            setor = (d.get('Setor Envolvido') or "Não Informado").upper()
-            
-            # Conversão e Cálculo de Impacto
-            h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-            m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-            freq_raw = str(d.get('Frequência', 'M')).upper().strip()
-            
-            divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-            divisor = divisores.get(freq_raw, 20)
-            impacto_diario = (h_d + (m_d / 60)) / divisor
-
-            alertas = []
-
-            # --- CRITÉRIO 1: NEXO SETORIAL (O Setor justifica a dor?) ---
-            # Se reclama de "Setor X" mas o impacto é menor que 5 minutos por dia
-            if impacto_diario < 0.08: # Menos de 5 min/dia
-                alertas.append(f"Insignificância: Impacto do setor {setor} é irrelevante para ser listado como dificuldade.")
-
-            # --- CRITÉRIO 2: COERÊNCIA DE FREQUÊNCIA ---
-            # Se a dificuldade é "Frequentes alterações" ou "Instabilidade", mas a frequência é Mensal ou Anual
-            if any(p in desc for p in ["frequente", "constante", "toda hora", "instabilidade"]):
-                if freq_raw not in ['D', 'S']:
-                    alertas.append(f"Incoerência Temporal: Reclama de algo 'constante' mas registrou frequência {freq_raw}.")
-
-            # --- CRITÉRIO 3: NEXO DE ATIVIDADE (Cruzamento Puro) ---
-            # Se a dificuldade cita "Ponto" e não tem "Ponto" nas atividades (e assim por diante)
-            palavras_auditadas = ["ponto", "cliente", "sistema", "legislação", "fiscal", "admissão"]
-            for p in palavras_auditadas:
-                if p in desc and p not in texto_atividades:
-                    alertas.append(f"Desconexão de Escopo: Reclama de {p.upper()} mas não executa tarefas ligadas a isso.")
-
-            # --- CRITÉRIO 4: RECLAMAÇÃO SEM FUNDAMENTO ---
-            if any(p in desc for p in ["acúmulo", "sobrecarga", "muita coisa"]):
-                if h_total_atividades < 7.0:
-                    alertas.append("Sobrecarga Inexistente: Reclama de volume, mas o nexo causal soma menos de 7h/dia.")
-
-            # Montagem do Resultado
-            status = "🚩" if alertas else "✅"
-            veredito = "Nexo Causal Confirmado" if not alertas else " | ".join(alertas)
-
-            if desc not in ["nenhuma", "não", "vazio", ".", "n/a"]:
-                check_dif.append({
-                    "Status": status,
-                    "Setor": setor,
-                    "Dificuldade": desc_pura[:50] + "...",
-                    "Impacto": f"{impacto_diario:.3f} h/dia",
-                    "Análise do Perito": veredito
-                })
+        # 2. Cálculo de Impacto (Rigor nos Divisores)
+        h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+        m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+        freq_raw = str(d.get('Frequência', 'M')).upper().strip()
         
-        return check_dif
+        divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+        divisor = divisores.get(freq_raw, 20)
+        impacto_diario = (h_d + (m_d / 60)) / divisor
+
+        alertas = []
+
+        # --- TESTE 1: NEXO DE IMPACTO ---
+        if impacto_diario < 0.05: # Menos de 3 min/dia
+            alertas.append("Irrelevante: Impacto temporal muito baixo para ser considerado gargalo.")
+
+        # --- TESTE 2: CONTRADIÇÃO TEMPORAL ---
+        if any(p in desc for p in ["frequente", "constante", "sempre", "todo dia"]):
+            if freq_raw not in ['D', 'S']:
+                alertas.append(f"Incoerência: Relata ser 'constante' mas a frequência é {freq_raw}.")
+
+        # --- TESTE 3: NEXO COM O ESCOPO (ATIVIDADES) ---
+        termos_controle = ["ponto", "cliente", "sistema", "legislação", "fiscal", "admissão", "benefício"]
+        achou_nexo = False
+        for t_ctrl in termos_controle:
+            if t_ctrl in desc and t_ctrl in texto_atividades:
+                achou_nexo = True
+        
+        if not achou_nexo and len(desc) > 15:
+            if not any(x in desc for x in ["equipe", "gestão", "processo", "comunicação"]):
+                alertas.append("Desconexão: Esta dificuldade não reflete as tarefas listadas no dia a dia.")
+
+        # --- TESTE 4: RECLAMAÇÃO DE VOLUME ---
+        if any(p in desc for p in ["acúmulo", "sobrecarga", "volume"]):
+            if h_total_atividades < 7.0:
+                alertas.append(f"Falso Alerta: Reclama de volume, mas o Nexo de Atividades é de apenas {h_total_atividades:.2f}h.")
+
+        # Montagem do Resultado
+        status = "🚩" if alertas else "✅"
+        veredito = "Nexo Causal Confirmado" if not alertas else " | ".join(alertas)
+
+        check_dif.append({
+            "Status": status,
+            "Setor": setor,
+            "Dificuldade": desc_pura[:60] + "...",
+            "Impacto Diário": f"{impacto_diario:.3f} h/dia",
+            "Análise do Perito": veredito
+        })
+    
+    return check_dif
+
+# --- CHAMADA E EXIBIÇÃO (CERTIFIQUE-SE DE QUE ESTÁ NA MARGEM ESQUERDA) ---
+res_dificuldades = analisar_dificuldades_rigoroso(t.get('dificuldades', []), t, h_total)
+
+if res_dificuldades:
+    st.table(res_dificuldades)
+else:
+    st.info("ℹ️ Nenhuma dificuldade encontrada nos dados processados.")    
