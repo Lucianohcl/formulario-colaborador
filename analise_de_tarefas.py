@@ -3685,9 +3685,9 @@ else:
             alertas_d = []
             
             def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
-                check_dif = []
+        check_dif = []
         
-        # Consolida todas as atividades em um blocão de texto
+        # Consolida atividades para cruzamento
         texto_atividades = ""
         for cat in ['alta', 'normal', 'baixa']:
             for item in tabelas_dict.get(cat, []):
@@ -3696,58 +3696,56 @@ else:
         if not dificuldades_lista:
             return []
 
-        # --- DICIONÁRIO DE SINÔNIMOS TÉCNICOS (O PULO DO GATO) ---
-        mapa_contexto = {
-            "legislação": ["lei", "normativa", "convenção", "clt", "fiscal", "reforma", "aplicação"],
-            "ponto": ["registro", "horário", "jornada", "batida", "espelho", "tratamento", "inconsistência"],
-            "setores": ["gestores", "comunicação", "informação", "dependência", "atendimento", "internas"],
-            "documento": ["admissão", "demissão", "arquivamento", "conferência", "checklist", "digitalização"],
-            "sistema": ["e-social", "esocial", "alterdata", "estabilidade", "plataforma", "software"],
-            "retrabalho": ["erro", "correção", "divergência", "ajuste", "análise", "conferência"]
-        }
-
         for d in dificuldades_lista:
             desc_pura = (d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
             desc = desc_pura.lower()
+            setor = (d.get('Setor Envolvido') or "Não Informado").upper()
+            
+            # Conversão e Cálculo de Impacto
             h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
             m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-            f_d = str(d.get('Frequência', 'M')).upper().strip()
-            divisor_d = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}.get(f_d, 1)
-            impacto_d = (h_d + (m_d / 60)) / divisor_d
+            freq_raw = str(d.get('Frequência', 'M')).upper().strip()
+            
+            divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
+            divisor = divisores.get(freq_raw, 20)
+            impacto_diario = (h_d + (m_d / 60)) / divisor
 
             alertas = []
-            
-            # --- TESTE DE PERTINÊNCIA INTELIGENTE ---
-            relacao_encontrada = False
-            # 1. Checa se a palavra direta existe
-            for palavra in desc.split():
-                if len(palavra) > 3 and palavra in texto_atividades:
-                    relacao_encontrada = True
-            
-            # 2. Checa pelo dicionário de sinônimos
-            if not relacao_encontrada:
-                for chave, sinonimos in mapa_contexto.items():
-                    if chave in desc or any(s in desc for s in sinonimos):
-                        if any(s in texto_atividades for s in sinonimos) or chave in texto_atividades:
-                            relacao_encontrada = True
-            
-            if not relacao_encontrada and len(desc) > 20:
-                alertas.append("Desconexão: Dificuldade sem nexo direto com as tarefas listadas.")
 
-            # --- TESTE DE SOBRECARGA ---
-            if any(p in desc for p in ["acúmulo", "tempo", "demanda", "sobrecarga"]):
-                if h_total_atividades < 6.0:
-                    alertas.append("Contradição: Reclama de acúmulo, mas a carga horária calculada é baixa.")
+            # --- CRITÉRIO 1: NEXO SETORIAL (O Setor justifica a dor?) ---
+            # Se reclama de "Setor X" mas o impacto é menor que 5 minutos por dia
+            if impacto_diario < 0.08: # Menos de 5 min/dia
+                alertas.append(f"Insignificância: Impacto do setor {setor} é irrelevante para ser listado como dificuldade.")
 
+            # --- CRITÉRIO 2: COERÊNCIA DE FREQUÊNCIA ---
+            # Se a dificuldade é "Frequentes alterações" ou "Instabilidade", mas a frequência é Mensal ou Anual
+            if any(p in desc for p in ["frequente", "constante", "toda hora", "instabilidade"]):
+                if freq_raw not in ['D', 'S']:
+                    alertas.append(f"Incoerência Temporal: Reclama de algo 'constante' mas registrou frequência {freq_raw}.")
+
+            # --- CRITÉRIO 3: NEXO DE ATIVIDADE (Cruzamento Puro) ---
+            # Se a dificuldade cita "Ponto" e não tem "Ponto" nas atividades (e assim por diante)
+            palavras_auditadas = ["ponto", "cliente", "sistema", "legislação", "fiscal", "admissão"]
+            for p in palavras_auditadas:
+                if p in desc and p not in texto_atividades:
+                    alertas.append(f"Desconexão de Escopo: Reclama de {p.upper()} mas não executa tarefas ligadas a isso.")
+
+            # --- CRITÉRIO 4: RECLAMAÇÃO SEM FUNDAMENTO ---
+            if any(p in desc for p in ["acúmulo", "sobrecarga", "muita coisa"]):
+                if h_total_atividades < 7.0:
+                    alertas.append("Sobrecarga Inexistente: Reclama de volume, mas o nexo causal soma menos de 7h/dia.")
+
+            # Montagem do Resultado
             status = "🚩" if alertas else "✅"
-            veredito = "Coerente" if not alertas else " | ".join(alertas)
+            veredito = "Nexo Causal Confirmado" if not alertas else " | ".join(alertas)
 
             if desc not in ["nenhuma", "não", "vazio", ".", "n/a"]:
                 check_dif.append({
                     "Status": status,
-                    "Dificuldade": desc_pura[:65] + "...",
-                    "Impacto": f"{impacto_d:.3f} h/dia",
-                    "Veredito do Perito": veredito
+                    "Setor": setor,
+                    "Dificuldade": desc_pura[:50] + "...",
+                    "Impacto": f"{impacto_diario:.3f} h/dia",
+                    "Análise do Perito": veredito
                 })
         
         return check_dif
