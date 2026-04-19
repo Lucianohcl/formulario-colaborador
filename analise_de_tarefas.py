@@ -1398,7 +1398,13 @@ if st.session_state.pagina == "disc":
         # 🔍 BUSCA ATIVA: SUGESTÕES E DIFICULDADES (DADOS REAIS)
         # ============================================================
         st.markdown("---")
-        st.markdown(f"### 🧠 Diagnóstico de Coerência: {form.get('nome','').split()[0]}")
+        # 1. Tenta pegar o nome por 'colaborador' ou 'nome', se não houver, usa 'Colaborador'
+        nome_completo = form.get('colaborador') or form.get('nome') or "Colaborador"
+
+        # 2. Pega o primeiro nome com segurança
+        primeiro_nome = nome_completo.split()[0] if nome_completo.split() else "Colaborador"
+
+        st.markdown(f"### 🧠 Diagnóstico de Coerência: {primeiro_nome}")
         
         # 1. ACESSA AS TABELAS DIRETAMENTE NO OBJETO BUSCADO
         t_raiz = form.get('tabelas', {})
