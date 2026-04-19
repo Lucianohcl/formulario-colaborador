@@ -3672,14 +3672,14 @@ def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_ati
 
     for cat in ['alta', 'normal', 'baixa']:
         if cat in tabelas_dict:
-            # Filtramos a lista para remover o que é "Vazio" ou o que já é "Dificuldade"
+            # FILTRAGEM ATIVA: Remove vazios e remove o que for dificuldade
             tabelas_dict[cat] = [
                 item for item in tabelas_dict[cat] 
-                if str(item.get('Atividade', '')).strip().lower() not in ["vazio", "vazio...", "", "none"]
+                if str(item.get('Atividade', '')).strip().lower() not in ["vazio", "vazio...", "", "none", "."]
                 and str(item.get('Atividade', '')).strip().lower() not in nomes_dificuldades
             ]
             
-            # 2. Agora sim, cria o blocão de texto apenas com o que sobrou (Atividades Reais)
+            # 2. Concatena apenas as atividades que sobraram
             for item in tabelas_dict[cat]:
                 texto_atividades += str(item.get('Atividade', '')).lower() + " "
 
