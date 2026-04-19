@@ -1,15 +1,16 @@
 {
-    "timestamp": "06/04/2026 20:00:10",
-    "colaborador": "Usuario_Desconhecido",
+    "timestamp": "19/04/2026 04:12:41",
+    "colaborador": "GERCINO ITALO",
     "campos": {
-        "cargo": "",
-        "departamento": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "escolaridade": "",
-        "cursos": "",
-        "objetivo": ""
+        "cargo": "Auxiliar Contábil",
+        "departamento": "Contábil",
+        "setor": "Contábil",
+        "chefe": "Thalita",
+        "unidade": "Jv contabilidade Ltda ",
+        "escolaridade": "Ensino superior em andamento",
+        "devolver_em": "06/04/2026",
+        "cursos": "Ciências contábil",
+        "objetivo": "Auxiliar nas demandas diárias ( operacional, analise, relatórios, tratativa com clientes, urgências)"
     },
     "tabelas": {
         "alta": [
@@ -70,6 +71,24 @@
                 "Horas": "3 h",
                 "Minutos": "0 min",
                 "Frequência": "D"
+            },
+            {
+                "Atividade": "auxiliar parceiros de equipe",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
+            },
+            {
+                "Atividade": "separação de documentação fisica ( notas de energia/ notas de serviços para o fiscal, arquivamento desses documentos, abertura de caixas)",
+                "Horas": "2 h",
+                "Minutos": "0 min",
+                "Frequência": "M"
+            },
+            {
+                "Atividade": "demandas diversas (salvar um arquivo, preencher algo, verificar recebimento, verificar resposta)",
+                "Horas": "1 h",
+                "Minutos": "0 min",
+                "Frequência": "S"
             },
             {
                 "Atividade": "auxiliar parceiros de equipe",
