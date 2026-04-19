@@ -3490,42 +3490,91 @@ if st.session_state.get("pagina") == "formulario":
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# Buscamos da memória global (session_state)
 base_auditoria = st.session_state.get('base_auditoria')
 
 if base_auditoria:
     mapa_auditoria = {}
     for idx, f in enumerate(base_auditoria):
-        # Mesma lógica de extração de nome da sua visualização
         n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
         mapa_auditoria[nome_chave] = f
 
     nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    colab_alvo = st.selectbox(
-        f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", 
-        nomes_disponiveis
-    )
+    colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)}):", nomes_disponiveis)
 
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # Cálculos de Nexo
-    h_alta = len(t.get('alta', []))
-    h_norm = len(t.get('normal', []))
-    h_baix = len(t.get('baixa', []))
+    # --- 1. CÁLCULO DE HORAS REAIS (O PULO DO GATO) ---
+    def somar_horas(lista):
+        total = 0
+        for i in lista:
+            try:
+                h = float(str(i.get('Horas', 0)).replace(',', '.'))
+                m = float(str(i.get('Minutos', 0)).replace(',', '.')) / 60
+                total += (h + m)
+            except: continue
+        return total
 
-    score_nexo = 100 if (h_alta + h_norm) >= h_baix else 60
-    if (h_alta + h_norm + h_baix) == 0: score_nexo = 0
+    h_alta = somar_horas(t.get('alta', []))
+    h_norm = somar_horas(t.get('normal', []))
+    h_baix = somar_horas(t.get('baixa', []))
+    h_total_dia = h_alta + h_norm + h_baix
 
-    # Gráfico de Velocímetro
-    fig = go.Figure(go.Indicator(
-        mode = "gauge+number",
-        value = score_nexo,
-        title = {'text': f"Nexo Causal: {colab_alvo}"},
-        gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#4facfe"}}
-    ))
-    st.plotly_chart(fig, use_container_width=True)
+    # --- 2. MOTOR DE REGRAS CRÍTICAS ---
+    score = 100
+    alertas = []
+
+    # Regra A: Jornada Impossível (O erro do Adson)
+    if h_total_dia > 12:
+        penalidade = 40 if h_total_dia < 16 else 70
+        score -= penalidade
+        alertas.append(f"🚨 **JORNADA IMPOSSÍVEL:** Relatado {h_total_dia:.1f}h/dia. Dados inflados.")
+
+    # Regra B: Perfil Defensivo (Dificuldades Vazias)
+    difs = str(dados_alvo.get('dificuldades', '')).lower()
+    if "nenhuma" in difs or "não informado" in difs or len(t.get('dificuldades', [])) == 0:
+        score -= 20
+        alertas.append("🛡️ **PERFIL DEFENSIVO:** Omissão de dificuldades/gargalos operacionais.")
+
+    # Regra C: Concentração de Complexidade
+    if h_alta > (h_norm + h_baix) * 3:
+        score -= 15
+        alertas.append("⚠️ **DESVIO ANALÍTICO:** Excesso de tarefas em Alta Complexidade (Inverossímil).")
+
+    score = max(0, score) # Garante que não seja negativo
+
+    # --- 3. INTERFACE E GRÁFICO ---
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.metric("Score de Nexo", f"{score}%")
+        st.metric("Horas Totais/Dia", f"{h_total_dia:.1f}h")
+        
+    with col2:
+        fig = go.Figure(go.Indicator(
+            mode = "gauge+number",
+            value = score,
+            title = {'text': "Confiabilidade do Relato"},
+            gauge = {
+                'axis': {'range': [0, 100]},
+                'bar': {'color': "#4facfe" if score > 50 else "#ff4b4b"},
+                'steps': [
+                    {'range': [0, 40], 'color': "#ff4b4b"},
+                    {'range': [40, 75], 'color': "#ffa500"},
+                    {'range': [75, 100], 'color': "#00c853"}
+                ],
+                'threshold': {'line': {'color': "black", 'width': 4}, 'value': score}
+            }
+        ))
+        fig.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Exibição dos Alertas
+    if alertas:
+        st.markdown("### 🔍 Diagnóstico do Auditor")
+        for a in alertas:
+            st.write(a)
 
 else:
-    st.info("💡 Por favor, carregue a Visualização de Registros acima para ativar a Auditoria.")
+    st.info("💡 Carregue a Visualização acima primeiro.")
