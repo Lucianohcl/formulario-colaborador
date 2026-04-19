@@ -3486,7 +3486,7 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (ATUALIZADO) ---
+# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (TRANSPARÊNCIA TOTAL) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
@@ -3505,75 +3505,67 @@ if base_auditoria:
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # --- FUNÇÃO DE CÁLCULO MESTRE (TEMPO X FREQUÊNCIA) ---
-    def calcular_impacto_diario(lista):
+    # --- PROCESSADOR DETALHADO POR TABELA ---
+    def auditar_tabela(lista):
         total_dia = 0.0
+        linhas_detalhadas = []
+        
         for item in lista:
             try:
+                # Identifica se é Atividade, Dificuldade ou Sugestão
+                desc = item.get('Atividade') or item.get('Dificuldade') or item.get('Sugestão') or "Item sem descrição"
                 h = float(str(item.get('Horas', 0)).replace(',', '.').strip() or 0)
                 m = float(str(item.get('Minutos', 0)).replace(',', '.').strip() or 0) / 60
                 freq = str(item.get('Frequência', 'D')).upper().strip()
                 
-                # Normalização Base: 22 dias úteis/mês | 5 dias/semana
-                if freq == 'D': peso = 1.0
-                elif freq == 'S': peso = 0.2
-                elif freq == 'M': peso = 0.045
-                elif freq == 'T' or freq == 'A': peso = 0.01 # Trimestral/Avulso
-                else: peso = 1.0
+                # Fatores de Conversão para Dia Útil
+                de_para = {'D': 1.0, 'S': 0.2, 'M': 0.045, 'T': 0.01, 'A': 0.01}
+                fator = de_para.get(freq, 1.0)
                 
-                total_dia += (h + m) * peso
+                valor_diario = (h + m) * fator
+                total_dia += valor_diario
+                
+                # Formata a linha de auditoria
+                tempo_original = f"{int(h)}h" if h > 0 else ""
+                tempo_original += f"{int(m*60)}min" if m > 0 else ""
+                
+                linhas_detalhadas.append({
+                    "Descrição": desc,
+                    "Relatado": f"{tempo_original} ({freq})",
+                    "Impacto/Dia": f"{valor_diario:.2f}h"
+                })
             except: continue
-        return total_dia
+        return total_dia, linhas_detalhadas
 
-    # Processamento de todas as frentes
-    h_alta = calcular_impacto_diario(t.get('alta', []))
-    h_norm = calcular_impacto_diario(t.get('normal', []))
-    h_baix = calcular_impacto_diario(t.get('baixa', []))
-    h_dificuldades = calcular_impacto_diario(t.get('dificuldades', []))
+    # Executa Auditoria em todos os blocos
+    h_alta, det_alta = auditar_tabela(t.get('alta', []))
+    h_norm, det_norm = auditar_tabela(t.get('normal', []))
+    h_baix, det_baix = auditar_tabela(t.get('baixa', []))
+    h_dif, det_dif = auditar_tabela(t.get('dificuldades', []))
     
-    h_total_trabalho = h_alta + h_norm + h_baix
-    h_total_com_gargalos = h_total_trabalho + h_dificuldades
+    h_total = h_alta + h_norm + h_baix
 
-    # --- MOTOR DE REGRAS ---
+    # --- MÉTRICAS E GRÁFICO (LAYOUT MANTIDO) ---
+    c1, c2, c3 = st.columns(3)
+    
+    # Score Dinâmico
     score = 100
-    alertas = []
-
-    # 1. Validação de Jornada (Regra Adson)
-    if h_total_trabalho > 12:
-        penalidade = 40 if h_total_trabalho <= 15 else 75
-        score -= penalidade
-        alertas.append(f"🚨 **JORNADA IMPOSSÍVEL:** Atividades somam {h_total_trabalho:.1f}h úteis/dia. Dados inflados.")
-
-    # 2. Validação de Dificuldades (Perfil Defensivo ou Inconsistente)
-    texto_dif = str(t.get('dificuldades', [])).lower()
-    if "nenhuma" in texto_dif or not t.get('dificuldades'):
-        score -= 20
-        alertas.append("🛡️ **PERFIL DEFENSIVO:** Omissão de gargalos (improvável para a senioridade).")
-    elif h_dificuldades > 4:
-        score -= 15
-        alertas.append(f"⚠️ **GARGALO CRÍTICO:** Dificuldades consomem {h_dificuldades:.1f}h/dia. Risco operacional alto.")
-
-    # 3. Concentração de Complexidade
-    if h_alta > (h_norm + h_baix) * 2:
-        score -= 15
-        alertas.append("⚠️ **DESVIO DE FUNÇÃO:** Carga excessiva em Alta Complexidade sugere centralização.")
-
+    if h_total > 12: score -= 50
+    if h_total > 15: score -= 30
+    if not t.get('dificuldades') or "nenhuma" in str(t.get('dificuldades')).lower(): score -= 20
     score = max(0, score)
 
-    # --- EXIBIÇÃO ---
-    c1, c2, c3 = st.columns(3)
     c1.metric("Score de Nexo", f"{score}%")
-    c2.metric("Trabalho Efetivo", f"{h_total_trabalho:.1f}h/dia")
-    c3.metric("Tempo em Gargalos", f"{h_dificuldades:.1f}h/dia")
+    c2.metric("Trabalho Efetivo", f"{h_total:.1f}h/dia")
+    c3.metric("Impacto de Gargalos", f"{h_dif:.1f}h/dia")
 
-    # Gráfico de Confiabilidade
     import plotly.graph_objects as go
     fig = go.Figure(go.Indicator(
         mode = "gauge+number",
         value = score,
         gauge = {
             'axis': {'range': [0, 100]},
-            'bar': {'color': "black"},
+            'bar': {'color': "#2E3192"},
             'steps': [
                 {'range': [0, 45], 'color': "#ff4b4b"},
                 {'range': [45, 80], 'color': "#ffa500"},
@@ -3584,10 +3576,26 @@ if base_auditoria:
     fig.update_layout(height=250, margin=dict(l=20, r=20, t=20, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
-    if alertas:
-        st.subheader("🔍 Diagnóstico do Auditor")
-        for a in alertas:
-            st.markdown(a)
-            
+    # --- SEÇÃO DE DETALHAMENTO POR TABELA ---
+    st.subheader("🔍 Detalhamento por Categoria")
+
+    categorias = [
+        ("🔴 Alta Complexidade", det_alta, h_alta),
+        ("🟡 Complexidade Normal", det_norm, h_norm),
+        ("🟢 Baixa Complexidade", det_baix, h_baix),
+        ("⚠️ Dificuldades", det_dif, h_dif)
+    ]
+
+    for titulo, dados, subtotal in categorias:
+        with st.expander(f"{titulo} (Subtotal: {subtotal:.2f}h/dia)", expanded=False):
+            if dados:
+                st.table(dados) # Exibe como tabela para leitura rápida
+            else:
+                st.write("Nenhum item registrado nesta categoria.")
+
+    # Diagnóstico Final
+    if h_total > 12:
+        st.error(f"🚨 **ALERTA DE INCONSISTÊNCIA:** A jornada de {h_total:.1f}h é humanamente impossível de manter com constância.")
+
 else:
-    st.info("💡 Aguardando carregamento de dados para auditoria.")
+    st.info("💡 Aguardando dados para iniciar a auditoria.")
