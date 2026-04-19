@@ -1820,6 +1820,8 @@ if st.session_state.get("pagina") == "visualizar":
         st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
     else:
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
+        # ADICIONE ESTA LINHA AQUI:
+        st.session_state['base_auditoria'] = lista_de_arquivos
 
         # 2. INICIALIZAÇÃO DA LISTA DE OCULTOS
         if "arquivos_escondidos" not in st.session_state:
@@ -3482,76 +3484,46 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- FINAL DO CÓDIGO (ABAIXO DA VISUALIZAÇÃO) ---
-
+# --- MOTOR DE AUDITORIA (NO FINAL DO ARQUIVO) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# 1. SEGURANÇA TOTAL: USAMOS A MESMA LISTA QUE A VISUALIZAÇÃO ACABOU DE CARREGAR
-if 'lista_de_arquivos' in locals() and lista_de_arquivos:
-    
-    # Criamos um mapa (dicionário) para garantir que TODOS apareçam no seletor
-    # sem risco de um sobrescrever o outro
+# Buscamos da memória global (session_state)
+base_auditoria = st.session_state.get('base_auditoria')
+
+if base_auditoria:
     mapa_auditoria = {}
-    for idx, f in enumerate(lista_de_arquivos):
-        # Pegamos o nome exatamente como você faz no expander
+    for idx, f in enumerate(base_auditoria):
+        # Mesma lógica de extração de nome da sua visualização
         n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
-        
-        # Guardamos o formulário inteiro vinculado ao nome
         mapa_auditoria[nome_chave] = f
 
-    # 2. SELETOR LATERAL OU CENTRAL (COM TODOS OS NOMES)
     nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
-    
     colab_alvo = st.selectbox(
-        f"🎯 Selecione para Auditoria de Nexo ({len(nomes_disponiveis)} colaboradores encontrados):", 
-        nomes_disponiveis,
-        key="selector_auditoria_causal"
+        f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", 
+        nomes_disponiveis
     )
 
-    # 3. RECUPERAÇÃO DOS DADOS DO SELECIONADO
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # Fatiamento por Complexidade (Exatamente como você tem no JSON)
+    # Cálculos de Nexo
     h_alta = len(t.get('alta', []))
     h_norm = len(t.get('normal', []))
     h_baix = len(t.get('baixa', []))
 
-    # 4. CÁLCULO DO SCORE DE NEXO (LÓGICA BASE)
-    score_nexo = 100
-    total = h_alta + h_norm + h_baix
-    
-    if total > 0:
-        # Se tiver muita tarefa de baixa complexidade e pouca alta, o nexo cai
-        if h_baix > (h_alta + h_norm) * 2:
-            score_nexo = 60
-    else:
-        score_nexo = 0
+    score_nexo = 100 if (h_alta + h_norm) >= h_baix else 60
+    if (h_alta + h_norm + h_baix) == 0: score_nexo = 0
 
-    # 5. O GRÁFICO QUE VOCÊ PEDIU (VELOCÍMETRO)
-    fig_nexo = go.Figure(go.Indicator(
+    # Gráfico de Velocímetro
+    fig = go.Figure(go.Indicator(
         mode = "gauge+number",
         value = score_nexo,
-        title = {'text': f"Índice de Nexo: {colab_alvo}"},
-        gauge = {
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#4facfe"},
-            'steps': [
-                {'range': [0, 50], 'color': "#ff4b4b"},
-                {'range': [50, 85], 'color': "#ffa500"},
-                {'range': [85, 100], 'color': "#00c853"}
-            ],
-            'threshold': {
-                'line': {'color': "black", 'width': 4},
-                'thickness': 0.75,
-                'value': score_nexo
-            }
-        }
+        title = {'text': f"Nexo Causal: {colab_alvo}"},
+        gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#4facfe"}}
     ))
-    
-    st.plotly_chart(fig_nexo, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
 else:
-    st.error("❌ Erro Crítico: A lista de arquivos não foi carregada pelo sistema.")
+    st.info("💡 Por favor, carregue a Visualização de Registros acima para ativar a Auditoria.")
