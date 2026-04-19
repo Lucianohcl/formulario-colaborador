@@ -3685,7 +3685,7 @@ else:
             alertas_d = []
             
             def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
-        check_dif = []
+                check_dif = []
         
         # Consolida todas as atividades em um blocão de texto
         texto_atividades = ""
