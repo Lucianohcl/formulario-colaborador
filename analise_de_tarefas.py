@@ -3486,17 +3486,17 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA (NO FINAL DO ARQUIVO) ---
+# --- MOTOR DE AUDITORIA (VERSÃO RESTAURADA E MELHORADA) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# Buscamos da memória global (session_state)
+# Buscamos da memória global exatamente como estava antes
 base_auditoria = st.session_state.get('base_auditoria')
 
 if base_auditoria:
     mapa_auditoria = {}
     for idx, f in enumerate(base_auditoria):
-        # Mesma lógica de extração de nome da sua visualização
+        # Lógica original de extração de nome
         n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
         mapa_auditoria[nome_chave] = f
@@ -3510,23 +3510,77 @@ if base_auditoria:
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # Cálculos de Nexo
-    h_alta = len(t.get('alta', []))
-    h_norm = len(t.get('normal', []))
-    h_baix = len(t.get('baixa', []))
+    # --- FUNÇÃO DE AUDITORIA (TEMPO E FREQUÊNCIA) ---
+    def auditar_tabela_v2(lista):
+        total_dia = 0.0
+        detalhes = []
+        for i in lista:
+            try:
+                desc = i.get('Atividade') or i.get('Dificuldade') or i.get('Sugestão') or "Item"
+                h = float(str(i.get('Horas', 0)).replace(',', '.').strip() or 0)
+                m = float(str(i.get('Minutos', 0)).replace(',', '.').strip() or 0) / 60
+                f = str(i.get('Frequência', 'D')).upper().strip()
+                
+                # Conversão para impacto diário
+                fator = {'D': 1.0, 'S': 0.2, 'M': 0.045, 'T': 0.01, 'A': 0.01}.get(f, 1.0)
+                valor_diario = (h + m) * fator
+                total_dia += valor_diario
+                
+                detalhes.append({
+                    "Descrição": desc,
+                    "Relatado": f"{int(h)}h{int(m*60)}m ({f})",
+                    "Impacto/Dia": f"{valor_diario:.2f}h"
+                })
+            except: continue
+        return total_dia, detalhes
 
-    score_nexo = 100 if (h_alta + h_norm) >= h_baix else 60
-    if (h_alta + h_norm + h_baix) == 0: score_nexo = 0
+    # Processamento
+    h_alta, det_alta = auditar_tabela_v2(t.get('alta', []))
+    h_norm, det_norm = auditar_tabela_v2(t.get('normal', []))
+    h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
+    h_dif, det_dif = auditar_tabela_v2(t.get('dificuldades', []))
+    
+    h_total = h_alta + h_norm + h_baix
 
-    # Gráfico de Velocímetro
+    # --- SCORE E GRÁFICO BONITO ---
+    score = 100
+    if h_total > 12: score -= 40
+    if h_total > 15: score -= 40
+    score = max(0, score)
+
+    import plotly.graph_objects as go
     fig = go.Figure(go.Indicator(
         mode = "gauge+number",
-        value = score_nexo,
-        title = {'text': f"Nexo Causal: {colab_alvo}"},
-        gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#4facfe"}}
+        value = score,
+        gauge = {
+            'axis': {'range': [0, 100]},
+            'bar': {'color': "#2E3192"},
+            'steps': [
+                {'range': [0, 45], 'color': "#ff4b4b"},
+                {'range': [45, 80], 'color': "#ffa500"},
+                {'range': [80, 100], 'color': "#00c853"}
+            ]
+        }
     ))
+    fig.update_layout(height=250, margin=dict(l=20, r=20, t=20, b=20))
     st.plotly_chart(fig, use_container_width=True)
 
+    # --- RELATÓRIO DO TEMPO DESCRITO EM CADA TABELA ---
+    st.subheader("📋 Detalhamento por Categoria")
+    
+    secoes = [
+        ("🔴 Alta Complexidade", det_alta, h_alta),
+        ("🟡 Complexidade Normal", det_norm, h_norm),
+        ("🟢 Baixa Complexidade", det_baix, h_baix),
+        ("⚠️ Dificuldades", det_dif, h_dif)
+    ]
+
+    for titulo, dados, subtotal in secoes:
+        with st.expander(f"{titulo} (Total: {subtotal:.2f}h/dia)"):
+            if dados:
+                st.table(dados)
+            else:
+                st.write("Sem registros.")
 else:
-    st.info("💡 Por favor, carregue a Visualização de Registros acima para ativar a Auditoria.")
+    st.info("💡 Por favor, carregue os arquivos para ativar a Auditoria.")
 
