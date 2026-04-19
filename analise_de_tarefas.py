@@ -1447,32 +1447,41 @@ if st.session_state.pagina == "disc":
         with col_sug:
             st.subheader("💡 Sugestões vs Inovação")
             
-            # 1. FORÇA O RESGATE DOS DADOS (O CANTO CERTO)
-            # Isso garante que a lista não chegue vazia aqui
+            # 1. RESGATE DE DADOS (Tabelas)
             t_origem = form.get('tabelas', {})
-            lista_para_busca = t_origem.get('sugestoes', [])
+            sug_banco = t_origem.get('sugestoes', [])
             
-            # 2. CONDICIONAIS DE SEGURANÇA (LIMPEZA)
             bloqueio = ["nenhuma", "não tenho", "n/a", "não há", "0", "nada", "", "ok", "n", "nenhum", "não"]
 
-            # 3. FILTRAGEM E BUSCA DO TEXTO REAL
-            # Pegamos o que o cara escreveu na coluna 'Sugestão'
-            sugestoes_reais = [s.get('Sugestão', '') for s in lista_para_busca 
+            sugestoes_reais = [s.get('Sugestão', '') for s in sug_banco 
                                if str(s.get('Sugestão', '')).lower() not in bloqueio 
                                and len(str(s.get('Sugestão', ''))) > 3]
 
-            # 4. EXIBIÇÃO DINÂMICA (SEM FRASES PRONTAS SOZINHAS)
+            # 2. EXIBIÇÃO DAS SUGESTÕES
             if sugestoes_reais:
-                for texto_do_cara in sugestoes_reais:
-                    # ISSO MOSTRA O QUE ELE ESCREVEU:
-                    st.info(f"📝 **O colaborador sugeriu:** {texto_do_cara}")
+                for texto in sugestoes_reais:
+                    st.info(f"📝 **Sugestão:** {texto}")
                     
-                    # SÓ MOSTRA O FOGUETINHO SE O TEXTO DELE TIVER GATILHOS
-                    if any(w in texto_do_cara.lower() for w in ["otimizar", "sistema", "automação", "melhorar", "novo", "ajuste", "tecnologia"]):
-                        st.success("🚀 **Foco em Eficiência:** Esta proposta visa evolução dos processos.")
+                    # Análise de gatilhos para o ícone de foguete
+                    gatilhos = ["otimizar", "sistema", "automação", "melhorar", "digitalização", "processo", "kpi", "indicadores"]
+                    if any(w in texto.lower() for w in gatilhos):
+                        st.success("🚀 **Foco em Eficiência:** Evolução detectada.")
             else:
-                # SE NÃO TIVER NADA NO BANCO, ELE AVISA
-                st.error("🚨 **Barreira Propositiva:** Nenhuma sugestão válida encontrada nos dados.")
+                st.warning("🚨 Nenhuma sugestão encontrada.")
+
+            # 3. SEÇÃO DE CURSOS E OBJETIVOS (Campos)
+            st.markdown("---")
+            dados_gerais = form.get('campos', {})
+            
+            st.subheader("🎓 Qualificações e Cursos")
+            cursos_brutos = dados_gerais.get('cursos', 'Não informado.')
+            # Limpa as quebras de linha vindas do JSON
+            st.write(cursos_brutos.replace('\\n', '\n'))
+            
+            st.subheader("🚩 Objetivo Profissional")
+            obj_bruto = dados_gerais.get('objetivo', 'Não informado.')
+            # Limpa as quebras de linha vindas do JSON
+            st.write(obj_bruto.replace('\\n', '\n'))
 
         # ============================================================
         # 💡 SUGESTÃO FINAL PARA O GESTOR (CONTEÚDO DE RH)
