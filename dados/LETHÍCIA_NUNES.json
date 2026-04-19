@@ -1,15 +1,16 @@
 {
-    "timestamp": "06/04/2026 20:06:33",
+    "timestamp": "19/04/2026 03:59:28",
     "colaborador": "LETHÍCIA NUNES",
     "campos": {
-        "cargo": "",
-        "departamento": "",
-        "setor": "",
-        "chefe": "",
-        "unidade": "",
-        "escolaridade": "",
-        "cursos": "",
-        "objetivo": ""
+        "cargo": "ANALISTA CONTÁBIL JÚNIOR",
+        "departamento": "CONTÁBIL",
+        "setor": "CONTABILIDADE",
+        "chefe": "THALITA",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "SUPERIOR COMPLETO",
+        "devolver_em": "06/04/2026",
+        "cursos": "Bacharelado em ciências contábeis \nCRC ativo\n",
+        "objetivo": "Conciliação e análise de balancetes"
     },
     "tabelas": {
         "alta": [
