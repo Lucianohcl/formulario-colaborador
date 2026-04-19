@@ -3541,7 +3541,7 @@ else:
     h_baix, det_baix = auditar_tabela_v2(t.get('baixa', []))
     h_dif, det_dif = auditar_tabela_v2(t.get('dificuldades', []))
     
-    h_total = h_alta + h_norm + h_baix
+    h_total = h_alta + h_norm + h_baix + h_dif
 
     # --- SCORE E GRÁFICO ---
     score = 100
