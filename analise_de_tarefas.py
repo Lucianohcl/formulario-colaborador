@@ -3684,42 +3684,78 @@ else:
 
             alertas_d = []
             
-            # --- CRITÉRIOS DE SUPER INTELIGÊNCIA ---
-            # 1. Alerta de inconsistência: Dificuldade "vazia" ou sem sentido
-            if desc_dif.lower() in ["nenhuma", "não", "vazio", ".", "n/a"]:
-                continue # Pula itens vazios para não poluir a tabela
+            # --- ANÁLISE CRÍTICA CRUZADA (DIFICULDADES VS ATIVIDADES) ---
+    st.markdown("---")
+    st.subheader("⚠️ Auditoria de Gargalos e Nexo de Coerência")
 
-            # 2. Alerta de impacto desproporcional
-            if impacto_d > 1.0:
-                alertas_d.append("Bloqueio Crítico: Este problema consome mais de 1h/dia da jornada.")
+    def analisar_dificuldades_rigoroso(dificuldades_lista, tabelas_dict, h_total_atividades):
+        check_dif = []
+        
+        # Consolida todas as atividades em um blocão de texto para busca semântica
+        texto_atividades = ""
+        for cat in ['alta', 'normal', 'baixa']:
+            for item in tabelas_dict.get(cat, []):
+                texto_atividades += (item.get('Atividade', '')).lower() + " "
+
+        if not dificuldades_lista or len(dificuldades_lista) == 0:
+            return [{"Status": "✅", "Dificuldade": "Nenhuma relatada", "Impacto": "0.00h", "Análise": "Fluxo livre de impedimentos."}]
+
+        for d in dificuldades_lista:
+            desc_pura = (d.get('Dificuldade') or d.get('Sugestão') or "Vazio")
+            desc = desc_pura.lower()
+            setor = d.get('Setor Envolvido') or "N/A"
             
-            # 3. Análise semântica: Reclamações de terceiros (Clientes/Outros Setores)
-            if any(p in desc_dif.lower() for p in ["cliente", "atraso", "demora", "prazo"]):
-                alertas_d.append("Gargalo Externo: Dependência de terceiros afetando o Nexo Causal.")
+            # Cálculo de impacto rigoroso
+            h_d = float(str(d.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+            m_d = float(str(d.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+            f_d = str(d.get('Frequência', 'M')).upper().strip()
+            divisor_d = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}.get(f_d, 1)
+            impacto_d = (h_d + (m_d / 60)) / divisor_d
 
-            # 4. Rigor na descrição
-            if len(desc_dif) < 15:
-                alertas_d.append("Descrição insuficiente para diagnóstico de melhoria.")
+            alertas = []
+            
+            # --- RIGOR 1: PERTINÊNCIA SEMÂNTICA ---
+            # Se ele reclama de algo que não aparece nas tarefas (ex: reclama de 'cliente' mas não tem tarefa de 'atendimento')
+            termos_chave = ["cliente", "sistema", "documento", "prazo", "comunicação", "alterdata", "folha"]
+            relacionado = any(t_key in desc and t_key in texto_atividades for t_key in termos_chave)
+            
+            if not relacionado and len(desc) > 15:
+                # Se não achou relação direta, mas a descrição é longa, ele levanta suspeita
+                if not any(t_key in desc for t_key in ["tempo", "demanda", "equipe"]):
+                     alertas.append("Desconexão: A dificuldade não possui correlação clara com o escopo de tarefas listado.")
 
-            status_d = "🚩" if alertas_d else "✅"
-            analise_d = "Impedimento monitorado" if not alertas_d else " | ".join(alertas_d)
+            # --- RIGOR 2: A RECLAMAÇÃO DO "TEMPO" ---
+            if any(p in desc for p in ["tempo", "volume", "sobrecarga", "muita demanda"]):
+                if h_total_atividades < 6.5:
+                    alertas.append("Contradição: Relata falta de tempo, mas a carga de atividades é baixa (sub-ocupação).")
 
-            check_dif.append({
-                "Status": status_d,
-                "Setor": setor,
-                "Dificuldade": desc_dif[:65] + "...",
-                "Impacto Diário": f"{impacto_d:.3f} h/dia",
-                "Veredito do Perito": analise_d
-            })
+            # --- RIGOR 3: BLOQUEIOS CRÍTICOS ---
+            if impacto_d > 1.5:
+                alertas.append("Bloqueio Crítico: Este impedimento paralisa o colaborador por tempo excessivo.")
+
+            # --- RIGOR 4: DESCRIÇÕES EVASIVAS ---
+            if len(desc_pura) < 15 and desc not in ["nenhuma", "não", "vazio"]:
+                alertas.append("Vago: Detalhamento insuficiente para ação gerencial.")
+
+            status = "🚩" if alertas else "✅"
+            veredito = "Coerente" if not alertas else " | ".join(alertas)
+
+            if desc not in ["nenhuma", "não", "vazio", ".", "n/a"]:
+                check_dif.append({
+                    "Status": status,
+                    "Dificuldade": desc_pura[:60] + "...",
+                    "Impacto": f"{impacto_d:.3f} h/dia",
+                    "Veredito do Perito": veredito
+                })
         
         return check_dif
 
-    # Executa a auditoria de dificuldades
-    gargalos_encontrados = analisar_dificuldades_rigoroso(t.get('dificuldades', []))
+    # CHAMADA DA FUNÇÃO PASSANDO ATIVIDADES (t) E TOTAL DE HORAS (h_total)
+    gargalos_encontrados = analisar_dificuldades_rigoroso(t.get('dificuldades', []), t, h_total)
     
     if gargalos_encontrados:
         st.table(gargalos_encontrados)
     else:
-        st.success("✅ Nenhuma dificuldade técnica ou operacional foi registrada por este colaborador.")
+        st.success("✅ Nenhuma dificuldade técnica registrada.")
 
     # --- FIM DO SCRIPT ---
