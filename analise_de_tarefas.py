@@ -3486,17 +3486,17 @@ if st.session_state.get("pagina") == "formulario":
     # Versao_Final_06_04
 
 
-# --- MOTOR DE AUDITORIA DE NEXO CAUSAL (GRÁFICO PREMIUM) ---
+# --- MOTOR DE AUDITORIA (NO FINAL DO ARQUIVO) ---
 st.markdown("---")
 st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-# Busca da memória global (session_state)
+# Buscamos da memória global (session_state)
 base_auditoria = st.session_state.get('base_auditoria')
 
 if base_auditoria:
     mapa_auditoria = {}
     for idx, f in enumerate(base_auditoria):
-        # Lógica de extração de nome robusta
+        # Mesma lógica de extração de nome da sua visualização
         n_extraido = (f.get('colaborador') or f.get('nome') or f.get('campos', {}).get('nome') or f'Colaborador {idx}')
         nome_chave = str(n_extraido).upper().strip()
         mapa_auditoria[nome_chave] = f
@@ -3510,7 +3510,7 @@ if base_auditoria:
     dados_alvo = mapa_auditoria[colab_alvo]
     t = dados_alvo.get('tabelas', {})
     
-    # Cálculos de Nexo (Simples e Eficaz)
+    # Cálculos de Nexo
     h_alta = len(t.get('alta', []))
     h_norm = len(t.get('normal', []))
     h_baix = len(t.get('baixa', []))
@@ -3518,46 +3518,15 @@ if base_auditoria:
     score_nexo = 100 if (h_alta + h_norm) >= h_baix else 60
     if (h_alta + h_norm + h_baix) == 0: score_nexo = 0
 
-    # --- GRÁFICO DE VELOCÍMETRO PREMIUM ---
-    import plotly.graph_objects as go
-
+    # Gráfico de Velocímetro
     fig = go.Figure(go.Indicator(
         mode = "gauge+number",
         value = score_nexo,
-        title = {'text': f"Confiabilidade: {colab_alvo}", 'font': {'size': 20}},
-        gauge = {
-            'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "#2E3192"}, # Azul Escuro Profissional
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [0, 45], 'color': "#ff4b4b"},   # Vermelho
-                {'range': [45, 75], 'color': "#ffa500"},  # Laranja
-                {'range': [75, 100], 'color': "#00c853"}  # Verde
-            ],
-            'threshold': {
-                'line': {'color': "black", 'width': 4},
-                'thickness': 0.75,
-                'value': score_nexo
-            }
-        }
+        title = {'text': f"Nexo Causal: {colab_alvo}"},
+        gauge = {'axis': {'range': [0, 100]}, 'bar': {'color': "#4facfe"}}
     ))
-
-    fig.update_layout(
-        height=350, 
-        margin=dict(l=30, r=30, t=50, b=20),
-        paper_bgcolor = "rgba(0,0,0,0)", # Fundo transparente
-        font = {'color': "black", 'family': "Arial"}
-    )
-
     st.plotly_chart(fig, use_container_width=True)
-
-    # Métricas de apoio em colunas para completar o layout
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Itens Alta/Normal", h_alta + h_norm)
-    c2.metric("Itens Baixa", h_baix)
-    c3.metric("Score Final", f"{score_nexo}%")
 
 else:
     st.info("💡 Por favor, carregue a Visualização de Registros acima para ativar a Auditoria.")
+
