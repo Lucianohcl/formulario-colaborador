@@ -883,7 +883,7 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
 
     # Banner de Boas-vindas com a Mensagem Estratégica
     st.markdown("""
-        <div style="background: linear-gradient(to right, #4facfe, #00f2fe); padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
+        <div style="background: linear-gradient(to right, #4facfe, #00f2fe); padding: 10px 20px; border-radius: 15px; text-align: center; margin-bottom: 20px;">
             <h2 style="color: white; margin: 0;">🚀 Bem-vindo ao Sistema</h2>
             <p style="color: white; font-size: 1.1rem; opacity: 0.9; margin-top: 10px; font-weight: 300;">
                 Gestão Estratégica de Análise de Processos e Colaboradores
