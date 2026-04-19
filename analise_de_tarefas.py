@@ -3587,71 +3587,80 @@ else:
         # Este else volta para a margem zero (alinhado com o IF inicial)
         st.info("💡 Por favor, carregue os dados na Visualização de Registros para ativar a auditoria.")
 
-    # --- MOTOR DE COERÊNCIA LINHA A LINHA ---
+    # --- MOTOR DE AUDITORIA ANALÍTICA (LINHA DURA) ---
     st.markdown("---")
-    st.subheader("🕵️ Checklist de Coerência Técnica")
+    st.subheader("🕵️ Checklist de Coerência Técnico-Temporal")
 
-    def verificar_linha_a_linha(tabelas_dict):
+    def auditoria_linha_dura(tabelas_dict):
         checklist = []
         
-        # Mapeamento de regras por categoria
-        regras = {
-            'alta': {'min_h': 0.5, 'max_h_dia': 6, 'msg': "Complexidade Alta exige mais tempo ou frequência."},
-            'normal': {'min_h': 0.1, 'max_h_dia': 8, 'msg': "Tempo fora do padrão para atividade normal."},
-            'baixa': {'min_h': 0, 'max_h_dia': 4, 'msg': "Atividade baixa ocupando muito espaço no dia."}
+        # Benchmarks de esforço (Natureza da Atividade)
+        natureza = {
+            "pesada": ["auditoria", "onboarding", "reestruturação", "diagnóstico", "implantação", "treinamento"],
+            "gestao": ["gerenciar", "planejar", "coordenar", "estratégico", "liderar", "conduzir"],
+            "conferencia": ["validar", "conferir", "analisar", "verificar", "monitorar"]
         }
 
-        for cat, titulo_cat in [('alta', 'Alta'), ('normal', 'Normal'), ('baixa', 'Baixa')]:
-            itens = tabelas_dict.get(cat, [])
-            for i, item in enumerate(itens):
-                desc = item.get('Atividade') or "Sem descrição"
+        for cat, itens in tabelas_dict.items():
+            for item in itens:
+                # Normalização de dados
+                desc_pura = (item.get('Atividade') or item.get('Dificuldade') or "Vazio")
+                desc = desc_pura.lower()
                 freq = str(item.get('Frequência', 'D')).upper().strip()
-                
-                # Conversão para cálculo de impacto
                 h = float(str(item.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                 m = float(str(item.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                divisores = {'D': 1, 'S': 5, 'M': 20, 'T': 60, 'A': 240}
-                impacto = (h + (m / 60)) / divisores.get(freq, 1)
-
-                # --- CRITÉRIOS DE VERIFICAÇÃO ---
-                erros = []
                 
-                # 1. Checa se o impacto é desprezível (menos de 3 min/dia)
-                if impacto < 0.05 and freq != 'D':
-                    erros.append(f"Tempo diluído ({impacto:.3f}h) é irrelevante para análise.")
+                tempo_por_execucao = h + (m / 60)
+                divisores = {'D': 1, 'S': 5, 'M': 20}
+                impacto_diario = tempo_por_execucao / divisores.get(freq, 1)
+
+                alertas = []
+
+                # --- 1. CRÍTICA DE NATUREZA VS TEMPO ---
+                # Atividades "Pesadas" não podem levar menos de 1 hora por execução
+                if any(p in desc for p in natureza["pesada"]) and tempo_por_execucao < 1.0:
+                    alertas.append("Natureza 'Pesada' com tempo insuficiente por execução.")
+
+                # --- 2. CRÍTICA DE DENSIDADE ---
+                # Se a descrição é muito longa mas o impacto diário é pífio
+                if len(desc_pura) > 120 and impacto_diario < 0.1:
+                    alertas.append("Descrição inflada para um impacto diário irrelevante.")
+
+                # --- 3. CRÍTICA DE CATEGORIA (ALTA) ---
+                if cat == 'alta':
+                    if impacto_diario < 0.2: # Menos de 12 min/dia
+                        alertas.append("Alta complexidade 'fantasma': impacto diário desprezível.")
+                    if freq == 'D' and impacto_diario > 4:
+                        alertas.append("Inconsistência: Carga diária de alta complexidade humanamente improvável.")
+
+                # --- 4. CRÍTICA DE REPETIÇÃO (BAIXA) ---
+                if cat == 'baixa' and impacto_diario > 1.5:
+                    alertas.append("Atividade operacional consumindo tempo de analista.")
+
+                # Montagem do Resultado
+                status = "✅" if not alertas else "❌"
+                analise = "Coerente" if not alertas else " | ".join(alertas)
                 
-                # 2. Checa se o tempo total da tarefa é zero
-                if h == 0 and m == 0:
-                    erros.append("Tempo não preenchido.")
-
-                # 3. Lógica de Cargo vs Atividade (Exemplo: Fiscal não pode ter zero de Apuração)
-                if cat == 'alta' and impacto < 0.1:
-                    erros.append("Tarefa de Alta Complexidade com tempo subestimado.")
-
-                # --- MONTAGEM DO STATUS ---
-                if not erros:
-                    checklist.append({"status": "✅", "item": f"{titulo_cat}: {desc}", "obs": "Coerente"})
-                else:
-                    checklist.append({"status": "❌", "item": f"{titulo_cat}: {desc}", "obs": " | ".join(erros)})
+                checklist.append({
+                    "Status": status,
+                    "Natureza/Atividade": desc_pura[:70] + "...",
+                    "Impacto": f"{impacto_diario:.3f} h/dia",
+                    "Veredito": analise
+                })
 
         return checklist
 
-    # Executa a análise
-    verificacao_final = verificar_linha_a_linha(t)
-
-    # Exibição em formato de tabela/checklist
-    if verificacao_final:
-        df_check = pd.DataFrame(verificacao_final)
-        
-        # Estilização básica para o Streamlit
-        st.table(df_check)
-        
-        # Resumo Crítico
-        erros_totais = len([x for x in verificacao_final if x['status'] == "❌"])
-        if erros_totais > 0:
-            st.error(f"🚨 Atenção: Encontramos {erros_totais} inconsistências que podem distorcer o Nexo Causal.")
-        else:
-            st.success("💎 Todos os lançamentos seguem uma lógica técnica aceitável.")
+    # Execução e Exibição
+    resultado_pericia = auditoria_linha_dura(t)
+    df_pericia = pd.DataFrame(resultado_pericia)
     
-    # --- FIM DA ANÁLISE LINHA A LINHA ---
+    # Exibe a tabela com cores para facilitar o olho do auditor
+    st.table(df_pericia)
+
+    # Resumo Final
+    reprovados = len([x for x in resultado_pericia if x['Status'] == "❌"])
+    if reprovados > 0:
+        st.error(f"🚩 O Perito Digital encontrou {reprovados} divergências entre a natureza da tarefa e o tempo relatado.")
+    else:
+        st.success("💎 Nexo Causal validado: A natureza das atividades condiz com o tempo e frequência.")
 
