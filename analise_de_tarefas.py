@@ -3825,19 +3825,22 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO (VOLTANDO AO QUE FUNCIONA) ---
+    # --- CHAMADA E EXIBIÇÃO ---
 
-    # Se a variável 't' (que tem tudo do Juarez) existir:
-    if 't' in locals():
-        # Pega as dificuldades direto de 't' (como está no JSON)
-        lista_dif = t.get('dificuldades', [])
+    # 1. Verifica se 't' existe e se é um dicionário antes de tentar o .get()
+    t_valida = locals().get('t')
+
+    if isinstance(t_valida, dict):
+        # Agora é seguro usar o .get()
+        lista_dif = locals().get('t', {}).get('dificuldades', [])
         h_v = locals().get('h_total', 0)
 
-        res_dificuldades = analisar_dificuldades_rigoroso(lista_dif, t, h_v)
+        res_dificuldades = analisar_dificuldades_rigoroso(lista_dif, t_valida, h_v)
 
         if res_dificuldades:
             st.table(res_dificuldades)
         else:
             st.info("ℹ️ Nenhuma dificuldade encontrada para este colaborador.")
     else:
-        st.info("⚠️ ☝️ Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
+        # Se 't' não existe ou não é dicionário, mostra o seu alerta amarelo
+        st.info("⚠️ ATENÇÃO ACIMA ☝️")
