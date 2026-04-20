@@ -3525,7 +3525,7 @@ if st.session_state.pagina == "analise":
     t_check = st.session_state.get('t')
 
     if not base or t_check is None:
-        st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
+        st.info("Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria. 🔴🔴🔴 ATENÇÃO!!! VOCÊ DEVE CLICAR PRIMEIRO NO BOTÃO 'Visualizar Dados' E DEPOIS VOLTAR E CLICAR DE NOVO NO BOTÃO 'Análise Inteligente' ")
     else:
         
 
@@ -4086,7 +4086,7 @@ if st.session_state.get("pagina") == "analise":
                         st.markdown(f"""
                         <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
                             <p style="color: #333; margin: 0;">
-                                <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
+                                <b>Nota do Auditor:</b> É frustrante que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
                                 A ausência de contribuições <b>não enriquece o processo de evolução organizacional</b> e limita a 
                                 identificação de oportunidades para otimizar a produtividade e o bem-estar do setor.
                             </p>
