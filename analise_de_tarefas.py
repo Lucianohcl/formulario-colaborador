@@ -3825,15 +3825,17 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO (VERSÃO BLINDADA) ---
+    # --- CHAMADA E EXIBIÇÃO (FIX: ATTRIBUTE ERROR) ---
 
-    # 1. Busca os dados de forma segura sem disparar erro técnico
-    dados_para_analise = st.session_state.get('t')
-    
+    # 1. Tenta pegar os dados salvos no registro selecionado
+    # Se dados_alvo não existir, ele usa um dicionário vazio {} para o .get não quebrar
+    dados_para_analise = locals().get('dados_alvo', {})
+
     if dados_para_analise:
-        # 2. Garante que h_total existe (puxa da memória ou define 0)
+        # 2. Busca o h_total que foi calculado lá em cima
         horas_v = locals().get('h_total', 0)
         
+        # O .get() agora funciona porque garantimos que dados_para_analise é um dicionário
         res_dificuldades = analisar_dificuldades_rigoroso(
             dados_para_analise.get('dificuldades', []), 
             dados_para_analise, 
@@ -3843,7 +3845,6 @@ if st.session_state.pagina == "analise":
         if res_dificuldades:
             st.table(res_dificuldades)
         else:
-            st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
+            st.info("ℹ️ Nenhuma dificuldade encontrada para este colaborador.")
     else:
-        # Em vez de st.error, usamos a sirene silenciosa que espera o carregamento
         st.info("⚠️ ATENÇÃO ACIMA ☝️")
