@@ -3825,13 +3825,13 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO ---
+    # --- CHAMADA E EXIBIÇÃO (VERSÃO BLINDADA) ---
 
-    # 1. Tente encontrar a variável correta (se não for 't', mude para o nome que você usa)
-    dados_para_analise = locals().get('t') or locals().get('dados') or locals().get('registro')
-
+    # 1. Busca os dados de forma segura sem disparar erro técnico
+    dados_para_analise = st.session_state.get('t')
+    
     if dados_para_analise:
-        # 2. Garante que h_total existe (ou define como 0 se não existir)
+        # 2. Garante que h_total existe (puxa da memória ou define 0)
         horas_v = locals().get('h_total', 0)
         
         res_dificuldades = analisar_dificuldades_rigoroso(
@@ -3845,4 +3845,5 @@ if st.session_state.pagina == "analise":
         else:
             st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
     else:
-        st.error("⚠️ Erro técnico: A variável de dados (t) não foi encontrada no script.")
+        # Em vez de st.error, usamos a sirene silenciosa que espera o carregamento
+        st.info("🚨 Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
