@@ -3923,20 +3923,15 @@ if isinstance(t_base, dict):
             # Chamada do Motor Único
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            # --- SUBSTITUIÇÃO PARA FORÇAR SCROLL E LETRA MENOR ---
-            html_tabela = df_analise.to_html(index=False, escape=False)
-            st.markdown(
-                f"""
-                <div style="width: 100%; overflow-x: auto; font-size: 11px; font-family: sans-serif;">
-                    <style>
-                        table {{ width: 100%; border-collapse: collapse; min-width: 1000px; }}
-                        th {{ background-color: #f0f2f6; text-align: left; padding: 8px; border: 1px solid #ddd; }}
-                        td {{ text-align: left; padding: 8px; border: 1px solid #ddd; white-space: normal; }}
-                    </style>
-                    {html_tabela}
-                </div>
-                """, 
-                unsafe_allow_html=True
+            # Configuração direta para evitar quebra e tarjas
+            st.dataframe(
+                df_analise,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "Atividade": st.column_config.TextColumn("Atividade", width="large"),
+                    "Análise Crítica": st.column_config.TextColumn("Análise Crítica", width="large")
+                }
             )
             
             # KPI de Produtividade Total
