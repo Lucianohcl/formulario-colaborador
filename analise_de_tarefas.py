@@ -3587,6 +3587,9 @@ if st.session_state.pagina == "analise":
                     delta_color="normal"
                 )
 
+            # A NOTA ENTRA AQUI:
+            st.caption("⚠️ **Nota:** Analisar o diagnóstico pericial por colaborador.")
+
         st.markdown("---")
 
         # --- MOTOR DE AUDITORIA ---
