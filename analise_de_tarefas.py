@@ -3518,7 +3518,7 @@ if st.session_state.pagina == "analise":
     
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
     st.markdown("---")
-    st.title("🚨 Auditoria de Gargalos e Nexo de Coerência")
+    st.title("🚨 Auditoria de Gargalos, Nexo de Coerência e Ranking de Inovação")
 
     # O segredo: perguntar ao session_state evita o erro técnico "NameError"
     base = st.session_state.get('base_auditoria', [])
@@ -3555,6 +3555,28 @@ if st.session_state.pagina == "analise":
             })
 
         if ranking_geral:
+            # CSS PARA ESPREMER A COLUNA COLABORADOR
+            st.markdown("""
+                <style>
+                    div[data-testid="stTable"] {
+                        width: fit-content !important;
+                        margin: 0 auto !important;
+                    }
+                    /* Força a largura mínima na coluna 1 e permite quebra de linha */
+                    table tr td:nth-child(1), table tr th:nth-child(1) {
+                        width: 100px !important;
+                        max-width: 100px !important;
+                        white-space: normal !important;
+                        word-wrap: break-word !important;
+                        line-height: 1.1 !important;
+                    }
+                    th, td {
+                        padding: 2px 8px !important;
+                        font-size: 12px !important;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+
             df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
             df_exibicao = df_final_rank.copy()
             df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
