@@ -3844,3 +3844,70 @@ if st.session_state.pagina == "analise":
     else:
         # Se 't' não existe ou não é dicionário, mostra o seu alerta amarelo
         st.info("⚠️ ATENÇÃO ACIMA ☝️")
+
+
+def realizar_pericia_sugestoes_uau(sugestoes, dificuldades, tabelas):
+    pericia_final = []
+    
+    # 1. Mapeia o Contexto (Dores e Atividades)
+    atv_todas = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
+    texto_contexto = " ".join([a.get('Atividade', '').lower() for a in atv_todas])
+    texto_contexto += " " + " ".join([d.get('Dificuldade', '').lower() for d in dificuldades])
+
+    for sug in sugestoes:
+        desc = sug.get('Sugestão', '')
+        freq = sug.get('Frequência', 'D').upper()
+        min_inf = int(str(sug.get('Minutos', '0')).replace(' min', '') or 0)
+        impacto_bruto = sug.get('Impacto Esperado', 'DP')
+
+        # --- LÓGICA DE NEXO (A "INTELIGÊNCIA") ---
+        palavras_sug = [p for p in desc.lower().split() if len(p) > 5]
+        tem_nexo_dor = any(p in texto_contexto for p in palavras_sug)
+        
+        # --- CÁLCULO DE GANHO REAL (O "UAU") ---
+        # Converte o tempo modesto em ganho anual estimado (220 dias úteis)
+        ganho_anual_horas = (min_inf * 220) / 60 if freq == 'D' else (min_inf * 12) / 60
+        
+        # --- DEFINIÇÃO DE STATUS PERICIAL ---
+        if tem_nexo_dor and freq == 'D':
+            status = "🔥 PRIORIDADE CRÍTICA"
+            recomendacao = "Implementação Imediata: Resolve dor latente e libera fluxo."
+        elif freq == 'D':
+            status = "🚀 ALTO IMPACTO"
+            recomendacao = f"Otimização escalar. Ganho real de {ganho_anual_horas:.1f}h/ano."
+        else:
+            status = "⚖️ ESTRUTURAL"
+            recomendacao = "Melhoria de processo a longo prazo."
+
+        pericia_final.append({
+            "💡 Sugestão Analisada": desc,
+            "🔍 Nexo Técnico": "Nexo com Dor/Atividade" if tem_nexo_dor else "Inovação Sugerida",
+            "📊 Impacto Real": status,
+            "🛡️ Parecer do Auditor": recomendacao
+        })
+    
+    return pericia_final
+
+# --- ÁREA DE EXIBIÇÃO NO DASHBOARD ---
+st.markdown("---")
+st.header("🔬 Perícia Técnica de Melhoria Contínua")
+
+# Verifica se os dados estão carregados (usando sua trava de segurança)
+t_pericia = locals().get('t')
+
+if isinstance(t_pericia, dict):
+    lista_sug = t_pericia.get('sugestoes', [])
+    lista_dif = t_pericia.get('dificuldades', [])
+
+    if lista_sug:
+        with st.expander("⚡ CLIQUE PARA VER A ANÁLISE DE IMPACTO DAS SUGESTÕES", expanded=True):
+            resultado = realizar_pericia_sugestoes_uau(lista_sug, lista_dif, t_pericia)
+            
+            # Estilização da Tabela para o "UAU"
+            st.table(resultado)
+            
+            st.success(f"✅ Auditoria Concluída: Identificadas {len([r for r in resultado if 'CRÍTICA' in r['📊 Impacto Real']])} melhorias de alto retorno.")
+    else:
+        st.info("ℹ️ Aguardando carregamento de sugestões para iniciar perícia.")
+else:
+    st.warning("⚠️ ☝️ Selecione um colaborador acima para ativar o Motor de Perícia.")
