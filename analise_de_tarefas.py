@@ -3924,7 +3924,21 @@ if isinstance(t_base, dict):
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
             # Exibição com Estilo
-            st.dataframe(df_analise, use_container_width=True, hide_index=True)
+            st.data_editor(
+                df_analise, 
+                use_container_width=True, 
+                hide_index=True,
+                column_config={
+                    "Atividade": st.column_config.TextColumn(
+                        "Atividade",
+                        width="large",  # Isso força a coluna a ser larga o suficiente
+                    ),
+                    "Análise Crítica": st.column_config.TextColumn(
+                        "Análise Crítica",
+                        width="medium",
+                    )
+                }
+            )
             
             # KPI de Produtividade Total
             total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
