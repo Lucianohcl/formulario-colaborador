@@ -3916,6 +3916,8 @@ if isinstance(t_base, dict):
     
     if sug_lista:
         with st.container():
+
+            if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** Registro lamentável e sem valor estratégico.")
             st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
             # Chamada do Motor Único
