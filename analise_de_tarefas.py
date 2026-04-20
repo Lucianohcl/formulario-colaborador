@@ -3694,7 +3694,7 @@ if st.session_state.pagina == "analise":
                     
                     checklist.append({
                         "Status": status,
-                        "Atividade": desc_pura[:60] + "...",
+                        "Atividade": desc_pura,
                         "Impacto": f"{impacto_diario:.3f} h/dia",
                         "Análise Crítica": veredito
                     })
