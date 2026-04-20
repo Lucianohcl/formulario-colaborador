@@ -3527,24 +3527,43 @@ if st.session_state.pagina == "analise":
     if not base or t_check is None:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
-        if ranking_geral:
-            df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
-            df_exibicao = df_final_rank.copy()
-            df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
+        # --- RANKING TOTAL DE CONVERSÃO (BLOCO ÚNICO ANTIFALHAS) ---
+        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
+        
+        ranking_dados = [] # Criamos aqui
+        for f in base:
+            nome_ranking = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
+            sugestoes_ranking = f.get('tabelas', {}).get('sugestoes', [])
+            total_horas_ano = 0
+            for s in sugestoes_ranking:
+                try:
+                    f_s = str(s.get('Frequência', 'M')).upper().strip()
+                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    tempo_min = (h_s * 60) + m_s
+                    mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
+                    total_horas_ano += (tempo_min * mult) / 60
+                except: continue
+            ranking_dados.append({"Colaborador": nome_ranking, "Sug.": len(sugestoes_ranking), "Economia": total_horas_ano})
 
-            # DATA FRAME COM COLUNA ESPREMIDA (IGUAL TABELA DE ATIVIDADES)
+        if ranking_dados:
+            df_rank = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
+            df_rank["Economia"] = df_rank["Economia"].apply(lambda x: f"{x:.1f} h/ano")
+
+            # EXIBIÇÃO ESPREMIDA PADRÃO ATIVIDADES
             st.dataframe(
-                df_exibicao,
+                df_rank,
                 column_config={
                     "Colaborador": st.column_config.TextColumn("Colaborador", width="small"),
-                    "Qtd Sugestões": st.column_config.NumberColumn("Sug.", width="min"),
-                    "Economia Estimada": st.column_config.TextColumn("Economia", width="small"),
+                    "Sug.": st.column_config.NumberColumn("Sug.", width="min"),
+                    "Economia": st.column_config.TextColumn("Economia", width="small"),
                 },
                 hide_index=True,
                 use_container_width=False
             )
         
         st.markdown("---")
+        # --- FIM DO BLOCO UNIFICADO ---
 
         # Se os dados existem na memória, o motor processa normalmente
         mapa_auditoria = {}
