@@ -3933,6 +3933,9 @@ if isinstance(t_base, dict):
             with col2:
                 st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
 
+            # Nota: O bloco abaixo foi ajustado para manter a estrutura lógica correta do Python
+            if not df_analise.empty:
+                st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
             else:
                 # MENSAGEM PARA QUANDO NÃO HÁ SUGESTÕES
                 st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
@@ -3949,8 +3952,6 @@ if isinstance(t_base, dict):
                     </p>
                 </div>
                 """, unsafe_allow_html=True)
-                
-            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
     else:
         st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
 else:
