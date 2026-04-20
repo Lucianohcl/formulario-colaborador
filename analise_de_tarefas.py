@@ -3914,9 +3914,35 @@ if isinstance(t_base, dict):
     sug_lista = t_base.get('sugestoes', [])
     dif_lista = t_base.get('dificuldades', [])
     
-    if sug_lista:
+# =================================================================
+# BLOCO DE AUDITORIA ULTRA-INTELIGENTE - PADRÃO LUCIANO
+# =================================================================
+
+# 1. MAPEAMENTO DE DADOS (Ajustado para o seu JSON)
+sug_lista = t_base.get('tabelas', {}).get('sugestoes', [])
+dif_lista = t_base.get('tabelas', {}).get('dificuldades', [])
+
+# 2. FILTRO DE RESPOSTAS PROTOCOLARES (O "PEGADOR DE MIGUÉ")
+respostas_invalidas = [
+    "nenhuma", "nenhuma melhoria", "não", "não tenho", "nada", 
+    "sem sugestões", "sem melhorias", "n/a", ".", "-", "ok", "não há"
+]
+
+# 3. VERIFICAÇÃO DE CONTEÚDO REAL
+tem_conteudo_util = False
+if sug_lista:
+    # Limpa o texto da primeira sugestão para validar
+    texto_analisado = str(sug_lista[0].get('Sugestão', '')).strip().lower()
+    
+    # Valida se o texto é útil: Mais de 12 caracteres OU não é uma resposta 'lixo'
+    if len(texto_analisado) > 12 or (texto_analisado not in respostas_invalidas and len(texto_analisado) > 2):
+        tem_conteudo_util = True
+
+# 4. EXECUÇÃO DA LÓGICA DE EXIBIÇÃO
+if sug_lista:
+    if tem_conteudo_util:
         with st.container():
-            st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
+            st.subheader(f"🔬 Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
             # Chamada do Motor Único de Perícia
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
@@ -3924,43 +3950,56 @@ if isinstance(t_base, dict):
             # Exibição da Tabela de Auditoria
             st.dataframe(df_analise, use_container_width=True, hide_index=True)
             
-            # KPI de Produtividade Total - Extraindo o valor numérico calculado
-            total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
+            # KPI de Produtividade Total - Extração do ROI Anual
+            try:
+                total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
+            except:
+                total_h_ano = 0
             
             col1, col2 = st.columns(2)
             with col1:
-                st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
+                st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas", delta="ROI Estimado")
             with col2:
-                st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
+                st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", delta="Top Performance")
 
-            # Conclusão da Auditoria (Aparece apenas quando há sugestões)
-            # Pegamos a moda (frequência mais comum) para o diagnóstico final
-            freq_comum = df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]
-            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {freq_comum}.")
+            # Conclusão Dinâmica
+            try:
+                freq_comum = df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]
+                st.success(f"📌 **Conclusão da Auditoria:** Detectadas {len(df_analise)} oportunidades. Foco em redução de carga em tarefas de frequência {freq_comum}.")
+            except:
+                st.info("📌 Auditoria concluída com foco em melhorias estruturais.")
     
     else:
-        # MENSAGEM IMPACTANTE PARA AUSÊNCIA DE SUGESTÕES
-        st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
+        # 🚨 O "ENQUADRO" PARA QUEM ESCREVEU "NENHUMA" (CASO ADSON)
+        st.error("⚠️ **Alerta de Perícia: Baixo Engajamento Operacional**")
+        
+        # Resgata o texto exato do Adson
+        o_que_ele_disse = sug_lista[0].get('Sugestão', 'Campo Vazio')
+        cargo_colaborador = t_base.get('campos', {}).get('cargo', 'Colaborador')
+        setor_colaborador = t_base.get('campos', {}).get('setor', 'DP')
         
         st.markdown(f"""
-        <div style="background-color: #ffeeee; padding: 20px; border-left: 6px solid #ff4b4b; border-radius: 8px;">
-            <p style="color: #333; margin: 0; font-size: 1.1em;">
-                <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos ou insights de evolução. 
+        <div style="background-color: #fff0f0; padding: 25px; border: 1px solid #ff4b4b; border-radius: 12px; border-left: 10px solid #ff4b4b;">
+            <h4 style="color: #d32f2f; margin-top: 0; font-family: sans-serif;">❌ Registro de Sugestão Inválido</h4>
+            <p style="color: #333; font-size: 1.1em;">O colaborador <b>{t_base.get('colaborador')}</b> ({cargo_colaborador}) registrou formalmente: <br>
+            <span style="color: #d32f2f; font-style: italic;">"{o_que_ele_disse}"</span></p>
+            <hr style="border: 0; border-top: 1px solid #ffcccc;">
+            <p style="color: #444; line-height: 1.6;">
+                <b>Parecer Técnico:</b> Esta resposta é meramente protocolar e <b>não enriquece o processo de evolução organizacional</b>. 
+                Em um cargo estratégico de gestão no setor de <b>{setor_colaborador}</b>, a ausência de visão crítica sobre os próprios processos sugere estagnação operacional ou desengajamento com a eficiência do escritório.
             </p>
-            <p style="color: #444; margin-top: 10px;">
-                A ausência de contribuições <b>não enriquece o processo de melhoria contínua</b> e limita severamente a 
-                identificação de gargalos operacionais, prejudicando a otimização da produtividade e o bem-estar coletivo do setor.
+            <p style="color: #d32f2f; font-weight: bold; margin-top: 10px; font-size: 1em;">
+                🚨 IMPACTO NEGATIVO: Omissão de gargalos operacionais e bloqueio sistemático da melhoria contínua.
             </p>
-            <p style="color: #666; font-size: 0.9em; margin-top: 12px; border-top: 1px solid #ffcccc; padding-top: 10px;">
-                <i>👉 <b>Sugestão ao Gestor:</b> Avalie se há barreiras culturais, falta de ferramentas ou desmotivação que estejam impedindo este colaborador de contribuir com a inovação do processo.</i>
+            <p style="color: #666; font-size: 0.9em; margin-top: 15px; background: #fff; padding: 10px; border-radius: 5px;">
+                <i>👉 <b>Sugestão ao Gestor:</b> Recomenda-se feedback presencial para alinhar que a inovação é parte integrante da função.</i>
             </p>
         </div>
         """, unsafe_allow_html=True)
 
 else:
-    # Caso nenhum colaborador tenha sido selecionado na lista do Streamlit
+    # Caso a seleção esteja vazia
     st.info("☝️ **Aguardando Seleção:** Escolha um colaborador acima para ativar o motor de perícia ultra-inteligente.")
-
 
 
 
