@@ -3846,68 +3846,97 @@ if st.session_state.pagina == "analise":
         st.info("⚠️ ATENÇÃO ACIMA ☝️")
 
 
-def realizar_pericia_sugestoes_uau(sugestoes, dificuldades, tabelas):
-    pericia_final = []
+import pandas as pd
+
+def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
+    # Coleta todas as atividades para entender o contexto do colaborador
+    todas_atv = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
+    contexto_atv = " ".join([a.get('Atividade', '').lower() for a in todas_atv])
+    contexto_dor = " ".join([d.get('Dificuldade', '').lower() for d in dificuldades])
     
-    # 1. Mapeia o Contexto (Dores e Atividades)
-    atv_todas = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
-    texto_contexto = " ".join([a.get('Atividade', '').lower() for a in atv_todas])
-    texto_contexto += " " + " ".join([d.get('Dificuldade', '').lower() for d in dificuldades])
+    analise_detalhada = []
 
     for sug in sugestoes:
-        desc = sug.get('Sugestão', '')
+        # 1. Extração Dinâmica de Dados
+        texto_sug = sug.get('Sugestão', '').lower()
         freq = sug.get('Frequência', 'D').upper()
-        min_inf = int(str(sug.get('Minutos', '0')).replace(' min', '') or 0)
-        impacto_bruto = sug.get('Impacto Esperado', 'DP')
-
-        # --- LÓGICA DE NEXO (A "INTELIGÊNCIA") ---
-        palavras_sug = [p for p in desc.lower().split() if len(p) > 5]
-        tem_nexo_dor = any(p in texto_contexto for p in palavras_sug)
+        m = int(str(sug.get('Minutos', '0')).replace(' min', '') or 0)
+        h = int(str(sug.get('Horas', '0')).replace(' h', '') or 0)
+        tempo_min = (h * 60) + m
         
-        # --- CÁLCULO DE GANHO REAL (O "UAU") ---
-        # Converte o tempo modesto em ganho anual estimado (220 dias úteis)
-        ganho_anual_horas = (min_inf * 220) / 60 if freq == 'D' else (min_inf * 12) / 60
+        # 2. Cálculo de Nexo Técnico (Frequência x Atividade)
+        multiplicador = {'D': 220, 'S': 48, 'M': 12}.get(freq, 1)
+        horas_ano = (tempo_min * multiplicador) / 60
         
-        # --- DEFINIÇÃO DE STATUS PERICIAL ---
-        if tem_nexo_dor and freq == 'D':
-            status = "🔥 PRIORIDADE CRÍTICA"
-            recomendacao = "Implementação Imediata: Resolve dor latente e libera fluxo."
-        elif freq == 'D':
-            status = "🚀 ALTO IMPACTO"
-            recomendacao = f"Otimização escalar. Ganho real de {ganho_anual_horas:.1f}h/ano."
+        # Validação de Nexo: A sugestão ataca uma atividade real?
+        palavras_chave = [p for p in texto_sug.split() if len(p) > 5]
+        nexo_atividade = any(p in contexto_atv for p in palavras_chave)
+        nexo_dor = any(p in contexto_dor for p in palavras_chave)
+        
+        # 3. Gerador de Diagnóstico Dinâmico (Não estático)
+        if nexo_dor and freq == 'D':
+            diagnostico = "🔥 PRIORIDADE CRÍTICA: Resolve um gargalo diário relatado."
+            impacto = "Altíssimo (ROI Imediato)"
+        elif nexo_atividade:
+            diagnostico = f"⚖️ ESTRUTURAL: Otimiza uma tarefa de {freq} frequência."
+            impacto = "Médio (Ganho de Fluxo)"
         else:
-            status = "⚖️ ESTRUTURAL"
-            recomendacao = "Melhoria de processo a longo prazo."
+            diagnostico = "💡 INOVAÇÃO: Sugestão de melhoria para processos periféricos."
+            impacto = "Baixo (Long prazo)"
 
-        pericia_final.append({
-            "💡 Sugestão Analisada": desc,
-            "🔍 Nexo Técnico": "Nexo com Dor/Atividade" if tem_nexo_dor else "Inovação Sugerida",
-            "📊 Impacto Real": status,
-            "🛡️ Parecer do Auditor": recomendacao
+        # 4. Proposta de Redução de Tempo (O GANCHO)
+        # Se o colaborador sugere algo, o sistema 'estica' a meta de produtividade
+        if any(word in texto_sug for word in ['sistema', 'automação', 'integrar', 'digitalizar']):
+            meta = f"Reduzir carga manual em {max(50, tempo_min*2)}% via tecnologia."
+        elif any(word in texto_sug for word in ['padronizar', 'checklist', 'treinamento']):
+            meta = "Eliminar retrabalho: Foco em 'Primeira Vez Correta'."
+        else:
+            meta = f"Reduzir em {(tempo_min/2):.0f}min o ciclo atual de execução."
+
+        analise_detalhada.append({
+            "💡 Sugestão": sug.get('Sugestão'),
+            "⏱️ Nexo Tempo/Freq": f"{freq} ({tempo_min}min) | {horas_ano:.1f}h/ano",
+            "🔍 Diagnóstico Pericial": diagnostico,
+            "🚀 Meta de Produtividade": meta,
+            "📊 Impacto Real": impacto
         })
     
-    return pericia_final
+    return pd.DataFrame(analise_detalhada)
 
-# --- ÁREA DE EXIBIÇÃO NO DASHBOARD ---
+# --- EXIBIÇÃO NO DASHBOARD (O "UAU") ---
 st.markdown("---")
-st.header("🔬 Perícia Técnica de Melhoria Contínua")
+st.header("🔬 Central de Inteligência e Auditoria de Processos")
 
-# Verifica se os dados estão carregados (usando sua trava de segurança)
-t_pericia = locals().get('t')
+# Verificação de segurança para não quebrar no clique direto
+t_base = locals().get('t')
 
-if isinstance(t_pericia, dict):
-    lista_sug = t_pericia.get('sugestoes', [])
-    lista_dif = t_pericia.get('dificuldades', [])
-
-    if lista_sug:
-        with st.expander("⚡ CLIQUE PARA VER A ANÁLISE DE IMPACTO DAS SUGESTÕES", expanded=True):
-            resultado = realizar_pericia_sugestoes_uau(lista_sug, lista_dif, t_pericia)
+if isinstance(t_base, dict):
+    sug_lista = t_base.get('sugestoes', [])
+    dif_lista = t_base.get('dificuldades', [])
+    
+    if sug_lista:
+        with st.container():
+            st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
-            # Estilização da Tabela para o "UAU"
-            st.table(resultado)
+            # Chamada do Motor Único
+            df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            st.success(f"✅ Auditoria Concluída: Identificadas {len([r for r in resultado if 'CRÍTICA' in r['📊 Impacto Real']])} melhorias de alto retorno.")
+            # Exibição com Estilo
+            st.dataframe(df_analise, use_container_width=True, hide_index=True)
+            
+            # KPI de Produtividade Total
+            total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
+            with col2:
+                st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
+                
+            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
     else:
-        st.info("ℹ️ Aguardando carregamento de sugestões para iniciar perícia.")
+        st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
 else:
-    st.warning("⚠️ ☝️ Selecione um colaborador acima para ativar o Motor de Perícia.")
+    st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
+
+
