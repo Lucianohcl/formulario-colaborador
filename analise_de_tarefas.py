@@ -3554,23 +3554,23 @@ if st.session_state.pagina == "analise":
                 "Economia Estimada": total_horas_ano
             })
 
-        # CSS ULTRA-MINIMALISTA
-            st.markdown("""
-                <style>
-                    table tr td:nth-child(1), table tr th:nth-child(1) {
-                        width: 10px !important;
-                        max-width: 10px !important;
-                        word-break: break-all !important;
-                        line-height: 1 !important;
-                    }
-                    th, td { padding: 1px !important; font-size: 11px !important; }
-                </style>
-            """, unsafe_allow_html=True)
-
+        if ranking_geral:
             df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
             df_exibicao = df_final_rank.copy()
             df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
             st.table(df_exibicao)
+        
+        st.markdown("---")
+        # --- FIM DO RANKING ---
+
+        # Se os dados existem na memória, o motor processa normalmente
+        mapa_auditoria = {}
+        for idx, f in enumerate(base):
+            campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
+            n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
+            nome_chave = str(n_extraido).upper().strip()
+            mapa_auditoria[nome_chave] = f
+
         
         st.markdown("---")
         # --- FIM DO RANKING ---
