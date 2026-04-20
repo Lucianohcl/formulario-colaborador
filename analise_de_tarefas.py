@@ -3515,6 +3515,51 @@ if st.session_state.get("pagina") == "formulario":
 
 if st.session_state.pagina == "analise":
 
+    # --- RANKING TOTAL DE CONVERSÃO (O "ABRE-ALAS") ---
+        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
+        
+        ranking_geral = []
+        for f in base:
+            nome_ranking = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
+            # Acessa as sugestões dentro da estrutura de tabelas
+            sugestoes_ranking = f.get('tabelas', {}).get('sugestoes', [])
+            total_horas_ano = 0
+            
+            for s in sugestoes_ranking:
+                try:
+                    f_s = str(s.get('Frequência', 'M')).upper().strip()
+                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    
+                    # Cálculo de impacto anual (D=220 dias úteis, S=48 semanas, M=12 meses)
+                    tempo_min = (h_s * 60) + m_s
+                    mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
+                    total_horas_ano += (tempo_min * mult) / 60
+                except:
+                    continue
+            
+            ranking_geral.append({
+                "Colaborador": nome_ranking,
+                "Qtd Sugestões": len(sugestoes_ranking),
+                "Economia Estimada": total_horas_ano
+            })
+
+        if ranking_geral:
+            # Criamos o DataFrame, ordenamos e formatamos a exibição
+            df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
+            
+            # Formata a coluna de horas para aparecer com "h/ano" na tabela
+            df_exibicao = df_final_rank.copy()
+            df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
+            
+            st.table(df_exibicao)
+        
+        st.markdown("---")
+        # --- FIM DO RANKING GERAL ---
+
+        # Agora sim vem o título original que você já tem
+        st.title("🚨 Auditoria de Gargalos e Nexo de Coerência")
+
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
     st.markdown("---")
     st.title("🚨 Auditoria de Gargalos e Nexo de Coerência")
