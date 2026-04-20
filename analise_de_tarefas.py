@@ -3923,7 +3923,9 @@ if isinstance(t_base, dict):
             # Chamada do Motor Único
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            # Configuração direta para evitar quebra e tarjas
+            # Forçamos um contêiner CSS para o st.dataframe não conseguir "espremer" as colunas
+            st.markdown('<style>div[data-testid="stDataFrame"] > div { min-width: 1200px !important; }</style>', unsafe_allow_html=True)
+            
             st.dataframe(
                 df_analise,
                 use_container_width=True,
