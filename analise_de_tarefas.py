@@ -4024,8 +4024,7 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
 # --- EXIBIÇÃO NO DASHBOARD (O "UAU") ---
 st.markdown("---")
 
-with st.status("🔬 Processando Diagnóstico de Auditoria...", expanded=True) as status:
-
+with st.status("Processando análise...", expanded=True):
     st.header("🔬 Central de Inteligência e Auditoria de Processos")
 
     # Verificação de segurança para não quebrar no clique direto
@@ -4096,6 +4095,5 @@ with st.status("🔬 Processando Diagnóstico de Auditoria...", expanded=True) a
         else:
             st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
     else:
-        st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
-    
+        st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")    
         
