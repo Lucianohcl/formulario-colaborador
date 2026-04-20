@@ -3825,27 +3825,19 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO (FIX DEFINITIVO) ---
+    # --- CHAMADA E EXIBIÇÃO (VOLTANDO AO QUE FUNCIONA) ---
 
-    # 1. Busca os dados do colaborador selecionado
-    # Se 'dados_alvo' não existir, ele ignora (None) e cai no alerta amarelo
-    dados_reg = locals().get('dados_alvo')
-
-    if dados_reg:
-        # Se os dados existem, pegamos o h_total e rodamos a perícia
+    # Se a variável 't' (que tem tudo do Juarez) existir:
+    if 't' in locals():
+        # Pega as dificuldades direto de 't' (como está no JSON)
+        lista_dif = t.get('dificuldades', [])
         h_v = locals().get('h_total', 0)
-        
-        # O segredo: buscar 'dificuldades' dentro de 'dados_reg'
-        res_dificuldades = analisar_dificuldades_rigoroso(
-            dados_reg.get('dificuldades', []), 
-            dados_reg, 
-            h_v
-        )
+
+        res_dificuldades = analisar_dificuldades_rigoroso(lista_dif, t, h_v)
 
         if res_dificuldades:
             st.table(res_dificuldades)
         else:
             st.info("ℹ️ Nenhuma dificuldade encontrada para este colaborador.")
     else:
-        # Se não carregou nada, mostra o alerta que você queria
         st.info("⚠️ ☝️ Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
