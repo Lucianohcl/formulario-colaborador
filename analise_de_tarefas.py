@@ -3497,18 +3497,22 @@ if st.session_state.pagina == "analise":
     st.markdown("---")
     st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-    # Puxa os dados que foram carregados do GitHub na visualização lá em cima
+    # Tenta buscar os dados salvos na sessão
     base_auditoria = st.session_state.get('base_auditoria', [])
 
-    if not base_auditoria:
-        st.info("💡 Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
+    # A verificação abaixo impede o erro técnico de variável 't' inexistente
+    if not base_auditoria or 't' not in locals():
+        st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
         mapa_auditoria = {}
         for idx, f in enumerate(base_auditoria):
-            # Mesma lógica de extração de nome da Visualização
-            n_extraido = (f.get('colaborador') or f.get('nome') or (f.get('campos', {}) or {}).get('nome') or f'Colaborador {idx}')
+            # Extração segura de nomes para evitar erros de dicionário
+            campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
+            n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
             nome_chave = str(n_extraido).upper().strip()
             mapa_auditoria[nome_chave] = f
+        
+        # O restante do seu código que usa a variável 't' deve continuar aqui (também indentado)
 
         nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
         colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
