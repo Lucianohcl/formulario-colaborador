@@ -3914,70 +3914,45 @@ if isinstance(t_base, dict):
     sug_lista = t_base.get('sugestoes', [])
     dif_lista = t_base.get('dificuldades', [])
     
-# 1. MAPEAMENTO DE DADOS (Busca correta dentro do JSON)
-sug_lista = t_base.get('tabelas', {}).get('sugestoes', [])
-dif_lista = t_base.get('tabelas', {}).get('dificuldades', [])
 
-# 2. FILTRO DE RESPOSTAS INVÁLIDAS (PARA PEGAR O ADSON NO PULO)
-respostas_vazias = ["nenhuma", "nenhuma melhoria", "não", "não tenho", "nada", "n/a", ".", "-", "ok"]
-
-# 3. VERIFICAÇÃO DE CONTEÚDO REAL
-tem_sugestao_real = False
-if sug_lista:
-    texto_sug = str(sug_lista[0].get('Sugestão', '')).strip().lower()
-    # Se NÃO estiver na lista de vazias e tiver mais de 2 letras, é uma sugestão real
-    if texto_sug not in respostas_vazias and len(texto_sug) > 2:
-        tem_sugestao_real = True
-
-# 4. LÓGICA DE EXIBIÇÃO (IDENTAÇÃO 100% CORRETA)
-if sug_lista:
-    if tem_sugestao_real:
+        if sug_lista:
         with st.container():
             st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
-            # Chamada do Motor Único de Perícia
+            # Chamada do Motor Único
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
             # Exibição com Estilo
             st.dataframe(df_analise, use_container_width=True, hide_index=True)
             
             # KPI de Produtividade Total
-            try:
-                total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
-            except:
-                total_h_ano = 0
-                
+            total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
+            
             col1, col2 = st.columns(2)
             with col1:
                 st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
             with col2:
                 st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
-            
-            # Conclusão da Auditoria
-            freq_comum = df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]
-            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades. O foco principal é na frequência {freq_comum}.")
 
+            else:
+                # MENSAGEM PARA QUANDO NÃO HÁ SUGESTÕES
+                st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
+        
+                st.markdown(f"""
+                <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
+                    <p style="color: #333; margin: 0;">
+                        <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
+                        A ausência de contribuições <b>não enriquece o processo de evolução organizacional</b> e limita a 
+                        identificação de oportunidades para otimizar a produtividade e o bem-estar do setor.
+                    </p>
+                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                        <i>Sugestão ao Gestor: Verifique se há barreiras na comunicação ou falta de incentivo à inovação neste setor.</i>
+                    </p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
     else:
-        # >>> MENSAGEM PARA O ADSON (QUANDO ESCREVE "NENHUMA MELHORIA") <<<
-        st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
-        
-        texto_original = sug_lista[0].get('Sugestão', 'Vazio')
-        
-        st.markdown(f"""
-        <div style="background-color: #ffeeee; padding: 20px; border-left: 6px solid #ff4b4b; border-radius: 8px;">
-            <p style="color: #333; margin: 0; font-size: 1.1em;">
-                <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
-            </p>
-            <p style="color: #444; margin-top: 10px;">
-                O registro <i>"{texto_original}"</i> <b>não enriquece o processo de evolução organizacional</b> e limita severamente a 
-                identificação de gargalos operacionais, prejudicando a otimização do setor.
-            </p>
-            <p style="color: #666; font-size: 0.9em; margin-top: 12px; border-top: 1px solid #ffcccc; padding-top: 10px;">
-                <i>👉 <b>Sugestão ao Gestor:</b> Verifique se o colaborador Adson compreendeu a importância deste campo para a melhoria do seu próprio dia a dia.</i>
-            </p>
-        </div>
-        """, unsafe_allow_html=True)
-
+        st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
 else:
-    # Caso o JSON não tenha nem a chave de sugestões
     st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
