@@ -4040,7 +4040,7 @@ if st.session_state.get("pagina") == "analise":
             if sug_lista:
                 with st.container():
 
-                    if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É lamentável que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
+                    if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É frustante que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
                     st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
                     
                     # Chamada do Motor Único
