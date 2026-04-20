@@ -3923,22 +3923,26 @@ if isinstance(t_base, dict):
             # Chamada do Motor Único
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            # Força o estilo CSS diretamente no identificador do componente
-            st.markdown("""
+            # --- SOLUÇÃO DE EMERGÊNCIA: CONTAINER DE ROLAGEM BRUTO ---
+            st.markdown(
+                """
                 <style>
-                    .stDataFrame, div[data-testid="stTable"] {
-                        width: 1500px !important;
-                        overflow-x: auto !important;
+                    .tabela-rolavel {
+                        overflow-x: auto;
+                        width: 100%;
+                        border: 1px solid #ccc;
+                    }
+                    table {
+                        min-width: 1500px !important;
                     }
                 </style>
-            """, unsafe_allow_html=True)
-
-            st.dataframe(
-                df_analise,
-                use_container_width=False, # MUDAMOS PARA FALSE PARA ELE NÃO TENTAR CABER NA TELA
-                hide_index=True,
-                width=1500 # FORÇAMOS A LARGURA NO COMPONENTE
+                """, unsafe_allow_html=True
             )
+            
+            with st.container():
+                st.markdown('<div class="tabela-rolavel">', unsafe_allow_html=True)
+                st.table(df_analise)
+                st.markdown('</div>', unsafe_allow_html=True)
             
             # KPI de Produtividade Total
             total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
