@@ -4022,76 +4022,80 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
     return pd.DataFrame(analise_detalhada)
 
 # --- EXIBIÇÃO NO DASHBOARD (O "UAU") ---
-st.markdown("---")
 
-st.header("🔬 Central de Inteligência e Auditoria de Processos")
+if st.session_state.get("pagina") == "analise":
 
-# Verificação de segurança para não quebrar no clique direto
-t_base = locals().get('t')
+    st.markdown("---")
 
-if isinstance(t_base, dict):
-    sug_lista = t_base.get('sugestoes', [])
-    dif_lista = t_base.get('dificuldades', [])
-    
-    if sug_lista:
-        with st.container():
+    with st.status("Processando análise...", expanded=True):
+        st.header("🔬 Central de Inteligência e Auditoria de Processos")
 
-            if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É lamentável que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
-            st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
-            
-            # Chamada do Motor Único
-            df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
-            
-            # --- SOLUÇÃO DE EMERGÊNCIA: CONTAINER DE ROLAGEM BRUTO ---
-            st.markdown(
-                """
-                <style>
-                    .tabela-rolavel {
-                        overflow-x: auto;
-                        width: 100%;
-                        border: 1px solid #ccc;
-                    }
-                    table {
-                        min-width: 1500px !important;
-                    }
-                </style>
-                """, unsafe_allow_html=True
-            )
-            
-            with st.container():
-                st.markdown('<div class="tabela-rolavel">', unsafe_allow_html=True)
-                st.table(df_analise)
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            # KPI de Produtividade Total
-            total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
-            with col2:
-                st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
+        # Verificação de segurança para não quebrar no clique direto
+        t_base = locals().get('t')
 
-            # Nota: O bloco abaixo foi ajustado para manter a estrutura lógica correta do Python
-            if not df_analise.empty:
-                st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
+        if isinstance(t_base, dict):
+            sug_lista = t_base.get('sugestoes', [])
+            dif_lista = t_base.get('dificuldades', [])
+            
+            if sug_lista:
+                with st.container():
+
+                    if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É lamentável que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
+                    st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
+                    
+                    # Chamada do Motor Único
+                    df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
+                    
+                    # --- SOLUÇÃO DE EMERGÊNCIA: CONTAINER DE ROLAGEM BRUTO ---
+                    st.markdown(
+                        """
+                        <style>
+                            .tabela-rolavel {
+                                overflow-x: auto;
+                                width: 100%;
+                                border: 1px solid #ccc;
+                            }
+                            table {
+                                min-width: 1500px !important;
+                            }
+                        </style>
+                        """, unsafe_allow_html=True
+                    )
+                    
+                    with st.container():
+                        st.markdown('<div class="tabela-rolavel">', unsafe_allow_html=True)
+                        st.table(df_analise)
+                        st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    # KPI de Produtividade Total
+                    total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
+                    with col2:
+                        st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
+
+                    # Nota: O bloco abaixo foi ajustado para manter a estrutura lógica correta do Python
+                    if not df_analise.empty:
+                        st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
+                    else:
+                        # MENSAGEM PARA QUANDO NÃO HÁ SUGESTÕES
+                        st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
+                
+                        st.markdown(f"""
+                        <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
+                            <p style="color: #333; margin: 0;">
+                                <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
+                                A ausência de contribuições <b>não enriquece o processo de evolução organizacional</b> e limita a 
+                                identificação de oportunidades para otimizar a produtividade e o bem-estar do setor.
+                            </p>
+                            <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+                                <i>Sugestão ao Gestor: Verifique se há barreiras na comunicação ou falta de incentivo à inovação neste setor.</i>
+                            </p>
+                        </div>
+                        """, unsafe_allow_html=True)
             else:
-                # MENSAGEM PARA QUANDO NÃO HÁ SUGESTÕES
-                st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
-        
-                st.markdown(f"""
-                <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
-                    <p style="color: #333; margin: 0;">
-                        <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
-                        A ausência de contribuições <b>não enriquece o processo de evolução organizacional</b> e limita a 
-                        identificação de oportunidades para otimizar a produtividade e o bem-estar do setor.
-                    </p>
-                    <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                        <i>Sugestão ao Gestor: Verifique se há barreiras na comunicação ou falta de incentivo à inovação neste setor.</i>
-                    </p>
-                </div>
-                """, unsafe_allow_html=True)
-    else:
-        st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
-else:
-    st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
+                st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
+        else:
+            st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
