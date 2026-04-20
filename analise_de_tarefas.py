@@ -3720,9 +3720,21 @@ if st.session_state.pagina == "analise":
         res_final = auditoria_super_inteligente(t_limpo, h_total)
         
         if res_final:
-            col_e, col_c, col_d = st.columns([0.5, 4, 0.5])
-            with col_c:
-                st.table(res_final)
+            # CSS para forçar a tabela a ser pequena e sem espaços sobrando
+            st.markdown("""
+                <style>
+                    div[data-testid="stTable"] {
+                        width: fit-content !important;
+                        margin: 0 auto !important;
+                    }
+                    th, td {
+                        padding: 3px 10px !important; 
+                        font-size: 13px !important;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            st.table(res_final)
 
         st.markdown("### 📝 Parecer do Perito Digital")
         
