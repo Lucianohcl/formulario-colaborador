@@ -3556,24 +3556,16 @@ if st.session_state.pagina == "analise":
 
         if ranking_geral:
             # CSS PARA ESPREMER A COLUNA COLABORADOR
+            # CSS ULTRA-MINIMALISTA
             st.markdown("""
                 <style>
-                    div[data-testid="stTable"] {
-                        width: fit-content !important;
-                        margin: 0 auto !important;
-                    }
-                    /* Força a largura mínima na coluna 1 e permite quebra de linha */
                     table tr td:nth-child(1), table tr th:nth-child(1) {
-                        width: 100px !important;
-                        max-width: 100px !important;
-                        white-space: normal !important;
-                        word-wrap: break-word !important;
-                        line-height: 1.1 !important;
+                        width: 10px !important;
+                        max-width: 10px !important;
+                        word-break: break-all !important;
+                        line-height: 1 !important;
                     }
-                    th, td {
-                        padding: 2px 8px !important;
-                        font-size: 12px !important;
-                    }
+                    th, td { padding: 1px !important; font-size: 11px !important; }
                 </style>
             """, unsafe_allow_html=True)
 
