@@ -3316,28 +3316,32 @@ if st.session_state.get("pagina") == "formulario":
         if col_e: 
             cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
             
-        # 7. Renderização com Texto Completo (Sem cortes)
+        # 7. Renderização Híbrida (Texto completo para análises longas)
         import pandas as pd
         pd.set_option('display.max_colwidth', None)
 
         st.markdown("""
             <style>
-                .tabela-scroll { overflow-x: auto; width: 100%; }
-                table { min-width: 1000px !important; width: 100% !important; }
+                .tabela-ajustada { overflow-x: auto; width: 100%; }
+                table { min-width: 1000px !important; width: 100% !important; border-collapse: collapse; }
+                th { background-color: #f0f2f6; color: #31333F; text-align: left; padding: 10px; }
                 td { 
                     white-space: normal !important; 
                     word-wrap: break-word !important; 
-                    font-size: 14px !important; 
-                    min-width: 250px !important;
+                    padding: 10px !important;
+                    font-size: 14px !important;
+                    vertical-align: top !important;
+                    border-bottom: 1px solid #ddd;
                 }
             </style>
         """, unsafe_allow_html=True)
 
-        st.markdown('<div class="tabela-scroll">', unsafe_allow_html=True)
-        resultado = st.table(df)
+        st.markdown('<div class="tabela-ajustada">', unsafe_allow_html=True)
+        # Usamos st.table para garantir que o texto quebre linha e apareça TODO
+        st.table(df)
         st.markdown('</div>', unsafe_allow_html=True)
         
-        return resultado
+        return None # Como já renderizamos com st.table, não precisamos retornar o editor
 
     # Chamadas das tabelas
     e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
