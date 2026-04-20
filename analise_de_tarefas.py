@@ -66,6 +66,9 @@ repo = g.get_repo("lucianohcl/formulario-colaborador")
 # ============================================================
 
 
+# No topo do script, após os imports
+if 't' not in locals(): t = None
+
 # Inicialização centralizada
 
 if "logged_in" not in st.session_state: st.session_state.logged_in = False
@@ -3497,6 +3500,11 @@ if st.session_state.pagina == "analise":
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
     st.markdown("---")
     st.title("⚖️ Motor de Auditoria de Nexo Causal")
+
+    # Se a variável t for None ou vazia, mostra a sirene e para o resto
+    if not st.session_state.get('base_auditoria') or not locals().get('t'):
+        st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
+        st.stop() # Isso impede o Python de ler as linhas debaixo que dão erro
 
     # 1. Garante que as variáveis existam no balde de memória (Session State)
     if 'base_auditoria' not in st.session_state:
