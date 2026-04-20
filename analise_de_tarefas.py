@@ -3515,41 +3515,7 @@ if st.session_state.get("pagina") == "formulario":
 
 if st.session_state.pagina == "analise":
 
-    # --- RANKING TOTAL DE CONVERSÃO (O "ABRE-ALAS") ---
-    st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
     
-    ranking_geral = []
-    for f in base:
-        nome_ranking = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
-        sugestoes_ranking = f.get('tabelas', {}).get('sugestoes', [])
-        total_horas_ano = 0
-        
-        for s in sugestoes_ranking:
-            try:
-                f_s = str(s.get('Frequência', 'M')).upper().strip()
-                h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-                m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                
-                tempo_min = (h_s * 60) + m_s
-                mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
-                total_horas_ano += (tempo_min * mult) / 60
-            except:
-                continue
-        
-        ranking_geral.append({
-            "Colaborador": nome_ranking,
-            "Qtd Sugestões": len(sugestoes_ranking),
-            "Economia Estimada": total_horas_ano
-        })
-
-    if ranking_geral:
-        df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
-        df_exibicao = df_final_rank.copy()
-        df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
-        st.table(df_exibicao)
-    
-    st.markdown("---")
-
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
     st.markdown("---")
     st.title("🚨 Auditoria de Gargalos e Nexo de Coerência")
@@ -3561,6 +3527,42 @@ if st.session_state.pagina == "analise":
     if not base or t_check is None:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
+        # --- RANKING TOTAL DE CONVERSÃO (O "ABRE-ALAS") ---
+        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
+        
+        ranking_geral = []
+        for f in base:
+            nome_ranking = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
+            sugestoes_ranking = f.get('tabelas', {}).get('sugestoes', [])
+            total_horas_ano = 0
+            
+            for s in sugestoes_ranking:
+                try:
+                    f_s = str(s.get('Frequência', 'M')).upper().strip()
+                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    
+                    tempo_min = (h_s * 60) + m_s
+                    mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
+                    total_horas_ano += (tempo_min * mult) / 60
+                except:
+                    continue
+            
+            ranking_geral.append({
+                "Colaborador": nome_ranking,
+                "Qtd Sugestões": len(sugestoes_ranking),
+                "Economia Estimada": total_horas_ano
+            })
+
+        if ranking_geral:
+            df_final_rank = pd.DataFrame(ranking_geral).sort_values(by="Economia Estimada", ascending=False)
+            df_exibicao = df_final_rank.copy()
+            df_exibicao["Economia Estimada"] = df_exibicao["Economia Estimada"].apply(lambda x: f"{x:.1f} h/ano")
+            st.table(df_exibicao)
+        
+        st.markdown("---")
+        # --- FIM DO RANKING ---
+
         # Se os dados existem na memória, o motor processa normalmente
         mapa_auditoria = {}
         for idx, f in enumerate(base):
@@ -3568,12 +3570,6 @@ if st.session_state.pagina == "analise":
             n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
             nome_chave = str(n_extraido).upper().strip()
             mapa_auditoria[nome_chave] = f
-        
-        # Agora você pode usar a variável t_check (que é a sua 't') aqui embaixo
-        # st.write(t_check)
-        
-        # --- O RESTANTE DO SEU CÓDIGO QUE USA 't' DEVE CONTINUAR AQUI (IDENTADO) ---
-        # Exemplo: st.dataframe(t) ou qualquer lógica de nexo causal
 
         nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
         colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
