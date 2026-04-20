@@ -3914,8 +3914,7 @@ if isinstance(t_base, dict):
     sug_lista = t_base.get('sugestoes', [])
     dif_lista = t_base.get('dificuldades', [])
     
-
-        if sug_lista:
+    if sug_lista:
         with st.container():
             st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
@@ -3956,3 +3955,6 @@ if isinstance(t_base, dict):
         st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
 else:
     st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
+
+    
+        
