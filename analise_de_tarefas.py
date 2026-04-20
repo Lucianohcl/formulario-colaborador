@@ -3846,4 +3846,4 @@ if st.session_state.pagina == "analise":
             st.info("ℹ️ Nenhuma dificuldade encontrada para auditoria.")
     else:
         # Em vez de st.error, usamos a sirene silenciosa que espera o carregamento
-        st.info("🚨 Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
+        st.info("⚠️ ATENÇÃO ACIMA ☝️")
