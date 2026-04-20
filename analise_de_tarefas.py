@@ -3825,19 +3825,21 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO (FIX: ATTRIBUTE ERROR) ---
+    # --- CHAMADA E EXIBIÇÃO (VOLTANDO A MOSTRAR AS DIFICULDADES) ---
 
-    # 1. Tenta pegar os dados salvos no registro selecionado
-    # Se dados_alvo não existir, ele usa um dicionário vazio {} para o .get não quebrar
-    dados_para_analise = locals().get('dados_alvo', {})
+    # 1. Recuperamos o registro completo do colaborador
+    # O motor precisa do 'dados_alvo' porque é lá que moram as dificuldades
+    dados_para_analise = locals().get('dados_alvo')
 
     if dados_para_analise:
-        # 2. Busca o h_total que foi calculado lá em cima
+        # 2. Pegamos o h_total que já foi calculado
         horas_v = locals().get('h_total', 0)
         
-        # O .get() agora funciona porque garantimos que dados_para_analise é um dicionário
+        # 3. Rodamos o rigor nas dificuldades (lista_dif)
+        lista_dif = dados_para_analise.get('dificuldades', [])
+        
         res_dificuldades = analisar_dificuldades_rigoroso(
-            dados_para_analise.get('dificuldades', []), 
+            lista_dif, 
             dados_para_analise, 
             horas_v
         )
@@ -3847,4 +3849,5 @@ if st.session_state.pagina == "analise":
         else:
             st.info("ℹ️ Nenhuma dificuldade encontrada para este colaborador.")
     else:
+        # Se não houver dados carregados, mostra o seu alerta amarelo
         st.info("⚠️ ATENÇÃO ACIMA ☝️")
