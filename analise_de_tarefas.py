@@ -3836,7 +3836,7 @@ if st.session_state.pagina == "analise":
             check_dif.append({
                 "Status": status,
                 "Setor": setor,
-                "Dificuldade": desc_pura[:60] + "...",
+                "Dificuldade": desc_pura[:1000] + "...",
                 "Impacto Diário": f"{impacto_diario:.3f} h/dia",
                 "Análise do Perito": veredito
             })
