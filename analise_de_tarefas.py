@@ -1827,8 +1827,9 @@ if st.session_state.get("pagina") == "visualizar":
         st.warning("⚠️ Nenhum formulário encontrado na pasta /dados/.")
     else:
         st.success(f"Foram encontrados {len(lista_de_arquivos)} formulários.")
-        # ADICIONE ESTA LINHA AQUI:
         st.session_state['base_auditoria'] = lista_de_arquivos
+        # ESTA LINHA SALVA A VARIÁVEL T NA MEMÓRIA PARA A AUDITORIA NÃO DAR ERRO
+        st.session_state['t'] = lista_de_arquivos
 
         # 2. INICIALIZAÇÃO DA LISTA DE OCULTOS
         if "arquivos_escondidos" not in st.session_state:
@@ -3497,22 +3498,27 @@ if st.session_state.pagina == "analise":
     st.markdown("---")
     st.title("⚖️ Motor de Auditoria de Nexo Causal")
 
-    # Tenta buscar os dados salvos na sessão
-    base_auditoria = st.session_state.get('base_auditoria', [])
-
-    # A verificação abaixo impede o erro técnico de variável 't' inexistente
-    if not base_auditoria or 't' not in locals():
+    # 1. Garante que as variáveis existam no balde de memória (Session State)
+    if 'base_auditoria' not in st.session_state:
+        st.session_state['base_auditoria'] = []
+    
+    # 2. Verifica se os dados ou a variável 't' estão ausentes
+    if not st.session_state['base_auditoria'] or 't' not in st.session_state:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
+        # 3. Se chegou aqui, os dados existem! Puxamos com segurança:
+        t = st.session_state['t']
+        base_auditoria = st.session_state['base_auditoria']
+        
         mapa_auditoria = {}
         for idx, f in enumerate(base_auditoria):
-            # Extração segura de nomes para evitar erros de dicionário
             campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
             n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
             nome_chave = str(n_extraido).upper().strip()
             mapa_auditoria[nome_chave] = f
         
-        # O restante do seu código que usa a variável 't' deve continuar aqui (também indentado)
+        # --- O RESTANTE DO SEU CÓDIGO QUE USA 't' DEVE CONTINUAR AQUI (IDENTADO) ---
+        # Exemplo: st.dataframe(t) ou qualquer lógica de nexo causal
 
         nomes_disponiveis = sorted(list(mapa_auditoria.keys()))
         colab_alvo = st.selectbox(f"🎯 Selecione para Auditoria ({len(nomes_disponiveis)} encontrados):", nomes_disponiveis)
