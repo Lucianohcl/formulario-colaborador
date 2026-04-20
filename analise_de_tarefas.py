@@ -3316,14 +3316,28 @@ if st.session_state.get("pagina") == "formulario":
         if col_e: 
             cfg[col_e] = st.column_config.TextColumn(nome_e, width="medium")
             
-        # 7. Renderização com a Key v3 (O segredo para resetar o visual)
-        return st.data_editor(
-            df, 
-            key=f"ed_{chave}_v3", 
-            column_config=cfg, 
-            use_container_width=True,
-            num_rows="fixed"
-        )
+        # 7. Renderização com Texto Completo (Sem cortes)
+        import pandas as pd
+        pd.set_option('display.max_colwidth', None)
+
+        st.markdown("""
+            <style>
+                .tabela-scroll { overflow-x: auto; width: 100%; }
+                table { min-width: 1000px !important; width: 100% !important; }
+                td { 
+                    white-space: normal !important; 
+                    word-wrap: break-word !important; 
+                    font-size: 14px !important; 
+                    min-width: 250px !important;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<div class="tabela-scroll">', unsafe_allow_html=True)
+        resultado = st.table(df)
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        return resultado
 
     # Chamadas das tabelas
     e_alta = criar_editor("🚀 Alta Complexidade", "alta", "Atividade")
