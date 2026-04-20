@@ -3825,23 +3825,21 @@ if st.session_state.pagina == "analise":
         
         return check_dif
 
-    # --- CHAMADA E EXIBIÇÃO (VOLTANDO A MOSTRAR AS DIFICULDADES) ---
+    # --- CHAMADA E EXIBIÇÃO (FIX DEFINITIVO) ---
 
-    # 1. Recuperamos o registro completo do colaborador
-    # O motor precisa do 'dados_alvo' porque é lá que moram as dificuldades
-    dados_para_analise = locals().get('dados_alvo')
+    # 1. Busca os dados do colaborador selecionado
+    # Se 'dados_alvo' não existir, ele ignora (None) e cai no alerta amarelo
+    dados_reg = locals().get('dados_alvo')
 
-    if dados_para_analise:
-        # 2. Pegamos o h_total que já foi calculado
-        horas_v = locals().get('h_total', 0)
+    if dados_reg:
+        # Se os dados existem, pegamos o h_total e rodamos a perícia
+        h_v = locals().get('h_total', 0)
         
-        # 3. Rodamos o rigor nas dificuldades (lista_dif)
-        lista_dif = dados_para_analise.get('dificuldades', [])
-        
+        # O segredo: buscar 'dificuldades' dentro de 'dados_reg'
         res_dificuldades = analisar_dificuldades_rigoroso(
-            lista_dif, 
-            dados_para_analise, 
-            horas_v
+            dados_reg.get('dificuldades', []), 
+            dados_reg, 
+            h_v
         )
 
         if res_dificuldades:
@@ -3849,5 +3847,5 @@ if st.session_state.pagina == "analise":
         else:
             st.info("ℹ️ Nenhuma dificuldade encontrada para este colaborador.")
     else:
-        # Se não houver dados carregados, mostra o seu alerta amarelo
-        st.info("⚠️ ATENÇÃO ACIMA ☝️")
+        # Se não carregou nada, mostra o alerta que você queria
+        st.info("⚠️ ☝️ Carregue os dados na seção 'Visualização de Registros' acima para ativar a auditoria.")
