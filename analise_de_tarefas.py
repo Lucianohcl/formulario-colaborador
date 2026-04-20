@@ -3527,48 +3527,7 @@ if st.session_state.pagina == "analise":
     if not base or t_check is None:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
-        # --- RANKING TOTAL DE CONVERSÃO (TRAVADO E COMPLETO) ---
-        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
         
-        ranking_dados = []
-        for f in base:
-            n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
-            s_r = f.get('tabelas', {}).get('sugestoes', [])
-            t_h = 0
-            for s in s_r:
-                try:
-                    f_s = str(s.get('Frequência', 'M')).upper().strip()
-                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
-                    mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
-                    t_h += ((h_s * 60) + m_s) * mult / 60
-                except: continue
-            ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": t_h})
-
-        if ranking_dados:
-            df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
-            df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
-
-            # Injeção de CSS para travar a largura visual e impedir redimensionamento manual
-            st.markdown("""
-                <style>
-                    [data-testid="stDataFrame"] { width: auto !important; }
-                    [data-testid="stDataFrame"] section { width: 300px !important; }
-                </style>
-            """, unsafe_allow_html=True)
-
-            st.dataframe(
-                df_r,
-                column_config={
-                    "Colaborador": st.column_config.TextColumn("Colaborador", width=80),
-                    "Sug.": st.column_config.NumberColumn("Sug.", width=40),
-                    "Economia": st.column_config.TextColumn("Economia", width=100),
-                },
-                hide_index=True,
-                use_container_width=False
-            )
-        
-        st.markdown("---")
 
     # --- RANKING E MÉTRICAS DE IMPACTO ---
         st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
