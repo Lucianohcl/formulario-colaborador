@@ -3499,31 +3499,25 @@ if st.session_state.pagina == "analise":
 
     # --- MOTOR DE AUDITORIA (INTEGRADO AO GITHUB) ---
     st.markdown("---")
-    st.title("⚖️ Motor de Auditoria de Nexo Causal")
+    st.title("🚨 Auditoria de Gargalos e Nexo de Coerência")
 
-    # Se a variável t for None ou vazia, mostra a sirene e para o resto
-    if not st.session_state.get('base_auditoria') or not locals().get('t'):
-        st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
-        st.stop() # Isso impede o Python de ler as linhas debaixo que dão erro
+    # O segredo: perguntar ao session_state evita o erro técnico "NameError"
+    base = st.session_state.get('base_auditoria', [])
+    t_check = st.session_state.get('t')
 
-    # 1. Garante que as variáveis existam no balde de memória (Session State)
-    if 'base_auditoria' not in st.session_state:
-        st.session_state['base_auditoria'] = []
-    
-    # 2. Verifica se os dados ou a variável 't' estão ausentes
-    if not st.session_state['base_auditoria'] or 't' not in st.session_state:
+    if not base or t_check is None:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
-        # 3. Se chegou aqui, os dados existem! Puxamos com segurança:
-        t = st.session_state['t']
-        base_auditoria = st.session_state['base_auditoria']
-        
+        # Se os dados existem na memória, o motor processa normalmente
         mapa_auditoria = {}
-        for idx, f in enumerate(base_auditoria):
+        for idx, f in enumerate(base):
             campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
             n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
             nome_chave = str(n_extraido).upper().strip()
             mapa_auditoria[nome_chave] = f
+        
+        # Agora você pode usar a variável t_check (que é a sua 't') aqui embaixo
+        # st.write(t_check)
         
         # --- O RESTANTE DO SEU CÓDIGO QUE USA 't' DEVE CONTINUAR AQUI (IDENTADO) ---
         # Exemplo: st.dataframe(t) ou qualquer lógica de nexo causal
