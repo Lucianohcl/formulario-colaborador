@@ -3918,13 +3918,13 @@ if isinstance(t_base, dict):
         with st.container():
             st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
-            # Chamada do Motor Único
+            # Chamada do Motor Único de Perícia
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            # Exibição com Estilo
+            # Exibição da Tabela de Auditoria
             st.dataframe(df_analise, use_container_width=True, hide_index=True)
             
-            # KPI de Produtividade Total
+            # KPI de Produtividade Total - Extraindo o valor numérico calculado
             total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
             
             col1, col2 = st.columns(2)
@@ -3932,11 +3932,35 @@ if isinstance(t_base, dict):
                 st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
             with col2:
                 st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
-                
-            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
+
+            # Conclusão da Auditoria (Aparece apenas quando há sugestões)
+            # Pegamos a moda (frequência mais comum) para o diagnóstico final
+            freq_comum = df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]
+            st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {freq_comum}.")
+    
     else:
-        st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
+        # MENSAGEM IMPACTANTE PARA AUSÊNCIA DE SUGESTÕES
+        st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
+        
+        st.markdown(f"""
+        <div style="background-color: #ffeeee; padding: 20px; border-left: 6px solid #ff4b4b; border-radius: 8px;">
+            <p style="color: #333; margin: 0; font-size: 1.1em;">
+                <b>Nota do Auditor:</b> É lamentável que o colaborador tenha optado por não sugerir aperfeiçoamentos ou insights de evolução. 
+            </p>
+            <p style="color: #444; margin-top: 10px;">
+                A ausência de contribuições <b>não enriquece o processo de melhoria contínua</b> e limita severamente a 
+                identificação de gargalos operacionais, prejudicando a otimização da produtividade e o bem-estar coletivo do setor.
+            </p>
+            <p style="color: #666; font-size: 0.9em; margin-top: 12px; border-top: 1px solid #ffcccc; padding-top: 10px;">
+                <i>👉 <b>Sugestão ao Gestor:</b> Avalie se há barreiras culturais, falta de ferramentas ou desmotivação que estejam impedindo este colaborador de contribuir com a inovação do processo.</i>
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+
 else:
-    st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
+    # Caso nenhum colaborador tenha sido selecionado na lista do Streamlit
+    st.info("☝️ **Aguardando Seleção:** Escolha um colaborador acima para ativar o motor de perícia ultra-inteligente.")
+
+
 
 
