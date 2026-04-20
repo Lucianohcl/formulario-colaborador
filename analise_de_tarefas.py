@@ -3527,7 +3527,7 @@ if st.session_state.pagina == "analise":
     if not base or t_check is None:
         st.info("🚨 Carregue os dados na seção 'Visualizar Dados' no Menu para ativar a auditoria.")
     else:
-        # --- RANKING TOTAL DE CONVERSÃO (TRAVADO SEM AJUSTE MANUAL) ---
+        # --- RANKING TOTAL DE CONVERSÃO (TRAVADO E COMPLETO) ---
         st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
         
         ranking_dados = []
@@ -3549,7 +3549,14 @@ if st.session_state.pagina == "analise":
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
             df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
 
-            # TRAVA DE LARGURA (80px para Colaborador)
+            # Injeção de CSS para travar a largura visual e impedir redimensionamento manual
+            st.markdown("""
+                <style>
+                    [data-testid="stDataFrame"] { width: auto !important; }
+                    [data-testid="stDataFrame"] section { width: 300px !important; }
+                </style>
+            """, unsafe_allow_html=True)
+
             st.dataframe(
                 df_r,
                 column_config={
@@ -3563,7 +3570,7 @@ if st.session_state.pagina == "analise":
         
         st.markdown("---")
 
-        # Se os dados existem na memória, o motor processa normalmente
+        # --- MOTOR DE AUDITORIA (PROCESSAMENTO) ---
         mapa_auditoria = {}
         for idx, f in enumerate(base):
             campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
@@ -3571,7 +3578,6 @@ if st.session_state.pagina == "analise":
             nome_chave = str(n_extraido).upper().strip()
             mapa_auditoria[nome_chave] = f
 
-        
         st.markdown("---")
         # --- FIM DO RANKING ---
 
