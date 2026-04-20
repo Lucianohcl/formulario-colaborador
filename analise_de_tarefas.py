@@ -3923,17 +3923,21 @@ if isinstance(t_base, dict):
             # Chamada do Motor Único
             df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
             
-            # Forçamos um contêiner CSS para o st.dataframe não conseguir "espremer" as colunas
-            st.markdown('<style>div[data-testid="stDataFrame"] > div { min-width: 1200px !important; }</style>', unsafe_allow_html=True)
-            
+            # Força o estilo CSS diretamente no identificador do componente
+            st.markdown("""
+                <style>
+                    .stDataFrame, div[data-testid="stTable"] {
+                        width: 1500px !important;
+                        overflow-x: auto !important;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+
             st.dataframe(
                 df_analise,
-                use_container_width=True,
+                use_container_width=False, # MUDAMOS PARA FALSE PARA ELE NÃO TENTAR CABER NA TELA
                 hide_index=True,
-                column_config={
-                    "Atividade": st.column_config.TextColumn("Atividade", width="large"),
-                    "Análise Crítica": st.column_config.TextColumn("Análise Crítica", width="large")
-                }
+                width=1500 # FORÇAMOS A LARGURA NO COMPONENTE
             )
             
             # KPI de Produtividade Total
