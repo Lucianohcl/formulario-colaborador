@@ -3570,6 +3570,76 @@ if st.session_state.pagina == "analise":
         
         st.markdown("---")
 
+    # --- RANKING E MÉTRICAS DE IMPACTO ---
+        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
+        
+        ranking_dados = []
+        total_geral_ano = 0 # Variável para o Card
+
+        for f in base:
+            n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
+            s_r = f.get('tabelas', {}).get('sugestoes', [])
+            t_h = 0
+            for s in s_r:
+                try:
+                    f_s = str(s.get('Frequência', 'M')).upper().strip()
+                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
+                    t_h += ((h_s * 60) + m_s) * mult / 60
+                except: continue
+            
+            total_geral_ano += t_h
+            ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": t_h})
+
+        if ranking_dados:
+            df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
+            df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
+
+            # Exibição do Ranking
+            st.dataframe(
+                df_r,
+                column_config={
+                    "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
+                    "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
+                    "Economia": st.column_config.TextColumn("Economia", width="medium"),
+                },
+                hide_index=True,
+                use_container_width=False
+            )
+
+            # --- CARDS DE IMPACTO TOTAL ---
+            st.write("") # Espaçamento
+            col_card1, col_card2 = st.columns(2)
+            
+            with col_card1:
+                st.metric(
+                    label="⚡ Economia Total (Ano)", 
+                    value=f"{total_geral_ano:.1f} horas",
+                    help="Soma da economia estimada de todos os colaboradores no período de um ano."
+                )
+            
+            with col_card2:
+                economia_mes = total_geral_ano / 12
+                st.metric(
+                    label="📅 Média de Economia (Mês)", 
+                    value=f"{economia_mes:.1f} horas",
+                    delta=f"{len(ranking_dados)} Colaboradores",
+                    delta_color="normal"
+                )
+
+        st.markdown("---")
+
+        # --- MOTOR DE AUDITORIA ---
+        mapa_auditoria = {}
+        for idx, f in enumerate(base):
+            campos = f.get('campos', {}) if isinstance(f.get('campos'), dict) else {}
+            n_extraido = (f.get('colaborador') or f.get('nome') or campos.get('nome') or f'Colaborador {idx}')
+            nome_chave = str(n_extraido).upper().strip()
+            mapa_auditoria[nome_chave] = f
+    
+        
+
         # --- MOTOR DE AUDITORIA (PROCESSAMENTO) ---
         mapa_auditoria = {}
         for idx, f in enumerate(base):
@@ -4003,7 +4073,7 @@ if isinstance(t_base, dict):
     if sug_lista:
         with st.container():
 
-            if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** Registro lamentável e sem valor estratégico. 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
+            if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É lamentável que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
             st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
             
             # Chamada do Motor Único
