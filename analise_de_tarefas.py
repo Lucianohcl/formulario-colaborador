@@ -3662,25 +3662,23 @@ if st.session_state.pagina == "analise":
         
         h_total = h_alta + h_norm + h_baix + h_dif
 
-        # --- MOTOR DE NEXO CAUSAL SUAVE (PROPORCIONAL) ---
+        # --- MOTOR DE NEXO CAUSAL SIMÉTRICO E PROPORCIONAL ---
         h_calc = float(h_total) if h_total else 0.0
         jornada_referencia = 8.0
         
         if h_calc == 0:
             score = 0
         else:
-            # Calcula o desvio (distância) das 8 horas
+            # Cálculo da distância absoluta (sempre positiva)
+            # 2.19h -> desvio de 5.81
+            # 14.50h -> desvio de 6.50
             desvio = abs(h_calc - jornada_referencia)
             
-            # PONDERAÇÃO SUAVE: Perde apenas 8 pontos por hora de desvio
-            # Isso mantém scores altos mesmo com pequenos desvios
-            score = 100 - (desvio * 8)
-            
-            # Penalidade extra apenas para extremos (menos de 2h ou mais de 14h)
-            if h_calc < 2 or h_calc > 14:
-                score -= 10
+            # Multiplicador de 10 pontos por hora de desvio
+            # (Pode ajustar para 8 se quiser ainda mais suave)
+            score = 100 - (desvio * 10)
 
-        # Trava o score entre 0 e 100
+        # Trava o score entre 0 e 100 sem penalidades extras "escondidas"
         score = max(0, min(100, float(score)))
 
         import plotly.graph_objects as go
