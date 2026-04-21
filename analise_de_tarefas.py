@@ -3979,56 +3979,51 @@ if st.session_state.pagina == "analise":
 import pandas as pd
 
 def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
-    # Coleta todas as atividades para entender o contexto do colaborador
     todas_atv = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
     contexto_atv = " ".join([a.get('Atividade', '').lower() for a in todas_atv])
-    contexto_dor = " ".join([d.get('Dificuldade', '').lower() for d in dificuldades])
     
     analise_detalhada = []
 
     for sug in sugestoes:
-        # 1. Extração Dinâmica de Dados
         texto_sug = sug.get('Sugestão', '').lower()
+        if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: continue
+
         freq = sug.get('Frequência', 'D').upper()
         m = int(str(sug.get('Minutos', '0')).replace(' min', '') or 0)
         h = int(str(sug.get('Horas', '0')).replace(' h', '') or 0)
-        tempo_min = (h * 60) + m
+        tempo_min_atual = (h * 60) + m
         
-        # 2. Cálculo de Nexo Técnico (Frequência x Atividade)
-        multiplicador = {'D': 220, 'S': 48, 'M': 12}.get(freq, 1)
-        horas_ano = (tempo_min * multiplicador) / 60
-        
-        # Validação de Nexo: A sugestão ataca uma atividade real?
-        palavras_chave = [p for p in texto_sug.split() if len(p) > 5]
-        nexo_atividade = any(p in contexto_atv for p in palavras_chave)
-        nexo_dor = any(p in contexto_dor for p in palavras_chave)
-        
-        # 3. Gerador de Diagnóstico Dinâmico (Não estático)
-        if nexo_dor and freq == 'D':
-            diagnostico = "🔥 PRIORIDADE CRÍTICA: Resolve um gargalo diário relatado."
-            impacto = "Altíssimo (ROI Imediato)"
-        elif nexo_atividade:
-            diagnostico = f"⚖️ ESTRUTURAL: Otimiza uma tarefa de {freq} frequência."
-            impacto = "Médio (Ganho de Fluxo)"
+        # --- INTELIGÊNCIA ARTIFICIAL DE CLASSIFICAÇÃO ---
+        # Analisa a viabilidade técnica da sugestão
+        if any(w in texto_sug for w in ['sistema', 'automação', 'ia', 'integrar', 'digitalizar', 'api', 'robô', 'python']):
+            potencial = 0.85  # Tecnologia de ponta reduz drasticamente a carga manual
+            categoria = "🤖 TRANSFORMÇÃO DIGITAL"
+            cor_status = "🔥 ALTO IMPACTO"
+        elif any(w in texto_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
+            potencial = 0.45  # Organização de fluxo elimina desperdício
+            categoria = "📈 OTIMIZAÇÃO DE PROCESSO"
+            cor_status = "✅ ESTRUTURAL"
         else:
-            diagnostico = "💡 INOVAÇÃO: Sugestão de melhoria para processos periféricos."
-            impacto = "Baixo (Long prazo)"
+            potencial = 0.20  # Melhorias pontuais
+            categoria = "💡 MELHORIA INCREMENTAL"
+            cor_status = "🟡 OPERACIONAL"
 
-        # 4. Proposta de Redução de Tempo (O GANCHO)
-        # Se o colaborador sugere algo, o sistema 'estica' a meta de produtividade
-        if any(word in texto_sug for word in ['sistema', 'automação', 'integrar', 'digitalizar']):
-            meta = f"Reduzir carga manual em {max(50, tempo_min*2)}% via tecnologia."
-        elif any(word in texto_sug for word in ['padronizar', 'checklist', 'treinamento']):
-            meta = "Eliminar retrabalho: Foco em 'Primeira Vez Correta'."
-        else:
-            meta = f"Reduzir em {(tempo_min/2):.0f}min o ciclo atual de execução."
+        # --- ENGENHARIA DE VALOR (ROI ANUALIZADO) ---
+        # Baseamos em 220 dias úteis/ano para frequência Diária
+        mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq, 1)
+        h_ano_atual = (tempo_min_atual * mult) / 60
+        h_poupadas = h_ano_atual * potencial
+        
+        # Valor financeiro (Base R$ 65,00/h técnica - valor de mercado consultoria)
+        valor_financeiro = h_poupadas * 65 
 
         analise_detalhada.append({
-            "💡 Sugestão": sug.get('Sugestão'),
-            "⏱️ Nexo Tempo/Freq": f"{freq} ({tempo_min}min) | {horas_ano:.1f}h/ano",
-            "🔍 Diagnóstico Pericial": diagnostico,
-            "🚀 Meta de Produtividade": meta,
-            "📊 Impacto Real": impacto
+            "🎯 ESTRATÉGIA": categoria,
+            "💡 SUGESTÃO ANALISADA": sug.get('Sugestão').upper(),
+            "⏱️ CARGA ATUAL (ANO)": f"{h_ano_atual:.1f} h",
+            "🚀 ECONOMIA PROJETADA": f"− {h_poupadas:.1f} h/ano",
+            "💰 VALOR RECUPERÁVEL": f"R$ {valor_financeiro:,.2f}",
+            "🔍 PARECER DO PERITO": cor_status
         })
     
     return pd.DataFrame(analise_detalhada)
