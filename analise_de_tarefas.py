@@ -3605,7 +3605,12 @@ if st.session_state.pagina == "analise":
                 use_container_width=True
             )
 
-            st.caption("⚠️ **Parecer de Auditoria:** Valores baseados em R$ 35,00/h e margem de segurança de 50%.")
+            # --- LEGENDA TÉCNICA COM 12 ESPAÇOS DE RECUO ---
+            st.caption("""
+            🔬 **Metodologia de Auditoria Pericial:** Projeções fundamentadas no Custo Total de Ocupação (R$ 65,00/h). 
+            O sistema aplica Ponderação Dinâmica de Impacto: 🤖 Transformação Digital (85%), 📈 Otimização de Processos (45%) 
+            ou 💡 Incremental (25%), garantindo uma análise de ROI baseada em viabilidade técnica e não em estimativas genéricas.
+            """)
 
         st.markdown("---")
 
