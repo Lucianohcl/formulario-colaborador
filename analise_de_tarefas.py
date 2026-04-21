@@ -4028,16 +4028,15 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
     
     return pd.DataFrame(analise_detalhada)
 
-# --- EXIBIÇÃO NO DASHBOARD (O "UAU") ---
+# --- EXIBIÇÃO NO DASHBOARD (O "UAU" CORRIGIDO) ---
 
 if st.session_state.get("pagina") == "analise":
 
     st.markdown("---")
 
-    with st.status("Processando análise...", expanded=True):
+    with st.status("Processando análise pericial...", expanded=True):
         st.header("🔬 Central de Inteligência e Auditoria de Processos")
 
-        # Verificação de segurança para não quebrar no clique direto
         t_base = locals().get('t')
 
         if isinstance(t_base, dict):
@@ -4045,64 +4044,50 @@ if st.session_state.get("pagina") == "analise":
             dif_lista = t_base.get('dificuldades', [])
             
             if sug_lista:
-                with st.container():
-
-                    if str(sug_lista[0].get('Sugestão', '')).lower().strip() in ["nenhuma", "nada", "nenhuma melhoria"]: st.error("⚠️ **Nota do Auditor:** É frustante que o colaborador tenha optado por não Sugerir Melhorias. A ausência de contribuições não enriquece o processo de evolução organizacional e limita a                      identificação de oportunidades para otimizar a produtividade 🚨 POR FAVOR CONFERIR AS SUGESTÕES DE TODOS OS COLABORADORES E OS IMPACTOS DE PRODUTIVIDADE ESPERADOS")
-                    st.subheader(f"Análise de Performance: {t_base.get('colaborador', 'Colaborador')}")
+                # 1. Verificação de Engajamento (Se o cara não escreveu nada útil)
+                sug_primeira = str(sug_lista[0].get('Sugestão', '')).lower().strip()
+                if sug_primeira in ["nenhuma", "nada", "nenhuma melhoria", "", "n/a"]:
+                    st.error("🚨 **ALERTA DE GESTÃO:** O colaborador optou por não sugerir aperfeiçoamentos. Risco de estagnação operacional detectado.")
+                    st.markdown(f"""
+                    <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
+                        <p style="color: #333; margin: 0;"><b>Nota do Auditor:</b> A ausência de contribuições limita a identificação de oportunidades para otimizar a produtividade e o ROI do setor.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                else:
+                    st.subheader(f"📊 Business Case: {t_base.get('colaborador', 'Consultor')}")
                     
-                    # Chamada do Motor Único
+                    # 2. Chamada do Novo Motor
                     df_analise = motor_pericia_ultra(t_base, dif_lista, sug_lista)
                     
-                    # --- SOLUÇÃO DE EMERGÊNCIA: CONTAINER DE ROLAGEM BRUTO ---
-                    st.markdown(
-                        """
-                        <style>
-                            .tabela-rolavel {
-                                overflow-x: auto;
-                                width: 100%;
-                                border: 1px solid #ccc;
-                            }
-                            table {
-                                min-width: 1500px !important;
-                            }
-                        </style>
-                        """, unsafe_allow_html=True
-                    )
-                    
-                    with st.container():
+                    if not df_analise.empty:
+                        # --- CÁLCULOS TOTAIS (CORRIGIDOS PARA EVITAR KEYERROR) ---
+                        # Extraímos os números da nova coluna "🚀 ECONOMIA PROJETADA"
+                        total_h_ano = df_analise['🚀 ECONOMIA PROJETADA'].str.extract(r'(\d+\.\d+)').astype(float).sum().iloc[0]
+                        total_valor = total_h_ano * 65 # Valor/hora técnica ajustado
+                        
+                        # 3. Métricas de Alto Impacto (O que o Diretor quer ver)
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Capacidade Recuperada", f"{total_h_ano:.1f} h/ano", "GANHO REAL")
+                        c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}", "REDUÇÃO CUSTO")
+                        c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias", "OFFLOAD")
+
+                        st.info(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades. A implementação recupera o equivalente a **{total_h_ano/8:.1f} dias** de trabalho produtivo/ano.")
+
+                        # 4. Tabela Estilizada com Rolagem
+                        st.markdown(
+                            """
+                            <style>
+                                .tabela-rolavel { overflow-x: auto; width: 100%; border: 1px solid #eee; border-radius: 10px; }
+                                table { min-width: 1200px !important; }
+                            </style>
+                            """, unsafe_allow_html=True
+                        )
+                        
                         st.markdown('<div class="tabela-rolavel">', unsafe_allow_html=True)
                         st.table(df_analise)
                         st.markdown('</div>', unsafe_allow_html=True)
-                    
-                    # KPI de Produtividade Total
-                    total_h_ano = (df_analise['⏱️ Nexo Tempo/Freq'].str.extract(r'(\d+\.\d+)').astype(float)).sum().values[0]
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.metric("Potencial de Ganho Anual", f"{total_h_ano:.1f} Horas")
-                    with col2:
-                        st.metric("Aproveitamento de Sugestões", f"{len(df_analise)} Itens", "Top Performance")
-
-                    # Nota: O bloco abaixo foi ajustado para manter a estrutura lógica correta do Python
-                    if not df_analise.empty:
-                        st.success(f"📌 **Conclusão da Auditoria:** Foram detectadas {len(df_analise)} oportunidades de melhoria. O 'gancho' principal foca na redução de tempo em tarefas de frequência {df_analise['⏱️ Nexo Tempo/Freq'].str[0].mode()[0]}.")
-                    else:
-                        # MENSAGEM PARA QUANDO NÃO HÁ SUGESTÕES
-                        st.warning("⚠️ **Análise de Engajamento:** O colaborador não registrou sugestões de melhoria.")
-                
-                        st.markdown(f"""
-                        <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
-                            <p style="color: #333; margin: 0;">
-                                <b>Nota do Auditor:</b> É frustrante que o colaborador tenha optado por não sugerir aperfeiçoamentos. 
-                                A ausência de contribuições <b>não enriquece o processo de evolução organizacional</b> e limita a 
-                                identificação de oportunidades para otimizar a produtividade e o bem-estar do setor.
-                            </p>
-                            <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
-                                <i>Sugestão ao Gestor: Verifique se há barreiras na comunicação ou falta de incentivo à inovação neste setor.</i>
-                            </p>
-                        </div>
-                        """, unsafe_allow_html=True)
             else:
                 st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
         else:
-            st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar o motor de perícia.")
+            st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar a perícia.")
