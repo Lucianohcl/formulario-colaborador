@@ -4071,7 +4071,7 @@ if st.session_state.get("pagina") == "analise":
                     st.error("🚨 **ALERTA DE GESTÃO:** O colaborador optou por não sugerir aperfeiçoamentos. Risco de estagnação operacional detectado.")
                     st.markdown(f"""
                     <div style="background-color: #ffeeee; padding: 15px; border-left: 5px solid #ff4b4b; border-radius: 5px;">
-                        <p style="color: #333; margin: 0;"><b>Nota do Auditor:</b> A ausência de contribuições limita a identificação de oportunidades para otimizar a produtividade e o ROI do setor.</p>
+                        <p style="color: #333; margin: 0;"><b>Nota do Auditor:</b> A ausência de contribuições limita a identificação de oportunidades para otimizar a produtividade e o ROI do setor. 🔴🔴🔴 ANALISAR AS CONTRIBUIÇÕES POR COLABORADOR.</p>
                     </div>
                     """, unsafe_allow_html=True)
                 
