@@ -3530,12 +3530,13 @@ if st.session_state.pagina == "analise":
     else:
         
 
-    # --- RANKING E MÉTRICAS DE IMPACTO ---
-        st.markdown("## 🏆 Ranking de Inovação: Conversão em Horas/Ano")
-        
-        ranking_dados = []
-        total_geral_ano = 0 # Variável para o Card
+    # --- RANKING E MÉTRICAS DE IMPACTO (VERSÃO PANCADA ABSOLUTA) ---
+        st.markdown("## 📈 Dashboard de Impacto Estratégico Global")
 
+        ranking_dados = []
+        total_geral_ano = 0 
+
+        # Processamento dos dados para o ROI Global
         for f in base:
             n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
             s_r = f.get('tabelas', {}).get('sugestoes', [])
@@ -3546,50 +3547,65 @@ if st.session_state.pagina == "analise":
                     h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                     m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
                     mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
-                    t_h += ((h_s * 60) + m_s) * mult / 60
+                    
+                    # Fator de eficiência realista de 50%
+                    t_h += (((h_s * 60) + m_s) * mult / 60) * 0.50
                 except: continue
             
             total_geral_ano += t_h
             ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": t_h})
 
         if ranking_dados:
+            # --- CARDS DE IMPACTO FINANCEIRO ---
+            total_financeiro = total_geral_ano * 35  # Valor hora técnica R$ 35,00
+            
+            col_c1, col_c2, col_c3 = st.columns(3)
+            
+            with col_c1:
+                st.metric(
+                    label="⚡ Eficiência Recuperável", 
+                    value=f"{total_geral_ano:.1f} h/ano",
+                    help="Capacidade produtiva que hoje é desperdiçada."
+                )
+            
+            with col_c2:
+                st.metric(
+                    label="💰 ROI Projetado (EBITDA)", 
+                    value=f"R$ {total_financeiro:,.2f}",
+                    delta="Impacto Direto",
+                    help="Valor que retorna ao resultado da empresa via otimização."
+                )
+                
+            with col_c3:
+                st.metric(
+                    label="📅 Ganho de Capacidade", 
+                    value=f"{total_geral_ano/8:.1f} Dias",
+                    help="Dias de trabalho 'novos' gerados por ano."
+                )
+
+            st.markdown("---")
+
+            # --- RANKING DE INOVAÇÃO ---
+            st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
+            
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
+            
+            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*35:,.2f}")
             df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
 
-            # Exibição do Ranking
             st.dataframe(
                 df_r,
                 column_config={
                     "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
-                    "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
-                    "Economia": st.column_config.TextColumn("Economia", width="medium"),
+                    "Sug.": st.column_config.NumberColumn("Sugestões", width="small"),
+                    "Economia": st.column_config.TextColumn("Horas Salvas", width="medium"),
+                    "Valor Estimado": st.column_config.TextColumn("ROI Individual", width="medium"),
                 },
                 hide_index=True,
-                use_container_width=False
+                use_container_width=True
             )
 
-            # --- CARDS DE IMPACTO TOTAL ---
-            st.write("") # Espaçamento
-            col_card1, col_card2 = st.columns(2)
-            
-            with col_card1:
-                st.metric(
-                    label="⚡ Economia Total (Ano)", 
-                    value=f"{total_geral_ano:.1f} horas",
-                    help="Soma da economia estimada de todos os colaboradores no período de um ano."
-                )
-            
-            with col_card2:
-                economia_mes = total_geral_ano / 12
-                st.metric(
-                    label="📅 Média de Economia (Mês)", 
-                    value=f"{economia_mes:.1f} horas",
-                    delta=f"{len(ranking_dados)} Colaboradores",
-                    delta_color="normal"
-                )
-
-            # A NOTA ENTRA AQUI:
-            st.caption("⚠️ **Nota:** Analisar o diagnóstico pericial por colaborador.")
+            st.caption("⚠️ **Parecer de Auditoria:** Valores baseados em R$ 35,00/h e margem de segurança de 50%.")
 
         st.markdown("---")
 
