@@ -4031,7 +4031,7 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
         h_poupadas = h_ano_atual * potencial
         
         # Valor financeiro (Base R$ 65,00/h técnica - valor de mercado consultoria)
-        valor_financeiro = h_poupadas * 35 
+        valor_financeiro = h_poupadas * 65 
 
         analise_detalhada.append({
             "🎯 ESTRATÉGIA": categoria,
