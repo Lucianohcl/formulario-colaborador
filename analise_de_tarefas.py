@@ -3557,7 +3557,7 @@ if st.session_state.pagina == "analise":
 
         if ranking_dados:
             # --- CARDS DE IMPACTO FINANCEIRO ---
-            total_financeiro = total_geral_ano * 35  # Valor hora técnica R$ 35,00
+            total_financeiro = total_geral_ano * 65  # Valor hora técnica R$ 35,00
             
             col_c1, col_c2, col_c3 = st.columns(3)
             
