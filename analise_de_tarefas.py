@@ -905,14 +905,16 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
         
         st.write("") # Espaçador
         
-        if (usuario == "admin" and senha == "admin123") or (usuario == "Luciano" and senha == "123") or (usuario == "JV" and senha == "123"):
-            st.session_state.logged_in = True
-            st.session_state.user_nome = usuario
-            st.session_state.is_admin = True
-            st.session_state["usuario_logado"] = "Luciano 123" if usuario == "Luciano" else usuario
-            st.rerun()
-        else:
-            st.error("❌ Usuário ou senha incorretos")
+        if st.button("Acessar Painel"):
+            if (usuario == "admin" and senha == "admin123") or (usuario == "Luciano" and senha == "123") or (usuario == "JV" and senha == "123"):
+                st.session_state.logged_in = True
+                st.session_state.user_nome = usuario
+                st.session_state.is_admin = True
+                st.session_state["usuario_logado"] = "Luciano 123" if usuario == "Luciano" else usuario
+                st.rerun()
+            else:
+                st.error("❌ Usuário ou senha incorretos")
+        
     
     st.stop()
 
