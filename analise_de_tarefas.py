@@ -3662,22 +3662,28 @@ if st.session_state.pagina == "analise":
         
         h_total = h_alta + h_norm + h_baix + h_dif
 
-        # --- NOVO MOTOR DE SCORE PONDERADO (NEXO CAUSAL) ---
+        # --- MOTOR DE SCORE PONDERADO (AJUSTADO PARA NÃO ZERAR FÁCIL) ---
+        h_total_calc = float(h_total) if h_total else 0.0
+        
         jornada_ideal = 8.0
-        # Calcula a diferença absoluta de 8h (seja para mais ou para menos)
-        desvio = abs(h_total - jornada_ideal)
+        desvio = abs(h_total_calc - jornada_ideal)
         
-        # Cada hora de desvio retira 15 pontos do nexo causal
-        # Se h_total for 8.0, score = 100
-        # Se h_total for 2.0 ou 14.0, o desvio é 6, score = 100 - 90 = 10
-        score = 100 - (desvio * 15)
-        
-        # Penalização extra por inviabilidade (Cargas acima de 12h)
-        if h_total > 12:
-            score -= 20
+        if h_total_calc == 0:
+            score = 0
+        elif h_total_calc <= 2.0:
+            # Se tiver muito pouco dado (ex: só 2h), dá um score base baixo mas não zero
+            score = 10 + (h_total_calc * 5) 
+        else:
+            # Suavizado: 10 pontos por hora de desvio (antes era 15)
+            # Ex: 4h relatadas -> desvio 4 -> 100 - 40 = 60 de score
+            score = 100 - (desvio * 10)
+            
+            # Penalização extra por inviabilidade (Cargas acima de 12h)
+            if h_total_calc > 12:
+                score -= 15
 
-        # Trava o score entre 0 e 100
-        score = max(0, min(100, score))
+        # Trava final para garantir exibição visual
+        score = max(5, min(100, float(score)))
 
         import plotly.graph_objects as go
         fig = go.Figure(go.Indicator(
