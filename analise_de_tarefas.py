@@ -3546,18 +3546,24 @@ if st.session_state.pagina == "analise":
 
             for s in s_r:
                 try:
-                    # 1. Limpeza e Conversão de Tempo
-                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
-                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    # --- 1. LIMPEZA IDENTICA AO MOTOR DO GERCINO ---
+                    # O segredo está aqui: filter(str.isdigit) garante que "2 h" vire 2.
+                    h_s = int(''.join(filter(str.isdigit, str(s.get('Horas', '0')))) or 0)
+                    m_s = int(''.join(filter(str.isdigit, str(s.get('Minutos', '0')))) or 0)
+                    
                     f_s = str(s.get('Frequência', 'M')).upper().strip()
                     mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
                     
+                    # Cálculo de horas brutas (mesma base do individual)
                     h_ano = (h_s + (m_s / 60)) * mult
                     horas_brutas_colaborador += h_ano
 
-                    # 2. Identificação do Peso POR SUGESTÃO (Igual ao Motor Individual)
-                    texto_sug = str(s.get('Sugestão', '')).lower()
-                    
+                    # --- 2. FILTRO DE SUGESTÕES VAZIAS ---
+                    texto_sug = str(s.get('Sugestão', '')).lower().strip()
+                    if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]:
+                        continue
+
+                    # --- 3. PESOS SINCRONIZADOS (DNA) ---
                     if any(w in texto_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
                         fator = 0.85
                     elif any(w in texto_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
@@ -3565,21 +3571,11 @@ if st.session_state.pagina == "analise":
                     else:
                         fator = 0.20
                     
-                    # 3. Acumula o valor financeiro já auditado
+                    # --- 4. VALOR FINANCEIRO REAL ---
                     valor_auditado_colaborador += (h_ano * 65.0 * fator)
                     
                 except: 
                     continue
-            
-            total_geral_ano_horas += horas_brutas_colaborador
-            
-            # AGORA O RANKING JÁ RECEBE O VALOR FINAL CALCULADO
-            ranking_dados.append({
-                "Colaborador": n_r, 
-                "Sug.": len(s_r), 
-                "Economia": horas_brutas_colaborador, # Para métricas de horas
-                "ROI_Líquido": valor_auditado_colaborador # Para o Ranking de dinheiro
-            })
 
         # --- EXIBIÇÃO DAS MÉTRICAS NO TOPO ---
         if ranking_dados:
@@ -3628,17 +3624,25 @@ if st.session_state.pagina == "analise":
 
             # --- EXECUÇÃO E LIMPEZA DE DADOS ---
             if not df_r.empty:
-                # Criamos a coluna numérica oficial
-                df_r["ROI_Líquido"] = df_r.apply(motor_roi_pericial, axis=1)
-                
-                # Ordenamos para o ranking ficar correto
+                # 1. Ordenamos pelo que já foi calculado no loop (ROI_Líquido)
                 df_r = df_r.sort_values(by="ROI_Líquido", ascending=False)
                 
-                # Criamos as colunas de exibição bonitas
+                # 2. Criamos as colunas apenas para FORMATAR a exibição (sem recalcular nada)
                 df_r["Valor Auditado"] = df_r["ROI_Líquido"].apply(lambda x: f"R$ {x:,.2f}")
                 df_r["Eficiência Bruta"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+                
+                # 3. Exibição do Gráfico usando o valor numérico
+                st.subheader("🏆 Ranking de Impacto Financeiro (Auditado)")
+                st.bar_chart(df_r.set_index("Colaborador")["ROI_Líquido"])
+
+                # 4. Exibição da Tabela Final
+                st.dataframe(
+                    df_r[["Colaborador", "Sug.", "Eficiência Bruta", "Valor Auditado"]],
+                    hide_index=True,
+                    use_container_width=True
+                )
             else:
-                df_r["ROI_Líquido"] = 0.0
+                st.info("Aguardando processamento de dados...")
 
             # --- 2. EXECUÇÃO ÚNICA (SEM REPETIÇÕES) ---
             if not df_r.empty:
