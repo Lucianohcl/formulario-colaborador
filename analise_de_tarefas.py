@@ -4045,8 +4045,8 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
         analise_detalhada.append({
             "🎯 ESTRATÉGIA": categoria,
             "💡 SUGESTÃO ANALISADA": sug.get('Sugestão').upper(),
-            "H_FLOAT": h_poupadas_real,       # Coluna invisível para soma perfeita
-            "RS_FLOAT": valor_financeiro_real, # Coluna invisível para soma perfeita
+            "H_FLOAT": h_poupadas_real,      # Gaveta de horas
+            "RS_FLOAT": valor_financeiro_real, # Gaveta de dinheiro
             "🚀 ECONOMIA PROJETADA": f"− {h_poupadas_real:.1f} h/ano",
             "💰 VALOR RECUPERÁVEL": f"R$ {valor_financeiro_real:,.2f}",
             "🔍 PARECER DO PERITO": cor_status
