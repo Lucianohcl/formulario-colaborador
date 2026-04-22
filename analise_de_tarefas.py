@@ -4160,33 +4160,5 @@ if st.session_state.get("pagina") == "analise":
         else:
             st.info("☝️ Selecione um colaborador.")
 
-# --- ÁREA DE SEGURANÇA E DEBUG FINAL (SOMA DO RANKING) ---
-# Alinhado à esquerda, fora de qualquer IF anterior
-st.write("---")
-st.subheader("🛠️ Diagnóstico e Auditoria Global")
 
-# 1. DEBUG VISUAL PARA O LUCIANO
-with st.expander("🔍 Debug de Memória (Ranking)", expanded=True):
-    df_rank_global = st.session_state.get('df_ranking')
-    if df_rank_global is None:
-        st.error("❌ 'df_ranking' não encontrado no st.session_state.")
-    elif df_rank_global.empty:
-        st.warning("⚠️ 'df_ranking' existe, mas está vazio.")
-    else:
-        st.success(f"✅ Ranking detectado: {len(df_rank_global)} linhas.")
 
-# 2. CARD DE VIABILIDADE SOMANDO O RANKING
-if df_rank_global is not None and not df_rank_global.empty:
-    try:
-        # Tenta achar a coluna de valor (ROI ou a última numérica)
-        col_soma = 'ROI' if 'ROI' in df_rank_global.columns else df_rank_global.select_dtypes(include=['number']).columns[-1]
-        v_total_acumulado = df_rank_global[col_soma].sum()
-        
-        st.markdown("### 🛡️ Verificação de Viabilidade Pericial (Acumulado)")
-        with st.container(border=True):
-            st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
-            st.success("✅ Soma global do ranking validada.")
-    except Exception as e:
-        st.error(f"🚨 Erro no cálculo do Card Global: {e}")
-else:
-    st.info("💡 Aguardando processamento do Ranking Global para exibir o Card Final.")
