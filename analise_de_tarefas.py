@@ -4145,73 +4145,78 @@ if st.session_state.get("pagina") == "analise":
                         df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados]
                         df_exibicao['PARECER'] = [r[1] for r in resultados]
 
-                        # --- CARD DE VIABILIDADE (ESTRATÉGICO) ---
-                        st.markdown("---")
-                        # --- MOTOR DE CÁLCULO PERICIAL (ANÁLISE SEMÂNTICA) ---
-                        def motor_pericial_detalhado(row):
-                            try:
-                                h = float(row.get('H_FLOAT', 0))
-                            except:
-                                h = 0.0
-                                
-                            # Identificação da Estratégia
-                            estrategia = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
-                            
-                            # Configuração dos Pesos e Emojis (A Inteligência do Sistema)
-                            if any(k in estrategia for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                                fator, emoji = 0.85, "🤖 [TECNOLOGIA]"
-                            elif any(k in estrategia for k in ['pop', 'checklist', 'organizacional', 'processo']):
-                                fator, emoji = 0.45, "📈 [PROCESSO]"
-                            else:
-                                fator, emoji = 0.25, "💡 [INCREMENTAL]"
-                            
-                            # Cálculos de Valor
-                            v_auditado = (h * 65.0) * fator
-                            
-                            # Comentário Inteligente no Parecer
-                            parecer_original = row.get('PARECER', 'Sugestão em análise.')
-                            novo_parecer = f"{emoji} {parecer_original}"
-                            
-                            return v_auditado, novo_parecer
-
-                        # 1. Preparação dos Dados para Exibição
+                        # --- 1. MOTOR DE INTELIGÊNCIA PERICIAL & SINCRONIA ---
                         df_exibicao = df_analise.copy()
-                        resultados = df_exibicao.apply(motor_pericial_detalhado, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados]
-                        df_exibicao['PARECER'] = [r[1] for r in resultados]
+                        
+                        # Puxamos o Ranking Global para garantir que o ROI seja idêntico
+                        df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
-                        # --- MOTOR DE CÁLCULO PERICIAL (LINHA A LINHA - BLINDADO) ---
-                        def motor_pericial_detalhado(row):
-                            try:
-                                h = float(row.get('H_FLOAT', 0))
-                            except:
-                                h = 0.0
-                                
-                            estrategia = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
+                        def motor_pericial_completo(row):
+                            sugestao_alvo = row.get('SUGESTAO ANALISADA', '')
+                            # Tenta localizar a sugestão no Ranking Global
+                            match = df_rank_global[df_rank_global['Sugestao'] == sugestao_alvo]
                             
-                            # 1. INICIALIZAÇÃO (Evita o UnboundLocalError)
-                            fator = 0.25 
+                            # Inicialização de segurança
+                            fator = 0.25
                             emoji = "💡 [INCREMENTAL]"
                             
-                            # 2. ANÁLISE SEMÂNTICA (DNA DA INOVAÇÃO)
-                            if any(k in estrategia for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                                fator, emoji = 0.85, "🤖 [TECNOLOGIA]"
-                            elif any(k in estrategia for k in ['pop', 'checklist', 'organizacional', 'processo']):
-                                fator, emoji = 0.45, "📈 [PROCESSO]"
-                            # Se não cair em nenhum acima, ele mantém o padrão de 0.25 definido no passo 1
-                            
-                            v_auditado = (h * 65.0) * fator
-                            
-                            parecer_original = row.get('PARECER', 'Sugestão em análise.')
-                            novo_parecer = f"{emoji} {parecer_original}"
-                            
-                            return v_auditado, novo_parecer
+                            if not match.empty:
+                                # Se achou no ranking, usa o valor que já foi auditado lá
+                                v_auditado = match.iloc[0]['ROI_FLOAT']
+                                dna = str(match.iloc[0].get('Categoria', '')).lower()
+                            else:
+                                # Se não achou, calcula na hora (Backup)
+                                h = float(row.get('H_FLOAT', 0))
+                                v_auditado = (h * 65.0) * 0.25
+                                dna = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
 
-                        # Aplicando a lógica ao DataFrame
-                        df_exibicao = df_analise.copy()
-                        res_list = df_exibicao.apply(motor_pericial_detalhado, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in res_list]
-                        df_exibicao['PARECER'] = [r[1] for r in res_list]
+                            # --- ANÁLISE SEMÂNTICA PARA EMOJIS ---
+                            if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                                emoji = "🤖 [TECNOLOGIA]"
+                                v_auditado = (float(row.get('H_FLOAT', 0)) * 65.0) * 0.85 if match.empty else v_auditado
+                            elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo']):
+                                emoji = "📈 [PROCESSO]"
+                                v_auditado = (float(row.get('H_FLOAT', 0)) * 65.0) * 0.45 if match.empty else v_auditado
+                            
+                            parecer_final = f"{emoji} {row.get('PARECER', 'Sugestão analisada pela perícia.')}"
+                            return v_auditado, parecer_final
+
+                        # Aplicação única para performance e precisão
+                        resultados_finais = df_exibicao.apply(motor_pericial_completo, axis=1)
+                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_finais]
+                        df_exibicao['PARECER'] = [r[1] for r in resultados_finais]
+
+                        # --- 2. CARDS DE VIABILIDADE ---
+                        st.markdown("---")
+                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
+                        
+                        v_total_auditado = df_exibicao['VALOR AUDITADO'].sum()
+                        h_totais = df_exibicao['H_FLOAT'].sum()
+                        
+                        c1, c2, c3 = st.columns(3)
+                        with c1:
+                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_total_auditado:,.2f}")
+                        with c2:
+                            st.metric("📢 Ganho de Capacidade", f"{(h_totais/8):.1f} Dias")
+                        with c3:
+                            st.metric("💰 Expectativa Bruta", f"R$ {(h_totais * 65):,.2f}")
+
+                        # --- 3. TABELA FINAL COM COLUNA ADICIONAL ---
+                        st.markdown("### 📋 Detalhamento das Oportunidades")
+                        
+                        # Formatação para exibição
+                        df_tab = df_exibicao.copy()
+                        df_tab['VALOR RECUPERAVEL'] = df_tab['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
+                        df_tab['VALOR AUDITADO'] = df_tab['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
+
+                        st.table(df_tab[[
+                            'ESTRATEGIA', 
+                            'SUGESTAO ANALISADA', 
+                            'ECONOMIA PROJETADA', 
+                            'VALOR RECUPERAVEL', 
+                            'VALOR AUDITADO', # Coluna adicional solicitada
+                            'PARECER'
+                        ]])
 
 
 
