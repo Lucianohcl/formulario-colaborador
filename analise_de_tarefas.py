@@ -3587,47 +3587,54 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. DataFrame Base (Criado a partir dos dados consolidados)
+            # 1. DataFrame Base
             df_r = pd.DataFrame(ranking_dados)
 
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA (UNIFICADO) ---
+            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA ---
             def motor_roi_pericial(row):
+                # Busca automática pela coluna de Horas/Economia
+                col_h = next((c for c in ['Economia', 'Horas', 'H_FLOAT'] if c in row.index), None)
                 try:
-                    # 'Economia' aqui representa as horas totais (H_FLOAT)
-                    h_brutas = float(row.get('Economia', 0))
+                    h_brutas = float(row[col_h]) if col_h else 0.0
                 except:
                     h_brutas = 0.0
                 
-                # Identificamos o DNA da Inovação
-                # Incluímos 'integração' e 'drive' para garantir que o caso do Gercino bata os R$ 3.053,71
-                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
+                # DNA da Inovação (Pega Categoria, Estratégia ou usa padrão)
+                col_cat = next((c for c in ['Categoria', 'ESTRATEGIA', 'Estratégia'] if c in row.index), None)
+                dna = str(row[col_cat]).lower() if col_cat else 'organizacional'
                 
-                # --- APLICAÇÃO DOS PESOS DE AUDITORIA (MESMA LÓGICA DO RELATÓRIO) ---
-                if any(k in dna_inovacao for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
-                    fator = 0.85  # Transformação Digital / Disrupção
-                elif any(k in dna_inovacao for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
-                    fator = 0.45  # Otimização de Processos / Estanqueidade
+                # Definição dos Pesos (Garante os R$ 3.053,71 do Gercino)
+                if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
+                    fator = 0.85
+                elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
+                    fator = 0.45
                 else:
-                    fator = 0.25  # Incremental / Ajuste Operacional
+                    fator = 0.25
                 
-                # Cálculo Final: Valor/Hora (R$ 65) ajustado pelo fator pericial
                 return (h_brutas * 65.0) * fator
 
-            # 2. Execução da Engenharia de Valor
+            # 2. Execução
             df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
-            
-            # 3. Ordenação pelo ROI Auditado (Garante que o Ranking seja justo pelo valor real)
             df_r = df_r.sort_values(by="ROI_FLOAT", ascending=False)
             
-            # 4. Persistência de Dados para sincronia com st.session_state
-            # Isso garante que o motor_pericial_definitivo encontre os mesmos valores
+            # Salva para o relatório individual usar
             st.session_state['df_ranking'] = df_r
 
-            # 5. Exibição Visual do Ranking (Formatado)
+            # --- 3. EXIBIÇÃO À PROVA DE FALHAS (Mata o KeyError) ---
             df_exibicao_rank = df_r.copy()
             df_exibicao_rank["ROI Auditado"] = df_exibicao_rank["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+
+            # Mapeamento Dinâmico: Ele procura o nome real da coluna no seu JSON
+            cols_disponiveis = df_exibicao_rank.columns.tolist()
+            col_nome = next((c for c in ['Colaborador', 'colaborador', 'Nome'] if c in cols_disponiveis), None)
+            col_sug = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in cols_disponiveis), None)
+            col_cat_final = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in cols_disponiveis), None)
+
+            # Monta a lista de colunas que realmente existem
+            lista_final = [c for c in [col_nome, col_sug, col_cat_final, "ROI Auditado"] if c is not None]
             
-            st.table(df_exibicao_rank[["Colaborador", "Sugestão", "Categoria", "ROI Auditado"]].head(10))
+            # Exibe a tabela sem risco de KeyError
+            st.table(df_exibicao_rank[lista_final].head(10))
 
             # --- CARD DE AUDITORIA ESTRATÉGICA ---
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
