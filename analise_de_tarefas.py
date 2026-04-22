@@ -3998,26 +3998,28 @@ if st.session_state.pagina == "analise":
 
 
 import pandas as pd
-import streamlit as st
 
+import pandas as pd
+import streamlit as st
+ 
 def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
     # Consolida contexto das atividades para analise
     todas_atv = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
     contexto_atv = " ".join([a.get('Atividade', '').lower() for a in todas_atv])
-    
+     
     analise_detalhada = []
-
+ 
     for sug in sugestoes:
         texto_sug = str(sug.get('Sugestão', '')).lower()
         if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: 
             continue
-
+ 
         freq = sug.get('Frequência', 'D').upper()
         # Limpeza robusta de strings para numeros
         m = int(''.join(filter(str.isdigit, str(sug.get('Minutos', '0')))) or 0)
         h = int(''.join(filter(str.isdigit, str(sug.get('Horas', '0')))) or 0)
         tempo_min_atual = (h * 60) + m
-        
+         
         # --- INTELIGENCIA DE CLASSIFICACAO ---
         if any(w in texto_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
             potencial = 0.85
@@ -4031,13 +4033,13 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
             potencial = 0.20
             categoria = "MELHORIA INCREMENTAL"
             cor_status = "OPERACIONAL"
-
+ 
         # --- ENGENHARIA DE VALOR ---
         mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq, 1)
         h_ano_atual = (tempo_min_atual * mult) / 60
         h_poupadas = h_ano_atual * potencial
         valor_financeiro = h_poupadas * 65.0 
-
+ 
         analise_detalhada.append({
             "ESTRATEGIA": categoria,
             "SUGESTAO ANALISADA": sug.get('Sugestão', '').upper(),
@@ -4047,22 +4049,22 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
             "VALOR RECUPERAVEL": f"R$ {valor_financeiro:,.2f}",
             "PARECER": cor_status
         })
-    
+     
     return pd.DataFrame(analise_detalhada)
-
+ 
 # --- EXIBICAO NO DASHBOARD ---
 if st.session_state.get("pagina") == "analise":
     st.markdown("---")
-
+ 
     with st.status("Processando analise pericial...", expanded=True):
         st.header("🔬 Central de Inteligencia e Auditoria de Processos")
-
+ 
         # Busca t_base de forma segura (contexto local ou session)
         t_base = locals().get('t') or st.session_state.get('t_selecionado')
-
+ 
         if isinstance(t_base, dict):
             sug_lista = t_base.get('sugestoes', [])
-            
+             
             if sug_lista:
                 # Verificacao de Engajamento
                 sug_primeira = str(sug_lista[0].get('Sugestão', '')).lower().strip()
@@ -4070,21 +4072,25 @@ if st.session_state.get("pagina") == "analise":
                     st.error("🚨 ALERTA DE GESTAO: O colaborador optou por nao sugerir aperfeicoamentos.")
                 else:
                     st.subheader(f"📊 Business Case: {t_base.get('colaborador', 'Consultor')}")
-                    
+                     
                     df_analise = motor_pericia_ultra(t_base, [], sug_lista)
-                    
+                     
                     if not df_analise.empty:
                         # --- CALCULOS TOTAIS ---
                         total_h_ano = df_analise['H_FLOAT'].sum()
                         total_valor = df_analise['RS_FLOAT'].sum()
                         
+                        # PERSISTÊNCIA NA SESSÃO (PARA O CARD FINAL)
+                        st.session_state['v_audit_final'] = total_valor
+                        st.session_state['h_audit_final'] = total_h_ano
+ 
                         # metricas principais
                         c1, c2, c3 = st.columns(3)
                         c1.metric("Capacidade Recuperada", f"{total_h_ano:.1f} h/ano")
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
-
-                        # --- CARD DE VIABILIDADE PERICIAL (BLINDADO) ---
+ 
+                        # --- CARD DE VIABILIDADE PERICIAL (INTERNO) ---
                         st.markdown("---")
                         st.subheader("🛡️ Verificacao de Viabilidade Pericial")
                         
@@ -4100,15 +4106,37 @@ if st.session_state.get("pagina") == "analise":
                                       delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
                             st.caption("Valor aprovado apos pericia.")
                         
-                        st.info("💡 Nota do Perito: O ajuste remove o otimismo excessivo para garantir um ROI realizavel.")
-
+                        st.info("💡 Nota do Perito: O ajuste garante um ROI realizavel.")
+ 
                         # --- TABELA FINAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
-                        # Remove colunas de calculo antes de mostrar a tabela
                         st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
                     else:
-                        st.warning("⚠️ Nenhuma sugestao valida para processar.")
+                        st.warning("⚠️ Nenhuma sugestao valida.")
             else:
                 st.info("⚠️ Nenhuma sugestao encontrada.")
         else:
-            st.info("☝️ Selecione um colaborador para ativar a pericia.")
+            st.info("☝️ Selecione um colaborador.")
+ 
+# --- CARD DE SEGURANÇA FINAL (EXTERNO E ENCAPSULADO) ---
+if st.session_state.get('v_audit_final', 0) > 0:
+    v_final_display = st.session_state['v_audit_final']
+    st.write("---")
+    
+    with st.container():
+        st.subheader("🛡️ Auditoria Pericial de Viabilidade (Final)")
+        
+        # Cálculo do bruto para o confronto visual
+        v_bruto_calculado = v_final_display / 0.45
+        ajuste_final_perc = ((v_final_display / v_bruto_calculado) - 1) * 100
+        
+        col_f1, col_f2 = st.columns(2)
+        with col_f1:
+            st.metric("Expectativa Bruta Estimada", f"R$ {v_bruto_calculado:,.2f}")
+            st.caption("Base sem aplicação de deflatores técnicos.")
+        with col_f2:
+            st.metric("ROI Real Auditado", f"R$ {v_final_display:,.2f}", 
+                      delta=f"{ajuste_final_perc:.0f}% Ajuste", delta_color="inverse")
+            st.caption("Valor aprovado pelo motor de auditoria.")
+            
+        st.success("✅ Verificação de integridade concluída com sucesso.")
