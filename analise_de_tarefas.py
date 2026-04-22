@@ -3597,56 +3597,79 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. DataFrame Base
-            df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
-
-            # --- ALGORITMO GERCINO: CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO ---
-            def motor_roi_pericial(row):
-                try:
-                    h_brutas = float(row['Economia'])
-                except:
-                    h_brutas = 0.0
+            ranking_dados = []
+            
+            # --- MOTOR SINCRONIZADO: Aplica a lógica ULTRA em toda a base ---
+            for f in base:
+                n_colab = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
+                # Busca sugestões tanto no padrão 'tabelas' quanto direto
+                s_lista = f.get('tabelas', {}).get('sugestoes', []) or f.get('sugestoes', [])
                 
-                # DNA da Inovação: Analisamos Categoria e a própria Sugestão
-                # Isso garante que se o texto citar IA, ele cai na faixa alta
-                analise_texto = (str(row.get('Categoria', '')) + " " + str(row.get('Sugestão', ''))).lower()
+                t_h_poupadas = 0.0
+                t_rs_recuperavel = 0.0
                 
-                # --- APLICAÇÃO DAS FAIXAS PERICIAIS (PADRÃO GERCINO) ---
-                if any(k in analise_texto for k in ['python', 'ia', 'api', 'automacao', 'bot', 'digital']):
-                    fator = 0.85  # Transformação Digital
-                elif any(k in analise_texto for k in ['pop', 'checklist', 'processo', 'padronizar', 'fluxo']):
-                    fator = 0.45  # Otimização de Processos
-                else:
-                    fator = 0.20  # Incremental / Operacional (Ajustado para 20%)
+                for sug in s_lista:
+                    t_sug = str(sug.get('Sugestão', '')).lower()
+                    if t_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: 
+                        continue
+
+                    try:
+                        # Limpeza Identica ao Motor Ultra (Gercino)
+                        m_val = int(''.join(filter(str.isdigit, str(sug.get('Minutos', '0')))) or 0)
+                        h_val = int(''.join(filter(str.isdigit, str(sug.get('Horas', '0')))) or 0)
+                        t_min_total = (h_val * 60) + m_val
+                        
+                        # Classificação de Impacto Ultra
+                        if any(w in t_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
+                            potencial = 0.85
+                        elif any(w in t_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
+                            potencial = 0.45
+                        else:
+                            potencial = 0.20
+                        
+                        # Frequência e Cálculo
+                        f_sug = str(sug.get('Frequência', 'M')).upper().strip()
+                        m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_sug, 12)
+                        
+                        h_ano_bruto = (t_min_total * m_anual) / 60
+                        h_ano_poupada = h_ano_bruto * potencial
+                        
+                        t_h_poupadas += h_ano_poupada
+                        t_rs_recuperavel += (h_ano_poupada * 65.0)
+                    except:
+                        continue
                 
-                return (h_brutas * 65.0) * fator
+                if t_h_poupadas > 0:
+                    ranking_dados.append({
+                        "Colaborador": n_colab,
+                        "Qtd": len(s_lista),
+                        "H_Recup": t_h_poupadas,
+                        "ROI_Final": t_rs_recuperavel
+                    })
 
-            # Execução da Engenharia de Valor
-            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
-            st.session_state['df_ranking'] = df_r 
+            # Gerar DataFrame e ordenar pelo Valor Real
+            df_r = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
 
-            # --- CARD DE AUDITORIA ESTRATÉGICA ---
-            v_total_acumulado = df_r["ROI_FLOAT"].sum()
-            with st.container(border=True):
-                st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
-                st.info(f"🛡️ **Metodologia Gercino:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação por Impacto.")
+            # --- EXIBIÇÃO DOS CARDS GLOBAIS ---
+            c_g1, c_g2 = st.columns(2)
+            c_g1.metric("ROI Real Auditado (Global)", f"R$ {df_r['ROI_Final'].sum():,.2f}")
+            c_g2.metric("Eficiência Recuperada", f"{df_r['H_Recup'].sum():,.1f} h/ano")
 
-            # 2. Exibição do Business Case
-            df_r["ROI Individual"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
-            df_r["Ganho Real"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
-
+            # --- TABELA DE RANKING FORMATADA ---
             st.dataframe(
                 df_r,
                 column_config={
-                    "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
-                    "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
-                    "Ganho Real": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
-                    "ROI Individual": st.column_config.TextColumn("Valor Auditado", width="medium"),
+                    "Colaborador": st.column_config.TextColumn("Colaborador"),
+                    "Qtd": st.column_config.NumberColumn("Sug."),
+                    "H_Recup": st.column_config.NumberColumn("Horas/Ano", format="%.1f h"),
+                    "ROI_Final": st.column_config.NumberColumn("Valor Auditado", format="R$ %.2f"),
                 },
-                column_order=("Colaborador", "Sug.", "Ganho Real", "ROI Individual"),
+                column_order=("Colaborador", "Qtd", "H_Recup", "ROI_Final"),
                 hide_index=True,
                 use_container_width=True
             )
+
+            st.caption("🛡️ **Auditoria Pericial:** Ranking sincronizado com o Motor Ultra (85% | 45% | 20%).")
 
             # --- LEGENDA TÉCNICA ATUALIZADA ---
             st.caption("""
