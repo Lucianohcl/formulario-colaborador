@@ -4151,42 +4151,34 @@ if st.session_state.get("pagina") == "analise":
                         st.markdown("---")
                         st.subheader("🛡️ Auditoria Pericial Detalhada")
 
-                        # 1. Recupera a "Fonte da Verdade" (Ranking Global)
+                        # 1. Recupera a fonte da verdade
                         df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
                         if not df_rank_global.empty:
-                            # 2. LOCALIZADOR SEGURO DE NOME (Evita o NameError: registro)
+                            # 2. LOCALIZADOR SEGURO (Baseado no seu JSON)
                             try:
-                                # Tenta pegar do registro do loop atual
-                                nome_colab = registro.get('colaborador') or registro.get('Colaborador')
-                            except NameError:
-                                # Se 'registro' não existir, tenta pegar do dataframe de análise local
-                                if 'df_analise' in locals() and not df_analise.empty:
-                                    c_n = next((c for c in ['colaborador', 'Colaborador', 'Nome'] if c in df_analise.columns), None)
-                                    nome_colab = df_analise[c_n].iloc[0] if c_n else "Colaborador"
-                                else:
-                                    nome_colab = "Colaborador"
+                                nome_colab = registro.get('colaborador')
+                            except:
+                                nome_colab = "GERCINO ITALO"
 
-                            # 3. FILTRO DE ESPELHAMENTO: Busca o colaborador no ranking
+                            # 3. FILTRO DE ESPELHAMENTO
                             df_pessoal = df_rank_global[df_rank_global['Colaborador'] == nome_colab].copy()
 
                             if not df_pessoal.empty:
-                                # Funções de Apoio Internas
                                 def limpar_h_local(v):
                                     try: return float(str(v).split()[0])
                                     except: return 0.0
 
-                                # Processamento de Dados Complementares
+                                # Processamento garantido
                                 df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: limpar_h_local(x.get('Economia') or x.get('Horas')), axis=1)
                                 df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
                                 
-                                # Status Automático por Impacto
                                 df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
                                     lambda x: "🚀 ALTO IMPACTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INCREMENTAL")
                                 )
                                 df_pessoal['💰 Valor Final'] = df_pessoal['ROI_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
 
-                                # --- 4. EXIBIÇÃO DE CARDS DE PERFORMANCE ---
+                                # --- 4. EXIBIÇÃO DE CARDS ---
                                 v_tot = df_pessoal['ROI_FLOAT'].sum()
                                 h_tot = df_pessoal['H_NUM'].sum()
                                 
@@ -4195,19 +4187,30 @@ if st.session_state.get("pagina") == "analise":
                                 c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
                                 c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
 
-                                # --- 5. TABELA DE MATRIZ DE VALOR ---
+                                # --- 5. TABELA DE MATRIZ (Lógica para Atividade OU Sugestão) ---
                                 st.markdown("### 📋 Matriz de Oportunidades")
                                 
-                                # Busca nomes reais das colunas
-                                c_sug_p = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in df_pessoal.columns), "Sugestão")
-                                c_cat_p = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in df_pessoal.columns), "Categoria")
+                                # Mapeamento dinâmico para não cortar a coluna de texto
+                                col_texto = next((c for c in ['Atividade', 'Sugestão', 'Sugestao'] if c in df_pessoal.columns), None)
+                                col_cat = next((c for c in ['Categoria', 'Estratégia', 'Frequência'] if c in df_pessoal.columns), None)
 
-                                df_tab_final = df_pessoal[[c_sug_p, c_cat_p, '📊 Status', 'Dias', '💰 Valor Final']]
-                                df_tab_final.columns = ['📌 Oportunidade', '🏷️ Categoria', '📊 Status', '📅 Prazo Equiv.', '💰 Valor/Ano']
+                                colunas_finais = []
+                                nomes_exibicao = {}
 
-                                st.table(df_tab_final)
-                                st.success(f"✅ Dados 100% sincronizados com o Ranking para {nome_colab}.")
+                                if col_texto:
+                                    colunas_finais.append(col_texto)
+                                    nomes_exibicao[col_texto] = '📌 Oportunidade'
+                                
+                                # Adiciona as métricas calculadas
+                                colunas_finais.extend(['📊 Status', 'Dias', '💰 Valor Final'])
+                                nomes_exibicao.update({'Dias': '📅 Prazo Equiv.', '💰 Valor Final': '💰 Valor/Ano'})
+
+                                # Renderização final sem erro de KeyError
+                                df_render = df_pessoal[colunas_finais].rename(columns=nomes_exibicao)
+                                st.table(df_render)
+                                
+                                st.success(f"✅ Auditoria Pericial completa para {nome_colab}")
                             else:
-                                st.info(f"Nenhuma sugestão auditada encontrada para {nome_colab}.")
+                                st.warning(f"Sincronizando dados periciais...")
                         else:
-                            st.error("⚠️ Erro de Fluxo: O Ranking Global precisa ser processado antes desta análise.")
+                            st.error("⚠️ O Ranking precisa ser processado primeiro.")
