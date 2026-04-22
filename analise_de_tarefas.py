@@ -59,6 +59,27 @@ g = Github(TOKEN)
 repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 
+
+def calcular_roi_pericial_unificado(horas_brutas, texto_sugestao):
+    try:
+        # Garante que "6 h" vire 6.0
+        h = float(str(horas_brutas).split()[0]) if horas_brutas else 0.0
+    except:
+        h = 0.0
+    
+    texto = str(texto_sugestao).lower()
+    
+    # PESOS UNIFICADOS (O CORAÇÃO DO CÁLCULO)
+    if any(k in texto for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
+        fator = 0.85
+    elif any(k in texto for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
+        fator = 0.45
+    else:
+        fator = 0.25
+        
+    return (h * 65.0) * fator
+
+
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
 # st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
