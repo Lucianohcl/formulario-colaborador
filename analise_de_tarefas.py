@@ -4148,7 +4148,6 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
-                        # --- 1. MOTOR ÚNICO DE INTELIGÊNCIA PERICIAL (BLINDADO & IDENTADO) ---
                         st.markdown("---")
                         st.subheader("🛡️ Auditoria Pericial Detalhada")
 
@@ -4156,8 +4155,19 @@ if st.session_state.get("pagina") == "analise":
                         df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
                         if not df_rank_global.empty:
-                            # 2. FILTRO DE ESPELHAMENTO: Busca o colaborador atual no ranking
-                            nome_colab = registro.get('colaborador') or registro.get('Colaborador')
+                            # 2. LOCALIZADOR SEGURO DE NOME (Evita o NameError: registro)
+                            try:
+                                # Tenta pegar do registro do loop atual
+                                nome_colab = registro.get('colaborador') or registro.get('Colaborador')
+                            except NameError:
+                                # Se 'registro' não existir, tenta pegar do dataframe de análise local
+                                if 'df_analise' in locals() and not df_analise.empty:
+                                    c_n = next((c for c in ['colaborador', 'Colaborador', 'Nome'] if c in df_analise.columns), None)
+                                    nome_colab = df_analise[c_n].iloc[0] if c_n else "Colaborador"
+                                else:
+                                    nome_colab = "Colaborador"
+
+                            # 3. FILTRO DE ESPELHAMENTO: Busca o colaborador no ranking
                             df_pessoal = df_rank_global[df_rank_global['Colaborador'] == nome_colab].copy()
 
                             if not df_pessoal.empty:
@@ -4166,7 +4176,7 @@ if st.session_state.get("pagina") == "analise":
                                     try: return float(str(v).split()[0])
                                     except: return 0.0
 
-                                # 3. Processamento de Colunas Adicionais
+                                # Processamento de Dados Complementares
                                 df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: limpar_h_local(x.get('Economia') or x.get('Horas')), axis=1)
                                 df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
                                 
@@ -4185,10 +4195,10 @@ if st.session_state.get("pagina") == "analise":
                                 c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
                                 c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
 
-                                # --- 5. TABELA DE MATRIZ DE VALOR COMPLETÍSSIMA ---
+                                # --- 5. TABELA DE MATRIZ DE VALOR ---
                                 st.markdown("### 📋 Matriz de Oportunidades")
                                 
-                                # Busca nomes reais das colunas no DataFrame filtrado
+                                # Busca nomes reais das colunas
                                 c_sug_p = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in df_pessoal.columns), "Sugestão")
                                 c_cat_p = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in df_pessoal.columns), "Categoria")
 
@@ -4196,7 +4206,7 @@ if st.session_state.get("pagina") == "analise":
                                 df_tab_final.columns = ['📌 Oportunidade', '🏷️ Categoria', '📊 Status', '📅 Prazo Equiv.', '💰 Valor/Ano']
 
                                 st.table(df_tab_final)
-                                st.success(f"✅ Dados 100% sincronizados com o Ranking de Inovação.")
+                                st.success(f"✅ Dados 100% sincronizados com o Ranking para {nome_colab}.")
                             else:
                                 st.info(f"Nenhuma sugestão auditada encontrada para {nome_colab}.")
                         else:
