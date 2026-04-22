@@ -3530,57 +3530,67 @@ if st.session_state.pagina == "analise":
     else:
         
 
-    # --- RANKING E MÉTRICAS DE IMPACTO (VERSÃO PANCADA ABSOLUTA) ---
+    
+        # --- RANKING E MÉTRICAS DE IMPACTO (SINCRONIZADO COM GERCINO) ---
         st.markdown("## 📈 Dashboard de Impacto Estratégico Global")
 
         ranking_dados = []
-        total_geral_ano = 0 
+        total_geral_ano_horas = 0.0
 
-        # Processamento dos dados para o ROI Global
+        # Processamento com a Lógica Exata do Gercino
         for f in base:
+            # Busca nome de forma robusta
             n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
-            s_r = f.get('tabelas', {}).get('sugestoes', [])
-            t_h = 0
+            # Busca sugestões (Universal)
+            s_r = f.get('tabelas', {}).get('sugestoes', []) or f.get('sugestoes', [])
+            
+            horas_colaborador = 0.0
             for s in s_r:
                 try:
-                    f_s = str(s.get('Frequência', 'M')).upper().strip()
+                    # 1. Limpeza e Conversão (Igual ao Individual)
                     h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                     m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
+                    
+                    # 2. Frequência Dinâmica (A regra que cravou os R$ 7.805,42)
+                    f_s = str(s.get('Frequência', 'M')).upper().strip()
                     mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
                     
-                    # Fator de eficiência realista de 50%
-                    t_h += (((h_s * 60) + m_s) * mult / 60) * 0.50
-                except: continue
+                    # 3. Cálculo Bruto Integral (Sem fator de 0.50)
+                    horas_colaborador += (h_s + (m_s / 60)) * mult
+                except: 
+                    continue
             
-            total_geral_ano += t_h
-            ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": t_h})
+            total_geral_ano_horas += horas_colaborador
+            ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": horas_colaborador})
 
         if ranking_dados:
-            # --- CARDS DE IMPACTO FINANCEIRO ---
-            total_financeiro = total_geral_ano * 65  # Valor hora técnica R$ 35,00
+            # Valor hora técnica unificado em R$ 65,00
+            total_financeiro = total_geral_ano_horas * 65.0
             
             col_c1, col_c2, col_c3 = st.columns(3)
             
             with col_c1:
                 st.metric(
                     label="⚡ Eficiência Recuperável", 
-                    value=f"{total_geral_ano:.1f} h/ano",
-                    help="Capacidade produtiva que hoje é desperdiçada."
+                    value=f"{total_geral_ano_horas:,.1f} h/ano",
+                    help="Soma das horas brutas declaradas por todos os colaboradores."
                 )
             
             with col_c2:
                 st.metric(
                     label="💰 ROI Projetado (EBITDA)", 
                     value=f"R$ {total_financeiro:,.2f}",
-                    delta="Impacto Direto",
-                    help="Valor que retorna ao resultado da empresa via otimização."
+                    delta="Expectativa Bruta",
+                    help="Valor total anualizado (R$ 65,00/h)."
                 )
                 
             with col_c3:
+                # Ganho em dias (base padrão 8h)
+                dias_novos = total_geral_ano_horas / 8
                 st.metric(
                     label="📅 Ganho de Capacidade", 
-                    value=f"{total_geral_ano/8:.1f} Dias",
-                    help="Dias de trabalho 'novos' gerados por ano."
+                    value=f"{dias_novos:,.1f} Dias",
+                    help="Dias de trabalho recuperados por ano."
                 )
 
             st.markdown("---")
