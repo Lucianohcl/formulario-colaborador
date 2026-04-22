@@ -3604,22 +3604,41 @@ if st.session_state.pagina == "analise":
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             # --- ALGORITMO DE CONVERSÃO AUDITADA (RANKING) ---
             # --- 1. CÁLCULO DO VALOR AUDITADO ---
+            # --- ALGORITMO DE CONVERSÃO DE VALOR (VERSÃO BLINDADA) ---
             def motor_roi_pericial(row):
                 try:
+                    # 1. Pega as horas brutas
                     h_brutas = float(row.get('Economia', 0))
-                    # Usa a Categoria que injetamos no loop lá em cima
-                    dna = str(row.get('Categoria', 'Incremental')).lower()
                     
-                    if any(w in dna for w in ['transformacao', 'python', 'ia', 'api', 'automacao', 'sistema']):
-                        fator = 0.85  
-                    elif any(w in dna for w in ['processo', 'pop', 'padronizar', 'checklist', 'estrutural']):
-                        fator = 0.45  
+                    # 2. Busca o DNA em qualquer coluna que possa ter a categoria ou o texto
+                    # Tentamos 'Categoria', se não houver, tentamos 'Sugestão'
+                    dna = str(row.get('Categoria', row.get('Sugestão', ''))).lower()
+                    
+                    # 3. Pesos Oficiais (85%, 45%, 20%)
+                    if any(w in dna for w in ['transformacao', 'python', 'ia', 'api', 'automacao', 'sistema', 'digital']):
+                        fator = 0.85
+                    elif any(w in dna for w in ['processo', 'pop', 'padronizar', 'checklist', 'organizacional', 'estrutural']):
+                        fator = 0.45
                     else:
-                        fator = 0.20  
+                        fator = 0.20
                     
                     return (h_brutas * 65.0) * fator
                 except:
                     return 0.0
+
+            # --- EXECUÇÃO E LIMPEZA DE DADOS ---
+            if not df_r.empty:
+                # Criamos a coluna numérica oficial
+                df_r["ROI_Líquido"] = df_r.apply(motor_roi_pericial, axis=1)
+                
+                # Ordenamos para o ranking ficar correto
+                df_r = df_r.sort_values(by="ROI_Líquido", ascending=False)
+                
+                # Criamos as colunas de exibição bonitas
+                df_r["Valor Auditado"] = df_r["ROI_Líquido"].apply(lambda x: f"R$ {x:,.2f}")
+                df_r["Eficiência Bruta"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+            else:
+                df_r["ROI_Líquido"] = 0.0
 
             # --- 2. EXECUÇÃO ÚNICA (SEM REPETIÇÕES) ---
             if not df_r.empty:
