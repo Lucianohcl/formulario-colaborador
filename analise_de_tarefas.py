@@ -4159,7 +4159,11 @@ if st.session_state.get("pagina") == "analise":
                         # --- PARECER DETALHADO DO PERITO ---
                         st.markdown("#### 📝 Parecer Técnico de Viabilidade")
                         
-                        # Lógica de Parecer Dinâmico
+                        # 1. Cálculo do Ajuste (Evita NameError e divisão por zero)
+                        # Comparamos o ROI Real (total_valor) com a Expectativa Bruta (v_bruto)
+                        ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
+
+                        # 2. Lógica de Parecer Dinâmico
                         if ajuste > -30:
                             st.success("✅ **VIABILIDADE ALTA:** As sugestões possuem alto índice de aproveitamento técnico (85%+). O risco de implementação é baixo e o retorno é estrutural.")
                         elif ajuste > -60:
@@ -4167,8 +4171,14 @@ if st.session_state.get("pagina") == "analise":
                         else:
                             st.error("📉 **VIABILIDADE CRÍTICA:** Muitas tarefas operacionais de baixo valor agregado. Foco deve ser em eliminar a tarefa, não em automatizar.")
 
-                        st.info(f"💡 **Nota do Perito:** Aplicado multiplicador de frequência (M=12) e custo técnico de R$ 65,00/h.")
+                        st.info(f"💡 **Nota do Perito:** Aplicado multiplicador de frequência dinâmico e custo técnico de R$ 65,00/h.")
 
                         # --- TABELA FINAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
-                        st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+                        
+                        # Tratamento seguro das colunas da tabela
+                        if 'df_analise' in locals():
+                            cols_remover = [c for c in ['H_FLOAT', 'RS_FLOAT'] if c in df_analise.columns]
+                            st.table(df_analise.drop(columns=cols_remover))
+                        else:
+                            st.error("Erro ao carregar a tabela de análise.")
