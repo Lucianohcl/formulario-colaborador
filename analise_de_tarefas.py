@@ -4045,8 +4045,8 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
         analise_detalhada.append({
             "🎯 ESTRATÉGIA": categoria,
             "💡 SUGESTÃO ANALISADA": sug.get('Sugestão').upper(),
-            "H_FLOAT": h_poupadas_real,
-            "RS_FLOAT": valor_financeiro_real,
+            "H_FLOAT": h_poupadas_real,      # Gaveta de horas
+            "RS_FLOAT": valor_financeiro_real, # Gaveta de dinheiro
             "🚀 ECONOMIA PROJETADA": f"− {h_poupadas_real:.1f} h/ano",
             "💰 VALOR RECUPERÁVEL": f"R$ {valor_financeiro_real:,.2f}",
             "🔍 PARECER DO PERITO": cor_status
@@ -4079,14 +4079,20 @@ if st.session_state.get("pagina") == "analise":
                     if not df_analise.empty:
                         # --- CÁLCULOS TOTAIS SINCRONIZADOS ---
                         # Somamos as colunas FLOAT que criamos no motor para bater 100%
+                        roi_global = sum(motor_pericia_ultra(r, [], r.get('sugestoes', [])).get('RS_FLOAT', pd.Series([0.0])).sum() for r in st.session_state.get('lista_final', []))
                         total_h_ano = df_analise['H_FLOAT'].sum()
                         total_valor = df_analise['RS_FLOAT'].sum()
-                        
+                        st.metric("💰 ROI TOTAL DA ORGANIZAÇÃO", f"R$ {roi_global:,.2f}")
                         # 3. Métricas de Alto Impacto
                         c1, c2, c3 = st.columns(3)
                         c1.metric("Capacidade Recuperada", f"{total_h_ano:.1f} h/ano", "GANHO REAL")
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}", "REDUÇÃO CUSTO")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias", "OFFLOAD")
+
+
+                        
+
+
 
                         st.info(f"📌 **Conclusão da Auditoria:** Detectadas {len(df_analise)} oportunidades. Impacto direto de **{total_h_ano/8:.1f} dias** produtivos/ano.")
 
