@@ -4033,7 +4033,7 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
         # Baseamos em 220 dias úteis/ano para frequência Diária
         mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq, 1)
         h_ano_atual = (tempo_min_atual * mult) / 60
-        h_poupadas = h_ano_atual * potencial
+        h_poupadas = (h_ano_atual * potencial) * 0.80
         
         # Valor financeiro (Base R$ 65,00/h técnica - valor de mercado consultoria)
         valor_financeiro = h_poupadas * 65 
@@ -4085,7 +4085,7 @@ if st.session_state.get("pagina") == "analise":
                         # --- CÁLCULOS TOTAIS (CORRIGIDOS PARA EVITAR KEYERROR) ---
                         # Extraímos os números da nova coluna "🚀 ECONOMIA PROJETADA"
                         total_h_ano = df_analise['🚀 ECONOMIA PROJETADA'].str.extract(r'(\d+\.\d+)').astype(float).sum().iloc[0]
-                        total_valor = total_h_ano * 65 # Valor/hora técnica ajustado
+                        total_valor = df_analise['💰 VALOR RECUPERÁVEL'].str.replace(r'[\sR$.]', '', regex=True).str.replace(',', '.').astype(float).sum()
                         
                         # 3. Métricas de Alto Impacto (O que o Diretor quer ver)
                         c1, c2, c3 = st.columns(3)
