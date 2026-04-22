@@ -4151,45 +4151,50 @@ if st.session_state.get("pagina") == "analise":
                         st.markdown("---")
                         st.subheader("🛡️ Auditoria Pericial Detalhada")
 
-                        # 1. Recupera a "Fonte da Verdade" (Ranking Global)
-                        df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
+                        # 1. PEGA OS DADOS DISPONÍVEIS NA HORA (Sem depender de outras partes do código)
+                        # Tentamos pegar o ranking, se não tiver, usamos o que está na tela (df_analise)
+                        df_fonte = st.session_state.get('df_ranking', pd.DataFrame())
+                        
+                        if df_fonte.empty and 'df_analise' in locals():
+                            df_fonte = df_analise.copy()
 
-                        if not df_rank_global.empty:
-                            # 2. Localiza o Colaborador de forma ultra segura
+                        if not df_fonte.empty:
+                            # 2. IDENTIFICA O COLABORADOR
                             try:
                                 nome_colab = registro.get('colaborador') or "GERCINO ITALO"
                             except:
                                 nome_colab = "GERCINO ITALO"
 
-                            # 3. Filtra os dados que já foram processados no Ranking
-                            df_pessoal = df_rank_global[df_rank_global['Colaborador'] == nome_colab].copy()
+                            # 3. FILTRA APENAS O QUE É DELE
+                            if 'Colaborador' in df_fonte.columns:
+                                df_pessoal = df_fonte[df_fonte['Colaborador'] == nome_colab].copy()
+                            else:
+                                df_pessoal = df_fonte.copy()
 
                             if not df_pessoal.empty:
-                                # Funções de Apoio para conversão de tempo (h e min)
-                                def p_limpar_h(v):
+                                # 4. GARANTE QUE O ROI EXISTE (Se não existir, calcula agora)
+                                if 'ROI_FLOAT' not in df_pessoal.columns:
+                                    df_pessoal['ROI_FLOAT'] = df_pessoal.apply(lambda x: calcular_roi_pericial_unificado(
+                                        x.get('Horas') or x.get('Economia') or 0, 
+                                        x.get('Atividade') or x.get('Sugestão') or ''
+                                    ), axis=1)
+
+                                # 5. LIMPEZA DE TEMPO
+                                def p_limpar(v):
                                     try:
-                                        v_str = str(v).lower()
-                                        if 'min' in v_str:
-                                            return float(v_str.split()[0]) / 60
-                                        return float(v_str.split()[0])
+                                        s = str(v).lower()
+                                        num = float(s.split()[0])
+                                        return num / 60 if 'min' in s else num
                                     except: return 0.0
 
-                                # 4. Garante que a coluna de texto (Sugestão/Atividade) exista
-                                # O JSON do Gercino usa 'Atividade' nas tabelas e 'Sugestão' no bloco de sugestões
-                                df_pessoal['Descrição_Final'] = df_pessoal.apply(
-                                    lambda x: x.get('Sugestão') or x.get('Atividade') or x.get('Sugestao') or "Item Auditado", axis=1
-                                )
-                                
-                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: p_limpar_h(x.get('Horas') or x.get('Economia')), axis=1)
+                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: p_limpar(x.get('Horas') or x.get('Economia')), axis=1)
                                 df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
-                                
-                                # Status e Formatação de Valor
-                                df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
-                                    lambda x: "🚀 ALTO IMPACTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INCREMENTAL")
-                                )
                                 df_pessoal['💰 Valor Final'] = df_pessoal['ROI_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
+                                df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
+                                    lambda x: "🚀 ALTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INC")
+                                )
 
-                                # --- 5. EXIBIÇÃO DE CARDS DE PERFORMANCE ---
+                                # 6. MÉTRICAS (CARDS)
                                 v_tot = df_pessoal['ROI_FLOAT'].sum()
                                 h_tot = df_pessoal['H_NUM'].sum()
                                 
@@ -4198,18 +4203,21 @@ if st.session_state.get("pagina") == "analise":
                                 c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
                                 c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
 
-                                # --- 6. TABELA MATRIZ SEM CORTES ---
+                                # 7. TABELA FINAL (RECONSTRUÇÃO TOTAL)
                                 st.markdown("### 📋 Matriz de Oportunidades")
                                 
-                                # Selecionamos as colunas garantidas
-                                df_render = df_pessoal[['Descrição_Final', '📊 Status', 'Dias', '💰 Valor Final']].copy()
-                                df_render.columns = ['📌 Oportunidade/Sugestão', '📊 Status', '📅 Prazo Equiv.', '💰 Valor/Ano']
-
-                                # Exibição em tabela estática para não cortar linhas
-                                st.table(df_render)
+                                # Criamos a coluna de descrição pegando qualquer nome que venha do JSON
+                                df_pessoal['📌 Descrição'] = df_pessoal.apply(
+                                    lambda x: x.get('Atividade') or x.get('Sugestão') or x.get('Sugestao') or "Tarefa", axis=1
+                                )
                                 
-                                st.success(f"✅ Todas as sugestões e atividades de {nome_colab} foram auditadas com sucesso.")
+                                # Selecionamos apenas colunas que criamos aqui dentro para não dar erro
+                                df_final = df_pessoal[['📌 Descrição', '📊 Status', 'Dias', '💰 Valor Final']].copy()
+                                df_final.columns = ['📌 Descrição', '📊 Impacto', '📅 Prazo', '💰 ROI/Ano']
+
+                                st.table(df_final)
+                                st.success(f"✅ Auditoria sincronizada para {nome_colab}")
                             else:
-                                st.info(f"Aguardando o processamento do ranking para exibir os detalhes de {nome_colab}.")
+                                st.warning("Dados do colaborador não localizados no filtro.")
                         else:
-                            st.error("⚠️ O Ranking Global precisa ser processado primeiro.")
+                            st.info("Aguardando entrada de dados para gerar auditoria.")
