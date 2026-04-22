@@ -3587,37 +3587,48 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. Criamos o DataFrame base
+            # 1. DataFrame Base
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
 
-            # --- SEGURANÇA: Garantir que Economia seja número antes de formatar ---
-            df_r["Economia"] = pd.to_numeric(df_r["Economia"], errors='coerce').fillna(0)
+            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
+            def motor_roi_pericial(row):
+                h_brutas = float(row['Economia'])
+                # Identificamos o DNA da Inovação (ajuste o nome da coluna conforme seu BD)
+                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
+                
+                # Aplicação dos Pesos de Auditoria Pericial
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                    fator = 0.85  # Transformação Digital / Disrupção
+                elif any(keyword in dna_inovacao for keyword in ['pop', 'checklist', 'organizacional', 'processo']):
+                    fator = 0.45  # Otimização de Processos / Estanqueidade
+                else:
+                    fator = 0.25  # Incremental / Ajuste Operacional
+                
+                return (h_brutas * 65.0) * fator
 
-            # Criamos a coluna numérica real para o ROI
-            df_r["ROI_FLOAT"] = df_r["Economia"] * 65 
-
-            # SALVAMOS NA GAVETA GLOBAL
+            # Execução da Engenharia de Valor
+            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
             st.session_state['df_ranking'] = df_r 
 
-            # CARD DE RESULTADO
+            # --- CARD DE AUDITORIA ESTRATÉGICA ---
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
             with st.container(border=True):
                 st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
+                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica de Impacto.")
 
-            # 2. FORMATAMOS PARA EXIBIÇÃO (Criamos colunas novas para não sobrescrever os números)
-            df_r["Valor Formatado"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
-            df_r["Economia Formatada"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+            # 2. Exibição do Business Case
+            df_r["ROI Individual"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+            df_r["Ganho Real"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
 
             st.dataframe(
                 df_r,
                 column_config={
                     "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
-                    "Sug.": st.column_config.NumberColumn("Sugestões", width="small"),
-                    "Economia Formatada": st.column_config.TextColumn("Horas Salvas", width="medium"),
-                    "Valor Formatado": st.column_config.TextColumn("ROI Individual", width="medium"),
+                    "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
+                    "Ganho Real": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
+                    "ROI Individual": st.column_config.TextColumn("Valor Auditado", width="medium"),
                 },
-                # Escondemos as colunas de números puros para não confundir o usuário
-                column_order=("Colaborador", "Sug.", "Economia Formatada", "Valor Formatado"),
+                column_order=("Colaborador", "Sug.", "Ganho Real", "ROI Individual"),
                 hide_index=True,
                 use_container_width=True
             )
