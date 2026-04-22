@@ -3633,21 +3633,7 @@ if st.session_state.pagina == "analise":
                 use_container_width=True
             )
 
-            # 2. Agora sim, formatamos para exibição visual (isso transforma em texto)
-            df_r["Valor Estimado"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
-            df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
-
-            st.dataframe(
-                df_r,
-                column_config={
-                    "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
-                    "Sug.": st.column_config.NumberColumn("Sugestões", width="small"),
-                    "Economia": st.column_config.TextColumn("Horas Salvas", width="medium"),
-                    "Valor Estimado": st.column_config.TextColumn("ROI Individual", width="medium"),
-                },
-                hide_index=True,
-                use_container_width=True
-            )
+            
 
             # --- LEGENDA TÉCNICA COM 12 ESPAÇOS DE RECUO ---
             st.caption("""
