@@ -4170,7 +4170,7 @@ if st.session_state.get("pagina") == "analise":
 
         else:
 
-            st.info("☝️ Selecione um colaborador.") AGORA
+            st.info("☝️ Selecione um colaborador.")
 
 
 
