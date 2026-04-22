@@ -3639,13 +3639,13 @@ if st.session_state.pagina == "analise":
                     except:
                         continue
                 
-                if t_h_poupadas > 0:
-                    ranking_dados.append({
-                        "Colaborador": n_colab,
-                        "Qtd": len(s_lista),
-                        "H_Recup": t_h_poupadas,
-                        "ROI_Final": t_rs_recuperavel
-                    })
+                # Removemos o IF para garantir que todos apareçam, mesmo com ROI 0
+                ranking_dados.append({
+                    "Colaborador": n_colab,
+                    "Qtd": len(s_lista),
+                    "H_Recup": t_h_poupadas,
+                    "ROI_Final": t_rs_recuperavel
+                })
 
             # Gerar DataFrame e ordenar pelo Valor Real
             df_r = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
