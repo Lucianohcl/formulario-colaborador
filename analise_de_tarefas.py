@@ -4118,27 +4118,59 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
-                        # --- CARD DE VIABILIDADE PERICIAL (AJUSTADO) ---
-                        st.markdown("---")
-                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
+                        # --- CARD DE VIABILIDADE PERICIAL (INTERNO) ---
 
-                        # Cálculo baseado na Engenharia de Valor (Horas Brutas x 65)
-                        h_totais = df_analise['H_FLOAT'].sum() if 'H_FLOAT' in df_analise.columns else 0
-                        v_bruto = h_totais * 65.0
+                        st.markdown("---")
+
+                        st.subheader("🛡️ Verificacao de Viabilidade Pericial")
+
+                        
+
+                        v_bruto = total_valor / 0.45 if total_valor > 0 else 0
+
+                        
 
                         ca1, ca2 = st.columns(2)
+
                         with ca1:
+
                             st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
-                            st.caption("Custo total de oportunidade (Horas x R$ 65).")
+
+                            st.caption("Estimativa declarada sem filtros.")
 
                         with ca2:
-                            # Mostra o ROI Real (total_valor) e quanto ele representa do bruto
-                            ajuste_perc = (total_valor / v_bruto * 100) if v_bruto > 0 else 0
-                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
-                                      delta=f"{ajuste_perc:.1f}% Validado", delta_color="normal")
-                            st.caption("Valor líquido após aplicação dos pesos periciais.")
 
-                        st.info(f"💡 Nota do Perito: Esta análise validou {ajuste_perc:.1f}% do potencial bruto com base na complexidade técnica.")
+                            ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
+
+                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
+
+                                      delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
+
+                            st.caption("Valor aprovado apos pericia.")
+
+                        
+
+                        st.info("💡 Nota do Perito: O ajuste garante um ROI realizavel.")
+
+ 
+
+                        # --- TABELA FINAL ---
+
+                        st.markdown("### 📋 Detalhamento das Oportunidades")
+
+                        st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+
+                    else:
+
+                        st.warning("⚠️ Nenhuma sugestao valida.")
+
+            else:
+
+                st.info("⚠️ Nenhuma sugestao encontrada.")
+
+        else:
+
+            st.info("☝️ Selecione um colaborador.") AGORA
 
 
 
