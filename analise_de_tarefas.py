@@ -3998,8 +3998,6 @@ if st.session_state.pagina == "analise":
 
 
 import pandas as pd
-
-import pandas as pd
 import streamlit as st
  
 def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
@@ -4117,26 +4115,42 @@ if st.session_state.get("pagina") == "analise":
                 st.info("⚠️ Nenhuma sugestao encontrada.")
         else:
             st.info("☝️ Selecione um colaborador.")
- 
-# --- CARD DE SEGURANÇA FINAL (EXTERNO E ENCAPSULADO) ---
-if st.session_state.get('v_audit_final', 0) > 0:
-    v_final_display = st.session_state['v_audit_final']
-    st.write("---")
-    
-    with st.container():
-        st.subheader("🛡️ Auditoria Pericial de Viabilidade (Final)")
+
+# --- ÁREA DE SEGURANÇA E DEBUG FINAL (SOMA DO RANKING) ---
+# Alinhado à esquerda, fora de qualquer IF anterior
+st.write("---")
+st.subheader("🛠️ Diagnóstico e Auditoria Global")
+
+# 1. DEBUG VISUAL PARA O LUCIANO
+with st.expander("🔍 Debug de Memória (Ranking)", expanded=True):
+    df_rank_global = st.session_state.get('df_ranking')
+    if df_rank_global is None:
+        st.error("❌ 'df_ranking' não encontrado no st.session_state.")
+    elif df_rank_global.empty:
+        st.warning("⚠️ 'df_ranking' existe, mas está vazio.")
+    else:
+        st.success(f"✅ Ranking detectado: {len(df_rank_global)} linhas.")
+
+# 2. CARD DE VIABILIDADE SOMANDO O RANKING
+if df_rank_global is not None and not df_rank_global.empty:
+    try:
+        # Tenta achar a coluna de valor (ROI ou a última numérica)
+        col_soma = 'ROI' if 'ROI' in df_rank_global.columns else df_rank_global.select_dtypes(include=['number']).columns[-1]
+        v_total_acumulado = df_rank_global[col_soma].sum()
         
-        # Cálculo do bruto para o confronto visual
-        v_bruto_calculado = v_final_display / 0.45
-        ajuste_final_perc = ((v_final_display / v_bruto_calculado) - 1) * 100
-        
-        col_f1, col_f2 = st.columns(2)
-        with col_f1:
-            st.metric("Expectativa Bruta Estimada", f"R$ {v_bruto_calculado:,.2f}")
-            st.caption("Base sem aplicação de deflatores técnicos.")
-        with col_f2:
-            st.metric("ROI Real Auditado", f"R$ {v_final_display:,.2f}", 
-                      delta=f"{ajuste_final_perc:.0f}% Ajuste", delta_color="inverse")
-            st.caption("Valor aprovado pelo motor de auditoria.")
+        st.markdown("### 🛡️ Verificação de Viabilidade Pericial (Acumulado)")
+        with st.container(border=True):
+            v_bruto_global = v_total_acumulado / 0.45
+            ajuste_global_perc = ((v_total_acumulado / v_bruto_global) - 1) * 100 if v_bruto_global > 0 else 0
             
-        st.success("✅ Verificação de integridade concluída com sucesso.")
+            cg1, cg2 = st.columns(2)
+            with cg1:
+                st.metric("Expectativa Bruta (Total)", f"R$ {v_bruto_global:,.2f}")
+            with cg2:
+                st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}", 
+                          delta=f"{ajuste_global_perc:.0f}% Ajuste", delta_color="inverse")
+            st.success("✅ Soma global do ranking validada.")
+    except Exception as e:
+        st.error(f"🚨 Erro no cálculo do Card Global: {e}")
+else:
+    st.info("💡 Aguardando processamento do Ranking Global para exibir o Card Final.")
