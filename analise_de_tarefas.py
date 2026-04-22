@@ -3538,41 +3538,47 @@ if st.session_state.pagina == "analise":
         total_geral_ano_horas = 0.0
 
         for f in base:
-            # Busca nome e sugestões de forma robusta
             n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
             s_r = f.get('tabelas', {}).get('sugestoes', []) or f.get('sugestoes', [])
             
-            # --- NOVIDADE: Identifica a categoria predominante do colaborador para o Ranking ---
-            cat_aux = "Incremental" 
-            if s_r:
-                # Analisamos a primeira sugestão para carimbar o DNA do colaborador no Ranking
-                texto_sug_prim = str(s_r[0].get('Sugestão', '')).lower()
-                if any(w in texto_sug_prim for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
-                    cat_aux = "Transformacao"
-                elif any(w in texto_sug_prim for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
-                    cat_aux = "Processo"
+            valor_auditado_colaborador = 0.0
+            horas_brutas_colaborador = 0.0
 
-            horas_colaborador = 0.0
             for s in s_r:
                 try:
-                    # Limpeza e conversão (Mesma lógica do Gercino)
+                    # 1. Limpeza e Conversão de Tempo
                     h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
                     m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
                     f_s = str(s.get('Frequência', 'M')).upper().strip()
                     mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
                     
-                    horas_colaborador += (h_s + (m_s / 60)) * mult
+                    h_ano = (h_s + (m_s / 60)) * mult
+                    horas_brutas_colaborador += h_ano
+
+                    # 2. Identificação do Peso POR SUGESTÃO (Igual ao Motor Individual)
+                    texto_sug = str(s.get('Sugestão', '')).lower()
+                    
+                    if any(w in texto_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
+                        fator = 0.85
+                    elif any(w in texto_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
+                        fator = 0.45
+                    else:
+                        fator = 0.20
+                    
+                    # 3. Acumula o valor financeiro já auditado
+                    valor_auditado_colaborador += (h_ano * 65.0 * fator)
+                    
                 except: 
                     continue
             
-            total_geral_ano_horas += horas_colaborador
+            total_geral_ano_horas += horas_brutas_colaborador
             
-            # AGORA O RANKING LEVA A CATEGORIA JUNTO!
+            # AGORA O RANKING JÁ RECEBE O VALOR FINAL CALCULADO
             ranking_dados.append({
                 "Colaborador": n_r, 
                 "Sug.": len(s_r), 
-                "Economia": horas_colaborador,
-                "Categoria": cat_aux 
+                "Economia": horas_brutas_colaborador, # Para métricas de horas
+                "ROI_Líquido": valor_auditado_colaborador # Para o Ranking de dinheiro
             })
 
         # --- EXIBIÇÃO DAS MÉTRICAS NO TOPO ---
@@ -3597,15 +3603,13 @@ if st.session_state.pagina == "analise":
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             # --- ALGORITMO DE CONVERSÃO AUDITADA (RANKING) ---
+            # --- 1. CÁLCULO DO VALOR AUDITADO ---
             def motor_roi_pericial(row):
                 try:
-                    # 1. Pega as horas brutas que calculamos no loop global
                     h_brutas = float(row.get('Economia', 0))
+                    # Usa a Categoria que injetamos no loop lá em cima
+                    dna = str(row.get('Categoria', 'Incremental')).lower()
                     
-                    # 2. Identifica o DNA da inovação (usando a etiqueta 'Categoria' que injetamos)
-                    dna = str(row.get('Categoria', 'Organizacional')).lower()
-                    
-                    # 3. Define o fator de conversão (Pesos: 85%, 45%, 20%)
                     if any(w in dna for w in ['transformacao', 'python', 'ia', 'api', 'automacao', 'sistema']):
                         fator = 0.85  
                     elif any(w in dna for w in ['processo', 'pop', 'padronizar', 'checklist', 'estrutural']):
@@ -3613,43 +3617,40 @@ if st.session_state.pagina == "analise":
                     else:
                         fator = 0.20  
                     
-                    # 4. Cálculo final: Horas x Valor/Hora x Peso Pericial
                     return (h_brutas * 65.0) * fator
                 except:
                     return 0.0
 
-            # Execução segura
+            # --- 2. EXECUÇÃO ÚNICA (SEM REPETIÇÕES) ---
             if not df_r.empty:
-                # Criamos a coluna final que será usada no st.bar_chart ou st.dataframe
+                # Criamos UMA ÚNICA coluna numérica para cálculos
                 df_r["ROI_Líquido"] = df_r.apply(motor_roi_pericial, axis=1)
-                # Ordenamos pelo valor auditado real
                 df_r = df_r.sort_values(by="ROI_Líquido", ascending=False)
             else:
                 df_r["ROI_Líquido"] = 0.0
 
-            # Execução da Engenharia de Valor
-            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
             st.session_state['df_ranking'] = df_r 
 
-            # --- CARD DE AUDITORIA ESTRATÉGICA ---
-            v_total_acumulado = df_r["ROI_FLOAT"].sum()
+            # --- 3. CARD DE AUDITORIA ESTRATÉGICA ---
+            v_total_acumulado = df_r["ROI_Líquido"].sum()
             with st.container(border=True):
                 st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
-                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica de Impacto.")
+                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica.")
 
-            # 2. Exibição do Business Case
-            df_r["ROI Individual"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
-            df_r["Ganho Real"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+            # --- 4. FORMATAÇÃO PARA EXIBIÇÃO ---
+            # Criamos colunas de texto APENAS para a tabela, sem tocar na coluna numérica original
+            df_r["Valor Auditado"] = df_r["ROI_Líquido"].apply(lambda x: f"R$ {x:,.2f}")
+            df_r["Eficiência Bruta"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
 
             st.dataframe(
                 df_r,
                 column_config={
                     "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
                     "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
-                    "Ganho Real": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
-                    "ROI Individual": st.column_config.TextColumn("Valor Auditado", width="medium"),
+                    "Eficiência Bruta": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
+                    "Valor Auditado": st.column_config.TextColumn("Valor Auditado", width="medium"),
                 },
-                column_order=("Colaborador", "Sug.", "Ganho Real", "ROI Individual"),
+                column_order=("Colaborador", "Sug.", "Eficiência Bruta", "Valor Auditado"),
                 hide_index=True,
                 use_container_width=True
             )
