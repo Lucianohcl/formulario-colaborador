@@ -3531,62 +3531,67 @@ if st.session_state.pagina == "analise":
         
 
     
-        # --- RANKING E MÉTRICAS DE IMPACTO (SINCRONIZADO COM MOTOR PERICIAL) ---
+        # --- RANKING E MÉTRICAS DE IMPACTO (SINCRONIZADO COM GERCINO) ---
         st.markdown("## 📈 Dashboard de Impacto Estratégico Global")
 
         ranking_dados = []
         total_geral_ano_horas = 0.0
 
+        # Processamento com a Lógica Exata do Gercino
         for f in base:
+            # Busca nome de forma robusta
             n_r = (f.get('colaborador') or f.get('nome') or "Desconhecido").upper()
+            # Busca sugestões (Universal)
             s_r = f.get('tabelas', {}).get('sugestoes', []) or f.get('sugestoes', [])
             
-            valor_auditado_colaborador = 0.0
-            horas_brutas_colaborador = 0.0
-
+            horas_colaborador = 0.0
             for s in s_r:
                 try:
-                    # --- 1. LIMPEZA IDENTICA AO MOTOR DO GERCINO ---
-                    # O segredo está aqui: filter(str.isdigit) garante que "2 h" vire 2.
-                    h_s = int(''.join(filter(str.isdigit, str(s.get('Horas', '0')))) or 0)
-                    m_s = int(''.join(filter(str.isdigit, str(s.get('Minutos', '0')))) or 0)
+                    # 1. Limpeza e Conversão (Igual ao Individual)
+                    h_s = float(str(s.get('Horas', '0')).lower().replace('h', '').replace(',', '.').strip() or 0)
+                    m_s = float(str(s.get('Minutos', '0')).lower().replace('min', '').replace(',', '.').strip() or 0)
                     
+                    # 2. Frequência Dinâmica (A regra que cravou os R$ 7.805,42)
                     f_s = str(s.get('Frequência', 'M')).upper().strip()
                     mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_s, 12)
                     
-                    # Cálculo de horas brutas (mesma base do individual)
-                    h_ano = (h_s + (m_s / 60)) * mult
-                    horas_brutas_colaborador += h_ano
-
-                    # --- 2. FILTRO DE SUGESTÕES VAZIAS ---
-                    texto_sug = str(s.get('Sugestão', '')).lower().strip()
-                    if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]:
-                        continue
-
-                    # --- 3. PESOS SINCRONIZADOS (DNA) ---
-                    if any(w in texto_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
-                        fator = 0.85
-                    elif any(w in texto_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
-                        fator = 0.45
-                    else:
-                        fator = 0.20
-                    
-                    # --- 4. VALOR FINANCEIRO REAL ---
-                    valor_auditado_colaborador += (h_ano * 65.0 * fator)
-                    
+                    # 3. Cálculo Bruto Integral (Sem fator de 0.50)
+                    horas_colaborador += (h_s + (m_s / 60)) * mult
                 except: 
                     continue
+            
+            total_geral_ano_horas += horas_colaborador
+            ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": horas_colaborador})
 
-        # --- EXIBIÇÃO DAS MÉTRICAS NO TOPO ---
         if ranking_dados:
+            # Valor hora técnica unificado em R$ 65,00
             total_financeiro = total_geral_ano_horas * 65.0
-            c1, c2, c3 = st.columns(3)
-            with c1: 
-                st.metric("⚡ Eficiência Recuperável", f"{total_geral_ano_horas:,.1f} h/ano")
-            with c2: 
-                st.metric("💰 ROI Projetado (EBITDA)", f"R$ {total_financeiro:,.2f}", delta="Expectativa Bruta")
-            with c3: 
-                st.metric("📅 Ganho de Capacidade", f"{total_geral_ano_horas/8:,.1f} Dias")
+            
+            col_c1, col_c2, col_c3 = st.columns(3)
+            
+            with col_c1:
+                st.metric(
+                    label="⚡ Eficiência Recuperável", 
+                    value=f"{total_geral_ano_horas:,.1f} h/ano",
+                    help="Soma das horas brutas declaradas por todos os colaboradores."
+                )
+            
+            with col_c2:
+                st.metric(
+                    label="💰 ROI Projetado (EBITDA)", 
+                    value=f"R$ {total_financeiro:,.2f}",
+                    delta="Expectativa Bruta",
+                    help="Valor total anualizado (R$ 65,00/h)."
+                )
+                
+            with col_c3:
+                # Ganho em dias (base padrão 8h)
+                dias_novos = total_geral_ano_horas / 8
+                st.metric(
+                    label="📅 Ganho de Capacidade", 
+                    value=f"{dias_novos:,.1f} Dias",
+                    help="Dias de trabalho recuperados por ano."
+                )
 
             st.markdown("---")
 
@@ -3597,83 +3602,44 @@ if st.session_state.pagina == "analise":
 
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
-            # --- ALGORITMO DE CONVERSÃO AUDITADA (RANKING) ---
-            # --- 1. CÁLCULO DO VALOR AUDITADO ---
-            # --- ALGORITMO DE CONVERSÃO DE VALOR (VERSÃO BLINDADA) ---
             def motor_roi_pericial(row):
-                try:
-                    # 1. Pega as horas brutas
-                    h_brutas = float(row.get('Economia', 0))
-                    
-                    # 2. Busca o DNA em qualquer coluna que possa ter a categoria ou o texto
-                    # Tentamos 'Categoria', se não houver, tentamos 'Sugestão'
-                    dna = str(row.get('Categoria', row.get('Sugestão', ''))).lower()
-                    
-                    # 3. Pesos Oficiais (85%, 45%, 20%)
-                    if any(w in dna for w in ['transformacao', 'python', 'ia', 'api', 'automacao', 'sistema', 'digital']):
-                        fator = 0.85
-                    elif any(w in dna for w in ['processo', 'pop', 'padronizar', 'checklist', 'organizacional', 'estrutural']):
-                        fator = 0.45
-                    else:
-                        fator = 0.20
-                    
-                    return (h_brutas * 65.0) * fator
-                except:
-                    return 0.0
-
-            # --- EXECUÇÃO E LIMPEZA DE DADOS ---
-            if not df_r.empty:
-                # 1. Ordenamos pelo que já foi calculado no loop (ROI_Líquido)
-                df_r = df_r.sort_values(by="ROI_Líquido", ascending=False)
+                h_brutas = float(row['Economia'])
+                # Identificamos o DNA da Inovação
+                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
                 
-                # 2. Criamos as colunas apenas para FORMATAR a exibição (sem recalcular nada)
-                df_r["Valor Auditado"] = df_r["ROI_Líquido"].apply(lambda x: f"R$ {x:,.2f}")
-                df_r["Eficiência Bruta"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+                # --- PESOS SINCRONIZADOS COM A PERÍCIA ULTRA (85%, 45%, 20%) ---
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'automacao', 'sistema', 'digitalizar']):
+                    fator = 0.85  # Transformação Digital
+                elif any(keyword in dna_inovacao for keyword in ['processo', 'pop', 'organizacional', 'padronizar', 'checklist']):
+                    fator = 0.45  # Otimização de Processo (Sincronizado com motor_pericia_ultra)
+                else:
+                    fator = 0.20  # Melhoria Incremental (Sincronizado com motor_pericia_ultra)
                 
-                # 3. Exibição do Gráfico usando o valor numérico
-                st.subheader("🏆 Ranking de Impacto Financeiro (Auditado)")
-                st.bar_chart(df_r.set_index("Colaborador")["ROI_Líquido"])
+                return (h_brutas * 65.0) * fator
 
-                # 4. Exibição da Tabela Final
-                st.dataframe(
-                    df_r[["Colaborador", "Sug.", "Eficiência Bruta", "Valor Auditado"]],
-                    hide_index=True,
-                    use_container_width=True
-                )
-            else:
-                st.info("Aguardando processamento de dados...")
-
-            # --- 2. EXECUÇÃO ÚNICA (SEM REPETIÇÕES) ---
-            if not df_r.empty:
-                # Criamos UMA ÚNICA coluna numérica para cálculos
-                df_r["ROI_Líquido"] = df_r.apply(motor_roi_pericial, axis=1)
-                df_r = df_r.sort_values(by="ROI_Líquido", ascending=False)
-            else:
-                df_r["ROI_Líquido"] = 0.0
-
+            # Execução da Engenharia de Valor
+            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
             st.session_state['df_ranking'] = df_r 
 
-            # --- 3. CARD DE AUDITORIA ESTRATÉGICA ---
-            v_total_acumulado = df_r["ROI_Líquido"].sum()
+            # --- CARD DE AUDITORIA ESTRATÉGICA ---
+            v_total_acumulado = df_r["ROI_FLOAT"].sum()
             with st.container(border=True):
                 st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
-                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica.")
+                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica de Impacto.")
 
-            # --- 4. FORMATAÇÃO PARA EXIBIÇÃO ---
-            # Criamos colunas de texto APENAS para a tabela, sem tocar na coluna numérica original
-            df_r["Valor Auditado"] = df_r["ROI_Líquido"].apply(lambda x: f"R$ {x:,.2f}")
-            df_r["Eficiência Bruta"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
+            # 2. Exibição do Business Case
+            df_r["ROI Individual"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+            df_r["Ganho Real"] = df_r["Economia"].apply(lambda x: f"{float(x):.1f} h/ano")
 
             st.dataframe(
                 df_r,
                 column_config={
                     "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
                     "Sug.": st.column_config.NumberColumn("Sug.", width="small"),
-                    "Eficiência Bruta": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
-                    "Valor Auditado": st.column_config.TextColumn("Valor Auditado", width="medium"),
+                    "Ganho Real": st.column_config.TextColumn("Eficiência Bruta", width="medium"),
+                    "ROI Individual": st.column_config.TextColumn("Valor Auditado", width="medium"),
                 },
-                column_order=("Colaborador", "Sug.", "Eficiência Bruta", "Valor Auditado"),
+                column_order=("Colaborador", "Sug.", "Ganho Real", "ROI Individual"),
                 hide_index=True,
                 use_container_width=True
             )
