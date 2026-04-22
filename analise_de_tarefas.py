@@ -4118,145 +4118,81 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
-                        # --- MOTOR DE CÁLCULO PERICIAL (LINHA A LINHA) ---
-                        def motor_pericial_detalhado(row):
-                            h = float(row.get('H_FLOAT', 0))
-                            estrategia = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
-                            
-                            # Define o Fator e o Emoji do Parecer
-                            if any(k in estrategia for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                                fator, emoji = 0.85, "🤖"
-                            elif any(k in estrategia for k in ['pop', 'checklist', 'organizacional', 'processo']):
-                                f, emoji = 0.45, "📈"
-                            else:
-                                f, emoji = 0.25, "💡"
-                            
-                            v_auditado = (h * 65.0) * f
-                            parecer_original = row.get('PARECER', 'Análise concluída.')
-                            novo_parecer = f"{emoji} {parecer_original}"
-                            
-                            return v_auditado, novo_parecer
+                        # --- 1. MOTOR ÚNICO DE INTELIGÊNCIA PERICIAL (COMPLETO) ---
+                        st.markdown("---")
+                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
 
-                        # Aplicando a inteligência aos dados
+                        # Preparação dos dados e sincronia com o Ranking
                         df_exibicao = df_analise.copy()
-                        
-                        # Criamos as colunas aplicando a função
-                        resultados = df_exibicao.apply(motor_pericial_detalhado, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados]
-                        df_exibicao['PARECER'] = [r[1] for r in resultados]
-
-                        # --- 1. MOTOR DE INTELIGÊNCIA PERICIAL & SINCRONIA ---
-                        df_exibicao = df_analise.copy()
-                        
-                        # Puxamos o Ranking Global para garantir que o ROI seja idêntico
                         df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
-                        def motor_pericial_completo(row):
-                            sugestao_alvo = row.get('SUGESTAO ANALISADA', '')
-                            # Tenta localizar a sugestão no Ranking Global
-                            match = df_rank_global[df_rank_global['Sugestao'] == sugestao_alvo]
-                            
-                            # Inicialização de segurança
-                            fator = 0.25
-                            emoji = "💡 [INCREMENTAL]"
-                            
-                            if not match.empty:
-                                # Se achou no ranking, usa o valor que já foi auditado lá
-                                v_auditado = match.iloc[0]['ROI_FLOAT']
-                                dna = str(match.iloc[0].get('Categoria', '')).lower()
-                            else:
-                                # Se não achou, calcula na hora (Backup)
-                                h = float(row.get('H_FLOAT', 0))
-                                v_auditado = (h * 65.0) * 0.25
-                                dna = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
-
-                            # --- ANÁLISE SEMÂNTICA PARA EMOJIS ---
-                            if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                                emoji = "🤖 [TECNOLOGIA]"
-                                v_auditado = (float(row.get('H_FLOAT', 0)) * 65.0) * 0.85 if match.empty else v_auditado
-                            elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo']):
-                                emoji = "📈 [PROCESSO]"
-                                v_auditado = (float(row.get('H_FLOAT', 0)) * 65.0) * 0.45 if match.empty else v_auditado
-                            
-                            parecer_final = f"{emoji} {row.get('PARECER', 'Sugestão analisada pela perícia.')}"
-                            return v_auditado, parecer_final
-
-                        # Aplicação única para performance e precisão
-                        resultados_finais = df_exibicao.apply(motor_pericial_completo, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_finais]
-                        df_exibicao['PARECER'] = [r[1] for r in resultados_finais]
-
-                        # --- 1. MOTOR DE INTELIGÊNCIA PERICIAL & SINCRONIA ---
-                        df_exibicao = df_analise.copy()
-                        
-                        # Recupera o Ranking para bater os valores
-                        df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
-
-                        def motor_pericial_completo(row):
-                            # Pega as horas
+                        def motor_pericial_definitivo(row):
+                            # h sempre será número para evitar erros de cálculo
                             try:
                                 h = float(row.get('H_FLOAT', 0))
                             except:
                                 h = 0.0
                                 
                             sugestao_alvo = row.get('SUGESTAO ANALISADA', '')
-                            # Busca no Ranking Global
+                            # Tenta localizar a sugestão no Ranking Global para paridade total
                             match = df_rank_global[df_rank_global['Sugestao'] == sugestao_alvo] if not df_rank_global.empty else pd.DataFrame()
                             
-                            # 1. INICIALIZAÇÃO DA VARIÁVEL 'f' (Evita o erro de Traceback)
+                            # INICIALIZAÇÃO FIXA (Garante que o fator 'f' sempre exista)
                             f = 0.25 
-                            emoji = "💡 [INCREMENTAL]"
+                            emoji_tag = "💡 [INCREMENTAL]"
                             
-                            # 2. IDENTIFICAÇÃO DO DNA (Prioriza o que veio do Ranking)
+                            # Identifica o DNA (Prioriza o Ranking > Estratégia informada)
                             dna = str(match.iloc[0].get('Categoria', row.get('ESTRATEGIA', ''))).lower() if not match.empty else str(row.get('ESTRATEGIA', '')).lower()
 
-                            # 3. DEFINIÇÃO DE PESO 'f' E EMOJI
+                            # Aplicação dos Pesos Semânticos (Motor Pericial)
                             if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                                f, emoji = 0.85, "🤖 [TECNOLOGIA]"
+                                f, emoji_tag = 0.85, "🤖 [TECNOLOGIA]"
                             elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo']):
-                                f, emoji = 0.45, "📈 [PROCESSO]"
+                                f, emoji_tag = 0.45, "📈 [PROCESSO]"
                             
-                            # 4. CÁLCULO (Agora 'f' sempre existe)
+                            # Cálculo do ROI Auditado
                             v_auditado = (h * 65.0) * f
                             
-                            parecer_final = f"{emoji} {row.get('PARECER', 'Análise concluída.')}"
-                            return v_auditado, parecer_final
+                            # Sincronia de Valor: se já existe no ranking, usa o ROI auditado de lá
+                            if not match.empty:
+                                v_auditado = match.iloc[0]['ROI_FLOAT']
 
-                        # Aplicação única
-                        resultados_finais = df_exibicao.apply(motor_pericial_completo, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_finais]
-                        df_exibicao['PARECER'] = [r[1] for r in resultados_finais]
+                            # Retorna o Valor Auditado e o Parecer com Emoji e Texto
+                            parecer_texto = row.get('PARECER', 'Análise concluída pela perícia.')
+                            return v_auditado, f"{emoji_tag} {parecer_texto}"
 
-                        # --- 2. EXIBIÇÃO DOS CARDS E TABELA ---
-                        st.markdown("---")
-                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
-                        
-                        v_total_auditado = df_exibicao['VALOR AUDITADO'].sum()
-                        h_totais = df_exibicao['H_FLOAT'].sum()
-                        
-                        c1, c2, c3 = st.columns(3)
-                        with c1:
-                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_total_auditado:,.2f}")
-                        with c2:
-                            st.metric("📢 Ganho de Capacidade", f"{(h_totais/8):.1f} Dias")
-                        with c3:
-                            st.metric("💰 Expectativa Bruta", f"R$ {(h_totais * 65):,.2f}")
+                        # Aplicação Única para criar as colunas finais
+                        resultados_periciais = df_exibicao.apply(motor_pericial_definitivo, axis=1)
+                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_periciais]
+                        df_exibicao['PARECER'] = [r[1] for r in resultados_periciais]
 
+                        # --- 2. EXIBIÇÃO DOS CARDS DE RESULTADO (RESUMO EXECUTIVO) ---
+                        v_total_rec = df_exibicao['VALOR AUDITADO'].sum()
+                        h_totais_rec = df_exibicao['H_FLOAT'].sum()
+
+                        col_a, col_b, col_c = st.columns(3)
+                        with col_a:
+                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_total_rec:,.2f}")
+                        with col_b:
+                            st.metric("📢 Ganho de Capacidade", f"{(h_totais_rec/8):.1f} Dias")
+                        with col_c:
+                            st.metric("💰 Expectativa Bruta", f"R$ {(h_totais_rec * 65):,.2f}")
+
+                        # --- 3. TABELA DE DETALHAMENTO RIGOROSA ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
                         
-                        # Formatação para a Tabela
+                        # Criamos uma cópia para formatação de exibição (moeda)
                         df_tab = df_exibicao.copy()
-                        df_tab['VALOR RECUPERAVEL'] = df_tab['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
-                        df_tab['VALOR AUDITADO'] = df_tab['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
+                        df_tab['ROI INFORMADO'] = df_tab['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
+                        df_tab['ROI AJUSTADO'] = df_tab['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
+                        df_tab['HORAS'] = df_tab['H_FLOAT'].apply(lambda x: f"{x:.1f}h")
 
+                        # Exibição da Tabela Completa
                         st.table(df_tab[[
                             'ESTRATEGIA', 
                             'SUGESTAO ANALISADA', 
-                            'ECONOMIA PROJETADA', 
-                            'VALOR RECUPERAVEL', 
-                            'VALOR AUDITADO', 
+                            'HORAS',
+                            'ROI INFORMADO', 
+                            'ROI AJUSTADO', 
                             'PARECER'
                         ]])
-
-
-
