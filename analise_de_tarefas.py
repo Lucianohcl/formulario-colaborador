@@ -62,7 +62,7 @@ repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 def calcular_roi_pericial_unificado(horas_brutas, texto_sugestao):
     try:
-        # Garante que "6 h" vire 6.0
+        # Limpa "6 h" para 6.0
         h = float(str(horas_brutas).split()[0]) if horas_brutas else 0.0
     except:
         h = 0.0
@@ -77,8 +77,7 @@ def calcular_roi_pericial_unificado(horas_brutas, texto_sugestao):
     else:
         fator = 0.25
         
-    return (h * 65.0) * fator
-
+    return (h * 65.0) * faktor
 
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
@@ -3608,54 +3607,38 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. DataFrame Base
+            # 1. Montagem do DataFrame
             df_r = pd.DataFrame(ranking_dados)
 
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA ---
-            def motor_roi_pericial(row):
-                # Busca automática pela coluna de Horas/Economia
-                col_h = next((c for c in ['Economia', 'Horas', 'H_FLOAT'] if c in row.index), None)
-                try:
-                    h_brutas = float(row[col_h]) if col_h else 0.0
-                except:
-                    h_brutas = 0.0
-                
-                # DNA da Inovação (Pega Categoria, Estratégia ou usa padrão)
-                col_cat = next((c for c in ['Categoria', 'ESTRATEGIA', 'Estratégia'] if c in row.index), None)
-                dna = str(row[col_cat]).lower() if col_cat else 'organizacional'
-                
-                # Definição dos Pesos (Garante os R$ 3.053,71 do Gercino)
-                if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
-                    fator = 0.85
-                elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
-                    fator = 0.45
-                else:
-                    fator = 0.25
-                
-                return (h_brutas * 65.0) * fator
+            if not df_r.empty:
+                # 2. Execução Única do Motor (Cria a Verdade)
+                # Note: 12 espaços de base + 4 de identação do IF = 16 espaços aqui
+                df_r["ROI_FLOAT"] = df_r.apply(lambda x: calcular_roi_pericial_unificado(
+                    x.get('Economia') or x.get('Horas') or x.get('H_FLOAT', 0), 
+                    x.get('Sugestão') or x.get('Atividade') or x.get('SUGESTAO ANALISADA', '')
+                ), axis=1)
 
-            # 2. Execução
-            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
-            df_r = df_r.sort_values(by="ROI_FLOAT", ascending=False)
-            
-            # Salva para o relatório individual usar
-            st.session_state['df_ranking'] = df_r
+                # Ordena pelo maior valor
+                df_r = df_r.sort_values(by="ROI_FLOAT", ascending=False)
 
-            # --- 3. EXIBIÇÃO À PROVA DE FALHAS (Mata o KeyError) ---
-            df_exibicao_rank = df_r.copy()
-            df_exibicao_rank["ROI Auditado"] = df_exibicao_rank["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+                # SALVA NA SESSÃO PARA O RELATÓRIO COPIAR
+                st.session_state['df_ranking'] = df_r
 
-            # Mapeamento Dinâmico: Ele procura o nome real da coluna no seu JSON
-            cols_disponiveis = df_exibicao_rank.columns.tolist()
-            col_nome = next((c for c in ['Colaborador', 'colaborador', 'Nome'] if c in cols_disponiveis), None)
-            col_sug = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in cols_disponiveis), None)
-            col_cat_final = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in cols_disponiveis), None)
+                # 3. Exibição Visual Tratada
+                df_exibicao_rank = df_r.copy()
+                df_exibicao_rank["ROI Auditado"] = df_exibicao_rank["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
 
-            # Monta a lista de colunas que realmente existem
-            lista_final = [c for c in [col_nome, col_sug, col_cat_final, "ROI Auditado"] if c is not None]
-            
-            # Exibe a tabela sem risco de KeyError
-            st.table(df_exibicao_rank[lista_final].head(10))
+                # Busca dinâmica de colunas para evitar KeyError
+                cols_dis = df_exibicao_rank.columns.tolist()
+                c_nom = next((c for c in ['Colaborador', 'colaborador', 'Nome'] if c in cols_dis), None)
+                c_sug = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in cols_dis), None)
+                c_cat = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in cols_dis), None)
+
+                lista_cols = [c for c in [c_nom, c_sug, c_cat, "ROI Auditado"] if c is not None]
+                st.table(df_exibicao_rank[lista_cols].head(10))
+            else:
+                # 12 de base + 4 do ELSE
+                st.info("Nenhum dado disponível para o ranking no momento.")
 
             # --- CARD DE AUDITORIA ESTRATÉGICA ---
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
@@ -4167,91 +4150,54 @@ if st.session_state.get("pagina") == "analise":
  
                         # --- 1. MOTOR ÚNICO DE INTELIGÊNCIA PERICIAL (BLINDADO & IDENTADO) ---
                         st.markdown("---")
-                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
+                        st.subheader("🛡️ Auditoria Pericial Detalhada")
 
-                        # Preparação dos dados
-                        df_exibicao = df_analise.copy()
+                        # 1. Recupera a "Fonte da Verdade" (Ranking Global)
                         df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
-                        def motor_pericial_definitivo(row):
-                            # h sempre será número (Tratamento de String para Float)
-                            try:
-                                val_h = row.get('H_FLOAT', 0)
-                                h = float(val_h) if val_h else 0.0
-                            except:
-                                h = 0.0
+                        if not df_rank_global.empty:
+                            # 2. FILTRO DE ESPELHAMENTO: Busca o colaborador atual no ranking
+                            nome_colab = registro.get('colaborador') or registro.get('Colaborador')
+                            df_pessoal = df_rank_global[df_rank_global['Colaborador'] == nome_colab].copy()
+
+                            if not df_pessoal.empty:
+                                # Funções de Apoio Internas
+                                def limpar_h_local(v):
+                                    try: return float(str(v).split()[0])
+                                    except: return 0.0
+
+                                # 3. Processamento de Colunas Adicionais
+                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: limpar_h_local(x.get('Economia') or x.get('Horas')), axis=1)
+                                df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
                                 
-                            sugestao_alvo = row.get('SUGESTAO ANALISADA', '')
-                            
-                            # --- BUSCA FLEXÍVEL NO RANKING (Mata o KeyError) ---
-                            match = pd.DataFrame()
-                            if not df_rank_global.empty:
-                                # Identifica se a coluna no Ranking é 'Sugestão' ou 'Sugestao'
-                                col_busca = next((c for c in ['Sugestão', 'Sugestao', 'sugestao'] if c in df_rank_global.columns), None)
-                                if col_busca:
-                                    match = df_rank_global[df_rank_global[col_busca] == sugestao_alvo]
-                            
-                            # Inicialização fixa do Fator (f) e Emoji
-                            f = 0.25 
-                            emoji_tag = "💡 [INCREMENTAL]"
-                            
-                            # Identifica o DNA (Busca Categoria no Ranking ou usa a Estratégia do formulário)
-                            dna = ""
-                            if not match.empty:
-                                col_cat = next((c for c in ['Categoria', 'ESTRATEGIA', 'Estratégia'] if c in match.columns), None)
-                                if col_cat:
-                                    dna = str(match.iloc[0][col_cat]).lower()
-                            
-                            if not dna:
-                                dna = str(row.get('ESTRATEGIA', 'organizacional')).lower()
+                                # Status Automático por Impacto
+                                df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
+                                    lambda x: "🚀 ALTO IMPACTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INCREMENTAL")
+                                )
+                                df_pessoal['💰 Valor Final'] = df_pessoal['ROI_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
 
-                            # Aplicação dos Pesos Semânticos baseados no JSON
-                            if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
-                                f, emoji_tag = 0.85, "🤖 [TECNOLOGIA]"
-                            elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
-                                f, emoji_tag = 0.45, "📈 [PROCESSO]"
-                            
-                            # Cálculo do Valor Auditado
-                            v_auditado = (h * 65.0) * f
-                            
-                            # Sincronia de Valor: Prioriza o ROI_FLOAT do ranking se ele existir
-                            if not match.empty and 'ROI_FLOAT' in match.columns:
-                                v_auditado = match.iloc[0]['ROI_FLOAT']
+                                # --- 4. EXIBIÇÃO DE CARDS DE PERFORMANCE ---
+                                v_tot = df_pessoal['ROI_FLOAT'].sum()
+                                h_tot = df_pessoal['H_NUM'].sum()
+                                
+                                c1, c2, c3 = st.columns(3)
+                                c1.metric("💎 ROI AUDITADO", f"R$ {v_tot:,.2f}")
+                                c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
+                                c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
 
-                            return v_auditado, f"{emoji_tag} {row.get('PARECER', 'Análise concluída pela perícia.')}"
+                                # --- 5. TABELA DE MATRIZ DE VALOR COMPLETÍSSIMA ---
+                                st.markdown("### 📋 Matriz de Oportunidades")
+                                
+                                # Busca nomes reais das colunas no DataFrame filtrado
+                                c_sug_p = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in df_pessoal.columns), "Sugestão")
+                                c_cat_p = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in df_pessoal.columns), "Categoria")
 
-                        # Aplicação Única para criar as colunas de exibição
-                        res_finais = df_exibicao.apply(motor_pericial_definitivo, axis=1)
-                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in res_finais]
-                        df_exibicao['PARECER_FINAL'] = [r[1] for r in res_finais]
+                                df_tab_final = df_pessoal[[c_sug_p, c_cat_p, '📊 Status', 'Dias', '💰 Valor Final']]
+                                df_tab_final.columns = ['📌 Oportunidade', '🏷️ Categoria', '📊 Status', '📅 Prazo Equiv.', '💰 Valor/Ano']
 
-                        # --- 2. EXIBIÇÃO DOS CARDS (RESUMO) ---
-                        v_total_rec = df_exibicao['VALOR AUDITADO'].sum()
-                        h_totais_rec = pd.to_numeric(df_exibicao['H_FLOAT'], errors='coerce').sum()
-
-                        c1, c2, c3 = st.columns(3)
-                        with c1:
-                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_total_rec:,.2f}")
-                        with c2:
-                            st.metric("📢 Ganho de Capacidade", f"{(h_totais_rec/8):.1f} Dias")
-                        with c3:
-                            st.metric("💰 Expectativa Bruta", f"R$ {(h_totais_rec * 65):,.2f}")
-
-                        # --- 3. TABELA DE DETALHAMENTO COMPLETA ---
-                        st.markdown("### 📋 Detalhamento das Oportunidades")
-                        df_tab = df_exibicao.copy()
-
-                        # Formatação de Moeda e Horas para a tabela
-                        df_tab['ROI INFORMADO'] = df_tab['RS_FLOAT'].apply(lambda x: f"R$ {float(x):,.2f}" if x else "R$ 0.00")
-                        df_tab['ROI AJUSTADO'] = df_tab['VALOR AUDITADO'].apply(lambda x: f"R$ {float(x):,.2f}")
-                        df_tab['HORAS'] = df_tab['H_FLOAT'].apply(lambda x: f"{float(x):.1f}h")
-
-                        # Exibição Final da Tabela
-                        st.table(df_tab[[
-                            'ESTRATEGIA', 
-                            'SUGESTAO ANALISADA', 
-                            'HORAS',
-                            'ROI INFORMADO', 
-                            'ROI AJUSTADO', 
-                            'PARECER_FINAL'
-                        ]])
+                                st.table(df_tab_final)
+                                st.success(f"✅ Dados 100% sincronizados com o Ranking de Inovação.")
+                            else:
+                                st.info(f"Nenhuma sugestão auditada encontrada para {nome_colab}.")
+                        else:
+                            st.error("⚠️ Erro de Fluxo: O Ranking Global precisa ser processado antes desta análise.")
