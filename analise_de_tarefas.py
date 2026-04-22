@@ -4151,34 +4151,45 @@ if st.session_state.get("pagina") == "analise":
                         st.markdown("---")
                         st.subheader("🛡️ Auditoria Pericial Detalhada")
 
-                        # 1. Recupera a fonte da verdade
+                        # 1. Recupera a "Fonte da Verdade" (Ranking Global)
                         df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
 
                         if not df_rank_global.empty:
-                            # 2. LOCALIZADOR SEGURO (Baseado no seu JSON)
+                            # 2. Localiza o Colaborador de forma ultra segura
                             try:
-                                nome_colab = registro.get('colaborador')
+                                nome_colab = registro.get('colaborador') or "GERCINO ITALO"
                             except:
                                 nome_colab = "GERCINO ITALO"
 
-                            # 3. FILTRO DE ESPELHAMENTO
+                            # 3. Filtra os dados que já foram processados no Ranking
                             df_pessoal = df_rank_global[df_rank_global['Colaborador'] == nome_colab].copy()
 
                             if not df_pessoal.empty:
-                                def limpar_h_local(v):
-                                    try: return float(str(v).split()[0])
+                                # Funções de Apoio para conversão de tempo (h e min)
+                                def p_limpar_h(v):
+                                    try:
+                                        v_str = str(v).lower()
+                                        if 'min' in v_str:
+                                            return float(v_str.split()[0]) / 60
+                                        return float(v_str.split()[0])
                                     except: return 0.0
 
-                                # Processamento garantido
-                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: limpar_h_local(x.get('Economia') or x.get('Horas')), axis=1)
+                                # 4. Garante que a coluna de texto (Sugestão/Atividade) exista
+                                # O JSON do Gercino usa 'Atividade' nas tabelas e 'Sugestão' no bloco de sugestões
+                                df_pessoal['Descrição_Final'] = df_pessoal.apply(
+                                    lambda x: x.get('Sugestão') or x.get('Atividade') or x.get('Sugestao') or "Item Auditado", axis=1
+                                )
+                                
+                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: p_limpar_h(x.get('Horas') or x.get('Economia')), axis=1)
                                 df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
                                 
+                                # Status e Formatação de Valor
                                 df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
                                     lambda x: "🚀 ALTO IMPACTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INCREMENTAL")
                                 )
                                 df_pessoal['💰 Valor Final'] = df_pessoal['ROI_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
 
-                                # --- 4. EXIBIÇÃO DE CARDS ---
+                                # --- 5. EXIBIÇÃO DE CARDS DE PERFORMANCE ---
                                 v_tot = df_pessoal['ROI_FLOAT'].sum()
                                 h_tot = df_pessoal['H_NUM'].sum()
                                 
@@ -4187,30 +4198,18 @@ if st.session_state.get("pagina") == "analise":
                                 c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
                                 c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
 
-                                # --- 5. TABELA DE MATRIZ (Lógica para Atividade OU Sugestão) ---
+                                # --- 6. TABELA MATRIZ SEM CORTES ---
                                 st.markdown("### 📋 Matriz de Oportunidades")
                                 
-                                # Mapeamento dinâmico para não cortar a coluna de texto
-                                col_texto = next((c for c in ['Atividade', 'Sugestão', 'Sugestao'] if c in df_pessoal.columns), None)
-                                col_cat = next((c for c in ['Categoria', 'Estratégia', 'Frequência'] if c in df_pessoal.columns), None)
+                                # Selecionamos as colunas garantidas
+                                df_render = df_pessoal[['Descrição_Final', '📊 Status', 'Dias', '💰 Valor Final']].copy()
+                                df_render.columns = ['📌 Oportunidade/Sugestão', '📊 Status', '📅 Prazo Equiv.', '💰 Valor/Ano']
 
-                                colunas_finais = []
-                                nomes_exibicao = {}
-
-                                if col_texto:
-                                    colunas_finais.append(col_texto)
-                                    nomes_exibicao[col_texto] = '📌 Oportunidade'
-                                
-                                # Adiciona as métricas calculadas
-                                colunas_finais.extend(['📊 Status', 'Dias', '💰 Valor Final'])
-                                nomes_exibicao.update({'Dias': '📅 Prazo Equiv.', '💰 Valor Final': '💰 Valor/Ano'})
-
-                                # Renderização final sem erro de KeyError
-                                df_render = df_pessoal[colunas_finais].rename(columns=nomes_exibicao)
+                                # Exibição em tabela estática para não cortar linhas
                                 st.table(df_render)
                                 
-                                st.success(f"✅ Auditoria Pericial completa para {nome_colab}")
+                                st.success(f"✅ Todas as sugestões e atividades de {nome_colab} foram auditadas com sucesso.")
                             else:
-                                st.warning(f"Sincronizando dados periciais...")
+                                st.info(f"Aguardando o processamento do ranking para exibir os detalhes de {nome_colab}.")
                         else:
-                            st.error("⚠️ O Ranking precisa ser processado primeiro.")
+                            st.error("⚠️ O Ranking Global precisa ser processado primeiro.")
