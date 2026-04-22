@@ -4118,36 +4118,69 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
-                        # --- CARD DE VIABILIDADE PERICIAL (INTERNO) ---
+                        # --- MOTOR DE CÁLCULO PERICIAL (LINHA A LINHA) ---
+                        def motor_pericial_detalhado(row):
+                            h = float(row.get('H_FLOAT', 0))
+                            estrategia = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
+                            
+                            # Define o Fator e o Emoji do Parecer
+                            if any(k in estrategia for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                                fator, emoji = 0.85, "🤖"
+                            elif any(k in estrategia for k in ['pop', 'checklist', 'organizacional', 'processo']):
+                                f, emoji = 0.45, "📈"
+                            else:
+                                f, emoji = 0.25, "💡"
+                            
+                            v_auditado = (h * 65.0) * f
+                            parecer_original = row.get('PARECER', 'Análise concluída.')
+                            novo_parecer = f"{emoji} {parecer_original}"
+                            
+                            return v_auditado, novo_parecer
+
+                        # Aplicando a inteligência aos dados
+                        df_exibicao = df_analise.copy()
+                        
+                        # Criamos as colunas aplicando a função
+                        resultados = df_exibicao.apply(motor_pericial_detalhado, axis=1)
+                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados]
+                        df_exibicao['PARECER'] = [r[1] for r in resultados]
+
+                        # --- CARD DE VIABILIDADE (ESTRATÉGICO) ---
                         st.markdown("---")
                         st.subheader("🛡️ Verificação de Viabilidade Pericial")
 
-                        # 1. CÁLCULOS MINIMALISTAS (DIRETO AO PONTO)
-                        h_totais = df_analise['H_FLOAT'].sum() if 'H_FLOAT' in df_analise.columns else 0
-                        v_bruto_real = h_totais * 65.0
-                        dias_capacidade = h_totais / 8.0  # Ganho em dias (jornada de 8h)
+                        v_bruto_total = df_exibicao['RS_FLOAT'].sum()
+                        v_auditado_total = df_exibicao['VALOR AUDITADO'].sum()
+                        h_totais = df_exibicao['H_FLOAT'].sum()
+                        dias_liberados = h_totais / 8.0
 
-                        ca1, ca2, ca3 = st.columns(3)
-                        with ca1:
-                            st.metric("📢 Ganho de Capacidade", f"{dias_capacidade:.1f} Dias", help="Dias de trabalho recuperados no ano")
-                            st.caption("Capacidade produtiva devolvida.")
-                        
-                        with ca2:
-                            st.metric("💰 Expectativa (Bruto)", f"R$ {v_bruto_real:,.2f}")
-                            st.caption("Valor das horas sem filtros.")
-                            
-                        with ca3:
-                            # total_valor é o que já vem da sua lógica pericial
-                            ajuste = ((total_valor / v_bruto_real) - 1) * 100 if v_bruto_real > 0 else 0
-                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
-                                      delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
-                            st.caption("Valor aprovado após perícia.")
-                        
-                        st.info(f"💡 Nota do Perito: Esta otimização libera {dias_capacidade:.1f} dias de um colaborador para tarefas estratégicas.")
+                        c1, c2, c3 = st.columns(3)
+                        with c1:
+                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_auditado_total:,.2f}")
+                            st.caption("Valor líquido real aprovado.")
+                        with c2:
+                            st.metric("📢 Ganho de Capacidade", f"{dias_liberados:.1f} Dias")
+                            st.caption("Tempo recuperado no ano.")
+                        with c3:
+                            st.metric("💰 Expectativa Bruta", f"R$ {v_bruto_total:,.2f}")
+                            st.caption("Valor total sem ponderação.")
 
-                        # --- TABELA FINAL (INTACTA COMO VOCÊ PEDIU) ---
+                        # --- TABELA DE DETALHAMENTO FINAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
-                        st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+
+                        # Formatação de Moeda para exibição
+                        df_exibicao['VALOR RECUPERAVEL'] = df_exibicao['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
+                        df_exibicao['VALOR AUDITADO'] = df_exibicao['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
+
+                        # Exibição da Tabela com a nova coluna
+                        st.table(df_exibicao[[
+                            'ESTRATEGIA', 
+                            'SUGESTAO ANALISADA', 
+                            'ECONOMIA PROJETADA', 
+                            'VALOR RECUPERAVEL', 
+                            'VALOR AUDITADO', 
+                            'PARECER'
+                        ]])
 
 
 
