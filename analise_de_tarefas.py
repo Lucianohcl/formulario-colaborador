@@ -4122,45 +4122,39 @@ if st.session_state.get("pagina") == "analise":
                         st.markdown("---")
                         st.subheader("🛡️ Verificação de Viabilidade Pericial")
                         
-                        # 1. Ajuste da Expectativa: Em vez de 0.45 fixo, usamos a média real dos pesos
-                        # Se o total_valor veio de pesos como 0.85 (automação), a expectativa bruta
-                        # deve refletir a soma das horas cheias sem desconto.
-                        # Pega a soma real das horas antes de qualquer fator
-                        # --- CÁLCULO UNIVERSAL DO BRUTO (SEM HARDCODE) ---
-                        # Aqui pegamos as horas e minutos REAIS de cada sugestão e anualizamos
-                        h_puras = sum([(s.get('Horas', 0) + s.get('Minutos', 0)/60) for s in sugestoes])
+                        # --- INÍCIO DA CORREÇÃO ---
+                        # 1. Primeiro, definimos quem são as sugestões (evita o NameError)
+                        sugestoes_lista = t_base.get('sugestoes', []) if 't_base' in locals() else t.get('sugestoes', [])
                         
-                        # Multiplicamos por 12 (Mensal) e pelo valor da hora (R$ 65)
-                        # Nota: Se houver frequências diferentes (A, S), o ideal é tratar no loop, 
-                        # mas para o seu caso de agora, o 'M' manda:
-                        # --- CÁLCULO UNIVERSAL E DINÂMICO ---
-                        v_bruto = 0.0
-                        for s in sugestoes:
-                            # 1. Pega as horas e minutos (limpando sujeira de texto)
-                            h_s = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
-                            m_s = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
-                            
-                            # 2. Pega a frequência (D, S, M, T, A)
-                            freq_s = str(s.get('Frequência', 'M')).upper().strip()
-                            
-                            # 3. O MULTIPLICADOR AGORA É DINÂMICO (Universal)
-                            # Se for Mensal é 12, se for Anual é 1, se for Semanal é 48...
-                            mult_dinamico = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq_s, 12)
-                            
-                            # 4. Soma no Bruto Total
-                            v_bruto += ((h_s + (m_s / 60)) * mult_dinamico * 65.0)
-                        
-                        ca1, ca2 = st.columns(2)
-                        with ca1:
-                            st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
-                            st.caption("Estimativa declarada (Horas Cheias).")
-                        
-                        with ca2:
-                            # Cálculo do Delta de Ajuste Pericial
-                            ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
-                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
-                                      delta=f"{ajuste:.1f}% Desconto Pericial", delta_color="inverse")
-                            st.caption("Valor líquido aprovado pós-auditoria.")
+                        # 2. Calculamos o valor BRUTO sem descontos
+                        v_bruto_final = 0.0
+                        for s in sugestoes_lista:
+                            try:
+                                # Limpa o texto das horas e minutos
+                                h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
+                                m_limpo = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
+                                
+                                # Pega a frequência e define o multiplicador anual
+                                f_tipo = str(s.get('Frequência', 'M')).upper().strip()
+                                m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
+                                
+                                # Soma no Bruto (R$ 65/hora)
+                                v_bruto_final += ((h_limpo + (m_limpo / 60)) * m_anual * 65.0)
+                            except:
+                                continue
+
+                        # 3. Exibimos os cards na tela
+                        c_bruto, c_roi = st.columns(2)
+                        with c_bruto:
+                            st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto_final:,.2f}")
+                            st.caption("Soma integral das sugestões.")
+
+                        with c_roi:
+                            # Tenta pegar o total_valor que seu motor calculou
+                            v_final_auditado = locals().get('total_valor', 0.0)
+                            st.metric("💎 ROI Real Auditado", f"R$ {v_final_auditado:,.2f}")
+                            st.caption("Valor aprovado após auditoria.")
+                        # --- FIM DA CORREÇÃO ---
                         
                         # --- PARECER DETALHADO DO PERITO ---
                         st.markdown("#### 📝 Parecer Técnico de Viabilidade")
