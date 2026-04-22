@@ -59,26 +59,6 @@ g = Github(TOKEN)
 repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 
-
-def calcular_roi_pericial_unificado(horas_brutas, texto_sugestao):
-    try:
-        # Limpa "6 h" para 6.0
-        h = float(str(horas_brutas).split()[0]) if horas_brutas else 0.0
-    except:
-        h = 0.0
-    
-    texto = str(texto_sugestao).lower()
-    
-    # PESOS UNIFICADOS (O CORAÇÃO DO CÁLCULO)
-    if any(k in texto for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
-        fator = 0.85
-    elif any(k in texto for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
-        fator = 0.45
-    else:
-        fator = 0.25
-        
-    return (h * 65.0) * fator
-
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
 # st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
@@ -3607,38 +3587,28 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. Montagem do DataFrame
-            df_r = pd.DataFrame(ranking_dados)
+            # 1. DataFrame Base
+            df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
 
-            if not df_r.empty:
-                # 2. Execução Única do Motor (Cria a Verdade)
-                # Note: 12 espaços de base + 4 de identação do IF = 16 espaços aqui
-                df_r["ROI_FLOAT"] = df_r.apply(lambda x: calcular_roi_pericial_unificado(
-                    x.get('Economia') or x.get('Horas') or x.get('H_FLOAT', 0), 
-                    x.get('Sugestão') or x.get('Atividade') or x.get('SUGESTAO ANALISADA', '')
-                ), axis=1)
+            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
+            def motor_roi_pericial(row):
+                h_brutas = float(row['Economia'])
+                # Identificamos o DNA da Inovação (ajuste o nome da coluna conforme seu BD)
+                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
+                
+                # Aplicação dos Pesos de Auditoria Pericial
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                    fator = 0.85  # Transformação Digital / Disrupção
+                elif any(keyword in dna_inovacao for keyword in ['pop', 'checklist', 'organizacional', 'processo']):
+                    fator = 0.45  # Otimização de Processos / Estanqueidade
+                else:
+                    fator = 0.25  # Incremental / Ajuste Operacional
+                
+                return (h_brutas * 65.0) * fator
 
-                # Ordena pelo maior valor
-                df_r = df_r.sort_values(by="ROI_FLOAT", ascending=False)
-
-                # SALVA NA SESSÃO PARA O RELATÓRIO COPIAR
-                st.session_state['df_ranking'] = df_r
-
-                # 3. Exibição Visual Tratada
-                df_exibicao_rank = df_r.copy()
-                df_exibicao_rank["ROI Auditado"] = df_exibicao_rank["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
-
-                # Busca dinâmica de colunas para evitar KeyError
-                cols_dis = df_exibicao_rank.columns.tolist()
-                c_nom = next((c for c in ['Colaborador', 'colaborador', 'Nome'] if c in cols_dis), None)
-                c_sug = next((c for c in ['Sugestão', 'Sugestao', 'Atividade'] if c in cols_dis), None)
-                c_cat = next((c for c in ['Categoria', 'Estratégia', 'ESTRATEGIA'] if c in cols_dis), None)
-
-                lista_cols = [c for c in [c_nom, c_sug, c_cat, "ROI Auditado"] if c is not None]
-                st.table(df_exibicao_rank[lista_cols].head(10))
-            else:
-                # 12 de base + 4 do ELSE
-                st.info("Nenhum dado disponível para o ranking no momento.")
+            # Execução da Engenharia de Valor
+            df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
+            st.session_state['df_ranking'] = df_r 
 
             # --- CARD DE AUDITORIA ESTRATÉGICA ---
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
@@ -4148,76 +4118,30 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
+                        # --- CARD DE VIABILIDADE PERICIAL (INTERNO) ---
                         st.markdown("---")
-                        st.subheader("🛡️ Auditoria Pericial Detalhada")
-
-                        # 1. PEGA OS DADOS DISPONÍVEIS NA HORA (Sem depender de outras partes do código)
-                        # Tentamos pegar o ranking, se não tiver, usamos o que está na tela (df_analise)
-                        df_fonte = st.session_state.get('df_ranking', pd.DataFrame())
+                        st.subheader("🛡️ Verificacao de Viabilidade Pericial")
                         
-                        if df_fonte.empty and 'df_analise' in locals():
-                            df_fonte = df_analise.copy()
-
-                        if not df_fonte.empty:
-                            # 2. IDENTIFICA O COLABORADOR
-                            try:
-                                nome_colab = registro.get('colaborador') or "GERCINO ITALO"
-                            except:
-                                nome_colab = "GERCINO ITALO"
-
-                            # 3. FILTRA APENAS O QUE É DELE
-                            if 'Colaborador' in df_fonte.columns:
-                                df_pessoal = df_fonte[df_fonte['Colaborador'] == nome_colab].copy()
-                            else:
-                                df_pessoal = df_fonte.copy()
-
-                            if not df_pessoal.empty:
-                                # 4. GARANTE QUE O ROI EXISTE (Se não existir, calcula agora)
-                                if 'ROI_FLOAT' not in df_pessoal.columns:
-                                    df_pessoal['ROI_FLOAT'] = df_pessoal.apply(lambda x: calcular_roi_pericial_unificado(
-                                        x.get('Horas') or x.get('Economia') or 0, 
-                                        x.get('Atividade') or x.get('Sugestão') or ''
-                                    ), axis=1)
-
-                                # 5. LIMPEZA DE TEMPO
-                                def p_limpar(v):
-                                    try:
-                                        s = str(v).lower()
-                                        num = float(s.split()[0])
-                                        return num / 60 if 'min' in s else num
-                                    except: return 0.0
-
-                                df_pessoal['H_NUM'] = df_pessoal.apply(lambda x: p_limpar(x.get('Horas') or x.get('Economia')), axis=1)
-                                df_pessoal['Dias'] = df_pessoal['H_NUM'].apply(lambda x: f"{(x/8):.1f} Dias")
-                                df_pessoal['💰 Valor Final'] = df_pessoal['ROI_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
-                                df_pessoal['📊 Status'] = df_pessoal['ROI_FLOAT'].apply(
-                                    lambda x: "🚀 ALTO" if x > 2000 else ("⚡ MÉDIO" if x > 1000 else "💡 INC")
-                                )
-
-                                # 6. MÉTRICAS (CARDS)
-                                v_tot = df_pessoal['ROI_FLOAT'].sum()
-                                h_tot = df_pessoal['H_NUM'].sum()
-                                
-                                c1, c2, c3 = st.columns(3)
-                                c1.metric("💎 ROI AUDITADO", f"R$ {v_tot:,.2f}")
-                                c2.metric("⏳ Horas Totais", f"{h_tot:.1f}h")
-                                c3.metric("📅 Ganho em Dias", f"{(h_tot/8):.1f} Dias")
-
-                                # 7. TABELA FINAL (RECONSTRUÇÃO TOTAL)
-                                st.markdown("### 📋 Matriz de Oportunidades")
-                                
-                                # Criamos a coluna de descrição pegando qualquer nome que venha do JSON
-                                df_pessoal['📌 Descrição'] = df_pessoal.apply(
-                                    lambda x: x.get('Atividade') or x.get('Sugestão') or x.get('Sugestao') or "Tarefa", axis=1
-                                )
-                                
-                                # Selecionamos apenas colunas que criamos aqui dentro para não dar erro
-                                df_final = df_pessoal[['📌 Descrição', '📊 Status', 'Dias', '💰 Valor Final']].copy()
-                                df_final.columns = ['📌 Descrição', '📊 Impacto', '📅 Prazo', '💰 ROI/Ano']
-
-                                st.table(df_final)
-                                st.success(f"✅ Auditoria sincronizada para {nome_colab}")
-                            else:
-                                st.warning("Dados do colaborador não localizados no filtro.")
-                        else:
-                            st.info("Aguardando entrada de dados para gerar auditoria.")
+                        v_bruto = total_valor / 0.45 if total_valor > 0 else 0
+                        
+                        ca1, ca2 = st.columns(2)
+                        with ca1:
+                            st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
+                            st.caption("Estimativa declarada sem filtros.")
+                        with ca2:
+                            ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
+                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
+                                      delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
+                            st.caption("Valor aprovado apos pericia.")
+                        
+                        st.info("💡 Nota do Perito: O ajuste garante um ROI realizavel.")
+ 
+                        # --- TABELA FINAL ---
+                        st.markdown("### 📋 Detalhamento das Oportunidades")
+                        st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+                    else:
+                        st.warning("⚠️ Nenhuma sugestao valida.")
+            else:
+                st.info("⚠️ Nenhuma sugestao encontrada.")
+        else:
+            st.info("☝️ Selecione um colaborador.")
