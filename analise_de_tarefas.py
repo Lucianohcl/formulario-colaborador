@@ -4150,15 +4150,7 @@ if df_rank_global is not None and not df_rank_global.empty:
         
         st.markdown("### 🛡️ Verificação de Viabilidade Pericial (Acumulado)")
         with st.container(border=True):
-            v_bruto_global = v_total_acumulado / 0.45
-            ajuste_global_perc = ((v_total_acumulado / v_bruto_global) - 1) * 100 if v_bruto_global > 0 else 0
             
-            cg1, cg2 = st.columns(2)
-            with cg1:
-                st.metric("Expectativa Bruta (Total)", f"R$ {v_bruto_global:,.2f}")
-            with cg2:
-                st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}", 
-                          delta=f"{ajuste_global_perc:.0f}% Ajuste", delta_color="inverse")
             st.success("✅ Soma global do ranking validada.")
     except Exception as e:
         st.error(f"🚨 Erro no cálculo do Card Global: {e}")
