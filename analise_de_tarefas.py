@@ -3600,19 +3600,24 @@ if st.session_state.pagina == "analise":
             # 1. DataFrame Base
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
 
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
+            # --- ALGORITMO GERCINO: CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO ---
             def motor_roi_pericial(row):
-                h_brutas = float(row['Economia'])
-                # Identificamos o DNA da Inovação (ajuste o nome da coluna conforme seu BD)
-                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
+                try:
+                    h_brutas = float(row['Economia'])
+                except:
+                    h_brutas = 0.0
                 
-                # Aplicação dos Pesos de Auditoria Pericial
-                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                    fator = 0.85  # Transformação Digital / Disrupção
-                elif any(keyword in dna_inovacao for keyword in ['pop', 'checklist', 'organizacional', 'processo']):
-                    fator = 0.45  # Otimização de Processos / Estanqueidade
+                # DNA da Inovação: Analisamos Categoria e a própria Sugestão
+                # Isso garante que se o texto citar IA, ele cai na faixa alta
+                analise_texto = (str(row.get('Categoria', '')) + " " + str(row.get('Sugestão', ''))).lower()
+                
+                # --- APLICAÇÃO DAS FAIXAS PERICIAIS (PADRÃO GERCINO) ---
+                if any(k in analise_texto for k in ['python', 'ia', 'api', 'automacao', 'bot', 'digital']):
+                    fator = 0.85  # Transformação Digital
+                elif any(k in analise_texto for k in ['pop', 'checklist', 'processo', 'padronizar', 'fluxo']):
+                    fator = 0.45  # Otimização de Processos
                 else:
-                    fator = 0.25  # Incremental / Ajuste Operacional
+                    fator = 0.20  # Incremental / Operacional (Ajustado para 20%)
                 
                 return (h_brutas * 65.0) * fator
 
@@ -3624,7 +3629,7 @@ if st.session_state.pagina == "analise":
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
             with st.container(border=True):
                 st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
-                st.info(f"🛡️ **Metodologia Pericial:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação Dinâmica de Impacto.")
+                st.info(f"🛡️ **Metodologia Gercino:** Valor baseado no Custo de Ocupação (R$ 65/h) com Ponderação por Impacto.")
 
             # 2. Exibição do Business Case
             df_r["ROI Individual"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
@@ -3643,13 +3648,11 @@ if st.session_state.pagina == "analise":
                 use_container_width=True
             )
 
-            
-
-            # --- LEGENDA TÉCNICA COM 12 ESPAÇOS DE RECUO ---
+            # --- LEGENDA TÉCNICA ATUALIZADA ---
             st.caption("""
             🔬 **Metodologia de Auditoria Pericial:** Projeções fundamentadas no Custo Total de Ocupação (R$ 65,00/h). 
-            O sistema aplica Ponderação Dinâmica de Impacto: 🤖 Transformação Digital (85%), 📈 Otimização de Processos (45%) 
-            ou 💡 Incremental (25%), garantindo uma análise de ROI baseada em viabilidade técnica e não em estimativas genéricas.
+            O sistema aplica Ponderação Dinâmica: 🤖 Transformação Digital (85%), 📈 Otimização (45%) 
+            ou 💡 Incremental (20%), garantindo que o ROI reflita a complexidade técnica da entrega.
             """)
 
         st.markdown("---")
