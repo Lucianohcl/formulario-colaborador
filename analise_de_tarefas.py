@@ -4133,7 +4133,22 @@ if st.session_state.get("pagina") == "analise":
                         # Multiplicamos por 12 (Mensal) e pelo valor da hora (R$ 65)
                         # Nota: Se houver frequências diferentes (A, S), o ideal é tratar no loop, 
                         # mas para o seu caso de agora, o 'M' manda:
-                        v_bruto = h_puras * 12 * 65.0
+                        # --- CÁLCULO UNIVERSAL E DINÂMICO ---
+                        v_bruto = 0.0
+                        for s in sugestoes:
+                            # 1. Pega as horas e minutos (limpando sujeira de texto)
+                            h_s = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
+                            m_s = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
+                            
+                            # 2. Pega a frequência (D, S, M, T, A)
+                            freq_s = str(s.get('Frequência', 'M')).upper().strip()
+                            
+                            # 3. O MULTIPLICADOR AGORA É DINÂMICO (Universal)
+                            # Se for Mensal é 12, se for Anual é 1, se for Semanal é 48...
+                            mult_dinamico = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq_s, 12)
+                            
+                            # 4. Soma no Bruto Total
+                            v_bruto += ((h_s + (m_s / 60)) * mult_dinamico * 65.0)
                         
                         ca1, ca2 = st.columns(2)
                         with ca1:
