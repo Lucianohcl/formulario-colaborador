@@ -3601,20 +3601,19 @@ if st.session_state.pagina == "analise":
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
 
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
+            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             def motor_roi_pericial(row):
                 h_brutas = float(row['Economia'])
                 # Identificamos o DNA da Inovação
                 dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
                 
-                # --- PESOS SINCRONIZADOS COM A PERÍCIA REAL ---
-                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'automacao']):
+                # --- PESOS SINCRONIZADOS COM A PERÍCIA ULTRA (85%, 45%, 20%) ---
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'automacao', 'sistema', 'digitalizar']):
                     fator = 0.85  # Transformação Digital
-                elif any(keyword in dna_inovacao for keyword in ['processo', 'pop', 'organizacional']):
-                    # Se o Bruto era ~4.000 e o Real deu 78, o fator é aproximadamente 0.02 (2%)
-                    fator = 0.02  
+                elif any(keyword in dna_inovacao for keyword in ['processo', 'pop', 'organizacional', 'padronizar', 'checklist']):
+                    fator = 0.45  # Otimização de Processo (Sincronizado com motor_pericia_ultra)
                 else:
-                    # Ajuste para tarefas operacionais mínimas (1%)
-                    fator = 0.01  
+                    fator = 0.20  # Melhoria Incremental (Sincronizado com motor_pericia_ultra)
                 
                 return (h_brutas * 65.0) * fator
 
