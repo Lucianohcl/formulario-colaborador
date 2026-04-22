@@ -4150,7 +4150,7 @@ if df_rank_global is not None and not df_rank_global.empty:
         
         st.markdown("### 🛡️ Verificação de Viabilidade Pericial (Acumulado)")
         with st.container(border=True):
-            
+            st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
             st.success("✅ Soma global do ranking validada.")
     except Exception as e:
         st.error(f"🚨 Erro no cálculo do Card Global: {e}")
