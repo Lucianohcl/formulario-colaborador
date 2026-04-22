@@ -4125,7 +4125,8 @@ if st.session_state.get("pagina") == "analise":
                         # 1. Ajuste da Expectativa: Em vez de 0.45 fixo, usamos a média real dos pesos
                         # Se o total_valor veio de pesos como 0.85 (automação), a expectativa bruta
                         # deve refletir a soma das horas cheias sem desconto.
-                        v_bruto = total_valor / 0.70 if total_valor > 0 else 0 # 0.70 é uma média mais realista
+                        # Pega a soma real das horas antes de qualquer fator
+                        v_bruto = (df_analise['H_ANUAL'].sum() * 65.0) if 'H_ANUAL' in df_analise.columns else 0
                         
                         ca1, ca2 = st.columns(2)
                         with ca1:
