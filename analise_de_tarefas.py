@@ -4161,7 +4161,7 @@ if st.session_state.get("pagina") == "analise":
                         
                         # 1. Cálculo do Ajuste (Evita NameError e divisão por zero)
                         # Comparamos o ROI Real (total_valor) com a Expectativa Bruta (v_bruto)
-                        ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
+                        ajuste = ((v_final_auditado / v_bruto_final) - 1) * 100 if v_bruto_final > 0 else 0
 
                         # 2. Lógica de Parecer Dinâmico
                         if ajuste > -30:
