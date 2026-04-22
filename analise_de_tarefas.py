@@ -3590,7 +3590,7 @@ if st.session_state.pagina == "analise":
             
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
             
-            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*35:,.2f}")
+            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*65:,.2f}")
             df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
 
             st.dataframe(
