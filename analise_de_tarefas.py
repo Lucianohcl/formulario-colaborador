@@ -3587,10 +3587,20 @@ if st.session_state.pagina == "analise":
 
             # --- RANKING DE INOVAÇÃO ---
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
-            
+
+            # 1. Criamos o DataFrame base
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
-            
-            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*35:,.2f}")
+
+            # --- AQUI ESTÁ A CHAVE DO SUCESSO ---
+            # Criamos uma coluna numérica real para o ROI (x * 35) antes de formatar como texto
+            df_r["ROI_FLOAT"] = df_r["Economia"] * 35 
+
+            # SALVAMOS NA GAVETA GLOBAL (O que o Card lá embaixo vai ler)
+            st.session_state['df_ranking'] = df_r 
+            # -----------------------------------
+
+            # 2. Agora sim, formatamos para exibição visual (isso transforma em texto)
+            df_r["Valor Estimado"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
             df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
 
             st.dataframe(
