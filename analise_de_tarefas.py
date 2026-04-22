@@ -3602,34 +3602,20 @@ if st.session_state.pagina == "analise":
 
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             def motor_roi_pericial(row):
-                try:
-                    # Garante que a economia seja tratada como número
-                    h_brutas = float(row.get('Economia', 0))
-                    
-                    # Identificamos o DNA da Inovação através da Categoria ou do nome da Sugestão
-                    # Se 'Categoria' não existir na linha, ele tenta buscar em outras chaves
-                    dna = str(row.get('Categoria', row.get('Estrategia', 'Organizacional'))).lower()
-                    
-                    # --- PESOS SINCRONIZADOS COM A PERÍCIA ULTRA ---
-                    if any(w in dna for w in ['python', 'ia', 'api', 'automacao', 'sistema', 'digitalizar', 'transformacao']):
-                        fator = 0.85  
-                    elif any(w in dna for w in ['processo', 'pop', 'organizacional', 'padronizar', 'checklist', 'estrutural']):
-                        fator = 0.45  
-                    else:
-                        fator = 0.20  
-                    
-                    # Retorna o Valor Financeiro Líquido
-                    return (h_brutas * 65.0) * fator
-                except:
-                    return 0.0
-
-            # Execução com proteção para não quebrar o DataFrame
-            if not df_r.empty:
-                df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
-            else:
-                df_r["ROI_FLOAT"] = 0.0
+                h_brutas = float(row['Economia'])
+                # Identificamos o DNA da Inovação
+                dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
+                
+                # --- PESOS SINCRONIZADOS COM A PERÍCIA ULTRA (85%, 45%, 20%) ---
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'automacao', 'sistema', 'digitalizar']):
+                    fator = 0.85  # Transformação Digital
+                elif any(keyword in dna_inovacao for keyword in ['processo', 'pop', 'organizacional', 'padronizar', 'checklist']):
+                    fator = 0.45  # Otimização de Processo (Sincronizado com motor_pericia_ultra)
+                else:
+                    fator = 0.20  # Melhoria Incremental (Sincronizado com motor_pericia_ultra)
+                
+                return (h_brutas * 65.0) * fator
 
             # Execução da Engenharia de Valor
             df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
