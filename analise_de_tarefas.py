@@ -77,7 +77,7 @@ def calcular_roi_pericial_unificado(horas_brutas, texto_sugestao):
     else:
         fator = 0.25
         
-    return (h * 65.0) * faktor
+    return (h * 65.0) * fator
 
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
