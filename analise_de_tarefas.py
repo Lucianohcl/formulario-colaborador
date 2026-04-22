@@ -3592,12 +3592,33 @@ if st.session_state.pagina == "analise":
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
 
             # --- AQUI ESTÁ A CHAVE DO SUCESSO ---
-            # Criamos uma coluna numérica real para o ROI (x * 35) antes de formatar como texto
+            # Criamos uma coluna numérica real para o ROI (x * 35)
             df_r["ROI_FLOAT"] = df_r["Economia"] * 35 
 
-            # SALVAMOS NA GAVETA GLOBAL (O que o Card lá embaixo vai ler)
+            # SALVAMOS NA GAVETA GLOBAL
             st.session_state['df_ranking'] = df_r 
-            # -----------------------------------
+
+            # --- O CARD QUE VOCÊ QUER (INSERIDO AQUI PARA FICAR NO TOPO DO RANKING) ---
+            v_total_acumulado = df_r["ROI_FLOAT"].sum()
+            with st.container(border=True):
+                st.metric("ROI Real Auditado (Global)", f"R$ {v_total_acumulado:,.2f}")
+            # ------------------------------------------------------------------------
+
+            # 2. Agora sim, formatamos para exibição visual na tabela
+            df_r["Valor Estimado"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+            df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
+
+            st.dataframe(
+                df_r,
+                column_config={
+                    "Colaborador": st.column_config.TextColumn("Colaborador", width="medium"),
+                    "Sug.": st.column_config.NumberColumn("Sugestões", width="small"),
+                    "Economia": st.column_config.TextColumn("Horas Salvas", width="medium"),
+                    "Valor Estimado": st.column_config.TextColumn("ROI Individual", width="medium"),
+                },
+                hide_index=True,
+                use_container_width=True
+            )
 
             # 2. Agora sim, formatamos para exibição visual (isso transforma em texto)
             df_r["Valor Estimado"] = df_r["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
