@@ -4180,42 +4180,38 @@ if st.session_state.get("pagina") == "analise":
                         df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados]
                         df_exibicao['PARECER'] = [r[1] for r in resultados]
 
-                        # --- 2. CARD DE VIABILIDADE ESTRATÉGICO ---
-                        st.markdown("---")
-                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
+                        # --- MOTOR DE CÁLCULO PERICIAL (LINHA A LINHA - BLINDADO) ---
+                        def motor_pericial_detalhado(row):
+                            try:
+                                h = float(row.get('H_FLOAT', 0))
+                            except:
+                                h = 0.0
+                                
+                            estrategia = str(row.get('ESTRATEGIA', 'Organizacional')).lower()
+                            
+                            # 1. INICIALIZAÇÃO (Evita o UnboundLocalError)
+                            fator = 0.25 
+                            emoji = "💡 [INCREMENTAL]"
+                            
+                            # 2. ANÁLISE SEMÂNTICA (DNA DA INOVAÇÃO)
+                            if any(k in estrategia for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                                fator, emoji = 0.85, "🤖 [TECNOLOGIA]"
+                            elif any(k in estrategia for k in ['pop', 'checklist', 'organizacional', 'processo']):
+                                fator, emoji = 0.45, "📈 [PROCESSO]"
+                            # Se não cair em nenhum acima, ele mantém o padrão de 0.25 definido no passo 1
+                            
+                            v_auditado = (h * 65.0) * fator
+                            
+                            parecer_original = row.get('PARECER', 'Sugestão em análise.')
+                            novo_parecer = f"{emoji} {parecer_original}"
+                            
+                            return v_auditado, novo_parecer
 
-                        v_bruto_total = df_exibicao['RS_FLOAT'].sum()
-                        v_auditado_total = df_exibicao['VALOR AUDITADO'].sum()
-                        h_totais = df_exibicao['H_FLOAT'].sum()
-                        dias_capacidade = h_totais / 8.0
-
-                        c1, c2, c3 = st.columns(3)
-                        with c1:
-                            st.metric("💎 ROI REAL AUDITADO", f"R$ {v_auditado_total:,.2f}")
-                            st.caption("Valor líquido aprovado pela perícia.")
-                        with c2:
-                            st.metric("📢 Ganho de Capacidade", f"{dias_capacidade:.1f} Dias")
-                            st.caption("Tempo recuperado no ano.")
-                        with c3:
-                            st.metric("💰 Expectativa Bruta", f"R$ {v_bruto_total:,.2f}")
-                            st.caption("Valor total sem ponderação.")
-
-                        # --- 3. TABELA DE DETALHAMENTO PROFISSIONAL ---
-                        st.markdown("### 📋 Detalhamento das Oportunidades")
-
-                        # Formatação de Moeda para exibição final
-                        df_exibicao['VALOR RECUPERAVEL'] = df_exibicao['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
-                        df_exibicao['VALOR AUDITADO'] = df_exibicao['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
-
-                        # Exibição da Tabela com a nova coluna de auditoria (ORDEM CORRETA)
-                        st.table(df_exibicao[[
-                            'ESTRATEGIA', 
-                            'SUGESTAO ANALISADA', 
-                            'ECONOMIA PROJETADA', 
-                            'VALOR RECUPERAVEL', 
-                            'VALOR AUDITADO', 
-                            'PARECER'
-                        ]])
+                        # Aplicando a lógica ao DataFrame
+                        df_exibicao = df_analise.copy()
+                        res_list = df_exibicao.apply(motor_pericial_detalhado, axis=1)
+                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in res_list]
+                        df_exibicao['PARECER'] = [r[1] for r in res_list]
 
 
 
