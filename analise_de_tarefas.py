@@ -3590,7 +3590,7 @@ if st.session_state.pagina == "analise":
             
             df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
             
-            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*65:,.2f}")
+            df_r["Valor Estimado"] = df_r["Economia"].apply(lambda x: f"R$ {x*35:,.2f}")
             df_r["Economia"] = df_r["Economia"].apply(lambda x: f"{x:.1f} h/ano")
 
             st.dataframe(
@@ -3998,14 +3998,10 @@ if st.session_state.pagina == "analise":
 
 
 import pandas as pd
-
-import pandas as pd
 import streamlit as st
 
 def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
-    # Consolida contexto das atividades para análise (opcional, mas mantido conforme seu código)
-    todas_atv = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
-    
+    # Consolida contexto das atividades para análise
     analise_detalhada = []
 
     for sug in sugestoes:
@@ -4078,25 +4074,41 @@ if st.session_state.get("pagina") == "analise":
                     
                     if not df_analise.empty:
                         # --- CÁLCULOS TOTAIS SINCRONIZADOS ---
-                        # Somamos as colunas FLOAT que criamos no motor para bater 100%
                         roi_global = sum(motor_pericia_ultra(r, [], r.get('sugestoes', [])).get('RS_FLOAT', pd.Series([0.0])).sum() for r in st.session_state.get('lista_final', []))
                         total_h_ano = df_analise['H_FLOAT'].sum()
                         total_valor = df_analise['RS_FLOAT'].sum()
+                        
                         st.metric("💰 ROI TOTAL DA ORGANIZAÇÃO", f"R$ {roi_global:,.2f}")
+                        
                         # 3. Métricas de Alto Impacto
                         c1, c2, c3 = st.columns(3)
                         c1.metric("Capacidade Recuperada", f"{total_h_ano:.1f} h/ano", "GANHO REAL")
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}", "REDUÇÃO CUSTO")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias", "OFFLOAD")
 
-
+                        # --- PAINEL DE AUDITORIA ---
+                        st.markdown("---")
+                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
                         
-
-
-
+                        # Cálculo para o confronto visual (Proteção contra zero)
+                        valor_bruto_colaborador = total_valor / 0.45 if total_valor > 0 else 0
+                        
+                        ca1, ca2 = st.columns(2)
+                        with ca1:
+                            st.metric("📢 Expectativa (Bruto)", f"R$ {valor_bruto_colaborador:,.2f}")
+                            st.caption("Estimativa direta do colaborador.")
+                            
+                        with ca2:
+                            delta_perc = ((total_valor / valor_bruto_colaborador - 1) * 100) if valor_bruto_colaborador > 0 else 0
+                            st.metric("💎 ROI Auditado (Real)", f"R$ {total_valor:,.2f}", 
+                                      delta=f"{delta_perc:.0f}% Ajuste", delta_color="inverse")
+                            st.caption("Valor aprovado após perícia.")
+                        
+                        st.info("💡 **Nota do Perito:** O valor auditado remove o excesso de otimismo para garantir um ROI realizável.")
+                        
                         st.info(f"📌 **Conclusão da Auditoria:** Detectadas {len(df_analise)} oportunidades. Impacto direto de **{total_h_ano/8:.1f} dias** produtivos/ano.")
 
-                        # 4. Tabela Estilizada (Removendo colunas de cálculo antes de mostrar)
+                        # 4. Tabela Estilizada
                         st.markdown("""
                             <style>
                                 .tabela-rolavel { overflow-x: auto; width: 100%; border-radius: 10px; }
@@ -4108,8 +4120,14 @@ if st.session_state.get("pagina") == "analise":
                         # Ocultamos as colunas de apoio (.drop) para o usuário ver apenas o essencial
                         st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
                         st.markdown('</div>', unsafe_allow_html=True)
+                    else:
+                        st.warning("O motor de perícia não identificou dados para processar.")
             else:
                 st.info("⚠️ Nenhuma sugestão encontrada para este registro.")
         else:
             st.info("☝️ **Aguardando Seleção:** Escolha um colaborador para ativar a perícia.")
-    
+
+
+
+
+
