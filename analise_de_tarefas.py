@@ -3998,109 +3998,117 @@ if st.session_state.pagina == "analise":
 
 
 import pandas as pd
-
-import pandas as pd
 import streamlit as st
 
-# 1. MOTOR DE INTELIGENCIA (HIGIENIZADO)
-import pandas as pd
-import streamlit as st
-
-# 1. MOTOR DE INTELIGÊNCIA PERICIAL
 def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
+    # Consolida contexto das atividades para analise
+    todas_atv = tabelas.get('alta', []) + tabelas.get('normal', []) + tabelas.get('baixa', [])
+    contexto_atv = " ".join([a.get('Atividade', '').lower() for a in todas_atv])
+    
     analise_detalhada = []
-    if not sugestoes:
-        return pd.DataFrame()
 
     for sug in sugestoes:
         texto_sug = str(sug.get('Sugestão', '')).lower()
-        if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]:
+        if texto_sug in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: 
             continue
 
         freq = sug.get('Frequência', 'D').upper()
-        # Limpeza de números para cálculo
+        # Limpeza robusta de strings para numeros
         m = int(''.join(filter(str.isdigit, str(sug.get('Minutos', '0')))) or 0)
         h = int(''.join(filter(str.isdigit, str(sug.get('Horas', '0')))) or 0)
         tempo_min_atual = (h * 60) + m
         
-        # Inteligência de Classificação
-        if any(w in texto_sug for w in ['sistema', 'automação', 'ia', 'integrar', 'digitalizar', 'api', 'robô', 'python']):
-            potencial, categoria, status = 0.85, "🤖 TRANSFORMAÇÃO DIGITAL", "🔥 ALTO IMPACTO"
+        # --- INTELIGENCIA DE CLASSIFICACAO ---
+        if any(w in texto_sug for w in ['sistema', 'automacao', 'ia', 'integrar', 'digitalizar', 'api', 'robo', 'python']):
+            potencial = 0.85
+            categoria = "TRANSFORMACAO DIGITAL"
+            cor_status = "ALTO IMPACTO"
         elif any(w in texto_sug for w in ['padronizar', 'checklist', 'treinamento', 'pop', 'manual', 'procedimento']):
-            potencial, categoria, status = 0.45, "📈 OTIMIZAÇÃO DE PROCESSO", "✅ ESTRUTURAL"
+            potencial = 0.45
+            categoria = "OTIMIZACAO DE PROCESSO"
+            cor_status = "ESTRUTURAL"
         else:
-            potencial, categoria, status = 0.20, "💡 MELHORIA INCREMENTAL", "🟡 OPERACIONAL"
+            potencial = 0.20
+            categoria = "MELHORIA INCREMENTAL"
+            cor_status = "OPERACIONAL"
 
+        # --- ENGENHARIA DE VALOR ---
         mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq, 1)
-        h_ano = (tempo_min_atual * mult) / 60
-        h_poupadas = h_ano * potencial
+        h_ano_atual = (tempo_min_atual * mult) / 60
+        h_poupadas = h_ano_atual * potencial
         valor_financeiro = h_poupadas * 65.0 
 
         analise_detalhada.append({
-            "🎯 ESTRATÉGIA": categoria,
-            "💡 SUGESTÃO": str(sug.get('Sugestão', '')).upper(),
+            "ESTRATEGIA": categoria,
+            "SUGESTAO ANALISADA": sug.get('Sugestão', '').upper(),
             "H_FLOAT": h_poupadas,
             "RS_FLOAT": valor_financeiro,
-            "🚀 ECONOMIA": f"− {h_poupadas:.1f} h/ano",
-            "💰 VALOR": f"R$ {valor_financeiro:,.2f}",
-            "🔍 STATUS": status
+            "ECONOMIA PROJETADA": f"- {h_poupadas:.1f} h/ano",
+            "VALOR RECUPERAVEL": f"R$ {valor_financeiro:,.2f}",
+            "PARECER": cor_status
         })
+    
     return pd.DataFrame(analise_detalhada)
 
-# 2. LOGICA DE EXIBIÇÃO DO DASHBOARD
-# Garante que a página está definida
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "analise"
-
-if st.session_state.pagina == "analise":
-    st.title("🔬 Sistema de Auditoria Pericial")
+# --- EXIBICAO NO DASHBOARD ---
+if st.session_state.get("pagina") == "analise":
     st.markdown("---")
-    
-    # Tenta resgatar o colaborador selecionado de várias fontes possíveis
-    t = st.session_state.get('t_selecionado') or st.session_state.get('colaborador_atual')
-    
-    if t:
-        with st.status("Auditando processos...", expanded=True):
-            st.subheader(f"Análise: {t.get('colaborador', 'Usuário')}")
+
+    with st.status("Processando analise pericial...", expanded=True):
+        st.header("🔬 Central de Inteligencia e Auditoria de Processos")
+
+        # Busca t_base de forma segura (contexto local ou session)
+        t_base = locals().get('t') or st.session_state.get('t_selecionado')
+
+        if isinstance(t_base, dict):
+            sug_lista = t_base.get('sugestoes', [])
             
-            # Executa o motor
-            df_analise = motor_pericia_ultra({}, [], t.get('sugestoes', []))
+            if sug_lista:
+                # Verificacao de Engajamento
+                sug_primeira = str(sug_lista[0].get('Sugestão', '')).lower().strip()
+                if sug_primeira in ["nenhuma", "nada", "nenhuma melhoria", "", "n/a"]:
+                    st.error("🚨 ALERTA DE GESTAO: O colaborador optou por nao sugerir aperfeicoamentos.")
+                else:
+                    st.subheader(f"📊 Business Case: {t_base.get('colaborador', 'Consultor')}")
+                    
+                    df_analise = motor_pericia_ultra(t_base, [], sug_lista)
+                    
+                    if not df_analise.empty:
+                        # --- CALCULOS TOTAIS ---
+                        total_h_ano = df_analise['H_FLOAT'].sum()
+                        total_valor = df_analise['RS_FLOAT'].sum()
+                        
+                        # metricas principais
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Capacidade Recuperada", f"{total_h_ano:.1f} h/ano")
+                        c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
+                        c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
 
-            if not df_analise.empty:
-                v_real = df_analise['RS_FLOAT'].sum()
-                h_real = df_analise['H_FLOAT'].sum()
+                        # --- CARD DE VIABILIDADE PERICIAL (BLINDADO) ---
+                        st.markdown("---")
+                        st.subheader("🛡️ Verificacao de Viabilidade Pericial")
+                        
+                        v_bruto = total_valor / 0.45 if total_valor > 0 else 0
+                        
+                        ca1, ca2 = st.columns(2)
+                        with ca1:
+                            st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
+                            st.caption("Estimativa declarada sem filtros.")
+                        with ca2:
+                            ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
+                            st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
+                                      delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
+                            st.caption("Valor aprovado apos pericia.")
+                        
+                        st.info("💡 Nota do Perito: O ajuste remove o otimismo excessivo para garantir um ROI realizavel.")
 
-                # --- MÉTRICAS DE TOPO ---
-                st.metric("💰 ROI TOTAL AUDITADO", f"R$ {v_real:,.2f}")
-                
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Capacidade Livre", f"{h_real:.1f} h/ano")
-                c2.metric("ROI Operacional", f"R$ {v_real:,.2f}")
-                c3.metric("Dias Recuperados", f"{h_real/8:.1f} dias")
-
-                # --- O CARD DE VIABILIDADE (O que estava faltando) ---
-                st.markdown("---")
-                st.subheader("🛡️ Verificação de Viabilidade Pericial")
-                
-                # Cálculo da Expectativa Bruta (ROI Real / 0.45)
-                v_bruto = v_real / 0.45 if v_real > 0 else 0
-                
-                ca1, ca2 = st.columns(2)
-                with ca1:
-                    st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
-                    st.caption("Estimativa declarada sem filtros técnicos.")
-                with ca2:
-                    ajuste = ((v_real / v_bruto) - 1) * 100 if v_bruto > 0 else 0
-                    st.metric("💎 ROI Real Auditado", f"R$ {v_real:,.2f}", 
-                              delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
-                    st.caption("Valor aprovado após auditoria de impacto.")
-                
-                st.info("💡 **Parecer Técnico:** O ajuste de ROI é necessário para garantir a viabilidade da implementação.")
-
-                # --- TABELA DE DETALHES ---
-                st.markdown("### 📋 Detalhamento das Oportunidades")
-                st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+                        # --- TABELA FINAL ---
+                        st.markdown("### 📋 Detalhamento das Oportunidades")
+                        # Remove colunas de calculo antes de mostrar a tabela
+                        st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
+                    else:
+                        st.warning("⚠️ Nenhuma sugestao valida para processar.")
             else:
-                st.warning("Nenhuma sugestão de melhoria foi encontrada para este colaborador.")
-    else:
-        st.info("☝️ Selecione um colaborador para processar a perícia.")
+                st.info("⚠️ Nenhuma sugestao encontrada.")
+        else:
+            st.info("☝️ Selecione um colaborador para ativar a pericia.")
