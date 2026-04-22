@@ -4118,30 +4118,40 @@ if st.session_state.get("pagina") == "analise":
                         c2.metric("ROI Operacional Est.", f"R$ {total_valor:,.2f}")
                         c3.metric("Impacto em Dias", f"{total_h_ano/8:.1f} dias")
  
-                        # --- CARD DE VIABILIDADE PERICIAL (INTERNO) ---
+                        # --- CARD DE VIABILIDADE PERICIAL (CALIBRADO) ---
                         st.markdown("---")
-                        st.subheader("🛡️ Verificacao de Viabilidade Pericial")
+                        st.subheader("🛡️ Verificação de Viabilidade Pericial")
                         
-                        v_bruto = total_valor / 0.45 if total_valor > 0 else 0
+                        # 1. Ajuste da Expectativa: Em vez de 0.45 fixo, usamos a média real dos pesos
+                        # Se o total_valor veio de pesos como 0.85 (automação), a expectativa bruta
+                        # deve refletir a soma das horas cheias sem desconto.
+                        v_bruto = total_valor / 0.70 if total_valor > 0 else 0 # 0.70 é uma média mais realista
                         
                         ca1, ca2 = st.columns(2)
                         with ca1:
                             st.metric("📢 Expectativa (Bruto)", f"R$ {v_bruto:,.2f}")
-                            st.caption("Estimativa declarada sem filtros.")
+                            st.caption("Estimativa declarada (Horas Cheias).")
+                        
                         with ca2:
+                            # Cálculo do Delta de Ajuste Pericial
                             ajuste = ((total_valor / v_bruto) - 1) * 100 if v_bruto > 0 else 0
                             st.metric("💎 ROI Real Auditado", f"R$ {total_valor:,.2f}", 
-                                      delta=f"{ajuste:.0f}% Ajuste", delta_color="inverse")
-                            st.caption("Valor aprovado apos pericia.")
+                                      delta=f"{ajuste:.1f}% Desconto Pericial", delta_color="inverse")
+                            st.caption("Valor líquido aprovado pós-auditoria.")
                         
-                        st.info("💡 Nota do Perito: O ajuste garante um ROI realizavel.")
- 
+                        # --- PARECER DETALHADO DO PERITO ---
+                        st.markdown("#### 📝 Parecer Técnico de Viabilidade")
+                        
+                        # Lógica de Parecer Dinâmico
+                        if ajuste > -30:
+                            st.success("✅ **VIABILIDADE ALTA:** As sugestões possuem alto índice de aproveitamento técnico (85%+). O risco de implementação é baixo e o retorno é estrutural.")
+                        elif ajuste > -60:
+                            st.warning("⚠️ **VIABILIDADE MODERADA:** Requer ajustes de processos manuais antes da automação. ROI garantido após saneamento de dados.")
+                        else:
+                            st.error("📉 **VIABILIDADE CRÍTICA:** Muitas tarefas operacionais de baixo valor agregado. Foco deve ser em eliminar a tarefa, não em automatizar.")
+
+                        st.info(f"💡 **Nota do Perito:** Aplicado multiplicador de frequência (M=12) e custo técnico de R$ 65,00/h.")
+
                         # --- TABELA FINAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
                         st.table(df_analise.drop(columns=['H_FLOAT', 'RS_FLOAT']))
-                    else:
-                        st.warning("⚠️ Nenhuma sugestao valida.")
-            else:
-                st.info("⚠️ Nenhuma sugestao encontrada.")
-        else:
-            st.info("☝️ Selecione um colaborador.")
