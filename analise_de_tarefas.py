@@ -4186,7 +4186,48 @@ if st.session_state.get("pagina") == "analise":
                         df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_finais]
                         df_exibicao['PARECER'] = [r[1] for r in resultados_finais]
 
-                        # --- 2. CARDS DE VIABILIDADE ---
+                        # --- 1. MOTOR DE INTELIGÊNCIA PERICIAL & SINCRONIA ---
+                        df_exibicao = df_analise.copy()
+                        
+                        # Recupera o Ranking para bater os valores
+                        df_rank_global = st.session_state.get('df_ranking', pd.DataFrame())
+
+                        def motor_pericial_completo(row):
+                            # Pega as horas
+                            try:
+                                h = float(row.get('H_FLOAT', 0))
+                            except:
+                                h = 0.0
+                                
+                            sugestao_alvo = row.get('SUGESTAO ANALISADA', '')
+                            # Busca no Ranking Global
+                            match = df_rank_global[df_rank_global['Sugestao'] == sugestao_alvo] if not df_rank_global.empty else pd.DataFrame()
+                            
+                            # 1. INICIALIZAÇÃO DA VARIÁVEL 'f' (Evita o erro de Traceback)
+                            f = 0.25 
+                            emoji = "💡 [INCREMENTAL]"
+                            
+                            # 2. IDENTIFICAÇÃO DO DNA (Prioriza o que veio do Ranking)
+                            dna = str(match.iloc[0].get('Categoria', row.get('ESTRATEGIA', ''))).lower() if not match.empty else str(row.get('ESTRATEGIA', '')).lower()
+
+                            # 3. DEFINIÇÃO DE PESO 'f' E EMOJI
+                            if any(k in dna for k in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                                f, emoji = 0.85, "🤖 [TECNOLOGIA]"
+                            elif any(k in dna for k in ['pop', 'checklist', 'organizacional', 'processo']):
+                                f, emoji = 0.45, "📈 [PROCESSO]"
+                            
+                            # 4. CÁLCULO (Agora 'f' sempre existe)
+                            v_auditado = (h * 65.0) * f
+                            
+                            parecer_final = f"{emoji} {row.get('PARECER', 'Análise concluída.')}"
+                            return v_auditado, parecer_final
+
+                        # Aplicação única
+                        resultados_finais = df_exibicao.apply(motor_pericial_completo, axis=1)
+                        df_exibicao['VALOR AUDITADO'] = [r[0] for r in resultados_finais]
+                        df_exibicao['PARECER'] = [r[1] for r in resultados_finais]
+
+                        # --- 2. EXIBIÇÃO DOS CARDS E TABELA ---
                         st.markdown("---")
                         st.subheader("🛡️ Verificação de Viabilidade Pericial")
                         
@@ -4201,10 +4242,9 @@ if st.session_state.get("pagina") == "analise":
                         with c3:
                             st.metric("💰 Expectativa Bruta", f"R$ {(h_totais * 65):,.2f}")
 
-                        # --- 3. TABELA FINAL COM COLUNA ADICIONAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
                         
-                        # Formatação para exibição
+                        # Formatação para a Tabela
                         df_tab = df_exibicao.copy()
                         df_tab['VALOR RECUPERAVEL'] = df_tab['RS_FLOAT'].apply(lambda x: f"R$ {x:,.2f}")
                         df_tab['VALOR AUDITADO'] = df_tab['VALOR AUDITADO'].apply(lambda x: f"R$ {x:,.2f}")
@@ -4214,7 +4254,7 @@ if st.session_state.get("pagina") == "analise":
                             'SUGESTAO ANALISADA', 
                             'ECONOMIA PROJETADA', 
                             'VALOR RECUPERAVEL', 
-                            'VALOR AUDITADO', # Coluna adicional solicitada
+                            'VALOR AUDITADO', 
                             'PARECER'
                         ]])
 
