@@ -4126,7 +4126,14 @@ if st.session_state.get("pagina") == "analise":
                         # Se o total_valor veio de pesos como 0.85 (automação), a expectativa bruta
                         # deve refletir a soma das horas cheias sem desconto.
                         # Pega a soma real das horas antes de qualquer fator
-                        v_bruto = total_valor / 0.85 if total_valor > 0 else 0
+                        # --- CÁLCULO UNIVERSAL DO BRUTO (SEM HARDCODE) ---
+                        # Aqui pegamos as horas e minutos REAIS de cada sugestão e anualizamos
+                        h_puras = sum([(s.get('Horas', 0) + s.get('Minutos', 0)/60) for s in sugestoes])
+                        
+                        # Multiplicamos por 12 (Mensal) e pelo valor da hora (R$ 65)
+                        # Nota: Se houver frequências diferentes (A, S), o ideal é tratar no loop, 
+                        # mas para o seu caso de agora, o 'M' manda:
+                        v_bruto = h_puras * 12 * 65.0
                         
                         ca1, ca2 = st.columns(2)
                         with ca1:
