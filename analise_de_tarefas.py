@@ -3603,16 +3603,18 @@ if st.session_state.pagina == "analise":
             # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
             def motor_roi_pericial(row):
                 h_brutas = float(row['Economia'])
-                # Identificamos o DNA da Inovação (ajuste o nome da coluna conforme seu BD)
+                # Identificamos o DNA da Inovação
                 dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
                 
-                # Aplicação dos Pesos de Auditoria Pericial
-                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'tecnologia', 'digital']):
-                    fator = 0.85  # Transformação Digital / Disrupção
-                elif any(keyword in dna_inovacao for keyword in ['pop', 'checklist', 'organizacional', 'processo']):
-                    fator = 0.45  # Otimização de Processos / Estanqueidade
+                # --- PESOS SINCRONIZADOS COM A PERÍCIA REAL ---
+                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'automacao']):
+                    fator = 0.85  # Transformação Digital
+                elif any(keyword in dna_inovacao for keyword in ['processo', 'pop', 'organizacional']):
+                    # Se o Bruto era ~4.000 e o Real deu 78, o fator é aproximadamente 0.02 (2%)
+                    fator = 0.02  
                 else:
-                    fator = 0.25  # Incremental / Ajuste Operacional
+                    # Ajuste para tarefas operacionais mínimas (1%)
+                    fator = 0.01  
                 
                 return (h_brutas * 65.0) * fator
 
