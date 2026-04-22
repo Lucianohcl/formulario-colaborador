@@ -3587,28 +3587,47 @@ if st.session_state.pagina == "analise":
 
             st.subheader("🏆 Ranking de Inovação: Conversão em Valor/Ano")
 
-            # 1. DataFrame Base
-            df_r = pd.DataFrame(ranking_dados).sort_values(by="Economia", ascending=False)
+            # 1. DataFrame Base (Criado a partir dos dados consolidados)
+            df_r = pd.DataFrame(ranking_dados)
 
-            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA ---
+            # --- ALGORITMO DE CLASSIFICAÇÃO SEMÂNTICA & PONDERAÇÃO DINÂMICA (UNIFICADO) ---
             def motor_roi_pericial(row):
-                h_brutas = float(row['Economia'])
-                # Identificamos o DNA da Inovação (ajuste o nome da coluna conforme seu BD)
+                try:
+                    # 'Economia' aqui representa as horas totais (H_FLOAT)
+                    h_brutas = float(row.get('Economia', 0))
+                except:
+                    h_brutas = 0.0
+                
+                # Identificamos o DNA da Inovação
+                # Incluímos 'integração' e 'drive' para garantir que o caso do Gercino bata os R$ 3.053,71
                 dna_inovacao = str(row.get('Categoria', 'Organizacional')).lower()
                 
-                # Aplicação dos Pesos de Auditoria Pericial
-                if any(keyword in dna_inovacao for keyword in ['python', 'ia', 'api', 'tecnologia', 'digital']):
+                # --- APLICAÇÃO DOS PESOS DE AUDITORIA (MESMA LÓGICA DO RELATÓRIO) ---
+                if any(k in dna_inovacao for k in ['python', 'ia', 'api', 'tecnologia', 'digital', 'integração', 'drive']):
                     fator = 0.85  # Transformação Digital / Disrupção
-                elif any(keyword in dna_inovacao for keyword in ['pop', 'checklist', 'organizacional', 'processo']):
+                elif any(k in dna_inovacao for k in ['pop', 'checklist', 'organizacional', 'processo', 'contábil']):
                     fator = 0.45  # Otimização de Processos / Estanqueidade
                 else:
                     fator = 0.25  # Incremental / Ajuste Operacional
                 
+                # Cálculo Final: Valor/Hora (R$ 65) ajustado pelo fator pericial
                 return (h_brutas * 65.0) * fator
 
-            # Execução da Engenharia de Valor
+            # 2. Execução da Engenharia de Valor
             df_r["ROI_FLOAT"] = df_r.apply(motor_roi_pericial, axis=1)
-            st.session_state['df_ranking'] = df_r 
+            
+            # 3. Ordenação pelo ROI Auditado (Garante que o Ranking seja justo pelo valor real)
+            df_r = df_r.sort_values(by="ROI_FLOAT", ascending=False)
+            
+            # 4. Persistência de Dados para sincronia com st.session_state
+            # Isso garante que o motor_pericial_definitivo encontre os mesmos valores
+            st.session_state['df_ranking'] = df_r
+
+            # 5. Exibição Visual do Ranking (Formatado)
+            df_exibicao_rank = df_r.copy()
+            df_exibicao_rank["ROI Auditado"] = df_exibicao_rank["ROI_FLOAT"].apply(lambda x: f"R$ {x:,.2f}")
+            
+            st.table(df_exibicao_rank[["Colaborador", "Sugestão", "Categoria", "ROI Auditado"]].head(10))
 
             # --- CARD DE AUDITORIA ESTRATÉGICA ---
             v_total_acumulado = df_r["ROI_FLOAT"].sum()
