@@ -3594,7 +3594,7 @@ if st.session_state.pagina == "analise":
             df_r["Economia"] = pd.to_numeric(df_r["Economia"], errors='coerce').fillna(0)
 
             # Criamos a coluna numérica real para o ROI
-            df_r["ROI_FLOAT"] = df_r["Economia"] * 35 
+            df_r["ROI_FLOAT"] = df_r["Economia"] * 65 
 
             # SALVAMOS NA GAVETA GLOBAL
             st.session_state['df_ranking'] = df_r 
