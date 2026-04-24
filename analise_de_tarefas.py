@@ -4356,45 +4356,34 @@ with c2:
 with c3:
     st.metric("ROI Real (53%)", f"R$ {roi_real_auditado:,.2f}", delta=f"{ganho_capacidade_dias:.1f} dias/cap.")
 
-# ==========================================
-# --- EXIBIÇÃO FINAL PRÉ-DOWNLOAD ---
-# ==========================================
-st.divider()
-st.markdown(f"#### 💡 DETALHAMENTO DE OPORTUNIDADES: {colab_alvo}")
+# --- EXIBIÇÃO FINAL: SÓ SUGESTÕES E CARDS ---
+st.markdown("---")
+st.subheader(f"💡 Detalhamento de Sugestões: {t_base.get('colaborador', 'Consultor')}")
 
-# 1. Filtro de Segurança para Sugestões Reais
-sug_validas = [s for s in sugestoes_lista if str(s.get('Sugestão','')).lower() not in ['nenhuma', 'n/a', '', 'nan']]
-
-# 2. Cards do Colaborador (Usando as variáveis calculadas no bloco anterior)
+# 1. Cards Individuais (Usando as variáveis que você calculou no motor)
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.metric("EBITDA Individual", f"R$ {v_bruto_final:,.2f}")
+    st.metric("ROI Real Auditado", f"R$ {total_valor:,.2f}")
 with c2:
-    st.metric("Eficiência Anual", f"{horas_totais_ano:.1f} h/ano")
+    st.metric("Capacidade Livre", f"{total_h_ano:.1f} h/ano")
 with c3:
-    st.metric("ROI Auditado (53%)", f"R$ {roi_real_auditado:,.2f}")
+    st.metric("EBITDA Bruto", f"R$ {v_bruto_final:,.2f}")
 
-# 3. Tabela Visual
-if sug_validas:
-    df_sug_visual = pd.DataFrame([
-        {
-            "Sugestão": s.get('Sugestão'),
-            "Impacto": s.get('Impacto', 'N/A'),
-            "Tempo": f"{s.get('Horas', 0)}h {s.get('Minutos', 0)}m",
-            "Frequência": s.get('Frequência', 'M')
-        } for s in sug_validas
-    ])
-    st.table(df_sug_visual)
+# 2. Tabela de Sugestões (Limpando o que é lixo)
+if not df_analise.empty:
+    # Removemos as colunas de cálculo para deixar a tabela limpa
+    cols_visiveis = [c for c in df_analise.columns if c not in ['H_FLOAT', 'RS_FLOAT']]
+    st.table(df_analise[cols_visiveis])
 else:
-    st.warning(f"⚠️ Nenhuma sugestão quantificável encontrada para {colab_alvo}.")
+    st.warning("Nenhuma sugestão quantificável para este perfil.")
 
 st.divider()
 
-# 4. BOTÃO DE DOWNLOAD (Garante que o html_final já foi gerado acima)
+# 3. BOTÃO DE DOWNLOAD (Sempre visível no fim)
 st.download_button(
     label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
     data=html_final, 
-    file_name=f"Laudo_{colab_alvo}.html", 
+    file_name=f"Laudo_{t_base.get('colaborador', 'Consultor')}.html", 
     mime="text/html",
     use_container_width=True
 )
