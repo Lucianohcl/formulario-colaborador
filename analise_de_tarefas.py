@@ -4222,134 +4222,124 @@ if st.session_state.get("pagina") == "analise":
 
 
 
+
 # =================================================================
 # --- BLOCO INTEGRAL: GERAÇÃO DO LAUDO PERICIAL 2026 ---
 # =================================================================
 
-# 1. INICIALIZAÇÃO DE SEGURANÇA (Evita NameError)
-linhas_atividades_html = ""
-linhas_gargalos_html = ""
-ranking_final_html = ""
-v_bruto_final = 0.0
-horas_totais_ano = 0.0
-ganho_capacidade_dias = 0.0
-roi_real_auditado = 0.0
+# 🛡️ TRAVA DE SEGURANÇA: Só executa se estiver na página de análise
+if st.session_state.get("pagina") == "analise":
 
-# 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS (CONSOLIDADO PARA NÃO ZERAR)
-if 'ranking_dados' in locals() and ranking_dados:
-    df_rank_calc = pd.DataFrame(ranking_dados)
-    # AQUI ESTÁ O PULO DO GATO: Pegamos o total da EQUIPE para os cards
-    horas_totais_ano = df_rank_calc['H_Recup'].sum()
-    roi_real_auditado = df_rank_calc['ROI_Final'].sum()
-    v_bruto_final = roi_real_auditado / 0.53  # EBITDA Estimado
-    ganho_capacidade_dias = horas_totais_ano / 8
-else:
+    # 1. INICIALIZAÇÃO DE SEGURANÇA
+    linhas_atividades_html = ""
+    linhas_gargalos_html = ""
+    ranking_final_html = ""
     v_bruto_final = horas_totais_ano = ganho_capacidade_dias = roi_real_auditado = 0.0
 
-# 3. GERAÇÃO DO RANKING / SCORE (HTML)
-ranking_final_html = ""
-if 'ranking_dados' in locals() and ranking_dados:
-    # Já temos o df_rank_calc do passo anterior
-    df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
-    posicao = 1
-    for _, row in df_ranking_auditado.iterrows():
-        cor_posicao = "#FFD700" if posicao == 1 else "#1B1E5D"
-        ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
-        posicao += 1
+    # 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS
+    if 'ranking_dados' in locals() and ranking_dados:
+        df_rank_calc = pd.DataFrame(ranking_dados)
+        horas_totais_ano = df_rank_calc['H_Recup'].sum()
+        roi_real_auditado = df_rank_calc['ROI_Final'].sum()
+        v_bruto_final = roi_real_auditado / 0.53
+        ganho_capacidade_dias = horas_totais_ano / 8
 
+    # 3. GERAÇÃO DO RANKING (HTML)
+    if 'ranking_dados' in locals() and ranking_dados:
+        df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
+        for i, (_, row) in enumerate(df_ranking_auditado.iterrows(), 1):
+            cor_posicao = "#FFD700" if i == 1 else "#1B1E5D"
+            ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{i}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
 
-# 4. GERAÇÃO DE ATIVIDADES (SEM DUPLICATAS)
-atividades_vistas = set()
-if 'res_final' in locals() and res_final:
-    for item in res_final:
-        chave = f"{item.get('Atividade')}-{item.get('Impacto')}"
-        if chave not in atividades_vistas:
-            atividades_vistas.add(chave)
-            cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
-            linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
+    # 4. GERAÇÃO DE ATIVIDADES (SEM DUPLICATAS)
+    atividades_vistas = set()
+    if 'res_final' in locals() and res_final:
+        for item in res_final:
+            chave = f"{item.get('Atividade')}-{item.get('Impacto')}"
+            if chave not in atividades_vistas:
+                atividades_vistas.add(chave)
+                cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
+                linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
 
-# 5. GERAÇÃO DE GARGALOS (SEM DUPLICATAS)
-gargalos_vistos = set()
-if 'res_dificuldades' in locals() and res_dificuldades:
-    for d in res_dificuldades:
-        dif_txt = d.get('Dificuldade', 'N/A')
-        if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
-            gargalos_vistos.add(dif_txt)
-            cor_st = "#52c41a" if d.get('Status') == "✅" else "#ff4d4f"
-            linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{d.get('Status','⚠️')}</td><td>{d.get('Setor','N/A')}</td><td>{dif_txt}</td><td>{d.get('Análise do Perito','N/A')}</td></tr>"
+    # 5. GERAÇÃO DE GARGALOS (SEM DUPLICATAS)
+    gargalos_vistos = set()
+    if 'res_dificuldades' in locals() and res_dificuldades:
+        for d in res_dificuldades:
+            dif_txt = d.get('Dificuldade', 'N/A')
+            if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
+                gargalos_vistos.add(dif_txt)
+                cor_st = "#52c41a" if d.get('Status') == "✅" else "#ff4d4f"
+                linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{d.get('Status','⚠️')}</td><td>{d.get('Setor','N/A')}</td><td>{dif_txt}</td><td>{d.get('Análise do Perito','N/A')}</td></tr>"
 
-# 6. MONTAGEM DA ESTRUTURA HTML FINAL
-html_final = f"""
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='utf-8'>
-    <style>
-        body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }}
-        .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
-        .container-metrics {{ display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }}
-        .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
-        .metric-box label {{ font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold; }}
-        .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
-        .impact-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }}
-        .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
-        .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
-        .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
-        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin: 30px 0 10px 0; font-size: 14px; }}
-        table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
-        td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
-    </style>
-</head>
-<body>
-    <div class='header-banner'>
-        <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
-        <h2>{colab_alvo if 'colab_alvo' in locals() else 'CONSOLIDADO'}</h2>
-    </div>
+    # 6. MONTAGEM DA ESTRUTURA HTML FINAL
+    # (Sua f-string de estilo e estrutura mantida conforme solicitado)
+    html_final = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset='utf-8'>
+        <style>
+            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }}
+            .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
+            .container-metrics {{ display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }}
+            .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
+            .metric-box label {{ font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold; }}
+            .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
+            .impact-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }}
+            .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
+            .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
+            .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
+            .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin: 30px 0 10px 0; font-size: 14px; }}
+            table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
+            th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
+            td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
+        </style>
+    </head>
+    <body>
+        <div class='header-banner'>
+            <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
+            <h2>{colab_alvo if 'colab_alvo' in locals() else 'CONSOLIDADO'}</h2>
+        </div>
+        <div class='container-metrics'>
+            <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total if 'h_total' in locals() else 0:.2f}h/dia</div></div>
+            <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score if 'score' in locals() else 0:.1f}%</div></div>
+            <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
+        </div>
+        <div class='impact-grid'>
+            <div class='impact-card'><label>⚡ Eficiência Recuperável</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
+            <div class='impact-card'><label>📅 Ganho de Capacidade</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
+            <div class='impact-card'><label>🏆 ROI Real Auditado</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
+            <div class='impact-card'><label>🔬 Status do Ranking</label><div class='value'>Sincronizado</div></div>
+        </div>
+        <div class='section-title'>🏆 RANKING DE PERFORMANCE E SCORE AUDITADO</div>
+        <table>
+            <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>ECONOMIA</th><th>SCORE ROI</th></tr></thead>
+            <tbody>{ranking_final_html}</tbody>
+        </table>
+        <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
+        <table>
+            <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
+            <tbody>{linhas_atividades_html}</tbody>
+        </table>
+        <div class='section-title'>⚠️ GARGALOS OPERACIONAIS IDENTIFICADOS</div>
+        <table>
+            <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>PARECER</th></tr></thead>
+            <tbody>{linhas_gargalos_html}</tbody>
+        </table>
+        <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Documento Auditado - 2026</div>
+    </body>
+    </html>
+    """
 
-    <div class='container-metrics'>
-        <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total if 'h_total' in locals() else 0:.2f}h/dia</div></div>
-        <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score if 'score' in locals() else 0:.1f}%</div></div>
-        <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
-    </div>
-
-    <div class='impact-grid'>
-        <div class='impact-card'><label>⚡ Eficiência Recuperável</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
-        <div class='impact-card'><label>📅 Ganho de Capacidade</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
-        <div class='impact-card'><label>🏆 ROI Real Auditado</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
-        <div class='impact-card'><label>🔬 Status do Ranking</label><div class='value'>Sincronizado</div></div>
-    </div>
-
-    <div class='section-title'>🏆 RANKING DE PERFORMANCE E SCORE AUDITADO</div>
-    <table>
-        <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>ECONOMIA</th><th>SCORE ROI</th></tr></thead>
-        <tbody>{ranking_final_html}</tbody>
-    </table>
-
-    <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
-    <table>
-        <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
-        <tbody>{linhas_atividades_html}</tbody>
-    </table>
-
-    <div class='section-title'>⚠️ GARGALOS OPERACIONAIS IDENTIFICADOS</div>
-    <table>
-        <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>PARECER</th></tr></thead>
-        <tbody>{linhas_gargalos_html}</tbody>
-    </table>
-
-    <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Documento Auditado - 2026</div>
-</body>
-</html>
-"""
-
-
-# 4. O BOTÃO DE DOWNLOAD FINAL
-st.download_button(
-    label=f"📥 BAIXAR LAUDO PERICIAL COMPLETO: {nome_colab.upper()}",
-    data=laudo_completo,
-    file_name=f"Laudo_Auditoria_{nome_colab}.html",
-    mime="text/html",
-    use_container_width=True,
-    key="btn_v_pericia_final_completo"
-)
+    # 7. EXIBIÇÃO DO BOTÃO
+    st.divider()
+    nome_exibicao = colab_alvo if 'colab_alvo' in locals() else "CONSOLIDADO"
+    
+    st.download_button(
+        label=f"📥 BAIXAR LAUDO PERICIAL COMPLETO: {nome_exibicao.upper()}",
+        data=html_final,
+        file_name=f"Laudo_Auditoria_{nome_exibicao}.html",
+        mime="text/html",
+        use_container_width=True,
+        key="btn_laudo_v_final_2026"
+    )
