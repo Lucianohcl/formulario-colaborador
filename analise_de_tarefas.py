@@ -4344,40 +4344,43 @@ html_final = f"""
 """
 
 # ==========================================
-# --- ÁREA DE DEBUG E DOWNLOAD FINAL ---
+# --- BLOCO À PROVA DE FALHAS (FORA DE TUDO) ---
 # ==========================================
-st.divider()
 
-try:
-    # 1. DEBUG: Verifica se as variáveis essenciais existem
-    if 'html_final' not in locals():
-        st.warning("⚠️ DEBUG: 'html_final' não foi gerado. Verificando cálculos...")
+st.write("---")
+st.write("🔍 **DEBUG ATIVO:** Tentando renderizar área final...")
+
+# 1. TENTA RECUPERAR OS DADOS (Mesmo que o session_state falhe)
+t_base = locals().get('t') or st.session_state.get('t_selecionado')
+
+if t_base:
+    st.write(f"✅ Colaborador Identificado: {t_base.get('colaborador')}")
     
-    if 'df_analise' not in locals() or df_analise.empty:
-        st.error("❌ DEBUG: 'df_analise' está vazio ou não existe.")
-    else:
-        # 2. EXIBIÇÃO DAS SUGESTÕES (FORA DO STATUS)
-        st.markdown(f"### 💡 Sugestões: {t_base.get('colaborador', 'Consultor')}")
-        cols_visiveis = [c for c in df_analise.columns if c not in ['H_FLOAT', 'RS_FLOAT']]
-        st.table(df_analise[cols_visiveis])
+    # 2. FORÇAR EXIBIÇÃO DOS CARDS (Independente de onde venha o cálculo)
+    c1, c2, c3 = st.columns(3)
+    c1.metric("ROI Real", f"R$ {st.session_state.get('v_audit_final', 0.0):,.2f}")
+    c2.metric("Horas Ano", f"{st.session_state.get('h_audit_final', 0.0):.1f}h")
+    c3.metric("EBITDA", f"R$ {locals().get('v_bruto_final', 0.0):,.2f}")
 
-    # 3. BOTÃO DE DOWNLOAD COM TRATAMENTO DE ERRO
+    # 3. FORÇAR TABELA DE SUGESTÕES
+    if 'df_analise' in locals() and not df_analise.empty:
+        st.write("### 💡 Detalhamento:")
+        st.table(df_analise.drop(columns=[c for c in ['H_FLOAT', 'RS_FLOAT'] if c in df_analise.columns]))
+    else:
+        st.warning("⚠️ Tabela 'df_analise' não encontrada no escopo local.")
+
+    # 4. BOTÃO DE DOWNLOAD BLINDADO
     if 'html_final' in locals():
         st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
-            data=html_final, 
-            file_name=f"Laudo_{t_base.get('colaborador', 'Consultor')}.html", 
+            label="📥 BAIXAR LAUDO AGORA",
+            data=html_final,
+            file_name="laudo_pericial.html",
             mime="text/html",
-            use_container_width=True,
-            key="btn_v3_debug"
+            key="btn_ultra_final_blindado"
         )
     else:
-        st.error("O botão de download não pode ser exibido porque o HTML falhou.")
+        st.error("🚨 Variável 'html_final' NÃO EXISTE. O laudo não foi gerado.")
+else:
+    st.error("🚨 't_base' não encontrado. O sistema não sabe quem é o colaborador.")
 
-except Exception as e:
-    st.error(f"🚨 ERRO CRÍTICO NO RENDER FINAL: {e}")
-    # Mostra o erro detalhado para você saber onde corrigir
-    st.exception(e)
-
-st.divider()
-    
+st.write("🏁 **FIM DO SCRIPT**")
