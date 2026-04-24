@@ -4221,115 +4221,117 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- CÁLCULO DE ROI E MÉTRICAS ESTRATÉGICAS ---
-        df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
-        sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
-        
-        v_bruto_final = 0.0
-        horas_totais_ano = 0.0
-        
-        for s in sugestoes_lista:
-            try:
-                h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
-                m_limpo = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
-                f_tipo = str(s.get('Frequência', 'M')).upper().strip()
-                m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
-                
-                horas_tarefa = (h_limpo + (m_limpo/60)) * m_anual
-                horas_totais_ano += horas_tarefa
-                v_bruto_final += horas_tarefa * 65.0
-            except:
-                continue
+# --- 1. ACUMULADORES GLOBAIS --- 
+linhas_ranking_global_html = ""
+linhas_atividades_full_html = ""
+linhas_dificuldades_full_html = ""
+linhas_sugestoes_full_html = ""
 
-        # Cálculos Derivados para o Dashboard
-        ganho_capacidade_dias = horas_totais_ano / 8
-        roi_real_auditado = v_bruto_final * 0.53
+# --- 2. PROCESSAMENTO DO RANKING ---
+df_r_final = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
+for _, row in df_r_final.iterrows():
+    linhas_ranking_global_html += f"""
+    <tr>
+        <td style='text-align:center;'>🏆</td>
+        <td><b>{row['Colaborador']}</b></td>
+        <td style='text-align:center;'>{row['Qtd']}</td>
+        <td style='text-align:right;'>{row['H_Recup']:.1f}h</td>
+        <td style='text-align:right; font-weight:bold; color:#1B1E5D;'>R$ {row['ROI_Final']:,.2f}</td>
+    </tr>"""
 
-        # --- GERAÇÃO DINÂMICA DAS LINHAS DO HTML ---
-        linhas_atividades_html = ""
-        for item in res_final:
-            cor_st = "#52c41a" if item['Status'] == "✅" else "#ff4d4f"
-            linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center; font-weight:bold; padding:10px;'>{item['Status']}</td><td>{item['Atividade']}</td><td>{item['Impacto']}</td><td>{item['Análise Crítica']}</td></tr>"
+# --- 3. VARREDURA COMPLETA DA BASE (ATIVIDADES, GARGALOS E SUGESTÕES) ---
+for f in base:
+    nome_f = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
+    tabs = f.get('tabelas', {})
+    
+    # Bloco Atividades
+    for at in tabs.get('atividades', []):
+        linhas_atividades_full_html += f"<tr><td><b>{nome_f}</b></td><td>{at.get('Atividade')}</td><td>{at.get('Impacto')}</td></tr>"
+    
+    # Bloco Gargalos (Dificuldades)
+    for dfc in tabs.get('dificuldades', []):
+        linhas_dificuldades_full_html += f"<tr><td style='color:#ff4d4f; text-align:center;'>⚠️</td><td><b>{nome_f}</b></td><td>{dfc.get('Setor', 'N/A')}</td><td>{dfc.get('Dificuldade', 'N/A')}</td></tr>"
 
-        linhas_gargalos_html = ""
-        for d in res_dificuldades:
-            cor_st = "#52c41a" if d['Status'] == "✅" else "#ff4d4f"
-            linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center; padding:10px;'>{d['Status']}</td><td>{d['Setor']}</td><td>{d['Dificuldade']}</td><td>{d['Impacto Diário']}</td><td>{d['Análise do Perito']}</td></tr>"
+    # Bloco Sugestões (Inovação)
+    for sug in tabs.get('sugestoes', []):
+        # Cálculo rápido do ROI individual para a tabela
+        h_s = float(str(sug.get('Horas', '0')).replace('h','').strip() or 0)
+        m_s = float(str(sug.get('Minutos', '0')).replace('min','').strip() or 0)
+        f_s = sug.get('Frequência', 'M')
+        # Aqui o laudo mostra a ideia e o potencial
+        linhas_sugestoes_full_html += f"""
+        <tr>
+            <td style='color:#52c41a; text-align:center;'>💡</td>
+            <td><b>{nome_f}</b></td>
+            <td>{sug.get('Sugestão', 'N/A')}</td>
+            <td style='text-align:center;'>{f_s}</td>
+            <td style='text-align:right;'>{h_s}h {m_s}m</td>
+        </tr>"""
 
-        # --- ESTRUTURA COMPLETA DO DOCUMENTO HTML ---
-        html_final = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset='utf-8'>
-            <style>
-                body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }}
-                .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
-                .container-metrics {{ display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }}
-                .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
-                .metric-box label {{ font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold; }}
-                .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
-                
-                .impact-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }}
-                .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
-                .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
-                .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
-                
-                .methodology-box {{ background: #fdfdfd; border: 1px solid #e0e0e0; padding: 15px; border-radius: 10px; margin-bottom: 30px; }}
-                .methodology-box h4 {{ margin: 0 0 10px 0; color: #1B1E5D; font-size: 14px; border-bottom: 1px solid #eee; }}
-                .methodology-box p {{ font-size: 11px; color: #666; line-height: 1.4; margin: 0; }}
-                
-                .status-alert {{ padding: 15px; border-radius: 10px; margin-bottom: 30px; font-weight: bold; border-left: 10px solid; }}
-                .alerta-vermelho {{ background: #fff1f0; border-color: #ff4d4f; color: #a8071a; }}
-                .alerta-amarelo {{ background: #fffbe6; border-color: #faad14; color: #874d00; }}
-                .alerta-verde {{ background: #f6ffed; border-color: #52c41a; color: #237804; }}
-                
-                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
-                th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 12px; border-bottom: 2px solid #1B1E5D; }}
-                td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
-                .footer {{ margin-top: 40px; text-align: center; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 15px; }}
-            </style>
-        </head>
-        <body>
-            <div class='header-banner'>
-                <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
-                <p style='margin: 5px 0 0 0; opacity: 0.8;'>Análise de Eficiência e Impacto Global</p>
-                <h2 style='margin-top: 15px;'>{colab_alvo}</h2>
-            </div>
+# --- 4. ESTRUTURA VISUAL FINAL ---
+html_final = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <style>
+        body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; line-height: 1.5; }}
+        .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
+        .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
+        .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
+        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }}
+        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
+        td {{ padding: 8px; border-bottom: 1px solid #eee; }}
+        .footer {{ margin-top: 40px; text-align: center; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 10px; }}
+    </style>
+</head>
+<body>
+    <div class='header-banner'>
+        <h1>🛡️ AUDITORIA OPERACIONAL E MAPA DE INOVAÇÃO</h1>
+        <p>Relatório Consolidado de Inteligência de Processos</p>
+    </div>
 
-            <div class='container-metrics'>
-                <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total:.2f}h/dia</div></div>
-                <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score:.1f}%</div></div>
-                <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
-            </div>
+    <div style='display: flex; gap: 15px; margin-bottom: 20px;'>
+        <div class='metric-box'><small>ROI TOTAL ESTIMADO</small><div class='value'>R$ {df_r_final['ROI_Final'].sum():,.2f}</div></div>
+        <div class='metric-box'><small>POTENCIAL DE ECONOMIA</small><div class='value'>{df_r_final['H_Recup'].sum():,.1f} h/ano</div></div>
+        <div class='metric-box'><small>CAPACIDADE RECUPERADA</small><div class='value'>{ganho_capacity_dias if 'ganho_capacity_dias' in locals() else 0:,.1f} Dias</div></div>
+    </div>
 
-            <div class='impact-grid'>
-                <div class='impact-card'><label>⚡ Eficiência Recuperável</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
-                <div class='impact-card'><label>📅 Ganho de Capacidade</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
-                <div class='impact-card'><label>🏆 ROI Real Auditado</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
-                <div class='impact-card'><label>🔬 Status do Ranking</label><div class='value'>Sincronizado</div></div>
-            </div>
+    <div class='section-title'>🏆 RANKING DE IMPACTO FINANCEIRO</div>
+    <table>
+        <thead><tr><th>POS</th><th>COLABORADOR</th><th>QTD SUG.</th><th>ECONOMIA ANO</th><th>VALOR AUDITADO</th></tr></thead>
+        <tbody>{linhas_ranking_global_html}</tbody>
+    </table>
 
-            <div class='methodology-box'>
-                <h4>🔬 Metodologia de Auditoria Pericial</h4>
-                <p>Projeções fundamentadas no Custo Total de Ocupação (R$ 65,00/h). O sistema aplica <b>Ponderação Dinâmica</b>: 🤖 Transformação Digital (85%), 📈 Otimização (45%) ou 💡 Incremental (20%), garantindo que o ROI reflita a complexidade técnica.</p>
-            </div>
+    <div class='section-title'>💡 OPORTUNIDADES DE INOVAÇÃO E MELHORIA</div>
+    <table>
+        <thead><tr><th>ST</th><th>AUTOR</th><th>SUGESTÃO DE MELHORIA</th><th>FREQ.</th><th>TEMPO ESTIMADO</th></tr></thead>
+        <tbody>{linhas_sugestoes_full_html}</tbody>
+    </table>
 
-            <div class='status-alert {"alerta-vermelho" if h_total > 12 else "alerta-amarelo" if h_total > 9 else "alerta-verde"}'>
-                PARECER TÉCNICO: <span style='font-weight: normal;'>{ "BLOQUEIO CRÍTICO" if h_total > 12 else "SOBRECARGA" if h_total > 9 else "CONFORMIDADE" }</span>
-            </div>
+    <div class='section-title'>⚠️ MAPA DE GARGALOS OPERACIONAIS</div>
+    <table>
+        <thead><tr><th>ST</th><th>COLABORADOR</th><th>SETOR</th><th>DIFICULDADE RELATADA</th></tr></thead>
+        <tbody>{linhas_dificuldades_full_html}</tbody>
+    </table>
 
-            <h3>📋 Auditoria de Nexo Causal</h3>
-            <table><thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE CRÍTICA</th></tr></thead>
-            <tbody>{linhas_atividades_html}</tbody></table>
+    <div class='section-title'>📋 DETALHAMENTO DE ATIVIDADES MAPEADAS</div>
+    <table>
+        <thead><tr><th>COLABORADOR</th><th>ATIVIDADE</th><th>IMPACTO</th></tr></thead>
+        <tbody>{linhas_atividades_full_html}</tbody>
+    </table>
 
-            <h3>⚠️ Gargalos e Processos</h3>
-            <table><thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>IMPACTO</th><th>PARECER</th></tr></thead>
-            <tbody>{linhas_gargalos_html}</tbody></table>
+    <div class='footer'>Relatório Gerencial de Auditoria Ultra - 2026</div>
+</body>
+</html>
+"""
 
-            <div class='footer'>Documento gerado automaticamente - Auditoria Pericial Ultra 2026</div>
-        </body>
-        </html>
-        """
-
-        st.download_button(label="📥 BAIXAR LAUDO PERICIAL COMPLETO", data=html_final, file_name=f"Laudo_{colab_alvo}.html", mime="text/html")
+# --- 5. BOTÃO DE DOWNLOAD ---
+st.download_button(
+    label="📥 BAIXAR LAUDO COMPLETO (RANKING + SUGESTÕES + GARGALOS + ATIVIDADES)", 
+    data=html_final, 
+    file_name="Auditoria_Master_Global.html", 
+    mime="text/html",
+    use_container_width=True
+)
