@@ -4222,53 +4222,7 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- 1. CÁLCULO DE MÉTRICAS GLOBAIS (PARA OS CARDS) ---
-
-ranking_final_html = ""
-# Criamos um DataFrame para ordenar pelo ROI Real
-if 'ranking_dados' in locals() and ranking_dados:
-    df_ranking_auditado = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
-    
-    posicao = 1
-    for _, row in df_ranking_auditado.iterrows():
-        # Define a cor baseada na performance (Ouro para o primeiro)
-        cor_posicao = "#FFD700" if posicao == 1 else "#1B1E5D"
-        
-        ranking_final_html += f"""
-        <tr>
-            <td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td>
-            <td><b>{row['Colaborador']}</b></td>
-            <td style='text-align:center;'>{row['Qtd']}</td>
-            <td style='text-align:right;'>{row['H_Recup']:.1f} h/ano</td>
-            <td style='text-align:right; font-weight:bold; color:#1B1E5D;'>R$ {row['ROI_Final']:,.2f}</td>
-        </tr>"""
-        posicao += 1
-
-# --- 2. HTML DO RANKING (ADICIONE DENTRO DO SEU html_final) ---
-# Basta chamar a variável {ranking_final_html} dentro de uma tabela no seu HTML principal:
-
-html_secao_ranking = f"""
-<div style='background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 14px;'>
-    🏆 RANKING DE PERFORMANCE E SCORE AUDITADO
-</div>
-<table>
-    <thead>
-        <tr>
-            <th>POS</th>
-            <th>COLABORADOR</th>
-            <th>SUGESTÕES</th>
-            <th>ECONOMIA</th>
-            <th>SCORE ROI</th>
-        </tr>
-    </thead>
-    <tbody>
-        {ranking_final_html}
-    </tbody>
-</table>
-"""
-
-
-
+# --- 1. CÁLCULO DE MÉTRICAS (PRECISA VIR ANTES DE TUDO) ---
 df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
 sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
 
@@ -4291,26 +4245,24 @@ for s in sugestoes_lista:
 ganho_capacidade_dias = horas_totais_ano / 8
 roi_real_auditado = v_bruto_final * 0.53
 
-# --- 2. GERAÇÃO DINÂMICA SEM DUPLICIDADES ---
-linhas_atividades_html = ""
-atividades_vistas = set()
-for item in res_final:
-    chave = f"{item['Atividade']}-{item['Impacto']}"
-    if chave not in atividades_vistas:
-        atividades_vistas.add(chave)
-        cor_st = "#52c41a" if item['Status'] == "✅" else "#ff4d4f"
-        linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center; font-weight:bold;'>{item['Status']}</td><td>{item['Atividade']}</td><td>{item['Impacto']}</td><td>{item['Análise Crítica']}</td></tr>"
+# --- 2. GERAÇÃO DO RANKING/SCORE ---
+ranking_final_html = ""
+if 'ranking_dados' in locals() and ranking_dados:
+    df_ranking_auditado = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
+    posicao = 1
+    for _, row in df_ranking_auditado.iterrows():
+        cor_posicao = "#FFD700" if posicao == 1 else "#1B1E5D"
+        ranking_final_html += f"""
+        <tr>
+            <td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td>
+            <td><b>{row['Colaborador']}</b></td>
+            <td style='text-align:center;'>{row['Qtd']}</td>
+            <td style='text-align:right;'>{row['H_Recup']:.1f}h</td>
+            <td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td>
+        </tr>"""
+        posicao += 1
 
-linhas_gargalos_html = ""
-gargalos_vistos = set()
-for d in res_dificuldades:
-    dif_txt = d['Dificuldade']
-    if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
-        gargalos_vistos.add(dif_txt)
-        cor_st = "#52c41a" if d['Status'] == "✅" else "#ff4d4f"
-        linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{d['Status']}</td><td>{d['Setor']}</td><td>{dif_txt}</td><td>{d['Impacto Diário']}</td><td>{d['Análise do Perito']}</td></tr>"
-
-# --- 3. ESTRUTURA HTML COM CARDS E MÉTRICAS ---
+# --- 3. ESTRUTURA FINAL (INCLUINDO AS VARIÁVEIS NO CORPO) ---
 html_final = f"""
 <!DOCTYPE html>
 <html>
@@ -4327,11 +4279,10 @@ html_final = f"""
         .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
         .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
         .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
+        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 14px; }}
         table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
-        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 12px; border-bottom: 2px solid #1B1E5D; }}
+        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
         td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
-        .status-alert {{ padding: 15px; border-radius: 10px; margin-bottom: 30px; font-weight: bold; border-left: 10px solid; }}
-        .alerta-verde {{ background: #f6ffed; border-color: #52c41a; color: #237804; }}
     </style>
 </head>
 <body>
@@ -4353,21 +4304,23 @@ html_final = f"""
         <div class='impact-card'><label>🔬 Status do Ranking</label><div class='value'>Sincronizado</div></div>
     </div>
 
-    <div class='status-alert alerta-verde'>
-        PARECER TÉCNICO: <span style='font-weight: normal;'>CONFORMIDADE OPERACIONAL</span>
-    </div>
+    <div class='section-title'>🏆 RANKING DE PERFORMANCE E SCORE AUDITADO</div>
+    <table>
+        <thead>
+            <tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>ECONOMIA</th><th>SCORE ROI</th></tr>
+        </thead>
+        <tbody>
+            {ranking_final_html}
+        </tbody>
+    </table>
 
-    <h3>📋 Auditoria de Nexo Causal</h3>
+    <h3 style='margin-top:30px;'>📋 Auditoria de Nexo Causal</h3>
     <table>
         <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
         <tbody>{linhas_atividades_html}</tbody>
     </table>
 
-    <h3>⚠️ Gargalos Operacionais</h3>
-    <table>
-        <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>IMPACTO</th><th>PARECER</th></tr></thead>
-        <tbody>{linhas_gargalos_html}</tbody>
-    </table>
+    <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Relatório Gerencial - 2026</div>
 </body>
 </html>
 """
