@@ -4343,47 +4343,6 @@ html_final = f"""
 </html>
 """
 
-# ==========================================
-# --- FINALIZAÇÃO: RANKING + DOWNLOAD ---
-# ==========================================
-
-# 1. Recupera Dados para o App (Visualização)
-v_roi = st.session_state.get('v_audit_final', 0.0)
-h_ano = st.session_state.get('h_audit_final', 0.0)
-nome_colab = t_base.get('colaborador', 'Consultor') if 't_base' in locals() else "Geral"
-
-# 2. SEÇÃO VISUAL DO RANKING (O QUE VOCÊ TINHA NO APP)
-st.divider()
-st.subheader("🏆 Ranking de Inovação e Performance")
-
-# Aqui você deve manter a chamada para o seu DataFrame de ranking original
-# Exemplo: st.dataframe(df_ranking_global) ou a lógica que você já usava.
-if 'df_analise' in locals() and not df_analise.empty:
-    st.write(f"💡 Sugestões Técnicas para **{nome_colab}** identificadas com sucesso.")
-
-# 3. PREPARAÇÃO DO HTML COMPLETO (RESTAURANDO O ESTILO)
-# Vamos usar o seu html_final original e apenas trocar as peças que faltam
-if 'html_final' in locals():
-    # Prepara a tabela de sugestões para o HTML
-    linhas_sug = ""
-    if 'df_analise' in locals() and not df_analise.empty:
-        for _, row in df_analise.iterrows():
-            linhas_sug += f"""
-            <tr>
-                <td style='padding:8px; border:1px solid #ddd;'>{row['ESTRATEGIA']}</td>
-                <td style='padding:8px; border:1px solid #ddd;'>{row['SUGESTAO ANALISADA']}</td>
-                <td style='padding:8px; border:1px solid #ddd; text-align:right;'>{row['ECONOMIA PROJETADA']}</td>
-                <td style='padding:8px; border:1px solid #ddd; text-align:right;'><b>{row['VALOR RECUPERAVEL']}</b></td>
-            </tr>"""
-    
-    # Injeta os dados no seu template bonito (Placeholders)
-    # Certifique-se que seu HTML original tem essas tags {{...}}
-    laudo_completo = html_final.replace("{{TABELA_SUGESTOES}}", linhas_sug)
-    laudo_completo = laudo_completo.replace("{{ROI_VALOR}}", f"R$ {v_roi:,.2f}")
-    laudo_completo = laudo_completo.replace("{{HORAS_VALOR}}", f"{h_ano:.1f}h")
-else:
-    # Se o html_final falhou, usamos o de emergência mas com o nome certo
-    laudo_completo = f"<h1>Erro no Template</h1><p>Dados salvos: {v_roi}</p>"
 
 # 4. O BOTÃO DE DOWNLOAD FINAL
 st.download_button(
