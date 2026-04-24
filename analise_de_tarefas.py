@@ -4378,6 +4378,38 @@ else:
 st.divider() # Linha visual antes do botão de download
 
 
+# --- EXIBIÇÃO FINAL: SUGESTÕES E CARDS DO COLABORADOR ---
+st.divider()
+st.markdown(f"### 💡 SUGESTÕES: {colab_alvo}")
+
+# Cards Rápidos do Colaborador Selecionado
+c1, c2, c3 = st.columns(3)
+with c1:
+    st.metric("EBITDA Indiv.", f"R$ {v_bruto_final:,.2f}")
+with c2:
+    st.metric("Horas/Ano", f"{horas_totais_ano:.1f}h")
+with c3:
+    st.metric("ROI (53%)", f"R$ {roi_real_auditado:,.2f}")
+
+# Tabela de Sugestões Real
+if sugestoes_lista:
+    sug_df = pd.DataFrame([
+        {
+            "Sugestão": s.get('Sugestão', 'N/A'),
+            "Impacto": s.get('Impacto', 'N/A'),
+            "Tempo": f"{s.get('Horas',0)}h {s.get('Minutos',0)}m",
+            "Frequência": s.get('Frequência', 'M')
+        } for s in sugestoes_lista if str(s.get('Sugestão','')).lower() not in ['nenhuma', 'n/a', '']
+    ])
+    
+    if not sug_df.empty:
+        st.table(sug_df)
+    else:
+        st.info("ℹ️ Este colaborador não registrou sugestões de melhoria quantificáveis.")
+
+st.divider()
+
+
 # 7. BOTÃO DE DOWNLOAD
 st.download_button(
     label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
