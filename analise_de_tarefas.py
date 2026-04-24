@@ -4218,3 +4218,45 @@ if st.session_state.get("pagina") == "analise":
                             st.table(df_analise.drop(columns=cols_remover))
                         else:
                             st.error("Erro ao carregar a tabela de análise.")
+
+# --- BOTÃO DE EXPORTAÇÃO FINAL (DENTRO DO ELSE DA BASE) ---
+
+# Tentamos capturar as métricas globais para o relatório
+total_h = locals().get('total_geral_ano_horas', 0)
+total_rs = locals().get('total_financeiro', 0)
+nome_auditado = locals().get('colab_alvo', 'Geral')
+nexo_h = locals().get('h_total', 0)
+
+# Construção do HTML do Relatório Executivo
+html_relatorio = f"""
+<div style="font-family: sans-serif; padding: 20px; border: 1px solid #ccc;">
+    <h2 style="color: #2E3192;">📄 Relatório de Auditoria e Inovação</h2>
+    <hr>
+    <h3>📊 Indicadores Globais</h3>
+    <ul>
+        <li><b>Eficiência Anual:</b> {total_h:,.1f} horas</li>
+        <li><b>ROI Projetado:</b> R$ {total_rs:,.2f}</li>
+    </ul>
+    
+    <h3>⚖️ Auditoria Individual: {nome_auditado}</h3>
+    <ul>
+        <li><b>Carga Auditada:</b> {nexo_h:.2f} h/dia</li>
+        <li><b>Nexo Causal:</b> {locals().get('score', 0):.1f}%</li>
+    </ul>
+    <p><small>Gerado automaticamente pelo Motor de Perícia Ultra - Metodologia Gercino.</small></p>
+</div>
+"""
+
+# Exibição do Botão com Proteção Identada
+if 'base' in locals() and base:
+    st.divider()
+    st.markdown("### 📄 Exportação Executiva Final")
+    
+    st.download_button(
+        label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
+        data=html_relatorio,
+        file_name=f"Auditoria_Final_{nome_auditado}.html",
+        mime="text/html",
+        use_container_width=True,
+        key="btn_export_final_ultra_gercino"
+    )
