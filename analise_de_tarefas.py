@@ -4356,6 +4356,41 @@ html_final = f"""
 </html>
 """
 
+# --- EXIBIÇÃO DE METRICAS NO DASHBOARD (ANTES DO DOWNLOAD) ---
+st.markdown("### 🚀 IMPACTO ESTIMADO DAS SUGESTÕES")
+
+# Criando as colunas para os Cards no Streamlit
+c1, c2, c3 = st.columns(3)
+
+with c1:
+    st.metric("EBITDA Recuperável", f"R$ {v_bruto_final:,.2f}")
+with c2:
+    st.metric("Eficiência Anual", f"{horas_totais_ano:.1f} h/ano")
+with c3:
+    st.metric("ROI Real (53%)", f"R$ {roi_real_auditado:,.2f}", delta=f"{ganho_capacidade_dias:.1f} dias/cap.")
+
+# --- TABELA DE SUGESTÕES DETALHADA ---
+st.markdown("#### 💡 DETALHAMENTO DAS OPORTUNIDADES")
+
+# Preparando os dados para a tabela visual
+sugestoes_visuais = []
+for s in sugestoes_lista:
+    if str(s.get('Sugestão', '')).lower() not in ['nenhuma', 'n/a', '']:
+        sugestoes_visuais.append({
+            "Autor": (s.get('colaborador') or s.get('nome') or "Consultor").upper(),
+            "Sugestão": s.get('Sugestão'),
+            "Freq": s.get('Frequência', 'M'),
+            "Tempo Est.": f"{s.get('Horas', 0)}h {s.get('Minutos', 0)}m"
+        })
+
+if sugestoes_visuais:
+    st.table(sugestoes_visuais)
+else:
+    st.warning("⚠️ Nenhuma sugestão de melhoria quantificável encontrada para este colaborador.")
+
+st.divider() # Linha visual antes do botão de download
+
+
 # 7. BOTÃO DE DOWNLOAD
 st.download_button(
     label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
