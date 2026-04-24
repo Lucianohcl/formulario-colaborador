@@ -4313,25 +4313,26 @@ if st.session_state.get("pagina") == "analise":
 
 
 # 2. SÓ AGORA, no final, você prepara e exibe o botão
-if not df_analise.empty:
+df_final = locals().get('df_analise') # Busca a tabela com segurança
+
+if df_final is not None and not df_final.empty:
     # Geramos o conteúdo do HTML chamando a função que você criou
-    # AJUSTE DE NOMES (Garantindo que o Luciano e o JV recebam os dados certos):
     html_relatorio = gerar_relatorio_html_vips(
-        colaborador=t_base.get('colaborador', 'Consultor'), # Nome do colab
-        h_total=total_h_ano,      # <--- Variável que você calculou no Motor Ultra
-        score=ajuste + 100,       # <--- Usa o cálculo de viabilidade como nota
-        res_final=res_dificuldades if 'res_dificuldades' in locals() else [], 
-        df_analise=df_analise     # O DataFrame de inovação
+        colaborador=t_base.get('colaborador', 'Consultor') if 't_base' in locals() else "Consultor",
+        h_total=locals().get('total_h_ano', 0),
+        score=locals().get('ajuste', 0) + 100,
+        res_final=locals().get('res_dificuldades', []),
+        df_analise=df_final
     )
 
-    # Criamos o botão de download centralizado ou destacado
+    # Criamos o botão de download
     st.divider()
     st.markdown("### 📄 Exportação Executiva")
     
     st.download_button(
         label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
         data=html_relatorio,
-        file_name=f"Relatorio_VIPS_{t_base.get('colaborador', 'Consultor')}.html",
+        file_name=f"Relatorio_VIPS.html",
         mime="text/html",
         use_container_width=True 
     )
