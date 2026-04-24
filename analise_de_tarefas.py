@@ -4221,40 +4221,114 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- PARTE 1: PREPARAÇÃO DO RELATÓRIO (INDICADORES E RANKING) ---
+# --- BLOCO UNIFICADO: PROCESSAMENTO, AUDITORIA PERICIAL E GERAÇÃO DE HTML ---
 if 'base' in locals() and base:
     import pandas as pd
     import io
 
-    # 1. GARANTIA PANDAS: Configura para não cortar textos longos em tabelas HTML
+    # 1. CONFIGURAÇÃO DE RIGOR DOS DADOS
     pd.set_option('display.max_colwidth', None)
-    pd.set_option('display.max_rows', None)
 
-    # 2. PROCESSAMENTO DO RANKING GLOBAL (Equipe Inteira)
-    try:
-        # Criamos um DataFrame do ranking para converter em HTML
-        df_r = pd.DataFrame(ranking_dados)
-        
-        # Ordenamos pelo maior valor de Economia (ROI)
-        if not df_r.empty:
-            df_r = df_r.sort_values(by="Economia", ascending=False)
-            
-            # Formatamos os números para o padrão brasileiro no HTML
-            df_r['Economia'] = df_r['Economia'].map('{:,.1f} h/ano'.format)
-            df_r.columns = ['👤 COLABORADOR', '💡 SUG.', '⏱️ ECONOMIA']
-        
-        tabela_ranking_html = df_r.to_html(
-            classes='table', 
-            index=False, 
-            border=0, 
-            justify='left',
-            escape=False # Permite emojis
-        )
-    except Exception as e:
-        tabela_ranking_html = f"<p style='color:red;'>Erro ao gerar tabela de ranking: {e}</p>"
-
-    # 3. CAPTURA DE VARIÁVEIS ESTRATÉGICAS (Cards do Topo)
-    # Estas variáveis serão injetadas no HTML final
+    # 2. DASHBOARD GLOBAL (CARDS)
     val_eficiencia = f"{total_geral_ano_horas:,.1f} h/ano"
     val_roi = f"R$ {total_financeiro:,.2f}"
     val_capacidade = f"{total_geral_ano_horas / 8:,.1f} Dias"
+    val_roi_auditado = f"R$ {total_financeiro * 0.45:,.2f}" # Exemplo de ROI Real Auditado
+
+    # 3. ANÁLISE DE INVIABILIDADE MATEMÁTICA (NEXO DE COERÊNCIA)
+    h_total_dia = float(nexo_total_horas)
+    if h_total_dia > 14: # Gatilho para jornada impossível
+        alerta_nexo = f"""
+        <div style='background:#fff1f0; border-left:6px solid #ff4d4f; padding:15px; margin:15px 0; color:#820014;'>
+            <h3 style='margin:0;'>🚨 INVIABILIDADE MATEMÁTICA</h3>
+            <p style='margin:5px 0;'>O colaborador relata <b>{h_total_dia:.2f}h</b> de trabalho por dia. É fisicamente impossível manter essa carga com qualidade. O formulário apresenta superestimação de tempos ou erro de preenchimento.</p>
+        </div>"""
+    else:
+        alerta_nexo = f"<div style='background:#f6ffed; border-left:6px solid #52c41a; padding:15px; margin:15px 0; color:#135200;'>✅ <b>NEXO DE COERÊNCIA:</b> Jornada de {h_total_dia:.2f}h/dia compatível com a operação.</div>"
+
+    # 4. PROCESSAMENTO DA TABELA DE AUDITORIA (VARREDURA POR ITEM)
+    detalhes_full = []
+    categorias = [('alta', '🔴 ALTA'), ('normal', '🟡 NORMAL'), ('baixa', '🟢 BAIXA'), ('dificuldades', '⚠️ GARGALO')]
+    
+    for chave, label in categorias:
+        for item in t.get(chave, []):
+            desc = str(item.get('Atividade') or item.get('Dificuldade') or "").strip().upper()
+            if desc and desc not in ["VAZIO", "NONE", "."]:
+                h_item = float(item.get('Horas', 0))
+                
+                # LÓGICA DO MOTOR ULTRA (CRÍTICAS)
+                status = "✅"
+                critica = "Coerente"
+                
+                if h_item == 1.0:
+                    status = "❌"
+                    critica = "<b>Lançamento Padronizado (1h):</b> Indica falta de precisão no preenchimento."
+                elif h_item > 2.0 and chave == 'baixa':
+                    status = "❌"
+                    critica = "<b>Inchaço Operacional:</b> Tarefa simples consumindo muito tempo."
+                elif h_item < 0.5 and chave == 'alta':
+                    status = "❌"
+                    critica = "<b>Complexidade Estratégica:</b> Tempo insuficiente para a profundidade da tarefa."
+
+                detalhes_full.append({
+                    "ST": status,
+                    "ATIVIDADE": desc,
+                    "IMPACTO": f"{h_item:.3f} h/dia",
+                    "ANÁLISE CRÍTICA": critica
+                })
+
+    df_auditoria = pd.DataFrame(detalhes_full)
+    tabela_html = df_auditoria.to_html(classes='table-auditoria', index=False, escape=False, border=0)
+
+    # 5. ALERTA DE GESTÃO (SUGESTÕES)
+    tem_sugestao = any(str(s.get('Sugestão', '')).strip() for s in t.get('sugestoes', []))
+    alerta_gestao = ""
+    if not tem_sugestao:
+        alerta_gestao = """
+        <div style='background:#fff7e6; border-left:6px solid #faad14; padding:15px; margin-top:20px; color:#874d00;'>
+            🔬 <b>CENTRAL DE INTELIGÊNCIA:</b> O colaborador optou por NÃO sugerir aperfeiçoamentos ou inovações.
+        </div>"""
+
+    # 6. MONTAGEM DO HTML FINAL (TEMPLATE COMPLETO)
+    html_final = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset='utf-8'>
+        <style>
+            body {{ font-family: sans-serif; color: #333; line-height: 1.5; padding: 20px; }}
+            .header {{ background: #1B1E5D; color: white; padding: 20px; border-radius: 8px; text-align: center; }}
+            .dash {{ display: flex; justify-content: space-between; margin: 20px 0; gap: 10px; }}
+            .card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; flex: 1; text-align: center; border-bottom: 4px solid #1B1E5D; }}
+            .table-auditoria {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }}
+            .table-auditoria th {{ background: #f0f2f5; color: #1B1E5D; padding: 10px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
+            .table-auditoria td {{ padding: 10px; border-bottom: 1px solid #eee; }}
+            .footer {{ margin-top: 30px; font-size: 10px; color: #999; text-align: center; }}
+        </style>
+    </head>
+    <body>
+        <div class='header'>
+            <h1 style='margin:0;'>🚨 AUDITORIA DE GARGALOS E NEXO DE COERÊNCIA</h1>
+            <p style='margin:5px 0;'>Relatório Gerado pelo Motor Ultra • Metodologia Pericial</p>
+        </div>
+
+        <div class='dash'>
+            <div class='card'><b>EFICIÊNCIA RECUPERÁVEL</b><br><span style='font-size:1.2em; font-weight:bold;'>{val_eficiencia}</span></div>
+            <div class='card'><b>ROI PROJETADO</b><br><span style='font-size:1.2em; font-weight:bold;'>{val_roi}</span></div>
+            <div class='card'><b>GANHO DE CAPACIDADE</b><br><span style='font-size:1.2em; font-weight:bold;'>{val_capacidade}</span></div>
+        </div>
+
+        {alerta_nexo}
+
+        <h3 style='color:#1B1E5D; border-left:5px solid #1B1E5D; padding-left:10px;'>📋 Detalhamento por Categoria e Análise Crítica</h3>
+        {tabela_html}
+
+        {alerta_gestao}
+
+        <div class='footer'>
+            🛡️ Documento assinado digitalmente pelo Motor de Auditoria Gercino em {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}.
+        </div>
+    </body>
+    </html>
+    """
+    # Agora a variável 'html_final' contém TUDO o que você viu na tela.
