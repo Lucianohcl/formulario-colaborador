@@ -208,96 +208,6 @@ def gerar_pdf_html(form):
         {"".join([f"<p><b>{k}:</b> {v}</p>" for k, v in campos.items()])}
     """
 
-def gerar_relatorio_html_vips(colaborador, h_total, score, res_final, df_analise):
-    # Cores da sua marca
-    cor_primaria = "#2E3192"
-    
-    # Criando as linhas da tabela de Auditoria
-    linhas_auditoria = ""
-    for item in res_final:
-        status_cor = "green" if item['Status'] == "✅" else "red"
-        linhas_auditoria += f"""
-        <tr>
-            <td style="color:{status_cor}; text-align:center;">{item['Status']}</td>
-            <td>{item['Atividade']}</td>
-            <td>{item['Impacto']}</td>
-            <td>{item['Análise Crítica']}</td>
-        </tr>
-        """
-
-    # Criando as linhas do Ranking de Inovação
-    linhas_ranking = ""
-    if not df_analise.empty:
-        for _, row in df_analise.iterrows():
-            linhas_ranking += f"""
-            <tr>
-                <td><b>{row['ESTRATEGIA']}</b></td>
-                <td>{row['SUGESTAO ANALISADA']}</td>
-                <td>{row['ECONOMIA PROJETADA']}</td>
-                <td style="color:#28a745;"><b>{row['VALOR RECUPERAVEL']}</b></td>
-            </tr>
-            """
-
-    html = f"""
-    <!DOCTYPE html>
-    <html lang="pt-br">
-    <head>
-        <meta charset="UTF-8">
-        <title>Relatório Executivo - {colaborador}</title>
-        <style>
-            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; color: #333; background-color: #f4f7f6; }}
-            .container {{ background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }}
-            .header {{ border-bottom: 3px solid {cor_primaria}; padding-bottom: 10px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }}
-            .header h1 {{ color: {cor_primaria}; margin: 0; font-size: 24px; }}
-            .metrics {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px; }}
-            .card {{ background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 5px solid {cor_primaria}; text-align: center; }}
-            .card h3 {{ margin: 0; font-size: 14px; color: #666; text-transform: uppercase; }}
-            .card p {{ margin: 10px 0 0; font-size: 22px; font-weight: bold; color: {cor_primaria}; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; background: white; }}
-            th {{ background: #f1f3f5; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-size: 13px; }}
-            td {{ padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }}
-            .badge {{ padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }}
-            .footer {{ margin-top: 40px; font-size: 11px; color: #999; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>🚨 Parecer Técnico de Auditoria</h1>
-                <span style="color:#666">ID: {colaborador} | Data: 2026</span>
-            </div>
-
-            <div class="metrics">
-                <div class="card"><h3>Nexo Causal</h3><p>{h_total:.2f}h/dia</p></div>
-                <div class="card"><h3>Score Coerência</h3><p>{score:.1f}%</p></div>
-                <div class="card"><h3>ROI Projetado</h3><p>R$ {df_analise['RS_FLOAT'].sum() if not df_analise.empty else 0:,.2f}</p></div>
-            </div>
-
-            <h3>📋 Auditoria de Atividades</h3>
-            <table>
-                <thead>
-                    <tr><th>Status</th><th>Atividade</th><th>Impacto</th><th>Análise Crítica</th></tr>
-                </thead>
-                <tbody>{linhas_auditoria}</tbody>
-            </table>
-
-            <h3 style="margin-top:40px;">🏆 Ranking de Inovação e Sugestões</h3>
-            <table>
-                <thead>
-                    <tr><th>Estratégia</th><th>Sugestão</th><th>Economia/Ano</th><th>Valor Recuperável</th></tr>
-                </thead>
-                <tbody>{linhas_ranking}</tbody>
-            </table>
-
-            <div class="footer">
-                <p><b>Metodologia Gercino</b> - Relatório gerado automaticamente pelo Motor de Perícia Digital Ultra.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    return html
-
     # 🔹 TABELAS
     for secao, lista in tabelas.items():
         html += f"<h2>{secao.upper()}</h2>"
@@ -2011,7 +1921,6 @@ if st.session_state.get("pagina") == "visualizar":
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
                 # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
-                
                 if st.session_state.get("usuario_logado", "").strip().upper() in ["LUCIANO 123", "JV"]:
                     st.markdown("---")
                     st.subheader("⚙️ Painel de Exportação")
@@ -2300,6 +2209,38 @@ def gerar_analise_corporativa(dados, client=None):
 
     return parecer, indicadores
 
+# ============================================================
+# GERAR PDF DO PARECER
+# ============================================================
+
+def gerar_pdf(parecer, nome):
+    """
+    Recebe:
+    - parecer (texto)
+    - nome do colaborador
+    Cria arquivo PDF pronto para download
+    """
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+    from reportlab.lib.styles import getSampleStyleSheet
+    from reportlab.lib.units import inch
+
+    nome_arquivo = f"{nome}_parecer.pdf"
+    doc = SimpleDocTemplate(nome_arquivo)
+    elements = []
+    styles = getSampleStyleSheet()
+
+    # Título
+    elements.append(Paragraph("PARECER ESTRATÉGICO ORGANIZACIONAL", styles["Title"]))
+    elements.append(Spacer(1, 0.5*inch))
+
+    # Conteúdo linha a linha
+    for linha in parecer.split("\n"):
+        if linha.strip():  # evita parágrafos vazios
+            elements.append(Paragraph(linha, styles["Normal"]))
+            elements.append(Spacer(1, 0.2*inch))
+
+    doc.build(elements)
+    return nome_arquivo
 
 # ============================================================
 # PASTA BASE PARA FORMULÁRIOS (JSON)
@@ -4277,33 +4218,3 @@ if st.session_state.get("pagina") == "analise":
                             st.table(df_analise.drop(columns=cols_remover))
                         else:
                             st.error("Erro ao carregar a tabela de análise.")
-
-
-
-# 2. SÓ AGORA, no final, você prepara e exibe o botão
-# Tentamos recuperar o HTML gerado
-html_pronto = locals().get('html_relatorio')
-
-# SÓ entra se o html_pronto não for None e tiver conteúdo
-if html_pronto:
-    try:
-        st.divider()
-        st.markdown("### 📄 Exportação Executiva")
-        
-        # Forçamos a conversão para string caso algo tenha vindo errado
-        data_final = str(html_pronto)
-        
-        st.download_button(
-            label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
-            data=data_final,
-            file_name=f"Relatorio_VIPS.html",
-            mime="text/html",
-            use_container_width=True,
-            key="botao_auditoria_final_vips" # Chave única para não dar conflito
-        )
-    except Exception as e:
-        # Se mesmo assim algo der errado, ele mostra um aviso em vez de travar o app
-        st.error("Erro ao preparar o arquivo de download.")
-else:
-    # Se não tem HTML, não mostra botão e não dá erro!
-    st.info("💡 A auditoria está sendo processada. O botão de download aparecerá ao finalizar.")
