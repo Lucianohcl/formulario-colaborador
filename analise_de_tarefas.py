@@ -4344,35 +4344,52 @@ html_final = f"""
 """
 
 # ==========================================
-# --- BLOCO FINAL: INJEÇÃO DE DADOS NO HTML ---
+# --- RECONSTRUÇÃO DO HTML E DOWNLOAD ---
 # ==========================================
 
-# 1. Recupera os valores reais calculados
+# 1. Captura os dados calculados (Fallback de segurança)
 v_roi = st.session_state.get('v_audit_final', 0.0)
 h_ano = st.session_state.get('h_audit_final', 0.0)
 nome_colab = t_base.get('colaborador', 'Consultor') if 't_base' in locals() else "Geral"
 
-# 2. GERA AS LINHAS DA TABELA PARA O HTML (Injeção Dinâmica)
-linhas_html_sugestoes = ""
+# 2. Gera a tabela de sugestões em HTML puro
+tabela_html = "<table border='1' style='width:100%; border-collapse: collapse;'>"
+tabela_html += "<tr style='background-color: #f2f2f2;'><th>Estratégia</th><th>Sugestão</th><th>Economia</th><th>Valor</th></tr>"
+
 if 'df_analise' in locals() and not df_analise.empty:
     for _, row in df_analise.iterrows():
-        linhas_html_sugestoes += f"<tr><td>{row['ESTRATEGIA']}</td><td>{row['SUGESTAO ANALISADA']}</td><td style='text-align:right;'>{row['ECONOMIA PROJETADA']}</td><td style='text-align:right;'><b>{row['VALOR RECUPERAVEL']}</b></td></tr>"
+        tabela_html += f"<tr><td>{row['ESTRATEGIA']}</td><td>{row['SUGESTAO ANALISADA']}</td><td>{row['ECONOMIA PROJETADA']}</td><td>{row['VALOR RECUPERAVEL']}</td></tr>"
+else:
+    tabela_html += "<tr><td colspan='4'>Nenhuma sugestão encontrada.</td></tr>"
+tabela_html += "</table>"
 
-# 3. ATUALIZA A VARIÁVEL HTML_FINAL (Garante que os dados entrem no arquivo)
-if 'html_final' in locals():
-    # Substitui os placeholders (ajuste os nomes se o seu template usar outros)
-    html_final = html_final.replace("{{NOME_COLABORADOR}}", str(nome_colab))
-    html_final = html_final.replace("{{ROI_FINAL}}", f"R$ {v_roi:,.2f}")
-    html_final = html_final.replace("{{HORAS_ANUAIS}}", f"{h_ano:.1f}h")
-    html_final = html_final.replace("{{LINHAS_SUGESTOES}}", linhas_html_sugestoes)
+# 3. MONTAGEM FINAL DO CONTEÚDO (FORÇANDO A ENTRADA DOS DADOS)
+# Aqui criamos um "envelope" que garante que os dados entrem no arquivo
+relatorio_final = f"""
+<html>
+<head><meta charset="UTF-8"><title>Laudo Pericial - {nome_colab}</title></head>
+<body style="font-family: Arial, sans-serif; padding: 20px;">
+    <h1>Laudo de Auditoria de Processos</h1>
+    <hr>
+    <p><b>Colaborador:</b> {nome_colab}</p>
+    <p><b>ROI Auditado:</b> R$ {v_roi:,.2f}</p>
+    <p><b>Capacidade Recuperada:</b> {h_ano:.1f} h/ano</p>
+    <br>
+    <h3>Detalhamento das Sugestões:</h3>
+    {tabela_html}
+    <br>
+    <p><small>Gerado automaticamente pelo Motor de Perícia Ultra.</small></p>
+</body>
+</html>
+"""
 
-# 4. BOTÃO DE DOWNLOAD (Única coisa que aparece no App)
+# 4. BOTÃO DE DOWNLOAD (USANDO O 'relatorio_final' QUE ACABAMOS DE CRIAR)
 st.divider()
 st.download_button(
-    label=f"📥 BAIXAR LAUDO PERICIAL: {nome_colab.upper()}",
-    data=html_final if 'html_final' in locals() else "Erro: HTML não gerado",
+    label=f"📥 BAIXAR LAUDO COMPLETO: {nome_colab.upper()}",
+    data=relatorio_final, # USANDO A VARIÁVEL NOVA QUE TEM OS DADOS
     file_name=f"Laudo_{nome_colab}.html",
     mime="text/html",
     use_container_width=True,
-    key="btn_v_final_ultra_fixed"
+    key="btn_emergency_v99"
 )
