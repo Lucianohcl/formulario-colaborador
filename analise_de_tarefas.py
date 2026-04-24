@@ -4222,7 +4222,10 @@ if st.session_state.get("pagina") == "analise":
 
 # --- FINALIZAÇÃO DO CÁLCULO DE ROI ---
         v_bruto_final = 0.0
-        sugestoes_lista = df_selecionado.to_dict('records')
+        # Lógica Universal: Garante que a lista exista independente do nome do DataFrame
+        df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
+        sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
+        
         for s in sugestoes_lista:
             try:
                 h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
