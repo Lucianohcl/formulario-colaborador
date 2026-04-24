@@ -4330,7 +4330,7 @@ if st.session_state.get("pagina") == "analise":
 
             <div class='footer'>
                 Documento gerado automaticamente pelo Motor de Perícia Ultra.<br>
-                <b>Metodologia Gercino © 2026 - Auditoria e Inovação</b>
+                <b>Metodologia © 2026 - Auditoria e Inovação</b>
             </div>
         </body>
         </html>
