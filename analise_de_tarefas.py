@@ -4343,47 +4343,41 @@ html_final = f"""
 </html>
 """
 
-# --- EXIBIÇÃO DE METRICAS NO DASHBOARD (ANTES DO DOWNLOAD) ---
-st.markdown("### 🚀 IMPACTO ESTIMADO DAS SUGESTÕES")
-
-# Criando as colunas para os Cards no Streamlit
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    st.metric("EBITDA Recuperável", f"R$ {v_bruto_final:,.2f}")
-with c2:
-    st.metric("Eficiência Anual", f"{horas_totais_ano:.1f} h/ano")
-with c3:
-    st.metric("ROI Real (53%)", f"R$ {roi_real_auditado:,.2f}", delta=f"{ganho_capacidade_dias:.1f} dias/cap.")
-
-# --- EXIBIÇÃO FINAL: SÓ SUGESTÕES E CARDS ---
-st.markdown("---")
-st.subheader(f"💡 Detalhamento de Sugestões: {t_base.get('colaborador', 'Consultor')}")
-
-# 1. Cards Individuais (Usando as variáveis que você calculou no motor)
-c1, c2, c3 = st.columns(3)
-with c1:
-    st.metric("ROI Real Auditado", f"R$ {total_valor:,.2f}")
-with c2:
-    st.metric("Capacidade Livre", f"{total_h_ano:.1f} h/ano")
-with c3:
-    st.metric("EBITDA Bruto", f"R$ {v_bruto_final:,.2f}")
-
-# 2. Tabela de Sugestões (Limpando o que é lixo)
-if not df_analise.empty:
-    # Removemos as colunas de cálculo para deixar a tabela limpa
-    cols_visiveis = [c for c in df_analise.columns if c not in ['H_FLOAT', 'RS_FLOAT']]
-    st.table(df_analise[cols_visiveis])
-else:
-    st.warning("Nenhuma sugestão quantificável para este perfil.")
-
+# ==========================================
+# --- ÁREA DE DEBUG E DOWNLOAD FINAL ---
+# ==========================================
 st.divider()
 
-# 3. BOTÃO DE DOWNLOAD (Sempre visível no fim)
-st.download_button(
-    label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
-    data=html_final, 
-    file_name=f"Laudo_{t_base.get('colaborador', 'Consultor')}.html", 
-    mime="text/html",
-    use_container_width=True
-)
+try:
+    # 1. DEBUG: Verifica se as variáveis essenciais existem
+    if 'html_final' not in locals():
+        st.warning("⚠️ DEBUG: 'html_final' não foi gerado. Verificando cálculos...")
+    
+    if 'df_analise' not in locals() or df_analise.empty:
+        st.error("❌ DEBUG: 'df_analise' está vazio ou não existe.")
+    else:
+        # 2. EXIBIÇÃO DAS SUGESTÕES (FORA DO STATUS)
+        st.markdown(f"### 💡 Sugestões: {t_base.get('colaborador', 'Consultor')}")
+        cols_visiveis = [c for c in df_analise.columns if c not in ['H_FLOAT', 'RS_FLOAT']]
+        st.table(df_analise[cols_visiveis])
+
+    # 3. BOTÃO DE DOWNLOAD COM TRATAMENTO DE ERRO
+    if 'html_final' in locals():
+        st.download_button(
+            label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
+            data=html_final, 
+            file_name=f"Laudo_{t_base.get('colaborador', 'Consultor')}.html", 
+            mime="text/html",
+            use_container_width=True,
+            key="btn_v3_debug"
+        )
+    else:
+        st.error("O botão de download não pode ser exibido porque o HTML falhou.")
+
+except Exception as e:
+    st.error(f"🚨 ERRO CRÍTICO NO RENDER FINAL: {e}")
+    # Mostra o erro detalhado para você saber onde corrigir
+    st.exception(e)
+
+st.divider()
+    
