@@ -4219,64 +4219,92 @@ if st.session_state.get("pagina") == "analise":
                         else:
                             st.error("Erro ao carregar a tabela de análise.")
 
-# --- EXPORTAÇÃO COMPLETA DA PÁGINA ---
+# --- EXPORTAÇÃO ULTRA CONSOLIDADA (PÁGINA INTEIRA) ---
 if 'base' in locals() and base:
-    # 1. Coleta de dados do Ranking (Tabela que você já tem no DF)
+    import io
+    
+    # 1. Recuperar dados do Ranking
     try:
-        tabela_ranking_html = df_r.to_html(classes='table', index=False)
+        tabela_ranking_html = df_r.to_html(classes='table', index=False, border=0)
     except:
-        tabela_ranking_html = "<p>Dados de ranking não disponíveis no momento.</p>"
+        tabela_ranking_html = "<p>Ranking não processado.</p>"
 
-    # 2. Coleta de dados da Auditoria Individual (Checklist de Status)
+    # 2. Recuperar Auditoria Individual (O segredo para não cortar)
     try:
-        tabela_auditoria_html = pd.DataFrame(res_final).to_html(classes='table', index=False) if 'res_final' in locals() else ""
+        # Forçamos a conversão de toda a lista res_final para HTML
+        df_auditoria = pd.DataFrame(res_final)
+        tabela_auditoria_html = df_auditoria.to_html(classes='table', index=False, border=0)
     except:
-        tabela_auditoria_html = "<p>Detalhes da auditoria individual não disponíveis.</p>"
+        tabela_auditoria_html = "<p>Auditoria individual não processada.</p>"
 
-    # 3. Montagem do HTML Completo (Sem "Gercino")
+    # 3. Montagem do HTML com CSS que aceita páginas longas
     html_completo = f"""
     <html>
     <head>
+        <meta charset="utf-8">
         <style>
-            body {{ font-family: Arial, sans-serif; margin: 40px; color: #333; }}
-            .header {{ background-color: #2E3192; color: white; padding: 20px; text-align: center; border-radius: 8px; }}
-            .metric-container {{ display: flex; justify-content: space-around; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 8px; }}
-            .metric-box {{ text-align: center; }}
-            .metric-value {{ font-size: 24px; font-weight: bold; color: #2E3192; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-            th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
-            th {{ background-color: #f2f2f2; }}
-            .footer {{ margin-top: 50px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }}
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; color: #1e1e1e; background-color: #ffffff; }}
+            .header {{ background: linear-gradient(90deg, #2E3192 0%, #1B1E5D 100%); color: white; padding: 30px; text-align: center; border-radius: 12px; margin-bottom: 30px; }}
+            .container {{ max-width: 1100px; margin: auto; }}
+            .metric-container {{ display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; justify-content: space-between; }}
+            .metric-box {{ background: #f1f4f9; padding: 20px; border-radius: 10px; flex: 1; min-width: 200px; text-align: center; border: 1px solid #dce3f1; }}
+            .metric-label {{ font-size: 14px; color: #5f6368; text-transform: uppercase; font-weight: bold; }}
+            .metric-value {{ font-size: 26px; font-weight: bold; color: #2E3192; margin-top: 5px; }}
+            h2 {{ color: #2E3192; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 40px; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13px; }}
+            th {{ background-color: #f8f9fa; color: #2E3192; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; }}
+            td {{ padding: 10px; border-bottom: 1px solid #eee; line-height: 1.4; }}
+            tr:nth-child(even) {{ background-color: #fafafa; }}
+            .status-red {{ color: #d93025; font-weight: bold; }}
+            .status-green {{ color: #188038; font-weight: bold; }}
+            .footer {{ margin-top: 60px; font-size: 11px; color: #999; text-align: center; padding: 20px; border-top: 1px solid #eee; }}
         </style>
     </head>
     <body>
-        <div class="header">
-            <h1>🚨 Relatório Consolidado: Auditoria e Inovação</h1>
-        </div>
+        <div class="container">
+            <div class="header">
+                <h1>🚨 Relatório Consolidado de Inteligência</h1>
+                <p>Auditoria de Nexo Causal e Ranking de Eficiência</p>
+            </div>
 
-        <h2>📈 Dashboard de Impacto Estratégico Global</h2>
-        <div class="metric-container">
-            <div class="metric-box"><div>Eficiência Recuperável</div><div class="metric-value">{total_geral_ano_horas:,.1f} h/ano</div></div>
-            <div class="metric-box"><div>ROI Projetado (EBITDA)</div><div class="metric-value">R$ {total_financeiro:,.2f}</div></div>
-            <div class="metric-box"><div>Ganho de Capacidade</div><div class="metric-value">{total_geral_ano_horas/8:,.1f} Dias</div></div>
-        </div>
+            <h2>📈 Dashboard de Impacto Estratégico</h2>
+            <div class="metric-container">
+                <div class="metric-box">
+                    <div class="metric-label">Eficiência Recuperável</div>
+                    <div class="metric-value">{total_geral_ano_horas:,.1f} h/ano</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">ROI Projetado (EBITDA)</div>
+                    <div class="metric-value">R$ {total_financeiro:,.2f}</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Capacidade Liberada</div>
+                    <div class="metric-value">{total_geral_ano_horas/8:,.1f} Dias/Ano</div>
+                </div>
+            </div>
 
-        <h2>🏆 Ranking de Inovação</h2>
-        {tabela_ranking_html}
+            <h2>🏆 Ranking de Inovação e Valor</h2>
+            {tabela_ranking_html}
 
-        <hr>
+            <h2>⚖️ Auditoria Individual Detalhada: {colab_alvo}</h2>
+            <div class="metric-container">
+                <div class="metric-box">
+                    <div class="metric-label">Carga Auditada</div>
+                    <div class="metric-value">{h_total:.2f} h/dia</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-label">Nexo Causal</div>
+                    <div class="metric-value">{score:.1f}%</div>
+                </div>
+            </div>
 
-        <h2>⚖️ Auditoria de Gargalos: {colab_alvo}</h2>
-        <div class="metric-container">
-            <div class="metric-box"><div>Carga Auditada</div><div class="metric-value">{h_total:.2f} h/dia</div></div>
-            <div class="metric-box"><div>Nexo Causal</div><div class="metric-value">{score:.1f}%</div></div>
-        </div>
+            <h3>📋 Parecer Pericial de Atividades</h3>
+            {tabela_auditoria_html}
 
-        <h3>📋 Análise Crítica de Atividades</h3>
-        {tabela_auditoria_html}
-
-        <div class="footer">
-            Gerado automaticamente pelo Motor de Perícia Ultra - Auditoria Interna de Processos.
+            <div class="footer">
+                Documento Gerado pelo Motor de Perícia Ultra - Tecnologia de Auditoria de Processos.<br>
+                Data de Emissão: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
+            </div>
         </div>
     </body>
     </html>
@@ -4284,10 +4312,10 @@ if 'base' in locals() and base:
 
     st.markdown("---")
     st.download_button(
-        label="📥 EXPORTAR RELATÓRIO COMPLETO (PDF/HTML)",
+        label="📥 GERAR RELATÓRIO EXECUTIVO COMPLETO",
         data=html_completo,
-        file_name=f"Relatorio_Auditoria_Inovacao_{colab_alvo}.html",
+        file_name=f"Auditoria_FInal_{colab_alvo}.html",
         mime="text/html",
         use_container_width=True,
-        key="btn_full_export_pericia"
+        key="btn_full_v3_export"
     )
