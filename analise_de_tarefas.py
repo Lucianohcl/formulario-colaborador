@@ -163,47 +163,117 @@ def gerar_word(form):
 
 def gerar_pdf_html(form):
     campos = form.get("campos", {})
-    sugestoes = form.get("tabelas", {}).get("sugestoes", []) or form.get("sugestoes", [])
-    nome = str(form.get("colaborador", "COLABORADOR")).upper()
+    tabelas = form.get("tabelas", {})
+    disc = form.get("disc", {})
+    nome = form.get("colaborador", "Colaborador")
     data = form.get("timestamp", "")
 
-    # --- LÓGICA DO MOTOR ULTRA (PARA O RELATÓRIO) ---
-    linhas_sugestoes = ""
-    roi_total_relatorio = 0.0
+    html = f"""
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial;
+                padding: 20px;
+            }}
+            h1 {{
+                color: #2c3e50;
+            }}
+            h2 {{
+                margin-top: 20px;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 5px;
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 6px;
+                font-size: 12px;
+            }}
+            th {{
+                background: #f2f2f2;
+            }}
+        </style>
+    </head>
 
-    for s in sugestoes:
-        texto = str(s.get('Sugestão', '')).strip()
-        if texto.lower() in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: continue
+    <body>
+        <h1>Relatório: {nome}</h1>
+        <p><b>Data:</b> {data}</p>
 
-        try:
-            # Limpeza de números igual ao app
-            h = int(''.join(filter(str.isdigit, str(s.get('Horas', '0')))) or 0)
-            m = int(''.join(filter(str.isdigit, str(s.get('Minutos', '0')))) or 0)
-            f_sug = str(s.get('Frequência', 'M')).upper().strip()
-            mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_sug, 12)
-            
-            # DNA da Inovação
-            analise = (texto + " " + str(s.get('Categoria', ''))).lower()
-            if any(k in analise for k in ['ia', 'python', 'api', 'automacao', 'digital', 'robo']):
-                fator, cat_nome = 0.85, "TRANSFORMAÇÃO DIGITAL"
-            elif any(k in analise for k in ['pop', 'checklist', 'processo', 'padronizar']):
-                fator, cat_nome = 0.45, "OTIMIZAÇÃO DE PROCESSO"
-            else:
-                fator, cat_nome = 0.20, "MELHORIA INCREMENTAL"
+        <h2>Campos</h2>
+        {"".join([f"<p><b>{k}:</b> {v}</p>" for k, v in campos.items()])}
+    """
 
-            valor_sug = ((h + (m/60)) * mult * fator * 65.0)
-            roi_total_relatorio += valor_sug
+    # 🔹 TABELAS
+    for secao, lista in tabelas.items():
+        html += f"<h2>{secao.upper()}</h2>"
 
-            linhas_sugestoes += f"""
-            <tr>
-                <td>{texto.upper()}</td>
-                <td><small>{cat_nome}</small></td>
-                <td style="text-align:right; font-weight:bold; color:#16a34a;">R$ {valor_sug:,.2f}</td>
-            </tr>
-            """
-        except: continue
+        if isinstance(lista, dict):
+            lista = list(lista.values())
 
+        if lista:
+            html += "<table><tr>"
 
+            cols = list(lista[0].keys())
+            for c in cols:
+                html += f"<th>{c}</th>"
+            html += "</tr>"
+
+            for item in lista:
+                html += "<tr>"
+                for c in cols:
+                    html += f"<td>{item.get(c, '')}</td>"
+                html += "</tr>"
+
+            html += "</table>"
+
+    # 🔥 DISC (CORRIGIDO E LIMPO)
+    perguntas_disc = [
+        "Quando surge um problema inesperado: (A) Age rápido | (B) Comunica a todos | (C) Analisa riscos | (D) Segue processo",
+        "Em situações de pressão: (A) Foca no resultado | (B) Mantém o otimismo | (C) Mantém a calma | (D) Busca precisão",
+        "Ao receber tarefa difícil: (A) Aceita o desafio | (B) Busca ajuda social | (C) Planeja passos | (D) Estuda regras",
+        "No trabalho em equipe: (A) Lidera | (B) Motiva | (C) Apoia | (D) Organiza",
+        "Em reuniões: (A) Direto ao ponto | (B) Interativo | (C) Escuta | (D) Detalhista",
+        "Ao lidar com conflitos: (A) Enfrenta | (B) Apazigua | (C) Evita | (D) Analisa",
+        "Seu ritmo de trabalho: (A) Rápido | (B) Entusiasmado | (C) Calmo | (D) Metódico",
+        "Prefere tarefas: (A) Desafiadoras | (B) Sociais | (C) Rotina | (D) Técnicas",
+        "Seu foco principal: (A) Resultado | (B) Pessoas | (C) Estabilidade | (D) Qualidade",
+        "Ao decidir: (A) Rápido | (B) Intuitivo | (C) Cauteloso | (D) Analítico",
+        "Confia mais em: (A) Intuição | (B) Opinião | (C) Experiência | (D) Dados",
+        "Prefere decisões: (A) Independentes | (B) Grupo | (C) Consenso | (D) Normas",
+        "Estilo de organização: (A) Prático | (B) Criativo | (C) Tradicional | (D) Organizado",
+        "Lida melhor com: (A) Mudanças | (B) Ideias | (C) Rotina | (D) Regras",
+        "Prefere trabalhar: (A) Sozinho | (B) Social | (C) Calmo | (D) Silencioso",
+        "Seu ponto forte: (A) Coragem | (B) Comunicação | (C) Paciência | (D) Organização",
+        "Você se considera: (A) Dominante | (B) Influente | (C) Estável | (D) Analítico",
+        "Se motiva por: (A) Poder | (B) Reconhecimento | (C) Segurança | (D) Conhecimento",
+        "Reação a cobranças: (A) Esforço | (B) Criatividade | (C) Ansiedade | (D) Técnica",
+        "Ambiente ideal: (A) Competitivo | (B) Amigável | (C) Previsível | (D) Disciplinado",
+        "Feedback: (A) Ajusta | (B) Debate | (C) Planeja | (D) Segue regras",
+        "Como aprende: (A) Fazendo | (B) Interagindo | (C) Observando | (D) Estudando",
+        "Gestão de tempo: (A) Resultado | (B) Relações | (C) Planejamento | (D) Processo",
+        "Como se comunica: (A) Direto | (B) Amigável | (C) Calmo | (D) Técnico"
+    ]
+
+    html += "<h2>DISC - Perguntas e Respostas</h2>"
+
+    for i, pergunta in enumerate(perguntas_disc):
+        resposta = disc.get(str(i), "NÃO RESPONDIDO")
+
+        html += f"""
+        <p>
+            <b>{i+1}. {pergunta}</b><br>
+            <b>Resposta marcada:</b> {resposta}
+        </p>
+        """
+
+    html += "</body></html>"
+
+    return html.encode("utf-8")
 
 
 # --- LISTA DE PERGUNTAS DISC ---
@@ -1850,42 +1920,31 @@ if st.session_state.get("pagina") == "visualizar":
                 else:
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
-                # --- BLOCO DE EXPORTAÇÃO PREMIUM (DENTRO DO EXPANDER) ---
+                # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
                 if st.session_state.get("usuario_logado") in ["Luciano 123", "JV 123"]:
                     st.markdown("---")
-                    st.subheader("⚙️ Painel de Exportação Executiva")
-
-                    # Preparação dos nomes para o arquivo
-                    data_raw = form.get('timestamp') or 'sem_data'
-                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
-                    nome_raw = (form.get('colaborador') or 'Colaborador').upper()
-                    nome_arquivo = f"Relatorio_Inovacao_{nome_raw}_{data_clean}"
+                    st.subheader("⚙️ Painel de Exportação")
 
                     col1_exp, col2_exp = st.columns(2)
 
-                    with col1_exp:
-                        # Geramos o HTML com o CSS embutido e a tabela de sugestões
-                        relatorio_html = gerar_pdf_html(form) 
-                        
-                        st.download_button(
-                            label="🌐 Baixar Relatório Executivo (HTML)",
-                            data=relatorio_html,
-                            file_name=f"{nome_arquivo}.html",
-                            mime="text/html",
-                            key=f"btn_html_premium_{id_atual}_{idx}"
-                        )
-                        st.caption("💡 Dica: Abra o arquivo e use `Ctrl + P` para salvar como um PDF perfeito.")
+                    data_raw = form.get('timestamp') or 'sem_data'
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
 
-                    with col2_exp:
-                        # Caso queira manter a opção em Word como backup
-                        word_file = gerar_word(form)
-                        st.download_button(
-                            label="📝 Baixar Backup (Word)",
-                            data=word_file,
-                            file_name=f"{nome_arquivo}.docx",
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            key=f"btn_word_premium_{id_atual}_{idx}"
-                        )
+                    nome_raw = form.get('colaborador') or 'Colaborador'
+                    nome_clean = str(nome_raw).replace(' ', '_')
+
+                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
+
+                    word_file = gerar_word(form)
+                    pdf_file = gerar_pdf(form)
+
+                    st.download_button(
+                        label="📑 Baixar PDF",
+                        data=gerar_pdf_html(form),
+                        file_name=f"{nome_arquivo}.html",
+                        mime="text/html",
+                        key=f"pdf_unico_{id_atual}_{idx}"
+                    )
 
         # --- SEÇÃO DE EXCLUSÃO VIRTUAL (FORA DO LOOP) ---
         st.markdown("---")
@@ -3580,13 +3639,13 @@ if st.session_state.pagina == "analise":
                     except:
                         continue
                 
-                # Removemos o IF para garantir que todos apareçam, mesmo com ROI 0
-                ranking_dados.append({
-                    "Colaborador": n_colab,
-                    "Qtd": len(s_lista),
-                    "H_Recup": t_h_poupadas,
-                    "ROI_Final": t_rs_recuperavel
-                })
+                if t_h_poupadas > 0:
+                    ranking_dados.append({
+                        "Colaborador": n_colab,
+                        "Qtd": len(s_lista),
+                        "H_Recup": t_h_poupadas,
+                        "ROI_Final": t_rs_recuperavel
+                    })
 
             # Gerar DataFrame e ordenar pelo Valor Real
             df_r = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
@@ -4159,3 +4218,4 @@ if st.session_state.get("pagina") == "analise":
                             st.table(df_analise.drop(columns=cols_remover))
                         else:
                             st.error("Erro ao carregar a tabela de análise.")
+
