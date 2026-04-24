@@ -4219,44 +4219,75 @@ if st.session_state.get("pagina") == "analise":
                         else:
                             st.error("Erro ao carregar a tabela de análise.")
 
-# --- BOTÃO DE EXPORTAÇÃO FINAL (DENTRO DO ELSE DA BASE) ---
-
-# Tentamos capturar as métricas globais para o relatório
-total_h = locals().get('total_geral_ano_horas', 0)
-total_rs = locals().get('total_financeiro', 0)
-nome_auditado = locals().get('colab_alvo', 'Geral')
-nexo_h = locals().get('h_total', 0)
-
-# Construção do HTML do Relatório Executivo
-html_relatorio = f"""
-<div style="font-family: sans-serif; padding: 20px; border: 1px solid #ccc;">
-    <h2 style="color: #2E3192;">📄 Relatório de Auditoria e Inovação</h2>
-    <hr>
-    <h3>📊 Indicadores Globais</h3>
-    <ul>
-        <li><b>Eficiência Anual:</b> {total_h:,.1f} horas</li>
-        <li><b>ROI Projetado:</b> R$ {total_rs:,.2f}</li>
-    </ul>
-    
-    <h3>⚖️ Auditoria Individual: {nome_auditado}</h3>
-    <ul>
-        <li><b>Carga Auditada:</b> {nexo_h:.2f} h/dia</li>
-        <li><b>Nexo Causal:</b> {locals().get('score', 0):.1f}%</li>
-    </ul>
-    <p><small>Gerado automaticamente pelo Motor de Perícia Ultra - Metodologia Gercino.</small></p>
-</div>
-"""
-
-# Exibição do Botão com Proteção Identada
+# --- EXPORTAÇÃO COMPLETA DA PÁGINA ---
 if 'base' in locals() and base:
-    st.divider()
-    st.markdown("### 📄 Exportação Executiva Final")
-    
+    # 1. Coleta de dados do Ranking (Tabela que você já tem no DF)
+    try:
+        tabela_ranking_html = df_r.to_html(classes='table', index=False)
+    except:
+        tabela_ranking_html = "<p>Dados de ranking não disponíveis no momento.</p>"
+
+    # 2. Coleta de dados da Auditoria Individual (Checklist de Status)
+    try:
+        tabela_auditoria_html = pd.DataFrame(res_final).to_html(classes='table', index=False) if 'res_final' in locals() else ""
+    except:
+        tabela_auditoria_html = "<p>Detalhes da auditoria individual não disponíveis.</p>"
+
+    # 3. Montagem do HTML Completo (Sem "Gercino")
+    html_completo = f"""
+    <html>
+    <head>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; color: #333; }}
+            .header {{ background-color: #2E3192; color: white; padding: 20px; text-align: center; border-radius: 8px; }}
+            .metric-container {{ display: flex; justify-content: space-around; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 8px; }}
+            .metric-box {{ text-align: center; }}
+            .metric-value {{ font-size: 24px; font-weight: bold; color: #2E3192; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+            th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+            th {{ background-color: #f2f2f2; }}
+            .footer {{ margin-top: 50px; font-size: 10px; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🚨 Relatório Consolidado: Auditoria e Inovação</h1>
+        </div>
+
+        <h2>📈 Dashboard de Impacto Estratégico Global</h2>
+        <div class="metric-container">
+            <div class="metric-box"><div>Eficiência Recuperável</div><div class="metric-value">{total_geral_ano_horas:,.1f} h/ano</div></div>
+            <div class="metric-box"><div>ROI Projetado (EBITDA)</div><div class="metric-value">R$ {total_financeiro:,.2f}</div></div>
+            <div class="metric-box"><div>Ganho de Capacidade</div><div class="metric-value">{total_geral_ano_horas/8:,.1f} Dias</div></div>
+        </div>
+
+        <h2>🏆 Ranking de Inovação</h2>
+        {tabela_ranking_html}
+
+        <hr>
+
+        <h2>⚖️ Auditoria de Gargalos: {colab_alvo}</h2>
+        <div class="metric-container">
+            <div class="metric-box"><div>Carga Auditada</div><div class="metric-value">{h_total:.2f} h/dia</div></div>
+            <div class="metric-box"><div>Nexo Causal</div><div class="metric-value">{score:.1f}%</div></div>
+        </div>
+
+        <h3>📋 Análise Crítica de Atividades</h3>
+        {tabela_auditoria_html}
+
+        <div class="footer">
+            Gerado automaticamente pelo Motor de Perícia Ultra - Auditoria Interna de Processos.
+        </div>
+    </body>
+    </html>
+    """
+
+    st.markdown("---")
     st.download_button(
-        label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
-        data=html_relatorio,
-        file_name=f"Auditoria_Final_{nome_auditado}.html",
+        label="📥 EXPORTAR RELATÓRIO COMPLETO (PDF/HTML)",
+        data=html_completo,
+        file_name=f"Relatorio_Auditoria_Inovacao_{colab_alvo}.html",
         mime="text/html",
         use_container_width=True,
-        key="btn_export_final_ultra_gercino"
+        key="btn_full_export_pericia"
     )
