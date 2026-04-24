@@ -4221,91 +4221,109 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- 1. CONFIGURAÇÃO DE DADOS LIMPOS ---
-# O código abaixo garante que cada informação apareça apenas uma vez
 
-html_sugestoes = ""
-sugestoes_vistas = set()
-for f in base:
-    nome = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
-    for sug in f.get('tabelas', {}).get('sugestoes', []):
-        texto_sug = sug.get('Sugestão', 'N/A')
-        # Evita duplicados exatos
-        chave = f"{nome}-{texto_sug}"
-        if chave not in sugestoes_vistas and texto_sug.lower() != 'nenhuma':
-            sugestoes_vistas.add(chave)
-            h = sug.get('Horas', '0')
-            m = sug.get('Minutos', '0')
-            html_sugestoes += f"""
-            <tr>
-                <td style='color:#52c41a; text-align:center;'>💡</td>
-                <td><b>{nome}</b></td>
-                <td>{texto_sug}</td>
-                <td style='text-align:center;'>{sug.get('Frequência', 'M')}</td>
-                <td style='text-align:right;'>{h}h {m}m</td>
-            </tr>"""
+# --- 1. CÁLCULO DE MÉTRICAS GLOBAIS (PARA OS CARDS) ---
+df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
+sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
 
-html_gargalos = ""
+v_bruto_final = 0.0
+horas_totais_ano = 0.0
+
+for s in sugestoes_lista:
+    try:
+        h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
+        m_limpo = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
+        f_tipo = str(s.get('Frequência', 'M')).upper().strip()
+        m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
+        
+        horas_tarefa = (h_limpo + (m_limpo/60)) * m_anual
+        horas_totais_ano += horas_tarefa
+        v_bruto_final += horas_tarefa * 65.0
+    except:
+        continue
+
+ganho_capacidade_dias = horas_totais_ano / 8
+roi_real_auditado = v_bruto_final * 0.53
+
+# --- 2. GERAÇÃO DINÂMICA SEM DUPLICIDADES ---
+linhas_atividades_html = ""
+atividades_vistas = set()
+for item in res_final:
+    chave = f"{item['Atividade']}-{item['Impacto']}"
+    if chave not in atividades_vistas:
+        atividades_vistas.add(chave)
+        cor_st = "#52c41a" if item['Status'] == "✅" else "#ff4d4f"
+        linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center; font-weight:bold;'>{item['Status']}</td><td>{item['Atividade']}</td><td>{item['Impacto']}</td><td>{item['Análise Crítica']}</td></tr>"
+
+linhas_gargalos_html = ""
 gargalos_vistos = set()
-for f in base:
-    nome = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
-    for g in f.get('tabelas', {}).get('dificuldades', []):
-        dif = g.get('Dificuldade', 'N/A')
-        chave = f"{nome}-{dif}"
-        if chave not in gargalos_vistos and dif.lower() not in ['n/a', 'nenhuma']:
-            gargalos_vistos.add(chave)
-            html_gargalos += f"""
-            <tr>
-                <td style='color:#ff4d4f; text-align:center;'>⚠️</td>
-                <td><b>{nome}</b></td>
-                <td>{g.get('Setor', 'Operacional')}</td>
-                <td>{dif}</td>
-            </tr>"""
+for d in res_dificuldades:
+    dif_txt = d['Dificuldade']
+    if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
+        gargalos_vistos.add(dif_txt)
+        cor_st = "#52c41a" if d['Status'] == "✅" else "#ff4d4f"
+        linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{d['Status']}</td><td>{d['Setor']}</td><td>{dif_txt}</td><td>{d['Impacto Diário']}</td><td>{d['Análise do Perito']}</td></tr>"
 
-# --- 2. ESTRUTURA DO HTML (LIMPA E PROFISSIONAL) ---
+# --- 3. ESTRUTURA HTML COM CARDS E MÉTRICAS ---
 html_final = f"""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
     <style>
-        body {{ font-family: 'Segoe UI', sans-serif; padding: 30px; color: #333; }}
-        .header-banner {{ background: #1B1E5D; color: white; padding: 25px; border-radius: 12px; text-align: center; }}
-        .section-title {{ background: #1B1E5D; color: white; padding: 8px 15px; border-radius: 5px; margin-top: 25px; font-size: 13px; text-transform: uppercase; }}
-        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }}
-        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
-        td {{ padding: 8px; border-bottom: 1px solid #eee; }}
+        body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }}
+        .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
+        .container-metrics {{ display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }}
+        .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
+        .metric-box label {{ font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold; }}
+        .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
+        .impact-grid {{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 30px; }}
+        .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
+        .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
+        .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+        th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 12px; border-bottom: 2px solid #1B1E5D; }}
+        td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
+        .status-alert {{ padding: 15px; border-radius: 10px; margin-bottom: 30px; font-weight: bold; border-left: 10px solid; }}
+        .alerta-verde {{ background: #f6ffed; border-color: #52c41a; color: #237804; }}
     </style>
 </head>
 <body>
     <div class='header-banner'>
-        <h1>🛡️ AUDITORIA OPERACIONAL ESTRATÉGICA</h1>
-        <p>Mapeamento Consolidado de Eficiência e Barreiras</p>
+        <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
+        <h2>{colab_alvo}</h2>
     </div>
 
-    <div class='section-title'>💡 OPORTUNIDADES DE INOVAÇÃO E MELHORIA</div>
-    <table>
-        <thead><tr><th>ST</th><th>AUTOR</th><th>SUGESTÃO DE MELHORIA</th><th>FREQ.</th><th>POTENCIAL ECONOMIA</th></tr></thead>
-        <tbody>{html_sugestoes}</tbody>
-    </table>
-
-    <div class='section-title'>⚠️ MAPA DE GARGALOS OPERACIONAIS</div>
-    <table>
-        <thead><tr><th>ST</th><th>COLABORADOR</th><th>SETOR</th><th>DIFICULDADE RELATADA</th></tr></thead>
-        <tbody>{html_gargalos}</tbody>
-    </table>
-
-    <div style='margin-top: 30px; text-align: center; font-size: 10px; color: #aaa;'>
-        Relatório Gerencial de Auditoria - 2026
+    <div class='container-metrics'>
+        <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total:.2f}h/dia</div></div>
+        <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score:.1f}%</div></div>
+        <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
     </div>
+
+    <div class='impact-grid'>
+        <div class='impact-card'><label>⚡ Eficiência Recuperável</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
+        <div class='impact-card'><label>📅 Ganho de Capacidade</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
+        <div class='impact-card'><label>🏆 ROI Real Auditado</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
+        <div class='impact-card'><label>🔬 Status do Ranking</label><div class='value'>Sincronizado</div></div>
+    </div>
+
+    <div class='status-alert alerta-verde'>
+        PARECER TÉCNICO: <span style='font-weight: normal;'>CONFORMIDADE OPERACIONAL</span>
+    </div>
+
+    <h3>📋 Auditoria de Nexo Causal</h3>
+    <table>
+        <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
+        <tbody>{linhas_atividades_html}</tbody>
+    </table>
+
+    <h3>⚠️ Gargalos Operacionais</h3>
+    <table>
+        <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>IMPACTO</th><th>PARECER</th></tr></thead>
+        <tbody>{linhas_gargalos_html}</tbody>
+    </table>
 </body>
 </html>
 """
 
-# --- 3. DOWNLOAD ---
-st.download_button(
-    label="📥 BAIXAR RELATÓRIO LIMPO", 
-    data=html_final, 
-    file_name="Auditoria_Estrategica_Limpa.html", 
-    mime="text/html"
-)
+st.download_button(label="📥 BAIXAR LAUDO PERICIAL COMPLETO", data=html_final, file_name=f"Laudo_{colab_alvo}.html", mime="text/html")
