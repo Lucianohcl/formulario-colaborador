@@ -163,50 +163,112 @@ def gerar_word(form):
 
 def gerar_pdf_html(form):
     campos = form.get("campos", {})
-    tabelas = form.get("tabelas", {})
-    disc = form.get("disc", {})
-    nome = form.get("colaborador", "Colaborador")
+    sugestoes = form.get("tabelas", {}).get("sugestoes", []) or form.get("sugestoes", [])
+    nome = str(form.get("colaborador", "COLABORADOR")).upper()
     data = form.get("timestamp", "")
 
+    # --- LÓGICA DO MOTOR ULTRA (PARA O RELATÓRIO) ---
+    linhas_sugestoes = ""
+    roi_total_relatorio = 0.0
+
+    for s in sugestoes:
+        texto = str(s.get('Sugestão', '')).strip()
+        if texto.lower() in ["nenhuma", "nada", "n/a", "", "nenhuma melhoria"]: continue
+
+        try:
+            # Limpeza de números igual ao app
+            h = int(''.join(filter(str.isdigit, str(s.get('Horas', '0')))) or 0)
+            m = int(''.join(filter(str.isdigit, str(s.get('Minutos', '0')))) or 0)
+            f_sug = str(s.get('Frequência', 'M')).upper().strip()
+            mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_sug, 12)
+            
+            # DNA da Inovação
+            analise = (texto + " " + str(s.get('Categoria', ''))).lower()
+            if any(k in analise for k in ['ia', 'python', 'api', 'automacao', 'digital', 'robo']):
+                fator, cat_nome = 0.85, "TRANSFORMAÇÃO DIGITAL"
+            elif any(k in analise for k in ['pop', 'checklist', 'processo', 'padronizar']):
+                fator, cat_nome = 0.45, "OTIMIZAÇÃO DE PROCESSO"
+            else:
+                fator, cat_nome = 0.20, "MELHORIA INCREMENTAL"
+
+            valor_sug = ((h + (m/60)) * mult * fator * 65.0)
+            roi_total_relatorio += valor_sug
+
+            linhas_sugestoes += f"""
+            <tr>
+                <td>{texto.upper()}</td>
+                <td><small>{cat_nome}</small></td>
+                <td style="text-align:right; font-weight:bold; color:#16a34a;">R$ {valor_sug:,.2f}</td>
+            </tr>
+            """
+        except: continue
+
+    # --- MONTAGEM DO HTML COM CSS PREMIUM ---
     html = f"""
     <html>
     <head>
+        <meta charset="UTF-8">
         <style>
-            body {{
-                font-family: Arial;
-                padding: 20px;
-            }}
-            h1 {{
-                color: #2c3e50;
-            }}
-            h2 {{
-                margin-top: 20px;
-                border-bottom: 1px solid #ccc;
-                padding-bottom: 5px;
-            }}
-            table {{
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 10px;
-            }}
-            th, td {{
-                border: 1px solid #ddd;
-                padding: 6px;
-                font-size: 12px;
-            }}
-            th {{
-                background: #f2f2f2;
-            }}
+            @page {{ margin: 10mm; }}
+            body {{ font-family: 'Segoe UI', Arial, sans-serif; color: #1e293b; background: #f8fafc; padding: 20px; }}
+            .paper {{ background: white; padding: 30px; border-radius: 8px; border-top: 12px solid #1e3a8a; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }}
+            .header {{ border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; }}
+            h1 {{ color: #1e3a8a; font-size: 22px; margin: 0; }}
+            .roi-card {{ background: #f1f5f9; border-left: 5px solid #22c55e; padding: 15px; margin: 20px 0; }}
+            .roi-label {{ font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: bold; }}
+            .roi-value {{ font-size: 28px; color: #15803d; font-weight: bold; }}
+            .section-title {{ font-size: 14px; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
+            th {{ background: #f8fafc; text-align: left; padding: 10px; font-size: 11px; color: #475569; border-bottom: 2px solid #e2e8f0; }}
+            td {{ padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: top; }}
+            .footer {{ text-align: center; font-size: 10px; color: #94a3b8; margin-top: 30px; }}
         </style>
     </head>
-
     <body>
-        <h1>Relatório: {nome}</h1>
-        <p><b>Data:</b> {data}</p>
+        <div class="paper">
+            <div class="header">
+                <div>
+                    <h1>AUDITORIA DE CAPITAL INTELECTUAL</h1>
+                    <p style="margin:0; font-size:12px; color:#64748b;">Relatório Gerencial de ROI e Eficiência</p>
+                </div>
+            </div>
 
-        <h2>Campos</h2>
-        {"".join([f"<p><b>{k}:</b> {v}</p>" for k, v in campos.items()])}
+            <p><b>AUDITADO:</b> {nome}<br>
+            <b>DATA DA EMISSÃO:</b> {data}</p>
+
+            <div class="roi-card">
+                <div class="roi-label">Valor Anual Recuperável (Auditado)</div>
+                <div class="roi-value">R$ {roi_total_relatorio:,.2f}</div>
+            </div>
+
+            <div class="section-title">Análise de Oportunidades e Sugestões</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>DESCRIÇÃO DA SUGESTÃO</th>
+                        <th>CLASSIFICAÇÃO DNA</th>
+                        <th style="text-align:right">VALOR/ANO</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {linhas_sugestoes}
+                </tbody>
+            </table>
+
+            <div class="section-title">Dados Complementares</div>
+            <div style="font-size:12px; margin-top:10px;">
+                {"".join([f"<p><b>{k}:</b> {v}</p>" for k, v in campos.items() if v])}
+            </div>
+
+            <div class="footer">
+                Metodologia Gercino: Ponderação Dinâmica de Impacto (85% | 45% | 20%).<br>
+                Este documento é uma simulação de ganho real baseada em custo de oportunidade.
+            </div>
+        </div>
+    </body>
+    </html>
     """
+    return html
 
     # 🔹 TABELAS
     for secao, lista in tabelas.items():
@@ -1920,31 +1982,42 @@ if st.session_state.get("pagina") == "visualizar":
                 else:
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
-                # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
-                if st.session_state.get("usuario_logado") == "Luciano 123":
+                # --- BLOCO DE EXPORTAÇÃO PREMIUM (DENTRO DO EXPANDER) ---
+                if st.session_state.get("usuario_logado") in ["Luciano 123", "JV 123"]:
                     st.markdown("---")
-                    st.subheader("⚙️ Painel de Exportação")
+                    st.subheader("⚙️ Painel de Exportação Executiva")
+
+                    # Preparação dos nomes para o arquivo
+                    data_raw = form.get('timestamp') or 'sem_data'
+                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    nome_raw = (form.get('colaborador') or 'Colaborador').upper()
+                    nome_arquivo = f"Relatorio_Inovacao_{nome_raw}_{data_clean}"
 
                     col1_exp, col2_exp = st.columns(2)
 
-                    data_raw = form.get('timestamp') or 'sem_data'
-                    data_clean = str(data_raw).replace('/', '').replace(' ', '_').replace(':', '')
+                    with col1_exp:
+                        # Geramos o HTML com o CSS embutido e a tabela de sugestões
+                        relatorio_html = gerar_pdf_html(form) 
+                        
+                        st.download_button(
+                            label="🌐 Baixar Relatório Executivo (HTML)",
+                            data=relatorio_html,
+                            file_name=f"{nome_arquivo}.html",
+                            mime="text/html",
+                            key=f"btn_html_premium_{id_atual}_{idx}"
+                        )
+                        st.caption("💡 Dica: Abra o arquivo e use `Ctrl + P` para salvar como um PDF perfeito.")
 
-                    nome_raw = form.get('colaborador') or 'Colaborador'
-                    nome_clean = str(nome_raw).replace(' ', '_')
-
-                    nome_arquivo = f"Relatorio_{nome_clean}_{data_clean}"
-
-                    word_file = gerar_word(form)
-                    pdf_file = gerar_pdf(form)
-
-                    st.download_button(
-                        label="📑 Baixar PDF",
-                        data=gerar_pdf_html(form),
-                        file_name=f"{nome_arquivo}.html",
-                        mime="text/html",
-                        key=f"pdf_unico_{id_atual}_{idx}"
-                    )
+                    with col2_exp:
+                        # Caso queira manter a opção em Word como backup
+                        word_file = gerar_word(form)
+                        st.download_button(
+                            label="📝 Baixar Backup (Word)",
+                            data=word_file,
+                            file_name=f"{nome_arquivo}.docx",
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            key=f"btn_word_premium_{id_atual}_{idx}"
+                        )
 
         # --- SEÇÃO DE EXCLUSÃO VIRTUAL (FORA DO LOOP) ---
         st.markdown("---")
