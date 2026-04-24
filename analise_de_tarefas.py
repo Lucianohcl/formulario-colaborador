@@ -4234,18 +4234,14 @@ if st.session_state.get("pagina") == "analise":
     linhas_gargalos_html = ""
     ranking_final_html = ""
     linhas_sugestoes_html = ""
-    # v_bruto_final removido para evitar inflação de valores
     horas_totais_ano = ganho_capacidade_dias = roi_real_auditado = 0.0
 
     # 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS (INDIVIDUALIZADO)
     if 'ranking_dados' in locals() and ranking_dados:
         df_rank_calc = pd.DataFrame(ranking_dados)
-        
-        # Define se o laudo é de um colaborador específico ou consolidado
         colab_atual = colab_alvo if 'colab_alvo' in locals() else "CONSOLIDADO"
         
         if colab_atual != "CONSOLIDADO":
-            # Filtra apenas os dados do colaborador alvo para o topo do laudo
             df_perito = df_rank_calc[df_rank_calc['Colaborador'] == colab_atual]
         else:
             df_perito = df_rank_calc
@@ -4254,8 +4250,14 @@ if st.session_state.get("pagina") == "analise":
         roi_real_auditado = df_perito['ROI_Final'].sum()
         ganho_capacidade_dias = horas_totais_ano / 8
 
-    # 3. EXTRAÇÃO DE DIFICULDADES (BEBENDO DO JSON FORNECIDO)
-    # Busca na t_base ou no resultado processado
+    # 3. EXTRAÇÃO DE DIFICULDADES E ATIVIDADES (NEXO CAUSAL)
+    # --- Atividades ---
+    if 'res_final' in locals() and res_final:
+        for item in res_final:
+            cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
+            linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
+
+    # --- Dificuldades ---
     dificuldades_lista = []
     if 't_base' in locals() and 'tabelas' in t_base and 'dificuldades' in t_base['tabelas']:
         dificuldades_lista = t_base['tabelas']['dificuldades']
@@ -4268,13 +4270,7 @@ if st.session_state.get("pagina") == "analise":
         if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
             gargalos_vistos.add(dif_txt)
             setor_dif = d.get('Setor Envolvido') or d.get('Setor', 'Operacional')
-            linhas_gargalos_html += f"""
-            <tr>
-                <td style='color:#ff4d4f; text-align:center;'>⚠️</td>
-                <td>{setor_dif}</td>
-                <td>{dif_txt}</td>
-                <td>Parecer: Obstrução de fluxo identificada. Impacto estimado em {d.get('Horas','0')}h.</td>
-            </tr>"""
+            linhas_gargalos_html += f"<tr><td style='color:#ff4d4f; text-align:center;'>⚠️</td><td>{setor_dif}</td><td>{dif_txt}</td><td>Parecer: Obstrução de fluxo identificada. Impacto estimado em {d.get('Horas','0')}h.</td></tr>"
 
     # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
     if 'df_analise' in locals() and not df_analise.empty:
@@ -4287,7 +4283,7 @@ if st.session_state.get("pagina") == "analise":
             cor_pos = "#FFD700" if i == 1 else "#1B1E5D"
             ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_pos};'>{i}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
 
-    # 5. MONTAGEM DA ESTRUTURA HTML FINAL (100% AUDITADO E LIMPO)
+    # 5. MONTAGEM DA ESTRUTURA HTML FINAL
     html_final = f"""
     <!DOCTYPE html>
     <html>
@@ -4322,13 +4318,19 @@ if st.session_state.get("pagina") == "analise":
         <div class='section-title'>💡 OPORTUNIDADES E SUGESTÕES DE MELHORIA</div>
         <table>
             <thead><tr><th>ESTRATÉGIA</th><th>SUGESTÃO TÉCNICA</th><th>ECONOMIA ESTIMADA</th><th>VALOR RECUPERÁVEL</th></tr></thead>
-            <tbody>{linhas_sugestoes_html if linhas_sugestoes_html else "<tr><td colspan='4' style='text-align:center;'>Nenhuma sugestão processada para este perfil.</td></tr>"}</tbody>
+            <tbody>{linhas_sugestoes_html}</tbody>
+        </table>
+
+        <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
+        <table>
+            <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
+            <tbody>{linhas_atividades_html}</tbody>
         </table>
 
         <div class='section-title'>⚠️ GARGALOS E DIFICULDADES IDENTIFICADAS</div>
         <table>
             <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE MAPEADA</th><th>ANÁLISE DO PERITO</th></tr></thead>
-            <tbody>{linhas_gargalos_html if linhas_gargalos_html else "<tr><td colspan='4' style='text-align:center;'>Nenhum gargalo crítico identificado.</td></tr>"}</tbody>
+            <tbody>{linhas_gargalos_html}</tbody>
         </table>
 
         <div class='section-title'>🏆 RANKING GERAL DE PERFORMANCE E ROI</div>
