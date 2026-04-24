@@ -4222,6 +4222,7 @@ if st.session_state.get("pagina") == "analise":
 
 # --- FINALIZAÇÃO DO CÁLCULO DE ROI ---
         v_bruto_final = 0.0
+        sugestoes_lista = df_selecionado.to_dict('records')
         for s in sugestoes_lista:
             try:
                 h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
