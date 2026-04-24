@@ -4289,7 +4289,7 @@ if st.session_state.get("pagina") == "analise":
         <body>
             <div class='header-banner'>
                 <h1>🛡️ RELATÓRIO DE AUDITORIA ULTRA</h1>
-                <p style='margin: 5px 0 0 0; opacity: 0.8;'>Metodologia Gercino de Inteligência Operacional</p>
+                <p style='margin: 5px 0 0 0; opacity: 0.8;'>Metodologia inteligência Operacional</p>
                 <h2 style='margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px;'>{colab_alvo}</h2>
             </div>
 
