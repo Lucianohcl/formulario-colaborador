@@ -4249,7 +4249,7 @@ html_gargalos = ""
 gargalos_vistos = set()
 for f in base:
     nome = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
-    for g em f.get('tabelas', {}).get('dificuldades', []):
+    for g in f.get('tabelas', {}).get('dificuldades', []):
         dif = g.get('Dificuldade', 'N/A')
         chave = f"{nome}-{dif}"
         if chave not in gargalos_vistos and dif.lower() not in ['n/a', 'nenhuma']:
