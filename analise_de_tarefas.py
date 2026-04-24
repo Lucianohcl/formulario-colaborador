@@ -2300,38 +2300,6 @@ def gerar_analise_corporativa(dados, client=None):
 
     return parecer, indicadores
 
-# ============================================================
-# GERAR PDF DO PARECER
-# ============================================================
-
-def gerar_pdf(parecer, nome):
-    """
-    Recebe:
-    - parecer (texto)
-    - nome do colaborador
-    Cria arquivo PDF pronto para download
-    """
-    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-    from reportlab.lib.styles import getSampleStyleSheet
-    from reportlab.lib.units import inch
-
-    nome_arquivo = f"{nome}_parecer.pdf"
-    doc = SimpleDocTemplate(nome_arquivo)
-    elements = []
-    styles = getSampleStyleSheet()
-
-    # Título
-    elements.append(Paragraph("PARECER ESTRATÉGICO ORGANIZACIONAL", styles["Title"]))
-    elements.append(Spacer(1, 0.5*inch))
-
-    # Conteúdo linha a linha
-    for linha in parecer.split("\n"):
-        if linha.strip():  # evita parágrafos vazios
-            elements.append(Paragraph(linha, styles["Normal"]))
-            elements.append(Spacer(1, 0.2*inch))
-
-    doc.build(elements)
-    return nome_arquivo
 
 # ============================================================
 # PASTA BASE PARA FORMULÁRIOS (JSON)
