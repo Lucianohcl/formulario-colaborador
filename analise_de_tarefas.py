@@ -4235,41 +4235,28 @@ horas_totais_ano = 0.0
 ganho_capacidade_dias = 0.0
 roi_real_auditado = 0.0
 
-# 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS
-df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
-sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
-
-for s in sugestoes_lista:
-    try:
-        h_limpo = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
-        m_limpo = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
-        f_tipo = str(s.get('Frequência', 'M')).upper().strip()
-        m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
-        
-        horas_tarefa = (h_limpo + (m_limpo/60)) * m_anual
-        horas_totais_ano += horas_tarefa
-        v_bruto_final += horas_tarefa * 65.0
-    except:
-        continue
-
-ganho_capacidade_dias = horas_totais_ano / 8
-roi_real_auditado = v_bruto_final * 0.53
-
-# 3. GERAÇÃO DO RANKING / SCORE
+# 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS (CONSOLIDADO PARA NÃO ZERAR)
 if 'ranking_dados' in locals() and ranking_dados:
-    df_ranking_auditado = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
+    df_rank_calc = pd.DataFrame(ranking_dados)
+    # AQUI ESTÁ O PULO DO GATO: Pegamos o total da EQUIPE para os cards
+    horas_totais_ano = df_rank_calc['H_Recup'].sum()
+    roi_real_auditado = df_rank_calc['ROI_Final'].sum()
+    v_bruto_final = roi_real_auditado / 0.53  # EBITDA Estimado
+    ganho_capacidade_dias = horas_totais_ano / 8
+else:
+    v_bruto_final = horas_totais_ano = ganho_capacidade_dias = roi_real_auditado = 0.0
+
+# 3. GERAÇÃO DO RANKING / SCORE (HTML)
+ranking_final_html = ""
+if 'ranking_dados' in locals() and ranking_dados:
+    # Já temos o df_rank_calc do passo anterior
+    df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
     posicao = 1
     for _, row in df_ranking_auditado.iterrows():
         cor_posicao = "#FFD700" if posicao == 1 else "#1B1E5D"
-        ranking_final_html += f"""
-        <tr>
-            <td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td>
-            <td><b>{row['Colaborador']}</b></td>
-            <td style='text-align:center;'>{row['Qtd']}</td>
-            <td style='text-align:right;'>{row['H_Recup']:.1f}h</td>
-            <td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td>
-        </tr>"""
+        ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
         posicao += 1
+
 
 # 4. GERAÇÃO DE ATIVIDADES (SEM DUPLICATAS)
 atividades_vistas = set()
