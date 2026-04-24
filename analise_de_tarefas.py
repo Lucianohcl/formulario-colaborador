@@ -4356,65 +4356,45 @@ with c2:
 with c3:
     st.metric("ROI Real (53%)", f"R$ {roi_real_auditado:,.2f}", delta=f"{ganho_capacidade_dias:.1f} dias/cap.")
 
-# --- TABELA DE SUGESTÕES DETALHADA ---
-st.markdown("#### 💡 DETALHAMENTO DAS OPORTUNIDADES")
-
-# Preparando os dados para a tabela visual
-sugestoes_visuais = []
-for s in sugestoes_lista:
-    if str(s.get('Sugestão', '')).lower() not in ['nenhuma', 'n/a', '']:
-        sugestoes_visuais.append({
-            "Autor": (s.get('colaborador') or s.get('nome') or "Consultor").upper(),
-            "Sugestão": s.get('Sugestão'),
-            "Freq": s.get('Frequência', 'M'),
-            "Tempo Est.": f"{s.get('Horas', 0)}h {s.get('Minutos', 0)}m"
-        })
-
-if sugestoes_visuais:
-    st.table(sugestoes_visuais)
-else:
-    st.warning("⚠️ Nenhuma sugestão de melhoria quantificável encontrada para este colaborador.")
-
-st.divider() # Linha visual antes do botão de download
-
-
-# --- EXIBIÇÃO FINAL: SUGESTÕES E CARDS DO COLABORADOR ---
+# ==========================================
+# --- EXIBIÇÃO FINAL PRÉ-DOWNLOAD ---
+# ==========================================
 st.divider()
-st.markdown(f"### 💡 SUGESTÕES: {colab_alvo}")
+st.markdown(f"#### 💡 DETALHAMENTO DE OPORTUNIDADES: {colab_alvo}")
 
-# Cards Rápidos do Colaborador Selecionado
+# 1. Filtro de Segurança para Sugestões Reais
+sug_validas = [s for s in sugestoes_lista if str(s.get('Sugestão','')).lower() not in ['nenhuma', 'n/a', '', 'nan']]
+
+# 2. Cards do Colaborador (Usando as variáveis calculadas no bloco anterior)
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.metric("EBITDA Indiv.", f"R$ {v_bruto_final:,.2f}")
+    st.metric("EBITDA Individual", f"R$ {v_bruto_final:,.2f}")
 with c2:
-    st.metric("Horas/Ano", f"{horas_totais_ano:.1f}h")
+    st.metric("Eficiência Anual", f"{horas_totais_ano:.1f} h/ano")
 with c3:
-    st.metric("ROI (53%)", f"R$ {roi_real_auditado:,.2f}")
+    st.metric("ROI Auditado (53%)", f"R$ {roi_real_auditado:,.2f}")
 
-# Tabela de Sugestões Real
-if sugestoes_lista:
-    sug_df = pd.DataFrame([
+# 3. Tabela Visual
+if sug_validas:
+    df_sug_visual = pd.DataFrame([
         {
-            "Sugestão": s.get('Sugestão', 'N/A'),
+            "Sugestão": s.get('Sugestão'),
             "Impacto": s.get('Impacto', 'N/A'),
-            "Tempo": f"{s.get('Horas',0)}h {s.get('Minutos',0)}m",
+            "Tempo": f"{s.get('Horas', 0)}h {s.get('Minutos', 0)}m",
             "Frequência": s.get('Frequência', 'M')
-        } for s in sugestoes_lista if str(s.get('Sugestão','')).lower() not in ['nenhuma', 'n/a', '']
+        } for s in sug_validas
     ])
-    
-    if not sug_df.empty:
-        st.table(sug_df)
-    else:
-        st.info("ℹ️ Este colaborador não registrou sugestões de melhoria quantificáveis.")
+    st.table(df_sug_visual)
+else:
+    st.warning(f"⚠️ Nenhuma sugestão quantificável encontrada para {colab_alvo}.")
 
 st.divider()
 
-
-# 7. BOTÃO DE DOWNLOAD
+# 4. BOTÃO DE DOWNLOAD (Garante que o html_final já foi gerado acima)
 st.download_button(
     label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
     data=html_final, 
-    file_name=f"Laudo_Auditoria_{colab_alvo if 'colab_alvo' in locals() else 'Geral'}.html", 
+    file_name=f"Laudo_{colab_alvo}.html", 
     mime="text/html",
     use_container_width=True
 )
