@@ -4222,12 +4222,22 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- 1. CÁLCULO DE MÉTRICAS (PRECISA VIR ANTES DE TUDO) ---
-df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
-sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
+# =================================================================
+# --- BLOCO INTEGRAL: GERAÇÃO DO LAUDO PERICIAL 2026 ---
+# =================================================================
 
+# 1. INICIALIZAÇÃO DE SEGURANÇA (Evita NameError)
+linhas_atividades_html = ""
+linhas_gargalos_html = ""
+ranking_final_html = ""
 v_bruto_final = 0.0
 horas_totais_ano = 0.0
+ganho_capacidade_dias = 0.0
+roi_real_auditado = 0.0
+
+# 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS
+df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
+sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
 
 for s in sugestoes_lista:
     try:
@@ -4245,8 +4255,7 @@ for s in sugestoes_lista:
 ganho_capacidade_dias = horas_totais_ano / 8
 roi_real_auditado = v_bruto_final * 0.53
 
-# --- 2. GERAÇÃO DO RANKING/SCORE ---
-ranking_final_html = ""
+# 3. GERAÇÃO DO RANKING / SCORE
 if 'ranking_dados' in locals() and ranking_dados:
     df_ranking_auditado = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
     posicao = 1
@@ -4262,7 +4271,27 @@ if 'ranking_dados' in locals() and ranking_dados:
         </tr>"""
         posicao += 1
 
-# --- 3. ESTRUTURA FINAL (INCLUINDO AS VARIÁVEIS NO CORPO) ---
+# 4. GERAÇÃO DE ATIVIDADES (SEM DUPLICATAS)
+atividades_vistas = set()
+if 'res_final' in locals() and res_final:
+    for item in res_final:
+        chave = f"{item.get('Atividade')}-{item.get('Impacto')}"
+        if chave not in atividades_vistas:
+            atividades_vistas.add(chave)
+            cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
+            linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
+
+# 5. GERAÇÃO DE GARGALOS (SEM DUPLICATAS)
+gargalos_vistos = set()
+if 'res_dificuldades' in locals() and res_dificuldades:
+    for d in res_dificuldades:
+        dif_txt = d.get('Dificuldade', 'N/A')
+        if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
+            gargalos_vistos.add(dif_txt)
+            cor_st = "#52c41a" if d.get('Status') == "✅" else "#ff4d4f"
+            linhas_gargalos_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{d.get('Status','⚠️')}</td><td>{d.get('Setor','N/A')}</td><td>{dif_txt}</td><td>{d.get('Análise do Perito','N/A')}</td></tr>"
+
+# 6. MONTAGEM DA ESTRUTURA HTML FINAL
 html_final = f"""
 <!DOCTYPE html>
 <html>
@@ -4279,8 +4308,8 @@ html_final = f"""
         .impact-card {{ background: #f0f4f8; padding: 15px; border-radius: 12px; border-left: 5px solid #1B1E5D; }}
         .impact-card label {{ font-size: 10px; font-weight: bold; color: #555; text-transform: uppercase; }}
         .impact-card .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
-        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 14px; }}
-        table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin: 30px 0 10px 0; font-size: 14px; }}
+        table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
         th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
         td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
     </style>
@@ -4288,12 +4317,12 @@ html_final = f"""
 <body>
     <div class='header-banner'>
         <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
-        <h2>{colab_alvo}</h2>
+        <h2>{colab_alvo if 'colab_alvo' in locals() else 'CONSOLIDADO'}</h2>
     </div>
 
     <div class='container-metrics'>
-        <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total:.2f}h/dia</div></div>
-        <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score:.1f}%</div></div>
+        <div class='metric-box'><label>Jornada Mapeada</label><div class='value'>{h_total if 'h_total' in locals() else 0:.2f}h/dia</div></div>
+        <div class='metric-box'><label>Nexo de Coerência</label><div class='value'>{score if 'score' in locals() else 0:.1f}%</div></div>
         <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
     </div>
 
@@ -4306,23 +4335,32 @@ html_final = f"""
 
     <div class='section-title'>🏆 RANKING DE PERFORMANCE E SCORE AUDITADO</div>
     <table>
-        <thead>
-            <tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>ECONOMIA</th><th>SCORE ROI</th></tr>
-        </thead>
-        <tbody>
-            {ranking_final_html}
-        </tbody>
+        <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>ECONOMIA</th><th>SCORE ROI</th></tr></thead>
+        <tbody>{ranking_final_html}</tbody>
     </table>
 
-    <h3 style='margin-top:30px;'>📋 Auditoria de Nexo Causal</h3>
+    <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
     <table>
         <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
         <tbody>{linhas_atividades_html}</tbody>
     </table>
 
-    <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Relatório Gerencial - 2026</div>
+    <div class='section-title'>⚠️ GARGALOS OPERACIONAIS IDENTIFICADOS</div>
+    <table>
+        <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>PARECER</th></tr></thead>
+        <tbody>{linhas_gargalos_html}</tbody>
+    </table>
+
+    <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Documento Auditado - 2026</div>
 </body>
 </html>
 """
 
-st.download_button(label="📥 BAIXAR LAUDO PERICIAL COMPLETO", data=html_final, file_name=f"Laudo_{colab_alvo}.html", mime="text/html")
+# 7. BOTÃO DE DOWNLOAD
+st.download_button(
+    label="📥 BAIXAR LAUDO PERICIAL COMPLETO", 
+    data=html_final, 
+    file_name=f"Laudo_Auditoria_{colab_alvo if 'colab_alvo' in locals() else 'Geral'}.html", 
+    mime="text/html",
+    use_container_width=True
+)
