@@ -4313,26 +4313,29 @@ if st.session_state.get("pagina") == "analise":
 
 
 # 2. SÓ AGORA, no final, você prepara e exibe o botão
-df_final = locals().get('df_analise') # Busca a tabela com segurança
+# Tentamos recuperar o HTML gerado
+html_pronto = locals().get('html_relatorio')
 
-if df_final is not None and not df_final.empty:
-    # Geramos o conteúdo do HTML chamando a função que você criou
-    html_relatorio = gerar_relatorio_html_vips(
-        colaborador=t_base.get('colaborador', 'Consultor') if 't_base' in locals() else "Consultor",
-        h_total=locals().get('total_h_ano', 0),
-        score=locals().get('ajuste', 0) + 100,
-        res_final=locals().get('res_dificuldades', []),
-        df_analise=df_final
-    )
-
-    # Criamos o botão de download
-    st.divider()
-    st.markdown("### 📄 Exportação Executiva")
-    
-    st.download_button(
-        label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
-        data=html_relatorio,
-        file_name=f"Relatorio_VIPS.html",
-        mime="text/html",
-        use_container_width=True 
-    )
+# SÓ entra se o html_pronto não for None e tiver conteúdo
+if html_pronto:
+    try:
+        st.divider()
+        st.markdown("### 📄 Exportação Executiva")
+        
+        # Forçamos a conversão para string caso algo tenha vindo errado
+        data_final = str(html_pronto)
+        
+        st.download_button(
+            label="🚨 Baixar Auditoria de Gargalos e Ranking de Inovação",
+            data=data_final,
+            file_name=f"Relatorio_VIPS.html",
+            mime="text/html",
+            use_container_width=True,
+            key="botao_auditoria_final_vips" # Chave única para não dar conflito
+        )
+    except Exception as e:
+        # Se mesmo assim algo der errado, ele mostra um aviso em vez de travar o app
+        st.error("Erro ao preparar o arquivo de download.")
+else:
+    # Se não tem HTML, não mostra botão e não dá erro!
+    st.info("💡 A auditoria está sendo processada. O botão de download aparecerá ao finalizar.")
