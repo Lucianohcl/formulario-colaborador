@@ -1922,7 +1922,7 @@ if st.session_state.get("pagina") == "visualizar":
 
                 # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
                 st.write(f"Usuário atual: '{st.session_state.get('usuario_logado')}'")
-                if st.session_state.get("usuario_logado", "").strip() in ["Luciano 123", "JV 123"]:
+                if st.session_state.get("usuario_logado", "").strip().upper() in ["LUCIANO 123", "JV"]:
                     st.markdown("---")
                     st.subheader("⚙️ Painel de Exportação")
 
