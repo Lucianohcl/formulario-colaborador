@@ -4223,6 +4223,52 @@ if st.session_state.get("pagina") == "analise":
 
 
 # --- 1. CÁLCULO DE MÉTRICAS GLOBAIS (PARA OS CARDS) ---
+
+ranking_final_html = ""
+# Criamos um DataFrame para ordenar pelo ROI Real
+if 'ranking_dados' in locals() and ranking_dados:
+    df_ranking_auditado = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
+    
+    posicao = 1
+    for _, row in df_ranking_auditado.iterrows():
+        # Define a cor baseada na performance (Ouro para o primeiro)
+        cor_posicao = "#FFD700" if posicao == 1 else "#1B1E5D"
+        
+        ranking_final_html += f"""
+        <tr>
+            <td style='text-align:center; font-weight:bold; color:{cor_posicao};'>{posicao}º</td>
+            <td><b>{row['Colaborador']}</b></td>
+            <td style='text-align:center;'>{row['Qtd']}</td>
+            <td style='text-align:right;'>{row['H_Recup']:.1f} h/ano</td>
+            <td style='text-align:right; font-weight:bold; color:#1B1E5D;'>R$ {row['ROI_Final']:,.2f}</td>
+        </tr>"""
+        posicao += 1
+
+# --- 2. HTML DO RANKING (ADICIONE DENTRO DO SEU html_final) ---
+# Basta chamar a variável {ranking_final_html} dentro de uma tabela no seu HTML principal:
+
+html_secao_ranking = f"""
+<div style='background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 14px;'>
+    🏆 RANKING DE PERFORMANCE E SCORE AUDITADO
+</div>
+<table>
+    <thead>
+        <tr>
+            <th>POS</th>
+            <th>COLABORADOR</th>
+            <th>SUGESTÕES</th>
+            <th>ECONOMIA</th>
+            <th>SCORE ROI</th>
+        </tr>
+    </thead>
+    <tbody>
+        {ranking_final_html}
+    </tbody>
+</table>
+"""
+
+
+
 df_alvo = df_filtrado if 'df_filtrado' in locals() else df if 'df' in locals() else None
 sugestoes_lista = df_alvo.to_dict('records') if df_alvo is not None else []
 
