@@ -4221,129 +4221,40 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- EXPORTAÇÃO ULTRA CONSOLIDADA (GARANTIA DE ZERO PERDA) ---
+# --- PARTE 1: PREPARAÇÃO DO RELATÓRIO (INDICADORES E RANKING) ---
 if 'base' in locals() and base:
+    import pandas as pd
     import io
-    
-    # 1. RECUPERAÇÃO DO RANKING GLOBAL (RECONSTRUÇÃO TOTAL)
-    try:
-        tabela_ranking_html = df_r.to_html(classes='table', index=False, border=0)
-    except:
-        tabela_ranking_html = "<p>Ranking não processado.</p>"
 
-    # 2. RECONSTRUÇÃO DA AUDITORIA INDIVIDUAL (SEM FILTROS DE TELA)
-    # Aqui consolidamos TODAS as listas do colaborador selecionado
+    # 1. GARANTIA PANDAS: Configura para não cortar textos longos em tabelas HTML
+    pd.set_option('display.max_colwidth', None)
+    pd.set_option('display.max_rows', None)
+
+    # 2. PROCESSAMENTO DO RANKING GLOBAL (Equipe Inteira)
     try:
-        atividades_full = []
-        # Varre todas as chaves possíveis para garantir que nada fique de fora
-        for cat, label in [('alta', '🔴 ALTA'), ('normal', '🟡 NORMAL'), ('baixa', '🟢 BAIXA'), ('dificuldades', '⚠️ GARGALO')]:
-            for item in t.get(cat, []):
-                desc = (item.get('Atividade') or item.get('Dificuldade') or "").strip()
-                if desc and desc.lower() not in ["vazio", "none", "."]:
-                    atividades_full.append({
-                        "Tipo": label,
-                        "Descrição": desc.upper(),
-                        "Impacto": f"{item.get('Horas', 0)}h {item.get('Minutos', 0)}min ({item.get('Frequência', 'D')})",
-                        "Setor": item.get('Setor Envolvido', 'N/A')
-                    })
+        # Criamos um DataFrame do ranking para converter em HTML
+        df_r = pd.DataFrame(ranking_dados)
         
-        df_auditoria_full = pd.DataFrame(atividades_full)
-        tabela_auditoria_html = df_auditoria_full.to_html(classes='table', index=False, border=0)
-    except:
-        tabela_auditoria_html = "<p>Erro ao processar detalhamento individual.</p>"
+        # Ordenamos pelo maior valor de Economia (ROI)
+        if not df_r.empty:
+            df_r = df_r.sort_values(by="Economia", ascending=False)
+            
+            # Formatamos os números para o padrão brasileiro no HTML
+            df_r['Economia'] = df_r['Economia'].map('{:,.1f} h/ano'.format)
+            df_r.columns = ['👤 COLABORADOR', '💡 SUG.', '⏱️ ECONOMIA']
+        
+        tabela_ranking_html = df_r.to_html(
+            classes='table', 
+            index=False, 
+            border=0, 
+            justify='left',
+            escape=False # Permite emojis
+        )
+    except Exception as e:
+        tabela_ranking_html = f"<p style='color:red;'>Erro ao gerar tabela de ranking: {e}</p>"
 
-    # 3. RECUPERAÇÃO DE SUGESTÕES E ROI (O CORAÇÃO DA INOVAÇÃO)
-    try:
-        sugestoes_full = []
-        for s in t.get('sugestoes', []):
-            sug_txt = str(s.get('Sugestão', '')).strip()
-            if sug_txt and sug_txt.lower() not in ["nenhuma", "nada", "n/a", ""]:
-                sugestoes_full.append({
-                    "Oportunidade de Inovação": sug_txt.upper(),
-                    "Frequência": s.get('Frequência', 'M'),
-                    "Potencial": "TRANSFORMAÇÃO" if any(w in sug_txt.lower() for w in ['ia', 'robo', 'python', 'sistema']) else "MELHORIA"
-                })
-        df_sug_full = pd.DataFrame(sugestoes_full)
-        tabela_sugestoes_html = df_sug_full.to_html(classes='table', index=False, border=0)
-    except:
-        tabela_sugestoes_html = "<p>Nenhuma sugestão registrada.</p>"
-
-    # 4. MONTAGEM DO HTML COM CSS PARA ALTA PERFORMANCE E PÁGINAS LONGAS
-    html_completo = f"""
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: 'Segoe UI', Arial; margin: 40px; color: #1e1e1e; }}
-            .header {{ background: linear-gradient(90deg, #2E3192 0%, #1B1E5D 100%); color: white; padding: 30px; text-align: center; border-radius: 12px; }}
-            .metric-container {{ display: flex; gap: 15px; margin: 25px 0; }}
-            .metric-box {{ background: #f1f4f9; padding: 15px; border-radius: 10px; flex: 1; text-align: center; border-left: 5px solid #2E3192; }}
-            .metric-label {{ font-size: 11px; color: #5f6368; text-transform: uppercase; font-weight: bold; }}
-            .metric-value {{ font-size: 22px; font-weight: bold; color: #2E3192; }}
-            h2 {{ color: #2E3192; border-bottom: 2px solid #eee; padding-bottom: 8px; margin-top: 35px; text-transform: uppercase; font-size: 18px; }}
-            table {{ width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 12px; }}
-            th {{ background-color: #f8f9fa; color: #2E3192; padding: 10px; text-align: left; border-bottom: 2px solid #2E3192; }}
-            td {{ padding: 8px; border-bottom: 1px solid #eee; }}
-            tr:nth-child(even) {{ background-color: #fafafa; }}
-            .footer {{ margin-top: 50px; font-size: 10px; color: #999; text-align: center; padding: 20px; border-top: 1px solid #eee; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
-            <h1>LAUDO CONSOLIDADO DE AUDITORIA ULTRA</h1>
-            <p>Sincronização: Gercino ROI Methodology</p>
-        </div>
-
-        <h2>📈 Dashboard Estratégico (Global)</h2>
-        <div class="metric-container">
-            <div class="metric-box">
-                <div class="metric-label">Eficiência Anual</div>
-                <div class="metric-value">{total_geral_ano_horas:,.1f} h/ano</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">ROI Projetado</div>
-                <div class="metric-value">R$ {total_financeiro:,.2f}</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">Capacidade</div>
-                <div class="metric-value">{total_geral_ano_horas/8:,.1f} Dias</div>
-            </div>
-        </div>
-
-        <h2>🏆 Ranking de Inovação e Valor (Toda a Equipe)</h2>
-        {tabela_ranking_html}
-
-        <h2>⚖️ Auditoria Individual: {colab_alvo}</h2>
-        <div class="metric-container">
-            <div class="metric-box">
-                <div class="metric-label">Carga Analisada</div>
-                <div class="metric-value">{h_total:.2f} h/dia</div>
-            </div>
-            <div class="metric-box">
-                <div class="metric-label">Nexo Causal</div>
-                <div class="metric-value">{score:.1f}%</div>
-            </div>
-        </div>
-
-        <h3>📋 Detalhamento de Atividades e Gargalos</h3>
-        {tabela_auditoria_html}
-
-        <h3>💡 Oportunidades de ROI Identificadas</h3>
-        {tabela_sugestoes_html}
-
-        <div class="footer">
-            Gerado via Motor de Perícia Ultra - Propriedade Intelectual Gercino.<br>
-            Data: {pd.Timestamp.now().strftime('%d/%m/%Y %H:%M')}
-        </div>
-    </body>
-    </html>
-    """
-
-    st.download_button(
-        label="📥 BAIXAR RELATÓRIO EXECUTIVO (SEM CORTES)",
-        data=html_completo,
-        file_name=f"LAUDO_ULTRA_{colab_alvo}.html",
-        mime="text/html",
-        use_container_width=True,
-        key="btn_full_export_v4"
-    )
+    # 3. CAPTURA DE VARIÁVEIS ESTRATÉGICAS (Cards do Topo)
+    # Estas variáveis serão injetadas no HTML final
+    val_eficiencia = f"{total_geral_ano_horas:,.1f} h/ano"
+    val_roi = f"R$ {total_financeiro:,.2f}"
+    val_capacidade = f"{total_geral_ano_horas / 8:,.1f} Dias"
