@@ -4344,43 +4344,45 @@ html_final = f"""
 """
 
 # ==========================================
-# --- BLOCO À PROVA DE FALHAS (FORA DE TUDO) ---
+# --- BLOCO FINAL: FORÇA TOTAL ---
 # ==========================================
-
 st.write("---")
-st.write("🔍 **DEBUG ATIVO:** Tentando renderizar área final...")
 
-# 1. TENTA RECUPERAR OS DADOS (Mesmo que o session_state falhe)
-t_base = locals().get('t') or st.session_state.get('t_selecionado')
+# 1. Tenta pegar de QUALQUER LUGAR (df_filtrado, t, ou session_state)
+nome_colab = "Geral"
+if 't_base' in locals():
+    nome_colab = t_base.get('colaborador', 'Consultor')
+elif 'colab_alvo' in locals():
+    nome_colab = colab_alvo
+elif 'df_filtrado' in locals() and not df_filtrado.empty:
+    nome_colab = df_filtrado['colaborador'].iloc[0]
 
-if t_base:
-    st.write(f"✅ Colaborador Identificado: {t_base.get('colaborador')}")
-    
-    # 2. FORÇAR EXIBIÇÃO DOS CARDS (Independente de onde venha o cálculo)
-    c1, c2, c3 = st.columns(3)
-    c1.metric("ROI Real", f"R$ {st.session_state.get('v_audit_final', 0.0):,.2f}")
-    c2.metric("Horas Ano", f"{st.session_state.get('h_audit_final', 0.0):.1f}h")
-    c3.metric("EBITDA", f"R$ {locals().get('v_bruto_final', 0.0):,.2f}")
+st.subheader(f"📊 Business Case: {nome_colab}")
 
-    # 3. FORÇAR TABELA DE SUGESTÕES
-    if 'df_analise' in locals() and not df_analise.empty:
-        st.write("### 💡 Detalhamento:")
-        st.table(df_analise.drop(columns=[c for c in ['H_FLOAT', 'RS_FLOAT'] if c in df_analise.columns]))
+# 2. CARDS COM VALORES DO SESSION STATE (Mais seguro)
+c1, c2, c3 = st.columns(3)
+v_roi = st.session_state.get('v_audit_final', 0.0)
+h_ano = st.session_state.get('h_audit_final', 0.0)
+
+c1.metric("ROI Auditado", f"R$ {v_roi:,.2f}")
+c2.metric("Capacidade", f"{h_ano:.1f} h/ano")
+c3.metric("EBITDA", f"R$ {v_roi/0.53 if v_roi > 0 else 0:,.2f}")
+
+# 3. FORÇAR A TABELA DE SUGESTÕES (Puxando direto do DataFrame filtrado)
+if 'df_filtrado' in locals() and not df_filtrado.empty:
+    st.write("### 💡 Detalhamento das Oportunidades")
+    # Filtramos colunas chatas e linhas vazias
+    df_show = df_filtrado[df_filtrado['Sugestão'].str.lower().strip() != 'nenhuma']
+    if not df_show.empty:
+        st.table(df_show[['Sugestão', 'Horas', 'Frequência']])
     else:
-        st.warning("⚠️ Tabela 'df_analise' não encontrada no escopo local.")
+        st.info("O colaborador não enviou sugestões válidas.")
 
-    # 4. BOTÃO DE DOWNLOAD BLINDADO
-    if 'html_final' in locals():
-        st.download_button(
-            label="📥 BAIXAR LAUDO AGORA",
-            data=html_final,
-            file_name="laudo_pericial.html",
-            mime="text/html",
-            key="btn_ultra_final_blindado"
-        )
-    else:
-        st.error("🚨 Variável 'html_final' NÃO EXISTE. O laudo não foi gerado.")
-else:
-    st.error("🚨 't_base' não encontrado. O sistema não sabe quem é o colaborador.")
-
-st.write("🏁 **FIM DO SCRIPT**")
+# 4. BOTÃO DE DOWNLOAD (Sem 'if' de segurança, para ele aparecer de qualquer jeito)
+st.download_button(
+    label=f"📥 BAIXAR LAUDO: {nome_colab}",
+    data=html_final if 'html_final' in locals() else "Erro na geração do HTML",
+    file_name=f"Laudo_{nome_colab}.html",
+    mime="text/html",
+    key="btn_v_final_top"
+)
