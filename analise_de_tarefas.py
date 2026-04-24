@@ -1921,7 +1921,7 @@ if st.session_state.get("pagina") == "visualizar":
                     st.error("❌ Nenhuma resposta DISC encontrada.")
 
                 # --- BLOCO DE EXPORTAÇÃO (DENTRO DO EXPANDER) ---
-                st.write(f"Usuário atual: '{st.session_state.get('usuario_logado')}'")
+                
                 if st.session_state.get("usuario_logado", "").strip().upper() in ["LUCIANO 123", "JV"]:
                     st.markdown("---")
                     st.subheader("⚙️ Painel de Exportação")
