@@ -4221,117 +4221,91 @@ if st.session_state.get("pagina") == "analise":
 
 
 
-# --- 1. ACUMULADORES GLOBAIS --- 
-linhas_ranking_global_html = ""
-linhas_atividades_full_html = ""
-linhas_dificuldades_full_html = ""
-linhas_sugestoes_full_html = ""
+# --- 1. CONFIGURAÇÃO DE DADOS LIMPOS ---
+# O código abaixo garante que cada informação apareça apenas uma vez
 
-# --- 2. PROCESSAMENTO DO RANKING ---
-df_r_final = pd.DataFrame(ranking_dados).sort_values(by="ROI_Final", ascending=False)
-for _, row in df_r_final.iterrows():
-    linhas_ranking_global_html += f"""
-    <tr>
-        <td style='text-align:center;'>🏆</td>
-        <td><b>{row['Colaborador']}</b></td>
-        <td style='text-align:center;'>{row['Qtd']}</td>
-        <td style='text-align:right;'>{row['H_Recup']:.1f}h</td>
-        <td style='text-align:right; font-weight:bold; color:#1B1E5D;'>R$ {row['ROI_Final']:,.2f}</td>
-    </tr>"""
-
-# --- 3. VARREDURA COMPLETA DA BASE (ATIVIDADES, GARGALOS E SUGESTÕES) ---
+html_sugestoes = ""
+sugestoes_vistas = set()
 for f in base:
-    nome_f = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
-    tabs = f.get('tabelas', {})
-    
-    # Bloco Atividades
-    for at in tabs.get('atividades', []):
-        linhas_atividades_full_html += f"<tr><td><b>{nome_f}</b></td><td>{at.get('Atividade')}</td><td>{at.get('Impacto')}</td></tr>"
-    
-    # Bloco Gargalos (Dificuldades)
-    for dfc in tabs.get('dificuldades', []):
-        linhas_dificuldades_full_html += f"<tr><td style='color:#ff4d4f; text-align:center;'>⚠️</td><td><b>{nome_f}</b></td><td>{dfc.get('Setor', 'N/A')}</td><td>{dfc.get('Dificuldade', 'N/A')}</td></tr>"
+    nome = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
+    for sug in f.get('tabelas', {}).get('sugestoes', []):
+        texto_sug = sug.get('Sugestão', 'N/A')
+        # Evita duplicados exatos
+        chave = f"{nome}-{texto_sug}"
+        if chave not in sugestoes_vistas and texto_sug.lower() != 'nenhuma':
+            sugestoes_vistas.add(chave)
+            h = sug.get('Horas', '0')
+            m = sug.get('Minutos', '0')
+            html_sugestoes += f"""
+            <tr>
+                <td style='color:#52c41a; text-align:center;'>💡</td>
+                <td><b>{nome}</b></td>
+                <td>{texto_sug}</td>
+                <td style='text-align:center;'>{sug.get('Frequência', 'M')}</td>
+                <td style='text-align:right;'>{h}h {m}m</td>
+            </tr>"""
 
-    # Bloco Sugestões (Inovação)
-    for sug in tabs.get('sugestoes', []):
-        # Cálculo rápido do ROI individual para a tabela
-        h_s = float(str(sug.get('Horas', '0')).replace('h','').strip() or 0)
-        m_s = float(str(sug.get('Minutos', '0')).replace('min','').strip() or 0)
-        f_s = sug.get('Frequência', 'M')
-        # Aqui o laudo mostra a ideia e o potencial
-        linhas_sugestoes_full_html += f"""
-        <tr>
-            <td style='color:#52c41a; text-align:center;'>💡</td>
-            <td><b>{nome_f}</b></td>
-            <td>{sug.get('Sugestão', 'N/A')}</td>
-            <td style='text-align:center;'>{f_s}</td>
-            <td style='text-align:right;'>{h_s}h {m_s}m</td>
-        </tr>"""
+html_gargalos = ""
+gargalos_vistos = set()
+for f in base:
+    nome = (f.get('colaborador') or f.get('nome') or "CONSULTOR").upper()
+    for g em f.get('tabelas', {}).get('dificuldades', []):
+        dif = g.get('Dificuldade', 'N/A')
+        chave = f"{nome}-{dif}"
+        if chave not in gargalos_vistos and dif.lower() not in ['n/a', 'nenhuma']:
+            gargalos_vistos.add(chave)
+            html_gargalos += f"""
+            <tr>
+                <td style='color:#ff4d4f; text-align:center;'>⚠️</td>
+                <td><b>{nome}</b></td>
+                <td>{g.get('Setor', 'Operacional')}</td>
+                <td>{dif}</td>
+            </tr>"""
 
-# --- 4. ESTRUTURA VISUAL FINAL ---
+# --- 2. ESTRUTURA DO HTML (LIMPA E PROFISSIONAL) ---
 html_final = f"""
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
     <style>
-        body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; line-height: 1.5; }}
-        .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
-        .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
-        .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; }}
-        .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin-top: 30px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }}
+        body {{ font-family: 'Segoe UI', sans-serif; padding: 30px; color: #333; }}
+        .header-banner {{ background: #1B1E5D; color: white; padding: 25px; border-radius: 12px; text-align: center; }}
+        .section-title {{ background: #1B1E5D; color: white; padding: 8px 15px; border-radius: 5px; margin-top: 25px; font-size: 13px; text-transform: uppercase; }}
         table {{ width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }}
         th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
         td {{ padding: 8px; border-bottom: 1px solid #eee; }}
-        .footer {{ margin-top: 40px; text-align: center; font-size: 10px; color: #aaa; border-top: 1px solid #eee; padding-top: 10px; }}
     </style>
 </head>
 <body>
     <div class='header-banner'>
-        <h1>🛡️ AUDITORIA OPERACIONAL E MAPA DE INOVAÇÃO</h1>
-        <p>Relatório Consolidado de Inteligência de Processos</p>
+        <h1>🛡️ AUDITORIA OPERACIONAL ESTRATÉGICA</h1>
+        <p>Mapeamento Consolidado de Eficiência e Barreiras</p>
     </div>
-
-    <div style='display: flex; gap: 15px; margin-bottom: 20px;'>
-        <div class='metric-box'><small>ROI TOTAL ESTIMADO</small><div class='value'>R$ {df_r_final['ROI_Final'].sum():,.2f}</div></div>
-        <div class='metric-box'><small>POTENCIAL DE ECONOMIA</small><div class='value'>{df_r_final['H_Recup'].sum():,.1f} h/ano</div></div>
-        <div class='metric-box'><small>CAPACIDADE RECUPERADA</small><div class='value'>{ganho_capacity_dias if 'ganho_capacity_dias' in locals() else 0:,.1f} Dias</div></div>
-    </div>
-
-    <div class='section-title'>🏆 RANKING DE IMPACTO FINANCEIRO</div>
-    <table>
-        <thead><tr><th>POS</th><th>COLABORADOR</th><th>QTD SUG.</th><th>ECONOMIA ANO</th><th>VALOR AUDITADO</th></tr></thead>
-        <tbody>{linhas_ranking_global_html}</tbody>
-    </table>
 
     <div class='section-title'>💡 OPORTUNIDADES DE INOVAÇÃO E MELHORIA</div>
     <table>
-        <thead><tr><th>ST</th><th>AUTOR</th><th>SUGESTÃO DE MELHORIA</th><th>FREQ.</th><th>TEMPO ESTIMADO</th></tr></thead>
-        <tbody>{linhas_sugestoes_full_html}</tbody>
+        <thead><tr><th>ST</th><th>AUTOR</th><th>SUGESTÃO DE MELHORIA</th><th>FREQ.</th><th>POTENCIAL ECONOMIA</th></tr></thead>
+        <tbody>{html_sugestoes}</tbody>
     </table>
 
     <div class='section-title'>⚠️ MAPA DE GARGALOS OPERACIONAIS</div>
     <table>
         <thead><tr><th>ST</th><th>COLABORADOR</th><th>SETOR</th><th>DIFICULDADE RELATADA</th></tr></thead>
-        <tbody>{linhas_dificuldades_full_html}</tbody>
+        <tbody>{html_gargalos}</tbody>
     </table>
 
-    <div class='section-title'>📋 DETALHAMENTO DE ATIVIDADES MAPEADAS</div>
-    <table>
-        <thead><tr><th>COLABORADOR</th><th>ATIVIDADE</th><th>IMPACTO</th></tr></thead>
-        <tbody>{linhas_atividades_full_html}</tbody>
-    </table>
-
-    <div class='footer'>Relatório Gerencial de Auditoria Ultra - 2026</div>
+    <div style='margin-top: 30px; text-align: center; font-size: 10px; color: #aaa;'>
+        Relatório Gerencial de Auditoria - 2026
+    </div>
 </body>
 </html>
 """
 
-# --- 5. BOTÃO DE DOWNLOAD ---
+# --- 3. DOWNLOAD ---
 st.download_button(
-    label="📥 BAIXAR LAUDO COMPLETO (RANKING + SUGESTÕES + GARGALOS + ATIVIDADES)", 
+    label="📥 BAIXAR RELATÓRIO LIMPO", 
     data=html_final, 
-    file_name="Auditoria_Master_Global.html", 
-    mime="text/html",
-    use_container_width=True
+    file_name="Auditoria_Estrategica_Limpa.html", 
+    mime="text/html"
 )
