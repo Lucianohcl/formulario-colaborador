@@ -4224,7 +4224,7 @@ if st.session_state.get("pagina") == "analise":
 
 
 # =================================================================
-# --- BLOCO INTEGRAL: GERAÇÃO DO LAUDO PERICIAL 2026 (CALIBRADO) ---
+# --- BLOCO INTEGRAL: GERAÇÃO DO LAUDO PERICIAL 2026 (FINAL) ---
 # =================================================================
 
 if st.session_state.get("pagina") == "analise":
@@ -4234,129 +4234,125 @@ if st.session_state.get("pagina") == "analise":
     linhas_gargalos_html = ""
     ranking_final_html = ""
     linhas_sugestoes_html = ""
-    v_bruto_final = horas_totais_ano = ganho_capacidade_dias = roi_real_auditado = 0.0
+    # v_bruto_final removido para evitar inflação de valores
+    horas_totais_ano = ganho_capacidade_dias = roi_real_auditado = 0.0
 
-    # 2. CÁLCULO DE MÉTRICAS E VIABILIDADE
-    # Pegamos as sugestões brutas para calcular a expectativa inicial
-    sugestoes_brutas = t_base.get('sugestoes', []) if 't_base' in locals() else t.get('sugestoes', [])
-    v_bruto_expectativa = 0.0
-    for s in sugestoes_brutas:
-        try:
-            h = float(str(s.get('Horas', '0')).lower().replace('h','').strip() or 0)
-            m = float(str(s.get('Minutos', '0')).lower().replace('min','').strip() or 0)
-            f_tipo = str(s.get('Frequência', 'M')).upper().strip()
-            m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
-            v_bruto_expectativa += ((h + (m / 60)) * m_anual * 65.0)
-        except: continue
-
-    # Cálculo do ROI Real vindo do Ranking
+    # 2. CÁLCULO DE MÉTRICAS ESTRATÉGICAS (INDIVIDUALIZADO)
     if 'ranking_dados' in locals() and ranking_dados:
         df_rank_calc = pd.DataFrame(ranking_dados)
-        horas_totais_ano = df_rank_calc['H_Recup'].sum()
-        roi_real_auditado = df_rank_calc['ROI_Final'].sum()
-        v_bruto_final = roi_real_auditado / 0.53 # EBITDA Estimado
+        
+        # Define se o laudo é de um colaborador específico ou consolidado
+        colab_atual = colab_alvo if 'colab_alvo' in locals() else "CONSOLIDADO"
+        
+        if colab_atual != "CONSOLIDADO":
+            # Filtra apenas os dados do colaborador alvo para o topo do laudo
+            df_perito = df_rank_calc[df_rank_calc['Colaborador'] == colab_atual]
+        else:
+            df_perito = df_rank_calc
+
+        horas_totais_ano = df_perito['H_Recup'].sum()
+        roi_real_auditado = df_perito['ROI_Final'].sum()
         ganho_capacidade_dias = horas_totais_ano / 8
 
-    # Lógica do Parecer Dinâmico
-    ajuste = ((roi_real_auditado / v_bruto_expectativa) - 1) * 100 if v_bruto_expectativa > 0 else 0
-    if ajuste > -30:
-        cor_v, tit_v, txt_v = "#52c41a", "ALTA", "As sugestões possuem alto índice de aproveitamento técnico (85%+)."
-    elif ajuste > -60:
-        cor_v, tit_v, txt_v = "#faad14", "MODERADA", "Requer ajustes de processos antes da automação plena."
-    else:
-        cor_v, tit_v, txt_v = "#ff4d4f", "CRÍTICA", "Foco deve ser em eliminar a tarefa, não em automatizar."
+    # 3. EXTRAÇÃO DE DIFICULDADES (BEBENDO DO JSON FORNECIDO)
+    # Busca na t_base ou no resultado processado
+    dificuldades_lista = []
+    if 't_base' in locals() and 'tabelas' in t_base and 'dificuldades' in t_base['tabelas']:
+        dificuldades_lista = t_base['tabelas']['dificuldades']
+    elif 'res_dificuldades' in locals():
+        dificuldades_lista = res_dificuldades
 
-    # 3. GERAÇÃO DAS TABELAS (SUGESTÕES, RANKING, ATIVIDADES)
-    # --- Tabela de Sugestões (Oportunidades) ---
+    gargalos_vistos = set()
+    for d in dificuldades_lista:
+        dif_txt = d.get('Dificuldade', 'N/A')
+        if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
+            gargalos_vistos.add(dif_txt)
+            setor_dif = d.get('Setor Envolvido') or d.get('Setor', 'Operacional')
+            linhas_gargalos_html += f"""
+            <tr>
+                <td style='color:#ff4d4f; text-align:center;'>⚠️</td>
+                <td>{setor_dif}</td>
+                <td>{dif_txt}</td>
+                <td>Parecer: Obstrução de fluxo identificada. Impacto estimado em {d.get('Horas','0')}h.</td>
+            </tr>"""
+
+    # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
     if 'df_analise' in locals() and not df_analise.empty:
         for _, row in df_analise.iterrows():
             linhas_sugestoes_html += f"<tr><td>{row.get('ESTRATEGIA')}</td><td>{row.get('SUGESTAO ANALISADA')}</td><td style='text-align:center;'>{row.get('ECONOMIA PROJETADA')}</td><td style='text-align:right;'><b>{row.get('VALOR RECUPERAVEL')}</b></td></tr>"
 
-    # --- Ranking ---
     if 'ranking_dados' in locals() and ranking_dados:
         df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
         for i, (_, row) in enumerate(df_ranking_auditado.iterrows(), 1):
             cor_pos = "#FFD700" if i == 1 else "#1B1E5D"
             ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_pos};'>{i}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
 
-    # --- Atividades ---
-    atividades_vistas = set()
-    if 'res_final' in locals() and res_final:
-        for item in res_final:
-            chave = f"{item.get('Atividade')}-{item.get('Impacto')}"
-            if chave not in atividades_vistas:
-                atividades_vistas.add(chave)
-                cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
-                linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
-
-    # 4. MONTAGEM DA ESTRUTURA HTML FINAL
+    # 5. MONTAGEM DA ESTRUTURA HTML FINAL (100% AUDITADO E LIMPO)
     html_final = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <meta charset='utf-8'>
         <style>
-            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; }}
+            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; line-height: 1.6; }}
             .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
-            .container-metrics {{ display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }}
-            .metric-box {{ background: #f8f9fa; padding: 15px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
-            .metric-box label {{ font-size: 10px; color: #666; text-transform: uppercase; font-weight: bold; }}
-            .metric-box .value {{ font-size: 18px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
-            .viability-card {{ border: 2px solid {cor_v}; padding: 20px; border-radius: 12px; margin-bottom: 30px; background: #fff; }}
+            .container-metrics {{ display: flex; justify-content: space-around; margin-bottom: 20px; gap: 15px; }}
+            .metric-box {{ background: #f8f9fa; padding: 20px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
+            .metric-box label {{ font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold; }}
+            .metric-box .value {{ font-size: 22px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
             .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin: 30px 0 10px 0; font-size: 14px; font-weight: bold; }}
             table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
             th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
-            td {{ padding: 8px; border-bottom: 1px solid #eee; font-size: 11px; }}
+            td {{ padding: 10px; border-bottom: 1px solid #eee; font-size: 11px; }}
+            .footer {{ margin-top: 50px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
         </style>
     </head>
     <body>
         <div class='header-banner'>
-            <h1>🛡️ RELATÓRIO DE AUDITORIA ESTRATÉGICA</h1>
-            <h2>{colab_alvo if 'colab_alvo' in locals() else 'CONSOLIDADO'}</h2>
+            <h1>🛡️ LAUDO PERICIAL DE AUDITORIA ESTRATÉGICA</h1>
+            <h2 style='text-transform: uppercase;'>{colab_atual}</h2>
         </div>
 
         <div class='container-metrics'>
-            <div class='metric-box'><label>Expectativa (Bruto)</label><div class='value'>R$ {v_bruto_expectativa:,.2f}</div></div>
-            <div class='metric-box'><label>ROI Real Auditado</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
-            <div class='metric-box'><label>EBITDA Estimado</label><div class='value'>R$ {v_bruto_final:,.2f}</div></div>
-        </div>
-
-        <div class='viability-card'>
-            <div style='color:{cor_v}; font-weight:bold; font-size:16px;'>🛡️ PARECER TÉCNICO: VIABILIDADE {tit_v}</div>
-            <p style='font-size:12px; margin-top:10px;'>{txt_v} Ajuste de nexo técnico: <b>{ajuste:.1f}%</b>.</p>
+            <div class='metric-box'><label>ROI REAL AUDITADO</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
+            <div class='metric-box'><label>EFICIÊNCIA RECUPERÁVEL</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
+            <div class='metric-box'><label>LIBERAÇÃO DE AGENDA</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
         </div>
 
         <div class='section-title'>💡 OPORTUNIDADES E SUGESTÕES DE MELHORIA</div>
         <table>
-            <thead><tr><th>ESTRATÉGIA</th><th>SUGESTÃO</th><th>ECONOMIA</th><th>VALOR ROI</th></tr></thead>
-            <tbody>{linhas_sugestoes_html}</tbody>
+            <thead><tr><th>ESTRATÉGIA</th><th>SUGESTÃO TÉCNICA</th><th>ECONOMIA ESTIMADA</th><th>VALOR RECUPERÁVEL</th></tr></thead>
+            <tbody>{linhas_sugestoes_html if linhas_sugestoes_html else "<tr><td colspan='4' style='text-align:center;'>Nenhuma sugestão processada para este perfil.</td></tr>"}</tbody>
         </table>
 
-        <div class='section-title'>🏆 RANKING DE PERFORMANCE E SCORE AUDITADO</div>
+        <div class='section-title'>⚠️ GARGALOS E DIFICULDADES IDENTIFICADAS</div>
         <table>
-            <thead><tr><th>POS</th><th>COLABORADOR</th><th>QTD</th><th>ECONOMIA</th><th>SCORE ROI</th></tr></thead>
+            <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE MAPEADA</th><th>ANÁLISE DO PERITO</th></tr></thead>
+            <tbody>{linhas_gargalos_html if linhas_gargalos_html else "<tr><td colspan='4' style='text-align:center;'>Nenhum gargalo crítico identificado.</td></tr>"}</tbody>
+        </table>
+
+        <div class='section-title'>🏆 RANKING GERAL DE PERFORMANCE E ROI</div>
+        <table>
+            <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>H. RECUPERADAS</th><th>SCORE ROI</th></tr></thead>
             <tbody>{ranking_final_html}</tbody>
         </table>
 
-        <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
-        <table>
-            <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
-            <tbody>{linhas_atividades_html}</tbody>
-        </table>
-
-        <div style='margin-top: 40px; text-align: center; font-size: 10px; color: #aaa;'>Documento Auditado - Metodologia Gercino 2026</div>
+        <div class='footer'>
+            ESTE DOCUMENTO É PARTE INTEGRANTE DA METODOLOGIA GERCINO DE AUDITORIA - 2026<br>
+            A EXTRAÇÃO DE DADOS CONSIDERA O NEXO CAUSAL ENTRE ATIVIDADE E CAPACIDADE TÉCNICA.
+        </div>
     </body>
     </html>
     """
 
-    # 5. EXIBIÇÃO DO BOTÃO
+    # 6. EXIBIÇÃO DO BOTÃO
     st.divider()
-    nome_exibicao = colab_alvo if 'colab_alvo' in locals() else "CONSOLIDADO"
+    nome_arquivo = colab_atual.replace(" ", "_")
     st.download_button(
-        label=f"📥 BAIXAR LAUDO PERICIAL COMPLETO: {nome_exibicao.upper()}",
+        label=f"📥 BAIXAR LAUDO PERICIAL: {colab_atual}",
         data=html_final,
-        file_name=f"Laudo_Auditoria_{nome_exibicao}.html",
+        file_name=f"Laudo_Pericial_{nome_arquivo}.html",
         mime="text/html",
         use_container_width=True,
-        key="btn_laudo_full_v2026"
+        key="btn_laudo_final_2026"
     )
