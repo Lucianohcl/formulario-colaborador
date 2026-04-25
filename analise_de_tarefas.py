@@ -1825,15 +1825,23 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. COLETA DE COMENTÁRIOS E ALERTAS DO APP
-        # Capturamos as mesmas lógicas que disparam os alertas na sua tela
+        # 1. BUSCA DE INFORMAÇÕES NO JSON (EVITA O ERRO)
+        # Extraímos os textos das listas do JSON para checar a resistência
+        lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
+        lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
+        
+        texto_sugestoes = " ".join(lista_sugestoes).lower()
+        texto_dificuldades = " ".join(lista_dificuldades).lower()
+
+        # 2. COLETA DE COMENTÁRIOS E ALERTAS DO APP
         alerta_resistencia = ""
-        if "nenhuma melhoria" in sugestao_colaborador.lower() or "nenhuma dificuldade" in dificuldade_colaborador.lower():
+        # Se as listas estiverem vazias OU contiverem termos de "nada/nenhuma"
+        if not lista_sugestoes or not lista_dificuldades or "nenhuma" in texto_sugestoes or "nenhuma" in texto_dificuldades:
             alerta_resistencia = f"""
             <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
                 <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
-                A ausência de reportes de dificuldades ou sugestões por um perfil {dominante} pode indicar 
-                postura defensiva ou preenchimento evasivo dos dados.
+                O colaborador não reportou dificuldades ou sugestões relevantes. Para um perfil <b>{dominante}</b> 
+                em cargo de gestão, isso pode indicar uma postura defensiva ou preenchimento evasivo.
             </div>
             """
 
@@ -1845,7 +1853,7 @@ if st.session_state.pagina == "disc":
         </div>
         """
 
-        # 2. MONTAGEM DA STRING HTML (IDENTAÇÃO PRESERVADA)
+        # 3. MONTAGEM DA STRING HTML
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1887,7 +1895,7 @@ if st.session_state.pagina == "disc":
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
                     <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
-                    {info['desc']}
+                    {info.get('desc', 'Descrição não disponível.')}
                     <br><br>
                     <b>Veredito:</b> {primeiro_nome} possui qualificação superior e objetivos alinhados à visão estratégica do cargo.
                 </div>
@@ -1895,12 +1903,12 @@ if st.session_state.pagina == "disc":
                 {nota_consultor}
                 {alerta_resistencia}
 
-                <div class='section-title'>3. PONTOS DE ATENÇÃO (ATIVIDADES)</div>
+                <div class='section-title'>3. PONTOS DE ATENÇÃO (ATIVIDADES CRÍTICAS)</div>
                 <div style='margin-top: 20px; font-size: 14px;'>
-                    <p>⚠️ <b>Tarefas de Alto Consumo Cognitivo:</b></p>
+                    <p>⚠️ <b>Tarefas de Alto Consumo Cognitivo detectadas no Onboarding:</b></p>
                     <ul>
-                        <li>Auditoria de Folhas de Pagamento e Encargos.</li>
-                        <li>Gestão avançada de eSocial, EFD-Reinf e DCTFWeb.</li>
+                        <li>Auditoria de Folhas de Pagamento e Encargos Sociais.</li>
+                        <li>Gestão de obrigações acessórias (eSocial, EFD-Reinf e DCTFWeb).</li>
                         <li>Validação de respostas técnicas com fundamentação jurídica.</li>
                     </ul>
                 </div>
@@ -1914,7 +1922,7 @@ if st.session_state.pagina == "disc":
         </html>
         """
 
-        # 3. RENDERIZAÇÃO DO BOTÃO
+        # 4. RENDERIZAÇÃO DO BOTÃO
         st.download_button(
             label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
             data=html_final_estendido,
