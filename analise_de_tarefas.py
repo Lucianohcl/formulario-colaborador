@@ -1813,25 +1813,18 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 GERADOR DE LAUDO ULTRA COMPLETO COM GRÁFICOS (BASE64)
+        # 📥 GERADOR DE LAUDO ULTRA COMPLETO (VERSÃO ESTÁVEL)
         # ============================================================
-        import io
-        import base64
+        import plotly.io as pio
 
-        # 1. GERAR A IMAGEM DO GRÁFICO PARA O HTML
-        fig_html = px.bar(
-            x=list(percentuais.keys()),
-            y=list(percentuais.values()),
-            color=list(percentuais.keys()),
-            color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"},
-            text=[f"{v}%" for v in percentuais.values()]
+        # 1. GERAR O GRÁFICO EM FORMATO HTML DIV (Sem precisar de Kaleido)
+        # Isso gera um código que o navegador entende nativamente
+        grafico_html_div = pio.to_html(
+            fig_html, 
+            full_html=False, 
+            include_plotlyjs='cdn',
+            config={'displayModeBar': False}
         )
-        fig_html.update_layout(template="plotly_white", showlegend=False, height=300, margin=dict(l=20, r=20, t=10, b=10))
-        
-        # Converte o gráfico em imagem para embutir no HTML
-        img_bytes = fig_html.to_image(format="png")
-        encoding = base64.b64encode(img_bytes).decode()
-        img_b64 = f"data:image/png;base64,{encoding}"
 
         # 2. VARIÁVEIS DE APOIO
         nome_laudo = (form.get('colaborador') or form.get('nome') or "COLABORADOR").upper()
@@ -1842,7 +1835,6 @@ if st.session_state.pagina == "disc":
         <head>
             <meta charset='utf-8'>
             <style>
-                @media print {{ .no-print {{ display: none; }} }}
                 body {{ font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; color: #333; line-height: 1.6; background: #f9f9f9; }}
                 .page {{ background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
                 .header {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; margin: -40px -40px 30px -40px; }}
@@ -1851,13 +1843,12 @@ if st.session_state.pagina == "disc":
                 .metric-card {{ background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #1B1E5D; }}
                 .metric-card label {{ font-size: 11px; color: #777; font-weight: bold; text-transform: uppercase; }}
                 .metric-card div {{ font-size: 22px; font-weight: bold; color: #1B1E5D; }}
-                .chart-container {{ text-align: center; margin: 20px 0; padding: 20px; border: 1px solid #eee; border-radius: 8px; }}
+                .chart-container {{ margin: 20px 0; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #fff; }}
                 .parecer-box {{ background: #e7f3ff; border-left: 6px solid #1B1E5D; padding: 20px; margin: 20px 0; border-radius: 4px; }}
                 .footer {{ margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
                 table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
                 th {{ background: #f4f4f4; padding: 12px; text-align: left; font-size: 13px; border-bottom: 2px solid #1B1E5D; }}
                 td {{ padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }}
-                .tag-perfil {{ background: #1B1E5D; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }}
             </style>
         </head>
         <body>
@@ -1875,56 +1866,34 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>1. Mapeamento de Intensidade DISC</div>
                 <div class='chart-container'>
-                    <img src='{img_b64}' style='max-width: 100%;'>
-                    <p style='font-size: 12px; color: #666;'>Distribuição percentual dos vetores comportamentais</p>
+                    {grafico_html_div}
                 </div>
 
                 <div class='parecer-box'>
                     <b style='color:#1B1E5D;'>PARECER DO ESPECIALISTA:</b><br>
                     O colaborador apresenta um perfil de natureza <b>{info['nome']}</b>. 
-                    Com um Score de Intensidade de <b>{score}%</b>, observamos que {txt_gestao}
+                    Com um Score de Intensidade de <b>{score}%</b>. {txt_gestao}
                 </div>
 
                 <div class='section-title'>2. Diagnóstico de Coerência e Resistência</div>
-                <p style='font-size: 13px;'>Análise cruzada entre o perfil psicológico e o que foi declarado em campo:</p>
                 <table>
                     <thead><tr><th>TIPO</th><th>RELATO DO COLABORADOR</th><th>ANÁLISE DE NEXO</th></tr></thead>
                     <tbody>
                         <tr>
                             <td><b>Dificuldades</b></td>
                             <td>{", ".join(difs_validas) if difs_validas else "Nenhuma reportada."}</td>
-                            <td>{ "✅ Coerente com Perfil" if tem_algo_dif else "⚠️ Possível Resistência" }</td>
+                            <td>{ "✅ Coerente" if tem_algo_dif else "⚠️ Possível Resistência" }</td>
                         </tr>
                         <tr>
                             <td><b>Sugestões</b></td>
                             <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Nenhuma reportada."}</td>
-                            <td>{ "🚀 Foco em Eficiência" if tem_algo_sug else "⚠️ Baixa Proatividade" }</td>
+                            <td>{ "🚀 Eficiência" if tem_algo_sug else "⚠️ Baixa Proatividade" }</td>
                         </tr>
                     </tbody>
                 </table>
 
-                <div class='section-title'>3. Consultoria de Gestão (Benchmark)</div>
-                <div class='grid-3' style='grid-template-columns: 1fr 1fr;'>
-                    <div class='metric-card' style='text-align: left;'>
-                        <label>Exigência do Cargo ({cargo_laudo})</label>
-                        <div style='font-size: 14px; margin-top:10px;'>{benchmark['perfis']}</div>
-                        <ul style='font-size: 12px; padding-left: 15px;'>
-                            {"".join([f"<li>{c}</li>" for c in benchmark['competencias']])}
-                        </ul>
-                    </div>
-                    <div class='metric-card' style='text-align: left;'>
-                        <label>Plano de Adaptação</label>
-                        <p style='font-size: 12px; color: #444;'>
-                            <b>Foco:</b> {info['estilo']}<br>
-                            <b>Ação:</b> {info['tarefas']}<br><br>
-                            <i>Nota: { 'Manter em atividades de precisão.' if 'C' in dominante else 'Promover integração e liderança.' }</i>
-                        </p>
-                    </div>
-                </div>
-
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
-                    Documento assinado digitalmente para fins de Auditoria de Processos.
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
             </div>
         </body>
@@ -1932,7 +1901,7 @@ if st.session_state.pagina == "disc":
         """
 
         st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL ULTRA COMPLETO (PDF/HTML)",
+            label="📥 BAIXAR LAUDO PERICIAL ULTRA COMPLETO (HTML)",
             data=html_ultra_completo,
             file_name=f"LAUDO_ULTRA_{nome_laudo.replace(' ', '_')}.html",
             mime="text/html",
