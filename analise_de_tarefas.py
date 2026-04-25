@@ -4302,6 +4302,9 @@ if st.session_state.get("pagina") == "analise":
             cor_pos = "#FFD700" if i == 1 else "#1B1E5D"
             ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_pos};'>{i}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
 
+    # SEGURANÇA ANTIFALHA:
+    colab_nome_exibicao = colab_atual if 'colab_atual' in locals() else "COLABORADOR"
+
     # 5. MONTAGEM DA ESTRUTURA HTML FINAL
     html_final = f"""
     <!DOCTYPE html>
