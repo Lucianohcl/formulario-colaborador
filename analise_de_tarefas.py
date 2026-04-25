@@ -4250,24 +4250,26 @@ if st.session_state.get("pagina") == "analise":
         roi_real_auditado = df_perito['ROI_Final'].sum()
         ganho_capacidade_dias = horas_totais_ano / 8
 
-    # 3. EXTRAÇÃO DE ATIVIDADES E GARGALOS (AUDITORIA ESTRUTURADA)
+    # 3. EXTRAÇÃO DE DIFICULDADES E ATIVIDADES (NEXO CAUSAL)
     
-    # --- LOOP 1: ATIVIDADES (Vindo das categorias Alta, Normal, Baixa) ---
-    if 't_base' in locals() and 'tabelas' in t_base:
-        for categoria in ['alta', 'normal', 'baixa']:
-            for item in t_base['tabelas'].get(categoria, []):
-                ativ_nome = item.get('Atividade', '').strip()
-                if ativ_nome and ativ_nome.lower() not in ["vazio", "none", ".", "vazio..."]:
-                    cor_tag = "#1B1E5D" if categoria == 'alta' else "#52c41a" if categoria == 'normal' else "#1890ff"
-                    linhas_atividades_html += f"""
-                    <tr>
-                        <td style='color:#52c41a; text-align:center;'>✅</td>
-                        <td>{ativ_nome}</td>
-                        <td style='text-align:center;'><span style='color:{cor_tag}; font-weight:bold;'>{categoria.upper()}</span></td>
-                        <td>Nexo técnico validado pela metodologia.</td>
-                    </tr>"""
+    # --- Atividades (Integração com res_final) ---
+    if 'res_final' in locals() and res_final:
+        for item in res_final:
+            status_ativ = item.get('Status', '✅')
+            cor_st = "#52c41a" if status_ativ == "✅" else "#ff4d4f"
+            ativ_nome = item.get('Atividade', 'N/A')
+            impacto_ativ = item.get('Impacto', 'N/A')
+            analise_ativ = item.get('Análise Crítica', 'N/A')
+            
+            linhas_atividades_html += f"""
+            <tr>
+                <td style='color:{cor_st}; text-align:center;'>{status_ativ}</td>
+                <td>{ativ_nome}</td>
+                <td>{impacto_ativ}</td>
+                <td>{analise_ativ}</td>
+            </tr>"""
 
-    # --- LOOP 2: GARGALOS (Sincronizado com o Motor Linha Dura) ---
+    # --- Gargalos (Sincronizado com o Motor Linha Dura) ---
     dificuldades_lista_processada = res_dificuldades if 'res_dificuldades' in locals() else []
     gargalos_vistos = set()
     
@@ -4281,7 +4283,6 @@ if st.session_state.get("pagina") == "analise":
             analise_perito = d.get('Análise do Perito', 'Nexo Causal Confirmado')
             impacto_txt = d.get('Impacto Diário', '0.000 h/dia')
             
-            # Aqui garantimos que frases como "Desconexão..." apareçam no laudo
             linhas_gargalos_html += f"""
             <tr>
                 <td style='text-align:center;'>{status_icone}</td>
@@ -4289,12 +4290,6 @@ if st.session_state.get("pagina") == "analise":
                 <td>{dif_txt}</td>
                 <td><b>{analise_perito}</b> (Carga: {impacto_txt})</td>
             </tr>"""
-
-    # Fallback caso estejam vazios
-    if not linhas_atividades_html:
-        linhas_atividades_html = "<tr><td colspan='4' style='text-align:center;'>Nenhuma atividade técnica detectada.</td></tr>"
-    if not linhas_gargalos_html:
-        linhas_gargalos_html = "<tr><td colspan='4' style='text-align:center;'>Nenhum gargalo identificado no motor de perícia.</td></tr>"
 
     # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
     if 'df_analise' in locals() and not df_analise.empty:
