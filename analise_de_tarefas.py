@@ -1813,122 +1813,124 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 GERADOR DE LAUDO PERICIAL 360° (VERSÃO FINAL INTEGRADA)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO EXTENDIDA & TÉCNICA)
         # ============================================================
-        import plotly.io as pio
-
-        # 1. GERAÇÃO DO GRÁFICO PARA O HTML (ESTÁVEL)
-        grafico_html_div = pio.to_html(
-            fig, # Usando a variável 'fig' que você criou no col_graf
-            full_html=False, 
-            include_plotlyjs='cdn',
-            config={'displayModeBar': False}
-        )
-
-        # 2. DEFINIÇÃO DE VARIÁVEIS PARA O CONTEXTO DO LAUDO
-        nome_completo = (form.get('colaborador') or form.get('nome') or "Colaborador").upper()
-        primeiro_nome = nome_completo.split()[0]
-        status_aderencia = "ALTA" if match_real else "EM ADAPTAÇÃO"
-        cor_aderencia = "#27ae60" if match_real else "#f39c12"
-
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset='utf-8'>
             <style>
-                body {{ font-family: 'Segoe UI', Tahoma, sans-serif; padding: 30px; color: #333; background: #f4f7f6; }}
-                .page {{ background: white; padding: 40px; border-radius: 12px; max-width: 950px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 12px solid #1B1E5D; }}
-                .header {{ text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }}
-                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 26px; }}
-                .grid-info {{ display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; margin-bottom: 30px; }}
-                .stat-card {{ background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eef; text-align: center; }}
-                .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; display: block; }}
-                .stat-card b {{ font-size: 16px; color: #1B1E5D; }}
-                .section-title {{ background: #1B1E5D; color: white; padding: 10px 15px; border-radius: 5px; margin-top: 25px; font-size: 14px; font-weight: bold; }}
-                .chart-box {{ border: 1px solid #eee; margin: 15px 0; border-radius: 8px; padding: 10px; }}
-                .parecer-box {{ background: #eef2ff; border-left: 5px solid #1B1E5D; padding: 20px; border-radius: 4px; margin: 15px 0; font-size: 14px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }}
-                th {{ background: #f4f4f4; padding: 12px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
-                td {{ padding: 12px; border-bottom: 1px solid #eee; }}
-                .footer {{ margin-top: 40px; text-align: center; font-size: 11px; color: #999; }}
-                .badge {{ padding: 4px 8px; border-radius: 4px; color: white; font-weight: bold; font-size: 11px; }}
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
+                .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
+                .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
+                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 30px; letter-spacing: 1px; }}
+                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 35px; }}
+                .stat-card {{ background: #fdfdfd; padding: 18px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
+                .stat-card label {{ font-size: 11px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; margin-bottom: 5px; }}
+                .stat-card b {{ font-size: 18px; color: #1B1E5D; }}
+                
+                .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 15px; font-weight: bold; text-transform: uppercase; }}
+                .sub-title {{ color: #1B1E5D; border-bottom: 1px solid #eee; margin-top: 20px; padding-bottom: 5px; font-size: 18px; }}
+                
+                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; }}
+                .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; font-size: 15px; }}
+                
+                .tecnico-detail {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }}
+                .detail-item {{ background: #fff; padding: 15px; border: 1px solid #f0f0f0; border-radius: 8px; font-size: 13px; }}
+                
+                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+                th {{ background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 3px solid #1B1E5D; color: #1B1E5D; text-transform: uppercase; font-size: 12px; }}
+                td {{ padding: 15px; border-bottom: 1px solid #eee; font-size: 13px; }}
+                
+                .footer {{ margin-top: 60px; text-align: center; font-size: 12px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
+                .highlight {{ color: #1B1E5D; font-weight: bold; }}
             </style>
         </head>
         <body>
             <div class='page'>
                 <div class='header'>
-                    <h1>LAUDO PERICIAL COMPORTAMENTAL</h1>
-                    <p style='color: #1B1E5D; font-weight: bold; margin: 5px 0;'>ANÁLISE DE NEXO CAUSAL E COMPATIBILIDADE DE CARGO</p>
+                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
+                    <p style='color: #7f8c8d; font-weight: bold; margin: 8px 0;'>AUDITORIA COMPORTAMENTAL & ANÁLISE DE NEXO CAUSAL</p>
                 </div>
 
                 <div class='grid-info'>
                     <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
-                    <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
-                    <div class='stat-card'><label>Perfil Dominante</label><b>{dominante}</b></div>
-                    <div class='stat-card'><label>Aderência</label><b style='color:{cor_aderencia}'>{porcentagem_comp}</b></div>
+                    <div class='stat-card'><label>Célula/Cargo</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
+                    <div class='stat-card'><label>Índice Fit</label><b style='color:{cor_aderencia}'>{porcentagem_comp}</b></div>
                 </div>
 
-                <div class='section-title'>1. MAPEAMENTO DE INTENSIDADE DISC</div>
+                <div class='section-title'>1. ANÁLISE QUANTITATIVA DOS EIXOS (DISC)</div>
                 <div class='chart-box'>{grafico_html_div}</div>
+                <p style='font-size: 13px; color: #7f8c8d; font-style: italic;'>*Gráfico gerado via Motor de Cálculo Linha Dura com precisão decimal.</p>
 
-                <div class='section-title'>2. ANÁLISE TÉCNICA DE CARGO & AMBIENTE</div>
+                <div class='section-title'>2. INTERPRETAÇÃO TÉCNICA DO PERFIL</div>
                 <div class='parecer-box'>
-                    <b>DIAGNÓSTICO:</b> O cargo de {cargo_bruto.upper()} exige primariamente o eixo <b>{exigencia_final}</b>. 
-                    O colaborador apresenta uma amplitude de <b>{amplitude:.1f}%</b>, o que caracteriza um perfil 
-                    <b>{"Equilibrado/Versátil" if is_equilibrado else "Especialista Concentrado"}</b>.
+                    <h4 style='margin-top:0;'>Diagnóstico do Especialista:</h4>
+                    O colaborador apresenta uma natureza de trabalho voltada para <span class='highlight'>{info['estilo']}</span>. 
+                    Sua configuração psicométrica possui uma amplitude de <span class='highlight'>{amplitude:.1f}%</span> entre os eixos.
                     <br><br>
-                    <b>SENTENÇA:</b> { "Aderência plena detectada. O colaborador opera em sua zona de conforto natural." if match_real else "Necessidade de adaptação identificada. O colaborador consome energia extra para atender aos requisitos do cargo." }
+                    <b>Características do Perfil {info['nome']}:</b> {info['desc']}
+                    <br><br>
+                    <b>Impacto na Função:</b> {txt_gestao}
                 </div>
 
-                <div class='section-title'>3. CONFORMIDADE DE RELATOS (DIFICULDADES E MELHORIAS)</div>
+                <div class='tecnico-detail'>
+                    <div class='detail-item'>
+                        <b style='color:#1B1E5D;'>🚀 Alavancas de Performance:</b><br>
+                        Este colaborador tende a performar acima da média em tarefas de <span class='highlight'>{info['tarefas']}</span>. 
+                        Sua motivação é alimentada por ambientes que favoreçam a {"autonomia (D)" if "D" in dominante else "interação (I)" if "I" in dominante else "previsibilidade (S)" if "S" in dominante else "análise técnica (C)"}.
+                    </div>
+                    <div class='detail-item'>
+                        <b style='color:#e74c3c;'>⚠️ Pontos de Fadiga (Burnout Risk):</b><br>
+                        O esforço adaptativo será elevado se o colaborador for submetido a longos períodos de 
+                        <b>{ "ambiguidade e falta de dados" if "C" in dominante else "isolamento e processos rígidos" if "I" in dominante else "pressão por prazos imediatos" if "S" in dominante else "tarefas repetitivas sem liderança" }</b>.
+                    </div>
+                </div>
+
+                <div class='section-title'>3. MATRIZ DE NEXO CAUSAL (COERÊNCIA DE RELATOS)</div>
+                <p style='font-size: 14px; margin-bottom: 0;'>Esta seção analisa se as queixas e sugestões do colaborador são compatíveis com seu perfil psicológico ou se indicam fatores externos (resistência).</p>
                 <table>
                     <thead>
-                        <tr><th>TIPO</th><th>CONTEÚDO DO RELATO</th><th>ANÁLISE DE COERÊNCIA</th></tr>
+                        <tr><th>VARIÁVEL ANALISADA</th><th>CONTEÚDO EXTRAÍDO</th><th>VEREDITO TÉCNICO</th></tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><b>Dificuldades</b></td>
-                            <td>{", ".join(difs_validas) if difs_validas else "Nenhuma dificuldade crítica reportada."}</td>
-                            <td><span class='badge' style='background:{"#27ae60" if tem_algo_dif else "#e74c3c"}'>
-                                {"COERENTE" if tem_algo_dif else "RESISTÊNCIA"}</span></td>
+                            <td><b>Dificuldades Operacionais</b><br><small>Nexo de Estresse</small></td>
+                            <td>{", ".join(difs_validas) if difs_validas else "Vazio/Nenhum"}</td>
+                            <td><b style='color:{"#27ae60" if tem_algo_dif else "#e74c3c"}'>
+                                {"✅ NEXO CONFIRMADO" if tem_algo_dif else "❌ RESISTÊNCIA DETECTADA"}</b><br>
+                                <small>{"A dor relatada faz sentido com o perfil." if tem_algo_dif else "Postura defensiva identificada."}</small>
+                            </td>
                         </tr>
                         <tr>
-                            <td><b>Sugestões</b></td>
-                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Ausente"}</td>
-                            <td><span class='badge' style='background:{"#27ae60" if tem_algo_sug else "#7f8c8d"}'>
-                                {"PROATIVO" if tem_algo_sug else "PASSIVO"}</span></td>
+                            <td><b>Potencial de Inovação</b><br><small>Proatividade</small></td>
+                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Vazio/Nenhum"}</td>
+                            <td><b style='color:{"#2196f3" if tem_algo_sug else "#7f8c8d"}'>
+                                {"🚀 ALTA PROATIVIDADE" if tem_algo_sug else "💤 BAIXA CONTRIBUIÇÃO"}</b><br>
+                                <small>{"Foco em melhoria contínua." if tem_algo_sug else "Limitado ao 'status quo'."}</small>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
 
-                <div class='section-title'>4. ORIENTAÇÕES PARA A GESTÃO (PDI)</div>
-                <div style='padding: 15px; background: #f9f9f9; border: 1px solid #eee; margin-top: 10px; border-radius: 8px;'>
-                    <ul style='font-size: 14px;'>
-                        <li><b>Estratégia:</b> {txt_gestao}</li>
-                        <li><b>Foco de Treinamento:</b> Reforço em competências de {info['estilo']}.</li>
-                        <li><b>Alerta:</b> { "Monitorar sinais de fadiga por adaptação." if not match_real else "Manter desafios constantes para evitar estagnação." }</li>
-                    </ul>
+                <div class='section-title'>4. PARECER FINAL E ENQUADRAMENTO DE CARGO</div>
+                <div style='padding: 20px; background: #fff; border: 1px solid #1B1E5D; margin-top: 15px; border-radius: 10px;'>
+                    <b style='font-size: 16px;'>Veredito de Auditoria:</b><br>
+                    O cargo de <span class='highlight'>{cargo_bruto.upper()}</span> possui exigência dominante no eixo <span class='highlight'>{exigencia_final}</span>.
+                    <br><br>
+                    <b>Conclusão:</b> {f"O colaborador {primeiro_nome} está em perfeito alinhamento com as atividades descritas, garantindo alta performance com baixo turnover." if match_real else f"Identificado desvio entre o perfil natural e a exigência da cadeira. Recomenda-se acompanhamento de PDI para evitar fadiga adaptativa no eixo {exigencia_final}."}
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR SISTEMA DE INTELIGÊNCIA COMPORTAMENTAL - 2026</b><br>
-                    Documento para uso interno e tomada de decisão estratégica em RH.
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
+                    Este relatório é um documento técnico para suporte a decisões de Gente e Gestão.
                 </div>
             </div>
         </body>
         </html>
-        """
-
-        # 3. BOTÃO DE DOWNLOAD FINAL
-        st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL COMPLETO (PDF/HTML)",
-            data=html_final_estendido,
-            file_name=f"LAUDO_PERICIAL_{nome_completo.replace(' ', '_')}.html",
-            mime="text/html",
-            use_container_width=True,
-            key="btn_final_laudo"
-        )             
+        """             
         
 
 # --- VISUALIZAÇÃO ---
