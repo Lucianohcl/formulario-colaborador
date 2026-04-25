@@ -1815,6 +1815,21 @@ if st.session_state.pagina == "disc":
         # ============================================================
         # 📥 LAUDO PERICIAL MASTER (VERSÃO EXTENDIDA & TÉCNICA)
         # ============================================================
+        
+        # 0. INICIALIZAÇÃO DE SEGURANÇA (EVITA NAMEERROR)
+        grafico_html_div = "<div>Gráfico não disponível</div>" 
+        
+        # Tenta gerar o gráfico real se a 'fig' existir
+        try:
+            import plotly.io as pio
+            if 'fig' in locals():
+                grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
+        except:
+            pass
+
+        # === CORREÇÃO DO NAMEERROR: VARIÁVEIS DE AMBIENTE ===
+        cor_aderencia = "#27ae60" if match_real else "#f39c12"
+        # ... (seu código de cor_aderencia e status_aderencia continua aqui)
         # === CORREÇÃO DO NAMEERROR: DEFINIÇÃO DE SEGURANÇA ===
         # Garante que as variáveis de cor e status existam antes do HTML
         cor_aderencia = "#27ae60" if match_real else "#f39c12"
