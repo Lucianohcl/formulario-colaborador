@@ -1813,105 +1813,129 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO EXTENDIDA & TÉCNICA)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO ESTRATÉGICA & CONTEMPLATIVA)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
         grafico_html_div = "" 
         try:
             import plotly.io as pio
-            # Verifica se a figura 'fig' existe no escopo local
             if 'fig' in locals():
                 grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. VARIÁVEIS DE AMBIENTE E SEGURANÇA
-        cor_aderencia = "#27ae60" if match_real else "#f39c12"
-        status_aderencia = "ALTA" if match_real else "EM ADAPTAÇÃO"
+        # 1. VARIÁVEIS DE AMBIENTE E LÓGICA DE NEXO
+        cor_aderencia = "#27ae60" if match_real else "#e67e22"
+        # Lógica contemplativa para o risco de fadiga
+        risco_ambiente = (
+            "Ambiguidade e falta de processos" if "C" in dominante else 
+            "Isolamento social e tarefas ultra-técnicas" if "I" in dominante else 
+            "Ambientes de alta pressão e mudanças bruscas" if "S" in dominante else 
+            "Repetição excessiva e falta de autonomia"
+        )
 
-        if 'porcentagem_comp' not in locals():
-            porcentagem_comp = "0%"
-
-        # 2. MONTAGEM DA STRING HTML (O RECUO AQUI É APENAS DO PYTHON)
+        # 2. MONTAGEM DA STRING HTML
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html>
         <head>
             <meta charset='utf-8'>
             <style>
-                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
-                .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
-                .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
-                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 30px; letter-spacing: 1px; }}
-                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 35px; }}
-                .stat-card {{ background: #fdfdfd; padding: 18px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
-                .stat-card label {{ font-size: 11px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; margin-bottom: 5px; }}
-                .stat-card b {{ font-size: 18px; color: #1B1E5D; }}
-                .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 15px; font-weight: bold; text-transform: uppercase; }}
-                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; }}
-                .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; font-size: 15px; }}
-                .tecnico-detail {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }}
-                .detail-item {{ background: #fff; padding: 15px; border: 1px solid #f0f0f0; border-radius: 8px; font-size: 13px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-                th {{ background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 3px solid #1B1E5D; color: #1B1E5D; text-transform: uppercase; font-size: 12px; }}
-                td {{ padding: 15px; border-bottom: 1px solid #eee; font-size: 13px; }}
-                .footer {{ margin-top: 60px; text-align: center; font-size: 12px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1a2a3a; line-height: 1.8; background: #f4f7f9; }}
+                .page {{ background: white; padding: 60px; border-radius: 4px; max-width: 950px; margin: auto; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-top: 20px solid #1B1E5D; position: relative; }}
+                
+                .header {{ text-align: left; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; }}
+                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 26px; text-transform: uppercase; letter-spacing: 2px; }}
+                
+                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 40px; }}
+                .stat-card {{ background: #fcfcfc; padding: 15px; border: 1px solid #eee; border-radius: 8px; text-align: center; }}
+                .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; display: block; }}
+                .stat-card b {{ font-size: 16px; color: #1B1E5D; }}
+
+                .section-title {{ color: #1B1E5D; border-left: 5px solid #1B1E5D; padding-left: 15px; margin-top: 50px; font-size: 18px; font-weight: bold; text-transform: uppercase; background: #f8f9fa; padding-top: 10px; padding-bottom: 10px; }}
+                
+                .chart-box {{ margin: 30px 0; padding: 20px; background: #fff; border: 1px solid #f1f1f1; border-radius: 12px; }}
+                
+                .parecer-box {{ background: #ffffff; border: 1px solid #e1e8ed; padding: 30px; border-radius: 8px; margin: 25px 0; font-size: 15px; position: relative; overflow: hidden; }}
+                .parecer-box::before {{ content: '"'; position: absolute; top: -10px; left: 10px; font-size: 80px; color: #f1f1f1; font-family: serif; }}
+                
+                .tecnico-detail {{ display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px; }}
+                .detail-item {{ background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 14px; border-top: 3px solid #1B1E5D; }}
+                
                 .highlight {{ color: #1B1E5D; font-weight: bold; }}
+                .footer {{ margin-top: 80px; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; padding-top: 20px; }}
+                
+                @media print {{ body {{ background: white; padding: 0; }} .page {{ box-shadow: none; border: none; }} }}
             </style>
         </head>
         <body>
             <div class='page'>
                 <div class='header'>
-                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
-                    <p style='color: #7f8c8d; font-weight: bold; margin: 8px 0;'>AUDITORIA COMPORTAMENTAL & ANÁLISE DE NEXO CAUSAL</p>
+                    <div>
+                        <h1>Laudo de Nexo Comportamental</h1>
+                        <p style='margin: 5px 0; color: #7f8c8d;'>Emissão Técnica: Consultoria de Alta Performance</p>
+                    </div>
+                    <div style='text-align: right; font-size: 12px; color: #1B1E5D;'>
+                        <b>NETEXAME AUDITORIA</b><br>ID: #2026-{primeiro_nome.upper()}
+                    </div>
                 </div>
 
                 <div class='grid-info'>
-                    <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
-                    <div class='stat-card'><label>Célula/Cargo</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Sujeito</label><b>{primeiro_nome}</b></div>
+                    <div class='stat-card'><label>Função Analisada</label><b>{cargo_bruto.upper()}</b></div>
                     <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
-                    <div class='stat-card'><label>Índice Fit</label><b style='color:{cor_aderencia}'>{porcentagem_comp}</b></div>
+                    <div class='stat-card'><label>Aderência (Fit)</label><b style='color:{cor_aderencia}'>{porcentagem_comp}</b></div>
                 </div>
 
-                <div class='section-title'>1. ANÁLISE QUANTITATIVA DOS EIXOS (DISC)</div>
+                <div class='section-title'>I. Mapeamento Quantitativo (DISC)</div>
                 <div class='chart-box'>{grafico_html_div}</div>
                 
-                <div class='section-title'>2. INTERPRETAÇÃO TÉCNICA DO PERFIL</div>
+                <div class='section-title'>II. Parecer Contemplativo do Especialista</div>
                 <div class='parecer-box'>
-                    <h4 style='margin-top:0;'>Diagnóstico do Especialista:</h4>
-                    O colaborador apresenta uma natureza de trabalho voltada para <span class='highlight'>{info['estilo']}</span>. 
-                    Sua configuração psicométrica possui uma amplitude de <span class='highlight'>{amplitude:.1f}%</span>.
+                    O colaborador manifesta uma estrutura psicométrica orientada para <span class='highlight'>{info['estilo']}</span>. 
+                    Com uma amplitude de <span class='highlight'>{amplitude:.1f}%</span>, observamos uma {"natureza versátil e resiliente" if amplitude <= 15 else "especialização comportamental aguda"}.
                     <br><br>
-                    <b>Características:</b> {info['desc']}
+                    <b>Análise de Custo Cognitivo:</b> {primeiro_nome} opera com máxima eficiência em contextos de {info['tarefas']}. 
+                    Seu "nexo de fluxo" ocorre quando a liberdade de ação encontra a necessidade de {info['desc'].split('.')[0]}.
+                    A manutenção desse colaborador em tarefas de baixa aderência ao perfil resultará em fadiga crônica e perda de precisão técnica a médio prazo.
                 </div>
 
                 <div class='tecnico-detail'>
                     <div class='detail-item'>
-                        <b style='color:#1B1E5D;'>🚀 Alavancas:</b><br>
-                        Foco em <span class='highlight'>{info['tarefas']}</span>.
+                        <b style='color:#1B1E5D; font-size: 16px;'>🚀 Vetores de Propulsão</b><br><br>
+                        Para extrair o potencial máximo, o ambiente deve oferecer:
+                        <ul style='margin-left: -15px;'>
+                            <li>Foco predominante em <b>{info['tarefas']}</b>.</li>
+                            <li>Reconhecimento baseado em métricas de {info['estilo'].split(' ')[0]}.</li>
+                        </ul>
                     </div>
-                    <div class='detail-item'>
-                        <b style='color:#e74c3c;'>⚠️ Fadiga:</b><br>
-                        Risco em ambientes de <b>{ "ambiguidade" if "C" in dominante else "isolamento" if "I" in dominante else "pressão" if "S" in dominante else "repetição" }</b>.
+                    <div class='detail-item' style='border-top-color: #e74c3c;'>
+                        <b style='color:#e74c3c; font-size: 16px;'>⚠️ Zonas de Atrito</b><br><br>
+                        O declínio de performance é iminente em cenários de:
+                        <ul style='margin-left: -15px;'>
+                            <li><b>{risco_ambiente}</b>.</li>
+                            <li>Exigência contínua de eixos opostos à sua dominância natural.</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
+                    <b>DOCUMENTO CONFIDENCIAL</b><br>
+                    Este laudo é uma análise de tendência comportamental baseada em metodologia DISC e não constitui diagnóstico clínico.
                 </div>
             </div>
         </body>
         </html>
         """
 
-        # 3. RENDERIZAÇÃO DO BOTÃO (ALINHADO COM O BLOCO ACIMA)
+        # 3. RENDERIZAÇÃO DO BOTÃO
         st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
+            label="📥 BAIXAR LAUDO PERICIAL ESTRATÉGICO",
             data=html_final_estendido,
-            file_name=f"LAUDO_PERICIAL_{primeiro_nome}.html",
+            file_name=f"LAUDO_ESTRATEGICO_{primeiro_nome}.html",
             mime="text/html",
-            key="btn_laudo_final_deploy",
+            key="btn_laudo_final_v2",
             use_container_width=True
         )             
         
