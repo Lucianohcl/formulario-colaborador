@@ -1813,7 +1813,7 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO ESTRATÉGICA & CONTEMPLATIVA)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO COMPLETA - TELA + HTML)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1825,104 +1825,89 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. VARIÁVEIS DE AMBIENTE E LÓGICA DE NEXO
-        cor_aderencia = "#27ae60" if match_real else "#e67e22"
-        # Lógica contemplativa para o risco de fadiga
-        risco_ambiente = (
-            "Ambiguidade e falta de processos" if "C" in dominante else 
-            "Isolamento social e tarefas ultra-técnicas" if "I" in dominante else 
-            "Ambientes de alta pressão e mudanças bruscas" if "S" in dominante else 
-            "Repetição excessiva e falta de autonomia"
-        )
+        # 1. COLETA DE COMENTÁRIOS E ALERTAS DO APP
+        # Capturamos as mesmas lógicas que disparam os alertas na sua tela
+        alerta_resistencia = ""
+        if "nenhuma melhoria" in sugestao_colaborador.lower() or "nenhuma dificuldade" in dificuldade_colaborador.lower():
+            alerta_resistencia = f"""
+            <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
+                <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
+                A ausência de reportes de dificuldades ou sugestões por um perfil {dominante} pode indicar 
+                postura defensiva ou preenchimento evasivo dos dados.
+            </div>
+            """
 
-        # 2. MONTAGEM DA STRING HTML
+        nota_consultor = f"""
+        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic;'>
+            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é altamente equilibrado 
+            (Amplitude: {amplitude:.1f}%). Isso significa que a fadiga em tarefas técnicas ou sociais é 
+            mitigada pela flexibilidade nativa.
+        </div>
+        """
+
+        # 2. MONTAGEM DA STRING HTML (IDENTAÇÃO PRESERVADA)
         html_final_estendido = f"""
         <!DOCTYPE html>
-        <html>
+        <html lang='pt-br'>
         <head>
             <meta charset='utf-8'>
             <style>
-                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; color: #1a2a3a; line-height: 1.8; background: #f4f7f9; }}
-                .page {{ background: white; padding: 60px; border-radius: 4px; max-width: 950px; margin: auto; box-shadow: 0 0 20px rgba(0,0,0,0.05); border-top: 20px solid #1B1E5D; position: relative; }}
-                
-                .header {{ text-align: left; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 40px; display: flex; justify-content: space-between; align-items: flex-end; }}
-                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 26px; text-transform: uppercase; letter-spacing: 2px; }}
-                
-                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 40px; }}
-                .stat-card {{ background: #fcfcfc; padding: 15px; border: 1px solid #eee; border-radius: 8px; text-align: center; }}
-                .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #7f8c8d; font-weight: bold; display: block; }}
-                .stat-card b {{ font-size: 16px; color: #1B1E5D; }}
-
-                .section-title {{ color: #1B1E5D; border-left: 5px solid #1B1E5D; padding-left: 15px; margin-top: 50px; font-size: 18px; font-weight: bold; text-transform: uppercase; background: #f8f9fa; padding-top: 10px; padding-bottom: 10px; }}
-                
-                .chart-box {{ margin: 30px 0; padding: 20px; background: #fff; border: 1px solid #f1f1f1; border-radius: 12px; }}
-                
-                .parecer-box {{ background: #ffffff; border: 1px solid #e1e8ed; padding: 30px; border-radius: 8px; margin: 25px 0; font-size: 15px; position: relative; overflow: hidden; }}
-                .parecer-box::before {{ content: '"'; position: absolute; top: -10px; left: 10px; font-size: 80px; color: #f1f1f1; font-family: serif; }}
-                
-                .tecnico-detail {{ display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 25px; }}
-                .detail-item {{ background: #f9f9f9; padding: 20px; border-radius: 8px; font-size: 14px; border-top: 3px solid #1B1E5D; }}
-                
-                .highlight {{ color: #1B1E5D; font-weight: bold; }}
-                .footer {{ margin-top: 80px; text-align: center; font-size: 11px; color: #95a5a6; border-top: 1px solid #eee; padding-top: 20px; }}
-                
-                @media print {{ body {{ background: white; padding: 0; }} .page {{ box-shadow: none; border: none; }} }}
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
+                .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
+                .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
+                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 28px; text-transform: uppercase; }}
+                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 35px; }}
+                .stat-card {{ background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
+                .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; }}
+                .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 14px; font-weight: bold; text-transform: uppercase; }}
+                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; text-align: center; }}
+                .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ margin-top: 60px; text-align: center; font-size: 11px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
             </style>
         </head>
         <body>
             <div class='page'>
                 <div class='header'>
-                    <div>
-                        <h1>Laudo de Nexo Comportamental</h1>
-                        <p style='margin: 5px 0; color: #7f8c8d;'>Emissão Técnica: Consultoria de Alta Performance</p>
-                    </div>
-                    <div style='text-align: right; font-size: 12px; color: #1B1E5D;'>
-                        <b>NETEXAME AUDITORIA</b><br>ID: #2026-{primeiro_nome.upper()}
-                    </div>
+                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
+                    <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
                 </div>
 
                 <div class='grid-info'>
-                    <div class='stat-card'><label>Sujeito</label><b>{primeiro_nome}</b></div>
-                    <div class='stat-card'><label>Função Analisada</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
+                    <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
                     <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
-                    <div class='stat-card'><label>Aderência (Fit)</label><b style='color:{cor_aderencia}'>{porcentagem_comp}</b></div>
+                    <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
                 </div>
 
-                <div class='section-title'>I. Mapeamento Quantitativo (DISC)</div>
-                <div class='chart-box'>{grafico_html_div}</div>
-                
-                <div class='section-title'>II. Parecer Contemplativo do Especialista</div>
+                <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
+                <div class='chart-box'>
+                    {grafico_html_div}
+                </div>
+
+                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
-                    O colaborador manifesta uma estrutura psicométrica orientada para <span class='highlight'>{info['estilo']}</span>. 
-                    Com uma amplitude de <span class='highlight'>{amplitude:.1f}%</span>, observamos uma {"natureza versátil e resiliente" if amplitude <= 15 else "especialização comportamental aguda"}.
+                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
+                    {info['desc']}
                     <br><br>
-                    <b>Análise de Custo Cognitivo:</b> {primeiro_nome} opera com máxima eficiência em contextos de {info['tarefas']}. 
-                    Seu "nexo de fluxo" ocorre quando a liberdade de ação encontra a necessidade de {info['desc'].split('.')[0]}.
-                    A manutenção desse colaborador em tarefas de baixa aderência ao perfil resultará em fadiga crônica e perda de precisão técnica a médio prazo.
+                    <b>Veredito:</b> {primeiro_nome} possui qualificação superior e objetivos alinhados à visão estratégica do cargo.
                 </div>
 
-                <div class='tecnico-detail'>
-                    <div class='detail-item'>
-                        <b style='color:#1B1E5D; font-size: 16px;'>🚀 Vetores de Propulsão</b><br><br>
-                        Para extrair o potencial máximo, o ambiente deve oferecer:
-                        <ul style='margin-left: -15px;'>
-                            <li>Foco predominante em <b>{info['tarefas']}</b>.</li>
-                            <li>Reconhecimento baseado em métricas de {info['estilo'].split(' ')[0]}.</li>
-                        </ul>
-                    </div>
-                    <div class='detail-item' style='border-top-color: #e74c3c;'>
-                        <b style='color:#e74c3c; font-size: 16px;'>⚠️ Zonas de Atrito</b><br><br>
-                        O declínio de performance é iminente em cenários de:
-                        <ul style='margin-left: -15px;'>
-                            <li><b>{risco_ambiente}</b>.</li>
-                            <li>Exigência contínua de eixos opostos à sua dominância natural.</li>
-                        </ul>
-                    </div>
+                {nota_consultor}
+                {alerta_resistencia}
+
+                <div class='section-title'>3. PONTOS DE ATENÇÃO (ATIVIDADES)</div>
+                <div style='margin-top: 20px; font-size: 14px;'>
+                    <p>⚠️ <b>Tarefas de Alto Consumo Cognitivo:</b></p>
+                    <ul>
+                        <li>Auditoria de Folhas de Pagamento e Encargos.</li>
+                        <li>Gestão avançada de eSocial, EFD-Reinf e DCTFWeb.</li>
+                        <li>Validação de respostas técnicas com fundamentação jurídica.</li>
+                    </ul>
                 </div>
 
                 <div class='footer'>
-                    <b>DOCUMENTO CONFIDENCIAL</b><br>
-                    Este laudo é uma análise de tendência comportamental baseada em metodologia DISC e não constitui diagnóstico clínico.
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
+                    Documento digital com validade técnica para decisões de RH e Gestão.
                 </div>
             </div>
         </body>
@@ -1931,11 +1916,11 @@ if st.session_state.pagina == "disc":
 
         # 3. RENDERIZAÇÃO DO BOTÃO
         st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL ESTRATÉGICO",
+            label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
             data=html_final_estendido,
-            file_name=f"LAUDO_ESTRATEGICO_{primeiro_nome}.html",
+            file_name=f"LAUDO_PERICIAL_{primeiro_nome}.html",
             mime="text/html",
-            key="btn_laudo_final_v2",
+            key="btn_laudo_final_deploy",
             use_container_width=True
         )             
         
