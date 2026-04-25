@@ -1813,99 +1813,160 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 GERADOR DE LAUDO ULTRA COMPLETO (VERSÃO ESTÁVEL)
+        # 📥 GERADOR DE LAUDO "ULTRA-COMPLETE" & CONSULTORIA 2026
         # ============================================================
         import plotly.io as pio
 
-        # 1. GERAR O GRÁFICO EM FORMATO HTML DIV (Sem precisar de Kaleido)
-        # Isso gera um código que o navegador entende nativamente
-        grafico_html_div = pio.to_html(
-            fig_html, 
-            full_html=False, 
-            include_plotlyjs='cdn',
-            config={'displayModeBar': False}
-        )
+        # 1. PREPARAÇÃO DO GRÁFICO (Garanta que 'fig_html' ou seu gráfico exista)
+        # Se você usa outro nome (ex: fig), altere aqui:
+        try:
+            grafico_html_div = pio.to_html(
+                fig_html, 
+                full_html=False, 
+                include_plotlyjs='cdn',
+                config={'displayModeBar': False}
+            )
+        except NameError:
+            # Fallback caso a variável fig_html não tenha sido definida antes
+            grafico_html_div = "<p style='color:red;'>Gráfico não disponível para este laudo.</p>"
 
-        # 2. VARIÁVEIS DE APOIO
+        # 2. LÓGICA DE APOIO PARA CONTEÚDO ESTENDIDO
         nome_laudo = (form.get('colaborador') or form.get('nome') or "COLABORADOR").upper()
         
-        html_ultra_completo = f"""
+        # Mapeamento de Pontos Fortes e Riscos por Perfil (Estendido)
+        ext_info = {
+            "D": {"fortes": "Decisão, foco em metas, rapidez", "riscos": "Impaciência, insensibilidade", "ambiente": "Desafiador"},
+            "I": {"fortes": "Entusiasmo, persuasão, networking", "riscos": "Falta de foco, desorganização", "ambiente": "Social"},
+            "S": {"fortes": "Lealdade, persistência, escuta", "riscos": "Medo de mudanças, passividade", "ambiente": "Estável"},
+            "C": {"fortes": "Precisão, compliance, organização", "riscos": "Perfeccionismo, criticismo", "ambiente": "Técnico"}
+        }
+        
+        perfil_ref = dominante[0] if dominante else "C"
+        fatos = ext_info.get(perfil_ref, ext_info["C"])
+
+        # 3. MONTAGEM DO HTML ESTENDIDO
+        html_completissimo = f"""
         <!DOCTYPE html>
-        <html>
+        <html lang='pt-br'>
         <head>
             <meta charset='utf-8'>
             <style>
-                body {{ font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; color: #333; line-height: 1.6; background: #f9f9f9; }}
-                .page {{ background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
-                .header {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; margin: -40px -40px 30px -40px; }}
-                .section-title {{ background: #1B1E5D; color: white; padding: 10px 20px; border-radius: 4px; margin-top: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; }}
-                .grid-3 {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0; }}
-                .metric-card {{ background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #1B1E5D; }}
-                .metric-card label {{ font-size: 11px; color: #777; font-weight: bold; text-transform: uppercase; }}
-                .metric-card div {{ font-size: 22px; font-weight: bold; color: #1B1E5D; }}
-                .chart-container {{ margin: 20px 0; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #fff; }}
-                .parecer-box {{ background: #e7f3ff; border-left: 6px solid #1B1E5D; padding: 20px; margin: 20px 0; border-radius: 4px; }}
-                .footer {{ margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
-                table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-                th {{ background: #f4f4f4; padding: 12px; text-align: left; font-size: 13px; border-bottom: 2px solid #1B1E5D; }}
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
+                .page {{ background: white; padding: 50px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-width: 1000px; margin: auto; border-top: 10px solid #1B1E5D; }}
+                .header {{ text-align: center; margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px; }}
+                .header h1 {{ color: #1B1E5D; margin: 0; font-size: 28px; letter-spacing: 1px; }}
+                .header p {{ color: #7f8c8d; font-weight: bold; margin-top: 5px; }}
+                
+                .grid-top {{ display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; margin-bottom: 30px; }}
+                .card {{ background: #f8f9fa; border: 1px solid #e0e0e0; padding: 20px; border-radius: 8px; }}
+                .card label {{ font-size: 11px; color: #1B1E5D; font-weight: 800; text-transform: uppercase; display: block; margin-bottom: 5px; }}
+                .card span {{ font-size: 20px; font-weight: bold; color: #2c3e50; }}
+
+                .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 6px; margin-top: 40px; font-size: 15px; font-weight: bold; display: flex; align-items: center; justify-content: space-between; }}
+                
+                .chart-area {{ background: #fff; border: 1px solid #eee; padding: 20px; border-radius: 8px; margin-top: 15px; text-align: center; }}
+                
+                .flex-row {{ display: flex; gap: 20px; margin-top: 15px; }}
+                .box-half {{ flex: 1; padding: 15px; border-radius: 8px; border: 1px solid #eee; }}
+                
+                .bg-blue {{ background: #e3f2fd; border-left: 5px solid #2196f3; }}
+                .bg-green {{ background: #e8f5e9; border-left: 5px solid #4caf50; }}
+                .bg-warn {{ background: #fff3e0; border-left: 5px solid #ff9800; }}
+
+                table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+                th {{ background: #f4f6f8; padding: 12px; text-align: left; font-size: 13px; color: #1B1E5D; border-bottom: 2px solid #1B1E5D; }}
                 td {{ padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }}
+
+                .footer {{ margin-top: 60px; padding-top: 20px; border-top: 1px solid #eee; text-align: center; font-size: 12px; color: #bdc3c7; }}
+                .highlight {{ color: #1B1E5D; font-weight: bold; }}
             </style>
         </head>
         <body>
             <div class='page'>
                 <div class='header'>
-                    <h1 style='margin:0;'>RELATÓRIO PERICIAL COMPORTAMENTAL</h1>
-                    <p style='margin:5px 0 0 0; opacity: 0.8;'>ANÁLISE AVANÇADA DISC & NEXO CAUSAL</p>
+                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
+                    <p>AUDITORIA ESTRATÉGICA & ANÁLISE DE NEXO CAUSAL</p>
                 </div>
 
-                <div class='grid-3'>
-                    <div class='metric-card'><label>Colaborador</label><div>{nome_laudo.split()[0]}</div></div>
-                    <div class='metric-card'><label>Perfil Dominante</label><div>{dominante}</div></div>
-                    <div class='metric-card'><label>Compatibilidade</label><div>{porcentagem_comp}</div></div>
+                <div class='grid-top'>
+                    <div class='card'><label>Colaborador Avaliado</label><span>{nome_laudo}</span></div>
+                    <div class='card'><label>Perfil Dominante</label><span>{dominante} ({score}%)</span></div>
+                    <div class='card'><label>Aderência Cargo</label><span style='color:#27ae60;'>{porcentagem_comp}</span></div>
                 </div>
 
-                <div class='section-title'>1. Mapeamento de Intensidade DISC</div>
-                <div class='chart-container'>
+                <div class='section-title'>1. MAPEAMENTO QUANTITATIVO (VETORES DISC)</div>
+                <div class='chart-area'>
                     {grafico_html_div}
                 </div>
 
-                <div class='parecer-box'>
-                    <b style='color:#1B1E5D;'>PARECER DO ESPECIALISTA:</b><br>
-                    O colaborador apresenta um perfil de natureza <b>{info['nome']}</b>. 
-                    Com um Score de Intensidade de <b>{score}%</b>. {txt_gestao}
+                <div class='section-title'>2. PARECER TÉCNICO E CONSULTORIA DE DESEMPENHO</div>
+                <div class='bg-blue' style='padding: 20px; border-radius: 8px; margin-top: 15px;'>
+                    <h4 style='margin-top:0;'>Análise de Natureza Comportamental</h4>
+                    O avaliado possui um perfil <span class='highlight'>{info['nome']}</span>. 
+                    Isto significa que sua força motriz é a <span class='highlight'>{info['estilo']}</span>.
+                    <p style='font-size: 13px;'><b>Nota de Gestão:</b> {txt_gestao}</p>
                 </div>
 
-                <div class='section-title'>2. Diagnóstico de Coerência e Resistência</div>
+                <div class='flex-row'>
+                    <div class='box-half bg-green'>
+                        <h4 style='margin-top:0;'>Pontos Fortes (Alavancas)</h4>
+                        <p style='font-size: 12px;'>{fatos['fortes']}</p>
+                        <h4 style='margin-top:0;'>Ambiente Ideal</h4>
+                        <p style='font-size: 12px;'>Espaços de trabalho com foco {fatos['ambiente']}.</p>
+                    </div>
+                    <div class='box-half bg-warn'>
+                        <h4 style='margin-top:0;'>Riscos e Pontos de Atenção</h4>
+                        <p style='font-size: 12px;'>{fatos['riscos']}</p>
+                        <h4 style='margin-top:0;'>Potencial de Fadiga</h4>
+                        <p style='font-size: 12px;'>Atividades que exijam excesso de eixos secundários.</p>
+                    </div>
+                </div>
+
+                <div class='section-title'>3. DIAGNÓSTICO DE COERÊNCIA (CAMPO vs. PERFIL)</div>
                 <table>
-                    <thead><tr><th>TIPO</th><th>RELATO DO COLABORADOR</th><th>ANÁLISE DE NEXO</th></tr></thead>
+                    <thead>
+                        <tr><th>VARIÁVEL</th><th>CONTEÚDO EXTRAÍDO</th><th>VEREDITO TÉCNICO</th></tr>
+                    </thead>
                     <tbody>
                         <tr>
-                            <td><b>Dificuldades</b></td>
-                            <td>{", ".join(difs_validas) if difs_validas else "Nenhuma reportada."}</td>
-                            <td>{ "✅ Coerente" if tem_algo_dif else "⚠️ Possível Resistência" }</td>
+                            <td><b>Dificuldades Relatadas</b></td>
+                            <td>{", ".join(difs_validas) if difs_validas else "Ausente"}</td>
+                            <td>{ "✅ NEXO CAUSAL IDENTIFICADO" if tem_algo_dif else "⚠️ QUEIXA ESTRUTURAL/FORA PERFIL" }</td>
                         </tr>
                         <tr>
-                            <td><b>Sugestões</b></td>
-                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Nenhuma reportada."}</td>
-                            <td>{ "🚀 Eficiência" if tem_algo_sug else "⚠️ Baixa Proatividade" }</td>
+                            <td><b>Sugestões de Melhoria</b></td>
+                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Ausente"}</td>
+                            <td>{ "🚀 FOCO EM SOLUÇÃO" if tem_algo_sug else "⚠️ BAIXO ENGAJAMENTO PROATIVO" }</td>
                         </tr>
                     </tbody>
                 </table>
 
+                <div class='section-title'>4. PLANO DE AÇÃO SUGERIDO (PDI)</div>
+                <div class='card' style='margin-top: 15px; border-left: 5px solid #1B1E5D;'>
+                    <ul style='font-size: 13px; padding-left: 20px;'>
+                        <li><b>Treinamento:</b> Focar em {info['tarefas'].split(',')[0]}.</li>
+                        <li><b>Alocação:</b> Evitar tarefas de baixo impacto no eixo {perfil_ref}.</li>
+                        <li><b>Feedback:</b> Utilizar comunicação baseada em dados e fatos (C) ou rapidez (D).</li>
+                    </ul>
+                </div>
+
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
+                    <b>NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
+                    Análise gerada em conformidade com as normas de Auditoria de Processos Behavioristas.
                 </div>
             </div>
         </body>
         </html>
         """
 
+        # 4. BOTÃO DE DOWNLOAD REFORÇADO
         st.download_button(
-            label="📥 BAIXAR LAUDO PERICIAL ULTRA COMPLETO (HTML)",
-            data=html_ultra_completo,
-            file_name=f"LAUDO_ULTRA_{nome_laudo.replace(' ', '_')}.html",
+            label=f"📥 BAIXAR LAUDO PERICIAL 360°: {nome_laudo}",
+            data=html_completissimo,
+            file_name=f"LAUDO_PERICIAL_360_{nome_laudo.replace(' ', '_')}.html",
             mime="text/html",
-            use_container_width=True
+            use_container_width=True,
+            key="btn_laudo_360_final"
         )
                       
         
