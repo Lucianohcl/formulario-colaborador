@@ -1815,30 +1815,25 @@ if st.session_state.pagina == "disc":
         # ============================================================
         # 📥 LAUDO PERICIAL MASTER (VERSÃO EXTENDIDA & TÉCNICA)
         # ============================================================
-        
-        # 0. INICIALIZAÇÃO DE SEGURANÇA (EVITA NAMEERROR)
-        grafico_html_div = "<div>Gráfico não disponível</div>" 
-        
-        # Tenta gerar o gráfico real se a 'fig' existir
+
+        # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
+        grafico_html_div = "" 
         try:
             import plotly.io as pio
+            # Verifica se a figura 'fig' existe no escopo local
             if 'fig' in locals():
                 grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
-        except:
-            pass
+        except Exception:
+            grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # === CORREÇÃO DO NAMEERROR: VARIÁVEIS DE AMBIENTE ===
-        cor_aderencia = "#27ae60" if match_real else "#f39c12"
-        # ... (seu código de cor_aderencia e status_aderencia continua aqui)
-        # === CORREÇÃO DO NAMEERROR: DEFINIÇÃO DE SEGURANÇA ===
-        # Garante que as variáveis de cor e status existam antes do HTML
+        # 1. VARIÁVEIS DE AMBIENTE E SEGURANÇA
         cor_aderencia = "#27ae60" if match_real else "#f39c12"
         status_aderencia = "ALTA" if match_real else "EM ADAPTAÇÃO"
-        
-        # Caso porcentagem_comp não tenha sido calculada por algum motivo
-        if 'porcentagem_comp' not in locals():
-            porcentagem_comp = "N/A"
 
+        if 'porcentagem_comp' not in locals():
+            porcentagem_comp = "0%"
+
+        # 2. MONTAGEM DA STRING HTML (O RECUO AQUI É APENAS DO PYTHON)
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html>
@@ -1853,20 +1848,14 @@ if st.session_state.pagina == "disc":
                 .stat-card {{ background: #fdfdfd; padding: 18px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
                 .stat-card label {{ font-size: 11px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; margin-bottom: 5px; }}
                 .stat-card b {{ font-size: 18px; color: #1B1E5D; }}
-                
                 .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 15px; font-weight: bold; text-transform: uppercase; }}
-                .sub-title {{ color: #1B1E5D; border-bottom: 1px solid #eee; margin-top: 20px; padding-bottom: 5px; font-size: 18px; }}
-                
                 .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; }}
                 .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; font-size: 15px; }}
-                
                 .tecnico-detail {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }}
                 .detail-item {{ background: #fff; padding: 15px; border: 1px solid #f0f0f0; border-radius: 8px; font-size: 13px; }}
-                
                 table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
                 th {{ background: #f8f9fa; padding: 15px; text-align: left; border-bottom: 3px solid #1B1E5D; color: #1B1E5D; text-transform: uppercase; font-size: 12px; }}
                 td {{ padding: 15px; border-bottom: 1px solid #eee; font-size: 13px; }}
-                
                 .footer {{ margin-top: 60px; text-align: center; font-size: 12px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
                 .highlight {{ color: #1B1E5D; font-weight: bold; }}
             </style>
@@ -1887,74 +1876,44 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>1. ANÁLISE QUANTITATIVA DOS EIXOS (DISC)</div>
                 <div class='chart-box'>{grafico_html_div}</div>
-                <p style='font-size: 13px; color: #7f8c8d; font-style: italic;'>*Gráfico gerado via Motor de Cálculo Linha Dura com precisão decimal.</p>
-
+                
                 <div class='section-title'>2. INTERPRETAÇÃO TÉCNICA DO PERFIL</div>
                 <div class='parecer-box'>
                     <h4 style='margin-top:0;'>Diagnóstico do Especialista:</h4>
                     O colaborador apresenta uma natureza de trabalho voltada para <span class='highlight'>{info['estilo']}</span>. 
-                    Sua configuração psicométrica possui uma amplitude de <span class='highlight'>{amplitude:.1f}%</span> entre os eixos.
+                    Sua configuração psicométrica possui uma amplitude de <span class='highlight'>{amplitude:.1f}%</span>.
                     <br><br>
-                    <b>Características do Perfil {info['nome']}:</b> {info['desc']}
-                    <br><br>
-                    <b>Impacto na Função:</b> {txt_gestao}
+                    <b>Características:</b> {info['desc']}
                 </div>
 
                 <div class='tecnico-detail'>
                     <div class='detail-item'>
-                        <b style='color:#1B1E5D;'>🚀 Alavancas de Performance:</b><br>
-                        Este colaborador tende a performar acima da média em tarefas de <span class='highlight'>{info['tarefas']}</span>. 
-                        Sua motivação é alimentada por ambientes que favoreçam a {"autonomia (D)" if "D" in dominante else "interação (I)" if "I" in dominante else "previsibilidade (S)" if "S" in dominante else "análise técnica (C)"}.
+                        <b style='color:#1B1E5D;'>🚀 Alavancas:</b><br>
+                        Foco em <span class='highlight'>{info['tarefas']}</span>.
                     </div>
                     <div class='detail-item'>
-                        <b style='color:#e74c3c;'>⚠️ Pontos de Fadiga (Burnout Risk):</b><br>
-                        O esforço adaptativo será elevado se o colaborador for submetido a longos períodos de 
-                        <b>{ "ambiguidade e falta de dados" if "C" in dominante else "isolamento e processos rígidos" if "I" in dominante else "pressão por prazos imediatos" if "S" in dominante else "tarefas repetitivas sem liderança" }</b>.
+                        <b style='color:#e74c3c;'>⚠️ Fadiga:</b><br>
+                        Risco em ambientes de <b>{ "ambiguidade" if "C" in dominante else "isolamento" if "I" in dominante else "pressão" if "S" in dominante else "repetição" }</b>.
                     </div>
-                </div>
-
-                <div class='section-title'>3. MATRIZ DE NEXO CAUSAL (COERÊNCIA DE RELATOS)</div>
-                <p style='font-size: 14px; margin-bottom: 0;'>Esta seção analisa se as queixas e sugestões do colaborador são compatíveis com seu perfil psicológico ou se indicam fatores externos (resistência).</p>
-                <table>
-                    <thead>
-                        <tr><th>VARIÁVEL ANALISADA</th><th>CONTEÚDO EXTRAÍDO</th><th>VEREDITO TÉCNICO</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><b>Dificuldades Operacionais</b><br><small>Nexo de Estresse</small></td>
-                            <td>{", ".join(difs_validas) if difs_validas else "Vazio/Nenhum"}</td>
-                            <td><b style='color:{"#27ae60" if tem_algo_dif else "#e74c3c"}'>
-                                {"✅ NEXO CONFIRMADO" if tem_algo_dif else "❌ RESISTÊNCIA DETECTADA"}</b><br>
-                                <small>{"A dor relatada faz sentido com o perfil." if tem_algo_dif else "Postura defensiva identificada."}</small>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><b>Potencial de Inovação</b><br><small>Proatividade</small></td>
-                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Vazio/Nenhum"}</td>
-                            <td><b style='color:{"#2196f3" if tem_algo_sug else "#7f8c8d"}'>
-                                {"🚀 ALTA PROATIVIDADE" if tem_algo_sug else "💤 BAIXA CONTRIBUIÇÃO"}</b><br>
-                                <small>{"Foco em melhoria contínua." if tem_algo_sug else "Limitado ao 'status quo'."}</small>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div class='section-title'>4. PARECER FINAL E ENQUADRAMENTO DE CARGO</div>
-                <div style='padding: 20px; background: #fff; border: 1px solid #1B1E5D; margin-top: 15px; border-radius: 10px;'>
-                    <b style='font-size: 16px;'>Veredito de Auditoria:</b><br>
-                    O cargo de <span class='highlight'>{cargo_bruto.upper()}</span> possui exigência dominante no eixo <span class='highlight'>{exigencia_final}</span>.
-                    <br><br>
-                    <b>Conclusão:</b> {f"O colaborador {primeiro_nome} está em perfeito alinhamento com as atividades descritas, garantindo alta performance com baixo turnover." if match_real else f"Identificado desvio entre o perfil natural e a exigência da cadeira. Recomenda-se acompanhamento de PDI para evitar fadiga adaptativa no eixo {exigencia_final}."}
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
-                    Este relatório é um documento técnico para suporte a decisões de Gente e Gestão.
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
             </div>
         </body>
         </html>
-        """             
+        """
+
+        # 3. RENDERIZAÇÃO DO BOTÃO (ALINHADO COM O BLOCO ACIMA)
+        st.download_button(
+            label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
+            data=html_final_estendido,
+            file_name=f"LAUDO_PERICIAL_{primeiro_nome}.html",
+            mime="text/html",
+            key="btn_laudo_final_deploy",
+            use_container_width=True
+        )             
         
 
 # --- VISUALIZAÇÃO ---
