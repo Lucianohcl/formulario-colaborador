@@ -1815,6 +1815,15 @@ if st.session_state.pagina == "disc":
         # ============================================================
         # 📥 LAUDO PERICIAL MASTER (VERSÃO EXTENDIDA & TÉCNICA)
         # ============================================================
+        # === CORREÇÃO DO NAMEERROR: DEFINIÇÃO DE SEGURANÇA ===
+        # Garante que as variáveis de cor e status existam antes do HTML
+        cor_aderencia = "#27ae60" if match_real else "#f39c12"
+        status_aderencia = "ALTA" if match_real else "EM ADAPTAÇÃO"
+        
+        # Caso porcentagem_comp não tenha sido calculada por algum motivo
+        if 'porcentagem_comp' not in locals():
+            porcentagem_comp = "N/A"
+
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html>
