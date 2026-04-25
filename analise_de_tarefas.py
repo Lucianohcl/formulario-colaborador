@@ -1813,132 +1813,130 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 BOTÃO PARA GERAR LAUDO PERICIAL DISC COMPLETO (2026)
+        # 📥 GERADOR DE LAUDO ULTRA COMPLETO COM GRÁFICOS (BASE64)
         # ============================================================
-        st.markdown("---")
+        import io
+        import base64
 
-        # 1. Tratamento Prévio de Variáveis (Garante que nada vá vazio)
-        nome_laudo = (form.get('colaborador') or form.get('nome') or "COLABORADOR").upper()
-        cargo_laudo = str(cargo_bruto).upper()
+        # 1. GERAR A IMAGEM DO GRÁFICO PARA O HTML
+        fig_html = px.bar(
+            x=list(percentuais.keys()),
+            y=list(percentuais.values()),
+            color=list(percentuais.keys()),
+            color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"},
+            text=[f"{v}%" for v in percentuais.values()]
+        )
+        fig_html.update_layout(template="plotly_white", showlegend=False, height=300, margin=dict(l=20, r=20, t=10, b=10))
         
-        # Formatação de listas para o HTML
-        difs_html = "".join([f"<li>{d}</li>" for d in difs_validas]) if difs_validas else "<li>Nenhuma dificuldade relevante detectada.</li>"
-        sugs_html = "".join([f"<li>{s}</li>" for s in sugestoes_reais]) if sugestoes_reais else "<li>Nenhuma sugestão técnica registrada.</li>"
-        comps_bench = "".join([f"<li>{c}</li>" for c in benchmark["competencias"]])
+        # Converte o gráfico em imagem para embutir no HTML
+        img_bytes = fig_html.to_image(format="png")
+        encoding = base64.b64encode(img_bytes).decode()
+        img_b64 = f"data:image/png;base64,{encoding}"
 
-        # 2. Definição do Template HTML Profissional
-        html_pericial_disc = f"""
+        # 2. VARIÁVEIS DE APOIO
+        nome_laudo = (form.get('colaborador') or form.get('nome') or "COLABORADOR").upper()
+        
+        html_ultra_completo = f"""
         <!DOCTYPE html>
-        <html lang='pt-br'>
+        <html>
         <head>
             <meta charset='utf-8'>
             <style>
-                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; line-height: 1.5; background: #fff; }}
-                .header {{ background: #1B1E5D; color: white; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 20px; }}
-                .badge {{ background: #1B1E5D; color: white; padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; }}
-                .section {{ margin-top: 25px; padding: 15px; border: 1px solid #eee; border-radius: 8px; }}
-                .section-title {{ background: #f4f6f9; color: #1B1E5D; padding: 8px 15px; border-radius: 5px; font-weight: bold; text-transform: uppercase; font-size: 14px; margin-bottom: 15px; border-left: 5px solid #1B1E5D; }}
-                .grid {{ display: flex; gap: 15px; margin-bottom: 15px; }}
-                .box {{ flex: 1; padding: 15px; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 8px; }}
-                .metric {{ text-align: center; }}
-                .metric span {{ display: block; font-size: 24px; font-weight: bold; color: #1B1E5D; }}
-                .label {{ font-size: 11px; color: #777; text-transform: uppercase; font-weight: bold; }}
-                .success {{ color: #28a745; font-weight: bold; }}
-                .warning {{ color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; font-size: 13px; }}
-                .info-box {{ background: #e7f3ff; padding: 15px; border-radius: 8px; font-size: 13px; border-left: 5px solid #0074D9; }}
-                table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
-                th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align: left; }}
-                .footer {{ margin-top: 40px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+                @media print {{ .no-print {{ display: none; }} }}
+                body {{ font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; color: #333; line-height: 1.6; background: #f9f9f9; }}
+                .page {{ background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); max-width: 900px; margin: auto; }}
+                .header {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; margin: -40px -40px 30px -40px; }}
+                .section-title {{ background: #1B1E5D; color: white; padding: 10px 20px; border-radius: 4px; margin-top: 30px; text-transform: uppercase; font-size: 16px; font-weight: bold; }}
+                .grid-3 {{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 20px 0; }}
+                .metric-card {{ background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; text-align: center; border-bottom: 4px solid #1B1E5D; }}
+                .metric-card label {{ font-size: 11px; color: #777; font-weight: bold; text-transform: uppercase; }}
+                .metric-card div {{ font-size: 22px; font-weight: bold; color: #1B1E5D; }}
+                .chart-container {{ text-align: center; margin: 20px 0; padding: 20px; border: 1px solid #eee; border-radius: 8px; }}
+                .parecer-box {{ background: #e7f3ff; border-left: 6px solid #1B1E5D; padding: 20px; margin: 20px 0; border-radius: 4px; }}
+                .footer {{ margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
+                th {{ background: #f4f4f4; padding: 12px; text-align: left; font-size: 13px; border-bottom: 2px solid #1B1E5D; }}
+                td {{ padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }}
+                .tag-perfil {{ background: #1B1E5D; color: white; padding: 2px 10px; border-radius: 12px; font-size: 12px; }}
             </style>
         </head>
         <body>
-            <div class='header'>
-                <h1 style='margin:0;'>LAUDO PERICIAL COMPORTAMENTAL</h1>
-                <p style='margin:5px 0 0 0; opacity: 0.9;'>MÉTODO DISC & NEXO CAUSAL DE ATIVIDADES</p>
-            </div>
+            <div class='page'>
+                <div class='header'>
+                    <h1 style='margin:0;'>RELATÓRIO PERICIAL COMPORTAMENTAL</h1>
+                    <p style='margin:5px 0 0 0; opacity: 0.8;'>ANÁLISE AVANÇADA DISC & NEXO CAUSAL</p>
+                </div>
 
-            <div class='grid'>
-                <div class='box' style='flex: 2;'>
-                    <div class='label'>Colaborador Avaliado</div>
-                    <h2 style='margin:5px 0;'>{nome_laudo}</h2>
-                    <span class='badge'>{cargo_laudo}</span>
+                <div class='grid-3'>
+                    <div class='metric-card'><label>Colaborador</label><div>{nome_laudo.split()[0]}</div></div>
+                    <div class='metric-card'><label>Perfil Dominante</label><div>{dominante}</div></div>
+                    <div class='metric-card'><label>Compatibilidade</label><div>{porcentagem_comp}</div></div>
                 </div>
-                <div class='box metric'>
-                    <div class='label'>Perfil Dominante</div>
-                    <span>{dominante}</span>
-                </div>
-                <div class='box metric'>
-                    <div class='label'>Aderência ao Cargo</div>
-                    <span>{porcentagem_comp}</span>
-                </div>
-            </div>
 
-            <div class='section'>
-                <div class='section-title'>1. Diagnóstico de Perfil (DISC)</div>
-                <p>O colaborador apresenta um perfil <b>{info['nome']}</b> com foco principal em <b>{info['estilo']}</b>. Sua intensidade de perfil é de <b>{score}%</b>.</p>
-                <div class='info-box'>
-                    <b>Parecer Técnico:</b> {info['desc']} 
-                    As tarefas sugeridas incluem: <i>{info['tarefas']}</i>
+                <div class='section-title'>1. Mapeamento de Intensidade DISC</div>
+                <div class='chart-container'>
+                    <img src='{img_b64}' style='max-width: 100%;'>
+                    <p style='font-size: 12px; color: #666;'>Distribuição percentual dos vetores comportamentais</p>
                 </div>
-            </div>
 
-            <div class='section'>
-                <div class='section-title'>2. Inteligência de RH & Benchmark</div>
-                <div class='grid'>
-                    <div class='box'>
-                        <b>Perfil Ideal para {cargo_laudo}:</b><br>
-                        <small>{benchmark['perfis']}</small>
-                        <ul style='padding-left:15px; margin-top:10px; font-size:12px;'>{comps_bench}</ul>
-                    </div>
-                    <div class='box'>
-                        <b>Nota de Adaptação:</b><br>
-                        <p style='font-size:12px;'>{txt_gestao}</p>
-                    </div>
+                <div class='parecer-box'>
+                    <b style='color:#1B1E5D;'>PARECER DO ESPECIALISTA:</b><br>
+                    O colaborador apresenta um perfil de natureza <b>{info['nome']}</b>. 
+                    Com um Score de Intensidade de <b>{score}%</b>, observamos que {txt_gestao}
                 </div>
-            </div>
 
-            <div class='section'>
-                <div class='section-title'>3. Diagnóstico de Coerência (Voz do Colaborador)</div>
-                <div class='grid'>
-                    <div class='box'>
-                        <div class='label'>Dificuldades Relatadas</div>
-                        <ul style='padding-left:15px; font-size:12px;'>{difs_html}</ul>
-                    </div>
-                    <div class='box'>
-                        <div class='label'>Sugestões de Evolução</div>
-                        <ul style='padding-left:15px; font-size:12px;'>{sugs_html}</ul>
-                    </div>
-                </div>
-                <div class='warning'>
-                    <b>Nota do Consultor:</b> Como seu perfil é concentrado em {perfil_primario if 'perfil_primario' in locals() else dominante[0]}, a execução de tarefas fora deste eixo exigirá maior esforço cognitivo.
-                </div>
-            </div>
-
-            <div class='section'>
-                <div class='section-title'>4. Compatibilidade com Atividades Diárias</div>
+                <div class='section-title'>2. Diagnóstico de Coerência e Resistência</div>
+                <p style='font-size: 13px;'>Análise cruzada entre o perfil psicológico e o que foi declarado em campo:</p>
                 <table>
-                    <tr><td><b>Perfil Exigido pelas Tarefas:</b></td><td><b>{exigencia_final}</b></td></tr>
-                    <tr><td><b>Nível de Harmonia:</b></td><td class='success'>{porcentagem_comp} (Compatível)</td></tr>
+                    <thead><tr><th>TIPO</th><th>RELATO DO COLABORADOR</th><th>ANÁLISE DE NEXO</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td><b>Dificuldades</b></td>
+                            <td>{", ".join(difs_validas) if difs_validas else "Nenhuma reportada."}</td>
+                            <td>{ "✅ Coerente com Perfil" if tem_algo_dif else "⚠️ Possível Resistência" }</td>
+                        </tr>
+                        <tr>
+                            <td><b>Sugestões</b></td>
+                            <td>{", ".join(sugestoes_reais) if sugestoes_reais else "Nenhuma reportada."}</td>
+                            <td>{ "🚀 Foco em Eficiência" if tem_algo_sug else "⚠️ Baixa Proatividade" }</td>
+                        </tr>
+                    </tbody>
                 </table>
-                <p style='font-size:12px; margin-top:10px;'>As atividades descritas na auditoria estão em conformidade com o comportamento natural identificado.</p>
-            </div>
 
-            <div class='footer'>
-                <b>NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
-                Este documento é uma análise técnica baseada em inputs de auditoria e testes comportamentais.
+                <div class='section-title'>3. Consultoria de Gestão (Benchmark)</div>
+                <div class='grid-3' style='grid-template-columns: 1fr 1fr;'>
+                    <div class='metric-card' style='text-align: left;'>
+                        <label>Exigência do Cargo ({cargo_laudo})</label>
+                        <div style='font-size: 14px; margin-top:10px;'>{benchmark['perfis']}</div>
+                        <ul style='font-size: 12px; padding-left: 15px;'>
+                            {"".join([f"<li>{c}</li>" for c in benchmark['competencias']])}
+                        </ul>
+                    </div>
+                    <div class='metric-card' style='text-align: left;'>
+                        <label>Plano de Adaptação</label>
+                        <p style='font-size: 12px; color: #444;'>
+                            <b>Foco:</b> {info['estilo']}<br>
+                            <b>Ação:</b> {info['tarefas']}<br><br>
+                            <i>Nota: { 'Manter em atividades de precisão.' if 'C' in dominante else 'Promover integração e liderança.' }</i>
+                        </p>
+                    </div>
+                </div>
+
+                <div class='footer'>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
+                    Documento assinado digitalmente para fins de Auditoria de Processos.
+                </div>
             </div>
         </body>
         </html>
         """
 
-        # 3. Botão de Download (Consolidado)
         st.download_button(
-            label=f"📥 BAIXAR LAUDO PERICIAL COMPLETO: {nome_laudo}",
-            data=html_pericial_disc,
-            file_name=f"Laudo_Pericial_DISC_{nome_laudo.replace(' ', '_')}.html",
+            label="📥 BAIXAR LAUDO PERICIAL ULTRA COMPLETO (PDF/HTML)",
+            data=html_ultra_completo,
+            file_name=f"LAUDO_ULTRA_{nome_laudo.replace(' ', '_')}.html",
             mime="text/html",
-            use_container_width=True,
-            key="btn_laudo_pericial_final"
+            use_container_width=True
         )
                       
         
