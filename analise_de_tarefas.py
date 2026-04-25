@@ -4291,48 +4291,29 @@ if st.session_state.get("pagina") == "analise":
                 <td><b>{analise_perito}</b> (Carga: {impacto_txt})</td>
             </tr>"""
 
-    # 4. GERAÇÃO DAS TABELAS (SUGESTÕES PARA TODOS + RANKING)
+    # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
+    if 'df_analise' in locals() and not df_analise.empty:
+        for _, row in df_analise.iterrows():
+            linhas_sugestoes_html += f"""
+            <tr>
+                <td>{row.get('ESTRATEGIA')}</td>
+                <td>{row.get('SUGESTAO ANALISADA')}</td>
+                <td style='text-align:center;'>{row.get('ECONOMIA PROJETADA')}</td>
+                <td style='text-align:right;'><b>{row.get('VALOR RECUPERAVEL')}</b></td>
+            </tr>"""
+
     if 'ranking_dados' in locals() and ranking_dados:
-        # 4a. Prepara o Ranking (Ordenado por ROI)
         df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
-        
-        # 4b. Loop Unificado: Itera por TODOS os colaboradores do ranking
-        for i, (_, row_c) in enumerate(df_ranking_auditado.iterrows(), 1):
-            nome_colab = row_c['Colaborador']
-            
-            # --- PARTE 1: ALIMENTA O RANKING GERAL ---
+        for i, (_, row) in enumerate(df_ranking_auditado.iterrows(), 1):
             cor_pos = "#FFD700" if i == 1 else "#1B1E5D"
             ranking_final_html += f"""
             <tr>
                 <td style='text-align:center; font-weight:bold; color:{cor_pos};'>{i}º</td>
-                <td><b>{nome_colab}</b></td>
-                <td style='text-align:center;'>{row_c['Qtd']}</td>
-                <td style='text-align:right;'>{row_c['H_Recup']:.1f}h</td>
-                <td style='text-align:right; font-weight:bold;'>R$ {row_c['ROI_Final']:,.2f}</td>
+                <td><b>{row['Colaborador']}</b></td>
+                <td style='text-align:center;'>{row['Qtd']}</td>
+                <td style='text-align:right;'>{row['H_Recup']:.1f}h</td>
+                <td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td>
             </tr>"""
-            
-            # --- PARTE 2: ALIMENTA OPORTUNIDADES (MESMO COM SCORE ZERO) ---
-            # Busca se esse colaborador específico tem sugestões no df_analise
-            sugestoes_colab = df_analise[df_analise['COLABORADOR'] == nome_colab] if 'df_analise' in locals() and not df_analise.empty else pd.DataFrame()
-            
-            if not sugestoes_colab.empty:
-                for _, row_s in sugestoes_colab.iterrows():
-                    linhas_sugestoes_html += f"""
-                    <tr>
-                        <td>{row_s.get('ESTRATEGIA', 'ESTRATÉGICO')}</td>
-                        <td><b>{nome_colab}</b>: {row_s.get('SUGESTAO ANALISADA')}</td>
-                        <td style='text-align:center;'>{row_s.get('ECONOMIA PROJETADA')}</td>
-                        <td style='text-align:right;'><b>{row_s.get('VALOR RECUPERAVEL')}</b></td>
-                    </tr>"""
-            else:
-                # Caso o colaborador não tenha sugestão pontuada, ele entra com status de manutenção
-                linhas_sugestoes_html += f"""
-                <tr>
-                    <td>OPERACIONAL</td>
-                    <td><b>{nome_colab}</b>: Manter rotina atual (Nexo Causal Estável)</td>
-                    <td style='text-align:center;'>0%</td>
-                    <td style='text-align:right;'>R$ 0,00</td>
-                </tr>"""
 
 
     # SEGURANÇA ANTIFALHA:
