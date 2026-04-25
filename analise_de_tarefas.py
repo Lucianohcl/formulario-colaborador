@@ -1813,7 +1813,7 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO COMPLETA - TELA + HTML)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1825,35 +1825,37 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. BUSCA DE INFORMAÇÕES NO JSON (EVITA O ERRO)
-        # Extraímos os textos das listas do JSON para checar a resistência
+        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
-        texto_sugestoes = " ".join(lista_sugestoes).lower()
-        texto_dificuldades = " ".join(lista_dificuldades).lower()
+        # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
+        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
+        if amplitude > 50:
+            status_perfil = "Especialista de Alto Impacto"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
+        else:
+            status_perfil = "Generalista Versátil"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
 
-        # 2. COLETA DE COMENTÁRIOS E ALERTAS DO APP
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
         alerta_resistencia = ""
-        # Se as listas estiverem vazias OU contiverem termos de "nada/nenhuma"
-        if not lista_sugestoes or not lista_dificuldades or "nenhuma" in texto_sugestoes or "nenhuma" in texto_dificuldades:
+        if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
             <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
                 <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
-                O colaborador não reportou dificuldades ou sugestões relevantes. Para um perfil <b>{dominante}</b> 
-                em cargo de gestão, isso pode indicar uma postura defensiva ou preenchimento evasivo.
+                A ausência de reportes de dificuldades sugere uma postura de <b>autopreservação</b>. Em perfis especialistas, isso pode mascarar gargalos que levam ao burnout técnico.
             </div>
             """
 
         nota_consultor = f"""
-        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic;'>
-            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é altamente equilibrado 
-            (Amplitude: {amplitude:.1f}%). Isso significa que a fadiga em tarefas técnicas ou sociais é 
-            mitigada pela flexibilidade nativa.
+        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
+            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
+            {diagnostico_fadiga}
         </div>
         """
 
-        # 3. MONTAGEM DA STRING HTML
+        # 4. MONTAGEM DA STRING HTML
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1888,41 +1890,38 @@ if st.session_state.pagina == "disc":
                 </div>
 
                 <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
-                <div class='chart-box'>
-                    {grafico_html_div}
-                </div>
+                <div class='chart-box'>{grafico_html_div}</div>
 
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
                     <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
-                    {info.get('desc', 'Descrição não disponível.')}
+                    {info.get('desc', 'Análise técnica em processamento.')}
                     <br><br>
-                    <b>Veredito:</b> {primeiro_nome} possui qualificação superior e objetivos alinhados à visão estratégica do cargo.
+                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
                 </div>
 
                 {nota_consultor}
                 {alerta_resistencia}
 
-                <div class='section-title'>3. PONTOS DE ATENÇÃO (ATIVIDADES CRÍTICAS)</div>
+                <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
                 <div style='margin-top: 20px; font-size: 14px;'>
-                    <p>⚠️ <b>Tarefas de Alto Consumo Cognitivo detectadas no Onboarding:</b></p>
+                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
                     <ul>
-                        <li>Auditoria de Folhas de Pagamento e Encargos Sociais.</li>
-                        <li>Gestão de obrigações acessórias (eSocial, EFD-Reinf e DCTFWeb).</li>
-                        <li>Validação de respostas técnicas com fundamentação jurídica.</li>
+                        <li>Intervenções sociais não planejadas.</li>
+                        <li>Gestão multifocal de processos sem POP definido.</li>
+                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
                     </ul>
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
-                    Documento digital com validade técnica para decisões de RH e Gestão.
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
             </div>
         </body>
         </html>
         """
 
-        # 4. RENDERIZAÇÃO DO BOTÃO
+        # 5. RENDERIZAÇÃO DO BOTÃO
         st.download_button(
             label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
             data=html_final_estendido,
