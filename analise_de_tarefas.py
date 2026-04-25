@@ -1812,7 +1812,134 @@ if st.session_state.pagina == "disc":
                 for item in analise_interna:
                     st.markdown(f"🔹 {item}")
 
-            
+        # ============================================================
+        # 📥 BOTÃO PARA GERAR LAUDO PERICIAL DISC COMPLETO (2026)
+        # ============================================================
+        st.markdown("---")
+
+        # 1. Tratamento Prévio de Variáveis (Garante que nada vá vazio)
+        nome_laudo = (form.get('colaborador') or form.get('nome') or "COLABORADOR").upper()
+        cargo_laudo = str(cargo_bruto).upper()
+        
+        # Formatação de listas para o HTML
+        difs_html = "".join([f"<li>{d}</li>" for d in difs_validas]) if difs_validas else "<li>Nenhuma dificuldade relevante detectada.</li>"
+        sugs_html = "".join([f"<li>{s}</li>" for s in sugestoes_reais]) if sugestoes_reais else "<li>Nenhuma sugestão técnica registrada.</li>"
+        comps_bench = "".join([f"<li>{c}</li>" for c in benchmark["competencias"]])
+
+        # 2. Definição do Template HTML Profissional
+        html_pericial_disc = f"""
+        <!DOCTYPE html>
+        <html lang='pt-br'>
+        <head>
+            <meta charset='utf-8'>
+            <style>
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 30px; color: #333; line-height: 1.5; background: #fff; }}
+                .header {{ background: #1B1E5D; color: white; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 20px; }}
+                .badge {{ background: #1B1E5D; color: white; padding: 4px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; }}
+                .section {{ margin-top: 25px; padding: 15px; border: 1px solid #eee; border-radius: 8px; }}
+                .section-title {{ background: #f4f6f9; color: #1B1E5D; padding: 8px 15px; border-radius: 5px; font-weight: bold; text-transform: uppercase; font-size: 14px; margin-bottom: 15px; border-left: 5px solid #1B1E5D; }}
+                .grid {{ display: flex; gap: 15px; margin-bottom: 15px; }}
+                .box {{ flex: 1; padding: 15px; background: #fdfdfd; border: 1px solid #f0f0f0; border-radius: 8px; }}
+                .metric {{ text-align: center; }}
+                .metric span {{ display: block; font-size: 24px; font-weight: bold; color: #1B1E5D; }}
+                .label {{ font-size: 11px; color: #777; text-transform: uppercase; font-weight: bold; }}
+                .success {{ color: #28a745; font-weight: bold; }}
+                .warning {{ color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; font-size: 13px; }}
+                .info-box {{ background: #e7f3ff; padding: 15px; border-radius: 8px; font-size: 13px; border-left: 5px solid #0074D9; }}
+                table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+                th, td {{ border-bottom: 1px solid #eee; padding: 10px; text-align: left; }}
+                .footer {{ margin-top: 40px; text-align: center; font-size: 11px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+            </style>
+        </head>
+        <body>
+            <div class='header'>
+                <h1 style='margin:0;'>LAUDO PERICIAL COMPORTAMENTAL</h1>
+                <p style='margin:5px 0 0 0; opacity: 0.9;'>MÉTODO DISC & NEXO CAUSAL DE ATIVIDADES</p>
+            </div>
+
+            <div class='grid'>
+                <div class='box' style='flex: 2;'>
+                    <div class='label'>Colaborador Avaliado</div>
+                    <h2 style='margin:5px 0;'>{nome_laudo}</h2>
+                    <span class='badge'>{cargo_laudo}</span>
+                </div>
+                <div class='box metric'>
+                    <div class='label'>Perfil Dominante</div>
+                    <span>{dominante}</span>
+                </div>
+                <div class='box metric'>
+                    <div class='label'>Aderência ao Cargo</div>
+                    <span>{porcentagem_comp}</span>
+                </div>
+            </div>
+
+            <div class='section'>
+                <div class='section-title'>1. Diagnóstico de Perfil (DISC)</div>
+                <p>O colaborador apresenta um perfil <b>{info['nome']}</b> com foco principal em <b>{info['estilo']}</b>. Sua intensidade de perfil é de <b>{score}%</b>.</p>
+                <div class='info-box'>
+                    <b>Parecer Técnico:</b> {info['desc']} 
+                    As tarefas sugeridas incluem: <i>{info['tarefas']}</i>
+                </div>
+            </div>
+
+            <div class='section'>
+                <div class='section-title'>2. Inteligência de RH & Benchmark</div>
+                <div class='grid'>
+                    <div class='box'>
+                        <b>Perfil Ideal para {cargo_laudo}:</b><br>
+                        <small>{benchmark['perfis']}</small>
+                        <ul style='padding-left:15px; margin-top:10px; font-size:12px;'>{comps_bench}</ul>
+                    </div>
+                    <div class='box'>
+                        <b>Nota de Adaptação:</b><br>
+                        <p style='font-size:12px;'>{txt_gestao}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class='section'>
+                <div class='section-title'>3. Diagnóstico de Coerência (Voz do Colaborador)</div>
+                <div class='grid'>
+                    <div class='box'>
+                        <div class='label'>Dificuldades Relatadas</div>
+                        <ul style='padding-left:15px; font-size:12px;'>{difs_html}</ul>
+                    </div>
+                    <div class='box'>
+                        <div class='label'>Sugestões de Evolução</div>
+                        <ul style='padding-left:15px; font-size:12px;'>{sugs_html}</ul>
+                    </div>
+                </div>
+                <div class='warning'>
+                    <b>Nota do Consultor:</b> Como seu perfil é concentrado em {perfil_primario if 'perfil_primario' in locals() else dominante[0]}, a execução de tarefas fora deste eixo exigirá maior esforço cognitivo.
+                </div>
+            </div>
+
+            <div class='section'>
+                <div class='section-title'>4. Compatibilidade com Atividades Diárias</div>
+                <table>
+                    <tr><td><b>Perfil Exigido pelas Tarefas:</b></td><td><b>{exigencia_final}</b></td></tr>
+                    <tr><td><b>Nível de Harmonia:</b></td><td class='success'>{porcentagem_comp} (Compatível)</td></tr>
+                </table>
+                <p style='font-size:12px; margin-top:10px;'>As atividades descritas na auditoria estão em conformidade com o comportamento natural identificado.</p>
+            </div>
+
+            <div class='footer'>
+                <b>NETEXAME AUDITORIA ESTRATÉGICA - 2026</b><br>
+                Este documento é uma análise técnica baseada em inputs de auditoria e testes comportamentais.
+            </div>
+        </body>
+        </html>
+        """
+
+        # 3. Botão de Download (Consolidado)
+        st.download_button(
+            label=f"📥 BAIXAR LAUDO PERICIAL COMPLETO: {nome_laudo}",
+            data=html_pericial_disc,
+            file_name=f"Laudo_Pericial_DISC_{nome_laudo.replace(' ', '_')}.html",
+            mime="text/html",
+            use_container_width=True,
+            key="btn_laudo_pericial_final"
+        )
                       
         
 
