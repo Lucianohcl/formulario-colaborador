@@ -4291,16 +4291,34 @@ if st.session_state.get("pagina") == "analise":
                 <td><b>{analise_perito}</b> (Carga: {impacto_txt})</td>
             </tr>"""
 
-    # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
-    if 'df_analise' in locals() and not df_analise.empty:
-        for _, row in df_analise.iterrows():
-            linhas_sugestoes_html += f"<tr><td>{row.get('ESTRATEGIA')}</td><td>{row.get('SUGESTAO ANALISADA')}</td><td style='text-align:center;'>{row.get('ECONOMIA PROJETADA')}</td><td style='text-align:right;'><b>{row.get('VALOR RECUPERAVEL')}</b></td></tr>"
-
-    if 'ranking_dados' in locals() and ranking_dados:
-        df_ranking_auditado = df_rank_calc.sort_values(by="ROI_Final", ascending=False)
-        for i, (_, row) in enumerate(df_ranking_auditado.iterrows(), 1):
-            cor_pos = "#FFD700" if i == 1 else "#1B1E5D"
-            ranking_final_html += f"<tr><td style='text-align:center; font-weight:bold; color:{cor_pos};'>{i}º</td><td><b>{row['Colaborador']}</b></td><td style='text-align:center;'>{row['Qtd']}</td><td style='text-align:right;'>{row['H_Recup']:.1f}h</td><td style='text-align:right; font-weight:bold;'>R$ {row['ROI_Final']:,.2f}</td></tr>"
+    # 4. GERAÇÃO DAS TABELAS (GARANTINDO TODOS OS COLABORADORES)
+    if 'df_total' in locals() or 'df_ranking_auditado' in locals():
+        # Usamos o ranking auditado como base pois ele contém todos os nomes processados
+        for _, colab_row in df_ranking_auditado.iterrows():
+            nome_c = colab_row.get('Colaborador')
+            
+            # Busca a sugestão específica desse colaborador no df_analise
+            # Se não houver sugestão, ele retorna um aviso padrão
+            sugestao_dados = df_analise[df_analise['COLABORADOR'] == nome_c] if not df_analise.empty else pd.DataFrame()
+            
+            if not sugestao_dados.empty:
+                for _, s_row in sugestao_dados.iterrows():
+                    linhas_sugestoes_html += f"""
+                    <tr>
+                        <td>{s_row.get('ESTRATEGIA', 'PADRÃO')}</td>
+                        <td>{nome_c}: {s_row.get('SUGESTAO ANALISADA', 'Sem sugestão técnica')}</td>
+                        <td style='text-align:center;'>{s_row.get('ECONOMIA PROJETADA', '0%')}</td>
+                        <td style='text-align:right;'><b>{s_row.get('VALOR RECUPERAVEL', 'R$ 0,00')}</b></td>
+                    </tr>"""
+            else:
+                # Caso o colaborador não tenha pontuado nada, ele ainda aparece na lista
+                linhas_sugestoes_html += f"""
+                <tr>
+                    <td>MANUTENÇÃO</td>
+                    <td>{nome_c}: Manter atividades atuais e monitorar nexo causal.</td>
+                    <td style='text-align:center;'>0%</td>
+                    <td style='text-align:right;'>R$ 0,00</td>
+                </tr>"""
 
     # SEGURANÇA ANTIFALHA:
     colab_nome_exibicao = colab_atual if 'colab_atual' in locals() else "COLABORADOR"
