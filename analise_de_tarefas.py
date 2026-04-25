@@ -4365,13 +4365,16 @@ if st.session_state.get("pagina") == "analise":
     </html>
     """
 
-    # 6. EXIBIÇÃO DO BOTÃO
+    # 6. EXIBIÇÃO DO BOTÃO (RESOLVE NAMEERROR DEFINITIVAMENTE)
     st.divider()
-    nome_arquivo = colab_atual.replace(" ", "_")
+    
+    # Usa a variável segura 'nome_para_exibicao' que já foi validada no Bloco 5
+    nome_seguro_arquivo = nome_para_exibicao.replace(" ", "_")
+    
     st.download_button(
-        label=f"📥 BAIXAR LAUDO PERICIAL: {colab_atual}",
+        label=f"📥 BAIXAR LAUDO PERICIAL: {nome_para_exibicao}",
         data=html_final,
-        file_name=f"Laudo_Pericial_{nome_arquivo}.html",
+        file_name=f"Laudo_Pericial_{nome_seguro_arquivo}.html",
         mime="text/html",
         use_container_width=True,
         key="btn_laudo_final_2026"
