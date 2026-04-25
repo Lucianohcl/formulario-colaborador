@@ -4327,16 +4327,22 @@ if st.session_state.get("pagina") == "analise":
     </head>
     <body>
         <div class='header-banner'>
+
+# 1. Primeiro você cria a variável de segurança (Escopo Seguro)
+nome_para_exibicao = locals().get('colab_atual') or t_base.get('colaborador') or "COLABORADOR"
+
+# 2. Depois você usa ELA dentro do HTML
+html_final = f"""
+        <div class='header-banner'>
             <h1>🛡️ LAUDO PERICIAL DE AUDITORIA ESTRATÉGICA</h1>
-            <h2 style='text-transform: uppercase;'>{colab_atual}</h2>
-        </div>
+            <h2 style='text-transform: uppercase;'>{nome_para_exibicao}</h2>  </div>
 
         <div class='container-metrics'>
             <div class='metric-box'><label>ROI REAL AUDITADO</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
             <div class='metric-box'><label>EFICIÊNCIA RECUPERÁVEL</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
             <div class='metric-box'><label>LIBERAÇÃO DE AGENDA</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
         </div>
-
+"""
         <div class='section-title'>💡 OPORTUNIDADES E SUGESTÕES DE MELHORIA</div>
         <table>
             <thead><tr><th>ESTRATÉGIA</th><th>SUGESTÃO TÉCNICA</th><th>ECONOMIA ESTIMADA</th><th>VALOR RECUPERÁVEL</th></tr></thead>
