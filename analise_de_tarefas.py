@@ -4250,27 +4250,29 @@ if st.session_state.get("pagina") == "analise":
         roi_real_auditado = df_perito['ROI_Final'].sum()
         ganho_capacidade_dias = horas_totais_ano / 8
 
-    # 3. EXTRAÇÃO DE DIFICULDADES E ATIVIDADES (NEXO CAUSAL)
-    # --- Atividades ---
-    if 'res_final' in locals() and res_final:
-        for item in res_final:
-            cor_st = "#52c41a" if item.get('Status') == "✅" else "#ff4d4f"
-            linhas_atividades_html += f"<tr><td style='color:{cor_st}; text-align:center;'>{item.get('Status','✅')}</td><td>{item.get('Atividade','N/A')}</td><td>{item.get('Impacto','N/A')}</td><td>{item.get('Análise Crítica','N/A')}</td></tr>"
-
-    # --- Dificuldades ---
-    dificuldades_lista = []
-    if 't_base' in locals() and 'tabelas' in t_base and 'dificuldades' in t_base['tabelas']:
-        dificuldades_lista = t_base['tabelas']['dificuldades']
-    elif 'res_dificuldades' in locals():
-        dificuldades_lista = res_dificuldades
+    # 3. EXTRAÇÃO DE DIFICULDADES (SINCRONIZADO COM O MOTOR LINHA DURA)
+    # A variável 'res_dificuldades' deve ser o retorno da função analisar_dificuldades_rigoroso
+    dificuldades_lista_processada = res_dificuldades if 'res_dificuldades' in locals() else []
 
     gargalos_vistos = set()
-    for d in dificuldades_lista:
-        dif_txt = d.get('Dificuldade', 'N/A')
+    for d in dificuldades_lista_processada:
+        dif_txt = d.get('Dificuldade', 'N/A').replace('...', '') # Limpa o sufixo de corte se houver
         if dif_txt not in gargalos_vistos and dif_txt.lower() not in ['n/a', 'nenhuma']:
             gargalos_vistos.add(dif_txt)
-            setor_dif = d.get('Setor Envolvido') or d.get('Setor', 'Operacional')
-            linhas_gargalos_html += f"<tr><td style='color:#ff4d4f; text-align:center;'>⚠️</td><td>{setor_dif}</td><td>{dif_txt}</td><td>Parecer: Obstrução de fluxo identificada. Impacto estimado em {d.get('Horas','0')}h.</td></tr>"
+            
+            # CAPTURA O STATUS E A ANÁLISE EXATA DO MOTOR
+            status_icone = d.get('Status', '⚠️')
+            setor_dif = d.get('Setor', 'OPERACIONAL')
+            analise_perito = d.get('Análise do Perito', 'Nexo Causal Confirmado')
+            impacto_txt = d.get('Impacto Diário', '0.000 h/dia')
+            
+            linhas_gargalos_html += f"""
+            <tr>
+                <td style='text-align:center;'>{status_icone}</td>
+                <td>{setor_dif}</td>
+                <td>{dif_txt}</td>
+                <td><b>{analise_perito}</b> (Carga: {impacto_txt})</td>
+            </tr>"""
 
     # 4. GERAÇÃO DAS TABELAS DE SUGESTÕES E RANKING
     if 'df_analise' in locals() and not df_analise.empty:
@@ -4340,7 +4342,7 @@ if st.session_state.get("pagina") == "analise":
         </table>
 
         <div class='footer'>
-            ESTE DOCUMENTO É PARTE INTEGRANTE DA METODOLOGIA GERCINO DE AUDITORIA - 2026<br>
+            ESTE DOCUMENTO É PARTE INTEGRANTE DA METODOLOGIA NETEXAME DE AUDITORIA - 2026<br>
             A EXTRAÇÃO DE DADOS CONSIDERA O NEXO CAUSAL ENTRE ATIVIDADE E CAPACIDADE TÉCNICA.
         </div>
     </body>
