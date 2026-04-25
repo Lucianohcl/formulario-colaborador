@@ -4305,8 +4305,10 @@ if st.session_state.get("pagina") == "analise":
     # SEGURANÇA ANTIFALHA:
     colab_nome_exibicao = colab_atual if 'colab_atual' in locals() else "COLABORADOR"
 
-    # 5. MONTAGEM DA ESTRUTURA HTML FINAL (TUDO DENTRO DE UMA ÚNICA VARIÁVEL)
-    nome_para_exibicao = locals().get('colab_atual') or t_base.get('colaborador') or "COLABORADOR"
+    # 5. MONTAGEM DA ESTRUTURA HTML FINAL
+    # Alinhado com o 'if' anterior
+    t_base_safe = t_base if isinstance(t_base, dict) else {}
+    nome_para_exibicao = locals().get('colab_atual') or t_base_safe.get('colaborador') or "COLABORADOR"
 
     html_final = f"""
     <!DOCTYPE html>
@@ -4314,59 +4316,51 @@ if st.session_state.get("pagina") == "analise":
     <head>
         <meta charset='utf-8'>
         <style>
-            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #333; line-height: 1.6; }}
-            .header-banner {{ background: #1B1E5D; color: white; padding: 30px; border-radius: 15px; text-align: center; margin-bottom: 30px; }}
-            .container-metrics {{ display: flex; justify-content: space-around; margin-bottom: 20px; gap: 15px; }}
-            .metric-box {{ background: #f8f9fa; padding: 20px; border-radius: 12px; flex: 1; text-align: center; border-bottom: 5px solid #1B1E5D; }}
-            .metric-box label {{ font-size: 11px; color: #666; text-transform: uppercase; font-weight: bold; }}
-            .metric-box .value {{ font-size: 22px; font-weight: bold; color: #1B1E5D; margin-top: 5px; }}
-            .section-title {{ background: #1B1E5D; color: white; padding: 10px; border-radius: 5px; margin: 30px 0 10px 0; font-size: 14px; font-weight: bold; }}
-            table {{ width: 100%; border-collapse: collapse; margin-bottom: 20px; }}
-            th {{ background: #f1f3f6; color: #1B1E5D; padding: 10px; text-align: left; font-size: 11px; border-bottom: 2px solid #1B1E5D; }}
-            td {{ padding: 10px; border-bottom: 1px solid #eee; font-size: 11px; }}
-            .footer {{ margin-top: 50px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+            body {{ font-family: sans-serif; padding: 30px; color: #333; }}
+            .header-banner {{ background: #1B1E5D; color: white; padding: 20px; text-align: center; border-radius: 10px; }}
+            .container-metrics {{ display: flex; gap: 10px; margin: 20px 0; }}
+            .metric-box {{ background: #f4f4f4; padding: 15px; flex: 1; text-align: center; border-bottom: 4px solid #1B1E5D; border-radius: 8px; }}
+            .section-title {{ background: #1B1E5D; color: white; padding: 8px; margin-top: 25px; font-weight: bold; border-radius: 4px; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
+            th {{ background: #eee; padding: 10px; text-align: left; border-bottom: 2px solid #1B1E5D; }}
+            td {{ padding: 10px; border-bottom: 1px solid #ddd; font-size: 12px; }}
         </style>
     </head>
     <body>
         <div class='header-banner'>
-            <h1>🛡️ LAUDO PERICIAL DE AUDITORIA ESTRATÉGICA</h1>
+            <h1>LAUDO PERICIAL: AUDITORIA ESTRATEGICA</h1>
             <h2 style='text-transform: uppercase;'>{nome_para_exibicao}</h2>
         </div>
 
         <div class='container-metrics'>
-            <div class='metric-box'><label>ROI REAL AUDITADO</label><div class='value'>R$ {roi_real_auditado:,.2f}</div></div>
-            <div class='metric-box'><label>EFICIÊNCIA RECUPERÁVEL</label><div class='value'>{horas_totais_ano:.1f} h/ano</div></div>
-            <div class='metric-box'><label>LIBERAÇÃO DE AGENDA</label><div class='value'>{ganho_capacidade_dias:.1f} Dias</div></div>
+            <div class='metric-box'><b>ROI AUDITADO</b><br>R$ {roi_real_auditado:,.2f}</div>
+            <div class='metric-box'><b>EFICIENCIA</b><br>{horas_totais_ano:.1f} h/ano</div>
+            <div class='metric-box'><b>LIBERACAO</b><br>{ganho_capacidade_dias:.1f} Dias</div>
         </div>
 
-        <div class='section-title'>💡 OPORTUNIDADES E SUGESTÕES DE MELHORIA</div>
+        <div class='section-title'>OPORTUNIDADES E SUGESTOES</div>
         <table>
-            <thead><tr><th>ESTRATÉGIA</th><th>SUGESTÃO TÉCNICA</th><th>ECONOMIA ESTIMADA</th><th>VALOR RECUPERÁVEL</th></tr></thead>
+            <thead><tr><th>ESTRATEGIA</th><th>SUGESTAO</th><th>ECONOMIA</th><th>VALOR</th></tr></thead>
             <tbody>{linhas_sugestoes_html}</tbody>
         </table>
 
-        <div class='section-title'>📋 AUDITORIA DE NEXO CAUSAL (ATIVIDADES)</div>
+        <div class='section-title'>AUDITORIA DE NEXO CAUSAL</div>
         <table>
-            <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANÁLISE</th></tr></thead>
+            <thead><tr><th>ST</th><th>ATIVIDADE</th><th>IMPACTO</th><th>ANALISE</th></tr></thead>
             <tbody>{linhas_atividades_html}</tbody>
         </table>
 
-        <div class='section-title'>⚠️ GARGALOS E DIFICULDADES IDENTIFICADAS</div>
+        <div class='section-title'>GARGALOS IDENTIFICADOS</div>
         <table>
-            <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE MAPEADA</th><th>ANÁLISE DO PERITO</th></tr></thead>
+            <thead><tr><th>ST</th><th>SETOR</th><th>DIFICULDADE</th><th>ANALISE PERITO</th></tr></thead>
             <tbody>{linhas_gargalos_html}</tbody>
         </table>
 
-        <div class='section-title'>🏆 RANKING GERAL DE PERFORMANCE E ROI</div>
+        <div class='section-title'>RANKING PERFORMANCE</div>
         <table>
-            <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUGESTÕES</th><th>H. RECUPERADAS</th><th>SCORE ROI</th></tr></thead>
+            <thead><tr><th>POS</th><th>COLABORADOR</th><th>SUG.</th><th>HORAS</th><th>ROI</th></tr></thead>
             <tbody>{ranking_final_html}</tbody>
         </table>
-
-        <div class='footer'>
-            ESTE DOCUMENTO É PARTE INTEGRANTE DA METODOLOGIA NETEXAME DE AUDITORIA - 2026<br>
-            A EXTRAÇÃO DE DADOS CONSIDERA O NEXO CAUSAL ENTRE ATIVIDADE E CAPACIDADE TÉCNICA.
-        </div>
     </body>
     </html>
     """
