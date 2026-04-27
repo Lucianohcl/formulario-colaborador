@@ -1973,77 +1973,93 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 CONSOLIDAÇÃO DA ANÁLISE LHAMA (INTELIGÊNCIA INTEGRADA)
+        # 🧠 CONSOLIDAÇÃO DA ANÁLISE LHAMA (INTELIGÊNCIA AVANÇADA)
         # ============================================================
         import json
 
-        # 1. FUNÇÃO MESTRE: GERA O HTML "BONITÃO" COM TODA A INTELIGÊNCIA
         def construir_html_laudo(d):
-                # Lógica de cor dinâmica baseada no perfil
                 p_letra = str(d['analise_comportamental']['perfil'])[0].upper()
                 cores = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}
                 cor_tema = cores.get(p_letra, "#333")
                 
                 html = f"""
                 <html><head><meta charset="UTF-8"><style>
-                        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #f4f7f6; color: #333; }}
-                        .container {{ max-width: 900px; margin: auto; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 15px solid {cor_tema}; }}
-                        .header {{ text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }}
-                        .section {{ margin-bottom: 30px; padding: 20px; border-radius: 10px; background: #fafafa; border-left: 5px solid {cor_tema}; }}
-                        h1 {{ color: #2c3e50; margin: 0; }}
-                        h2 {{ color: {cor_tema}; font-size: 1.2em; text-transform: uppercase; }}
-                        .grid {{ display: flex; gap: 20px; margin-top: 20px; }}
-                        .card {{ flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }}
-                        .valor {{ font-size: 24px; font-weight: bold; color: {cor_tema}; }}
-                        .footer {{ text-align: center; margin-top: 50px; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+                        body {{ font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; padding: 30px; color: #333; }}
+                        .container {{ max-width: 850px; margin: auto; background: white; padding: 50px; border-radius: 8px; border-top: 12px solid {cor_tema}; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }}
+                        .header {{ text-align: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 30px; }}
+                        .header h1 {{ font-size: 22px; color: #1a365d; margin: 0; letter-spacing: 1px; }}
+                        .section {{ margin-bottom: 25px; padding: 20px; background: #fafafa; border-left: 6px solid {cor_tema}; border-radius: 4px; }}
+                        .section h2 {{ color: {cor_tema}; font-size: 14px; text-transform: uppercase; margin-top: 0; margin-bottom: 15px; letter-spacing: 0.5px; }}
+                        .grid {{ display: flex; gap: 15px; margin: 20px 0; }}
+                        .card {{ flex: 1; background: white; padding: 15px; border: 1px solid #e1e4e8; text-align: center; border-radius: 6px; }}
+                        .card span {{ display: block; font-size: 10px; color: #6a737d; text-transform: uppercase; font-weight: bold; }}
+                        .valor {{ font-size: 22px; font-weight: bold; color: {cor_tema}; margin-top: 5px; }}
+                        .parecer {{ background: #fff; padding: 20px; border: 1px italic #d1d5da; border-radius: 6px; font-style: italic; color: #24292e; line-height: 1.6; border-left: 3px solid {cor_tema}; }}
+                        .footer {{ text-align: center; margin-top: 40px; font-size: 11px; color: #959da5; border-top: 1px solid #eee; padding-top: 20px; }}
+                        ul {{ padding-left: 20px; margin: 0; }}
+                        li {{ font-size: 13.5px; margin-bottom: 8px; }}
                 </style></head><body>
                         <div class="container">
                                 <div class="header">
                                         <h1>NETEXAME AUDITORIA ESTRATÉGICA</h1>
-                                        <p>Laudo Pericial de Perfil Comportamental - 2026</p>
+                                        <p style="font-size: 12px; color: #666;">Relatório Pericial de Inteligência Comportamental • 2026</p>
                                 </div>
                                 <div class="section">
-                                        <h2>📋 Identificação</h2>
-                                        <p><strong>COLABORADOR:</strong> {d['colaborador']}</p>
-                                        <p><strong>CARGO ANALISADO:</strong> {d['cargo']}</p>
+                                        <h2>📋 Identificação Profissional</h2>
+                                        <p style="font-size: 14px;"><strong>COLABORADOR:</strong> {d['colaborador']}<br>
+                                        <strong>CARGO ANALISADO:</strong> {d['cargo']}</p>
                                 </div>
                                 <div class="grid">
-                                        <div class="card"><p>PERFIL</p><div class="valor">{d['analise_comportamental']['perfil']}</div></div>
-                                        <div class="card"><p>AMPLITUDE</p><div class="valor">{d['analise_comportamental']['amplitude']}%</div></div>
-                                        <div class="card"><p>ADERÊNCIA</p><div class="valor">{d['inteligencia_rh']['compatibilidade']}</div></div>
+                                        <div class="card"><span>Perfil Principal</span><div class="valor">{d['analise_comportamental']['perfil']}</div></div>
+                                        <div class="card"><span>Intensidade (Amplitude)</span><div class="valor">{d['analise_comportamental']['amplitude']}%</div></div>
+                                        <div class="card"><span>Índice de Aderência</span><div class="valor">{d['inteligencia_rh']['compatibilidade']}</div></div>
                                 </div>
                                 <div class="section">
-                                        <h2>🧠 Parecer do Especialista</h2>
-                                        <p><strong>Natureza:</strong> {d['analise_comportamental']['natureza']}</p>
-                                        <div style="background: #fff; padding: 15px; border-radius: 5px; font-style: italic; border: 1px solid #eee;">
+                                        <h2>🧠 Parecer Técnico do Especialista</h2>
+                                        <p style="font-size: 13px; margin-bottom: 10px;"><strong>Natureza do Comportamento:</strong> {d['analise_comportamental']['natureza']}</p>
+                                        <div class="parecer">
                                                 "{d['inteligencia_rh']['nota_consultor']}"
                                         </div>
                                 </div>
                                 <div class="section">
-                                        <h2>📑 Mapeamento Técnico</h2>
-                                        <p><strong>Dificuldades:</strong> {", ".join(d['tabelas_operacionais']['dificuldades']) or "Nenhuma informada"}</p>
-                                        <p><strong>Sugestões:</strong> {", ".join(d['tabelas_operacionais']['sugestoes']) or "Nenhuma informada"}</p>
+                                        <h2>📑 Mapeamento de Campo</h2>
+                                        <p style="font-size: 13px;"><strong>Dificuldades Observadas:</strong></p>
+                                        <ul>{"".join([f"<li>{x}</li>" for x in d['tabelas_operacionais']['dificuldades']]) or "<li>Sem registros críticos.</li>"}</ul>
+                                        <p style="font-size: 13px; margin-top: 15px;"><strong>Sugestões de Melhoria:</strong></p>
+                                        <ul>{"".join([f"<li>{x}</li>" for x in d['tabelas_operacionais']['sugestoes']]) or "<li>Sem sugestões registradas.</li>"}</ul>
                                 </div>
-                                <div class="footer">Gerado em {d['data_geracao']} • NetExame Auditoria</div>
+                                <div class="footer">
+                                        Documento confidencial gerado eletronicamente. {d['data_geracao']} © NetExame.
+                                </div>
                         </div>
                 </body></html>
                 """
                 return html
 
-        st.markdown("---")
-        st.subheader("💾 1. Consolidação da Inteligência (JSON)")
-
         if formulario_sel:
-                # 2. MONTAGEM DO PACOTE DE DADOS
+                # INTELIGÊNCIA APLICADA: Interpretação real dos dados
+                amp_val = round(amplitude, 1)
+                perfil_slug = dominante.upper()
+                
+                # Gerador de Nota Técnica baseado em Amplitude Real
+                if is_equilibrado:
+                        nota_final = f"Colaborador apresenta um perfil híbrido e equilibrado (Amplitude: {amp_val}%). Possui flexibilidade cognitiva para transitar entre diferentes exigências de eixos, facilitando a mediação e adaptação."
+                else:
+                        if amp_val > 50:
+                                detalhe_nota = f"A amplitude de {amp_val}% indica um perfil 'Especialista Puro'. No eixo {perfil_slug}, isto traduz-se em busca exaustiva pela perfeição, rigor técnico absoluto e baixa tolerância a ambiguidades ou falta de processos."
+                        else:
+                                detalhe_nota = f"Perfil concentrado no eixo {perfil_slug}. Demonstra forte inclinação para as competências naturais deste quadrante, exigindo esforço consciente para tarefas que demandem eixos opostos."
+                        nota_final = detalhe_nota
+
                 analise_lhama = {
                         "colaborador": str(formulario_sel.get("colaborador", "N/A")).upper(),
                         "cargo": str(formulario_sel.get("cargo", "N/A")).upper(),
                         "data_geracao": "2026",
                         "analise_comportamental": {
-                                "perfil": dominante,
-                                "amplitude": round(amplitude, 1),
+                                "perfil": perfil_slug,
+                                "amplitude": amp_val,
                                 "natureza": "⚖️ Perfil Híbrido" if is_equilibrado else "🎯 Perfil Especialista",
-                                "diagnostico": "Alta Aderência" if (amplitude <= 12 or match_real) else "Ponto de Atenção"
+                                "diagnostico": "Alta Aderência" if (is_equilibrado or (amp_val > 12 and perfil_slug in perfil_exigido_1)) else "Ponto de Atenção"
                         },
                         "tabelas_operacionais": {
                                 "dificuldades": [d.get("Dificuldade", "") for d in formulario_sel.get("tabelas", {}).get("dificuldades", []) if len(str(d.get("Dificuldade", ""))) > 3],
@@ -2052,36 +2068,36 @@ if st.session_state.pagina == "disc":
                         "inteligencia_rh": {
                                 "exigencia_tarefas": exigencia_final if 'exigencia_final' in locals() else "N/A",
                                 "compatibilidade": porcentagem_comp if 'porcentagem_comp' in locals() else "0%",
-                                "nota_consultor": f"Distribuição equilibrada ({amplitude:.1f}%). Alta versatilidade técnica." if is_equilibrado else f"Perfil concentrado no eixo {dominante}. Foco em precisão e conformidade técnica.",
-                                "alerta_resistencia": not (tem_algo_dif or tem_algo_sug)
+                                "nota_consultor": nota_final
                         }
                 }
 
                 st.download_button(
-                        label="📥 SALVAR ARQUIVO DE ANÁLISE LHAMA (.JSON)",
+                        label="📥 1. SALVAR INTELIGÊNCIA (.JSON)",
                         data=json.dumps(analise_lhama, indent=4, ensure_ascii=False),
-                        file_name=f"LHAMA_DATA_{analise_lhama['colaborador']}.json",
+                        file_name=f"INTELIGENCIA_{analise_lhama['colaborador']}.json",
                         mime="application/json",
-                        use_container_width=True,
-                        type="primary"
+                        use_container_width=True
                 )
 
-        # 3. ÁREA DE RESGATE E TRANSFORMAÇÃO NO SIDEBAR
+        # 3. SIDEBAR: ONDE O HTML É GERADO SEM ERRO
         st.sidebar.markdown("---")
-        st.sidebar.subheader("📄 2. Gerar Laudo HTML")
-        arquivo_resgate = st.sidebar.file_uploader("Subir JSON", type="json", key="resgate_json_btn")
+        st.sidebar.subheader("📄 Gerar Laudo Profissional")
+        json_up = st.sidebar.file_uploader("Upload do JSON", type="json", key="sidebar_up")
 
-        if arquivo_resgate:
-                dados_c = json.load(arquivo_resgate)
-                if st.sidebar.button("🔨 GERAR LAUDO FINAL", use_container_width=True):
-                        html_laudo = construir_html_laudo(dados_c)
-                        st.sidebar.download_button(
-                                label="🚀 BAIXAR HTML BONITÃO",
-                                data=html_laudo,
-                                file_name=f"LAUDO_NETEXAME_{dados_c['colaborador']}.html",
-                                mime="text/html",
-                                use_container_width=True
-                        )            
+        if json_up:
+                dados_c = json.load(json_up)
+                html_final = construir_html_laudo(dados_c)
+                
+                st.sidebar.success(f"Análise de {dados_c['colaborador']} carregada!")
+                st.sidebar.download_button(
+                        label="🚀 BAIXAR LAUDO NETEXAME (HTML)",
+                        data=html_final,
+                        file_name=f"LAUDO_ESTRATEGICO_{dados_c['colaborador']}.html",
+                        mime="text/html",
+                        use_container_width=True,
+                        type="primary"
+                )            
         
 
 # --- VISUALIZAÇÃO ---
