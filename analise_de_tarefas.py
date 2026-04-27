@@ -2032,7 +2032,9 @@ if st.session_state.pagina == "disc":
 
             # --- RENDERIZAÇÃO DA ANÁLISE ---
             st.markdown(f"# 🧠 Laudo de Perfil: {form['colaborador'].upper()}")
-            st.caption(f"Cargo Analisado: {form['cargo']}")
+            # Busca o cargo em minúsculo, maiúsculo ou define um padrão se não achar nenhum
+            cargo_display = form.get('cargo') or form.get('Cargo') or "Não Informado"
+            st.caption(f"Cargo Analisado: {cargo_display}")
 
             # Gráfico e Métricas
             col_graf, col_met = st.columns([2, 1])
