@@ -1995,7 +1995,7 @@ if st.session_state.pagina == "disc":
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - {datetime.datetime.now().year}</b>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - {__import__('datetime').datetime.now().year}</b>
                 </div>
             </div>
         </body>
