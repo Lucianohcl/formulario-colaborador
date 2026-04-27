@@ -60,6 +60,39 @@ g = Github(TOKEN)
 repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 
+import streamlit as st
+import google.generativeai as genai
+import json
+
+# FUNÇÃO UNIFICADA GEMINI (Substituta do Ollama para Cloud)
+def obter_analise_ia(nome, cargo, perfil, amplitude):
+    try:
+        # 1. Busca a chave nos Secrets
+        if "GEMINI_API_KEY" not in st.secrets:
+            st.sidebar.error("❌ Erro: Adicione GEMINI_API_KEY nos Secrets!")
+            return {"parecer": "Chave não configurada.", "nota": "", "pontos": []}
+        
+        # 2. Configura a IA
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
+        model = genai.GenerativeModel('gemini-1.5-flash', 
+                                    generation_config={"response_mime_type": "application/json"})
+        
+        # 3. Prompt Direto
+        prompt = f"Analise o perfil DISC de {nome}, cargo {cargo}, perfil {perfil} com amplitude {amplitude}%. Retorne JSON: parecer (texto), nota (texto), pontos (lista)."
+        
+        response = model.generate_content(prompt)
+        return json.loads(response.text)
+    except Exception as e:
+        st.sidebar.warning(f"IA Offline: {e}")
+        return {
+            "parecer": "Análise técnica indisponível no momento.",
+            "nota": f"Amplitude detectada: {amplitude}%",
+            "pontos": ["Revisão manual necessária"]
+        }
+
+
+
+
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
 # ============================================================
 # st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
@@ -1850,112 +1883,110 @@ def gerar_parecer_ollama(nome, cargo, perfil, amplitude):
         return f"Erro conexão Ollama: {str(e)}"
 
 
-# ============================================================
-# 📥 LAUDO PERICIAL MASTER (HARD FIX)
-# ============================================================
-def gerar_laudo(primeiro_nome, cargo_bruto, dominante, porcentagem_comp, amplitude, tabelas, fig=None):
+        # ============================================================
+        # 📥 LAUDO PERICIAL MASTER (HARD FIX - INDENTADO 8 ESPAÇOS)
+        # ============================================================
+        def gerar_laudo(primeiro_nome, cargo_bruto, dominante, porcentagem_comp, amplitude, tabelas, fig=None):
 
-    # --------------------------
-    # GRÁFICO
-    # --------------------------
-    grafico_html_div = ""
-    try:
-        import plotly.io as pio
-        if fig:
-            grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
-    except:
-        grafico_html_div = "<p>Gráfico indisponível</p>"
+                # --------------------------
+                # GRÁFICO
+                # --------------------------
+                grafico_html_div = ""
+                try:
+                        import plotly.io as pio
+                        if fig:
+                                grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
+                except:
+                        grafico_html_div = "<p>Gráfico indisponível</p>"
 
-    # --------------------------
-    # LISTAS
-    # --------------------------
-    lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
-    lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
+                # --------------------------
+                # LISTAS
+                # --------------------------
+                lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
+                lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
 
-    # --------------------------
-    # PERFIL
-    # --------------------------
-    if amplitude > 50:
-        status_perfil = "Especialista de Alto Impacto"
-        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil altamente focado."
-    else:
-        status_perfil = "Generalista Versátil"
-        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil equilibrado."
+                # --------------------------
+                # PERFIL (LÓGICA DE AMPLITUDE)
+                # --------------------------
+                if amplitude > 50:
+                        status_perfil = "Especialista de Alto Impacto"
+                        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil focado (especialista)."
+                else:
+                        status_perfil = "Generalista Versátil"
+                        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil equilibrado."
 
-    # --------------------------
-    # OLLAMA (AQUI ENTRA A IA)
-    # --------------------------
-    try:
-        parecer = gerar_parecer_ollama(
-            primeiro_nome,
-            cargo_bruto,
-            dominante,
-            amplitude
-        )
-    except Exception as e:
-        parecer = f"⚠️ Falha no Ollama: {str(e)}"    
+                # --------------------------
+                # IA (GEMINI EM VEZ DE OLLAMA PARA FUNCIONAR NO CLOUD)
+                # --------------------------
+                try:
+                        # Chama a função que criamos anteriormente
+                        dados_ia = obter_analise_ia(primeiro_nome, cargo_bruto, dominante, amplitude)
+                        parecer = dados_ia.get("parecer", "Parecer indisponível no momento.")
+                except Exception as e:
+                        parecer = f"⚠️ Falha na análise técnica: {str(e)}"
 
-    # --------------------------
-    # ALERTA
-    # --------------------------
-    alerta_resistencia = ""
-    if not lista_sugestoes and not lista_dificuldades:
-        alerta_resistencia = """
-        <div style='background:#fff5f5;padding:20px;border-left:6px solid red'>
-            ALERTA: ausência de feedback operacional
-        </div>
-        """
+                # --------------------------
+                # ALERTA
+                # --------------------------
+                alerta_resistencia = ""
+                if not lista_sugestoes and not lista_dificuldades:
+                        alerta_resistencia = """
+                        <div style='background:#fff5f5;padding:20px;border-left:6px solid red;margin-top:20px;'>
+                                <b>ALERTA:</b> Ausência de feedback operacional ou resistência ao preenchimento.
+                        </div>
+                        """
 
-    # --------------------------
-    # HTML FINAL
-    # --------------------------
-    html_final_estendido = f"""
-    <html>
-    <head>
-        <meta charset='utf-8'>
-        <style>
-            body {{ font-family: Arial; padding: 40px; }}
-            .box {{ padding: 20px; border: 1px solid #ddd; margin: 10px 0; }}
-        </style>
-    </head>
+                # --------------------------
+                # HTML FINAL
+                # --------------------------
+                html_final_estendido = f"""
+                <html>
+                <head>
+                        <meta charset='utf-8'>
+                        <style>
+                                body {{ font-family: Arial, sans-serif; padding: 40px; color: #333; }}
+                                .box {{ padding: 20px; border: 1px solid #ddd; margin: 10px 0; border-radius: 8px; }}
+                                h1 {{ color: #1f77b4; }}
+                        </style>
+                </head>
+                <body>
+                        <h1>LAUDO PERICIAL COMPORTAMENTAL</h1>
+                        <div class='box'>
+                                <b>Colaborador:</b> {primeiro_nome}<br>
+                                <b>Cargo:</b> {cargo_bruto}<br>
+                                <b>Perfil:</b> {dominante}<br>
+                                <b>Fit Cultural:</b> {porcentagem_comp}
+                        </div>
+                        <div class='box'>
+                                <h3>ANÁLISE QUANTITATIVA</h3>
+                                {grafico_html_div}
+                        </div>
+                        <div class='box'>
+                                <h3>PARECER TÉCNICO IA</h3>
+                                <p>{parecer}</p>
+                        </div>
+                        <div class='box'>
+                                <b>Veredito:</b> {diagnostico_fadiga}
+                        </div>
+                        {alerta_resistencia}
+                </body>
+                </html>
+                """
 
-    <body>
-
-    <h1>LAUDO PERICIAL COMPORTAMENTAL</h1>
-
-    <div class='box'>
-        <b>Colaborador:</b> {primeiro_nome}<br>
-        <b>Cargo:</b> {cargo_bruto}<br>
-        <b>Perfil:</b> {dominante}<br>
-        <b>Fit:</b> {porcentagem_comp}
-    </div>
-
-    <div class='box'>
-        <h3>ANÁLISE QUANTITATIVA</h3>
-        {grafico_html_div}
-    </div>
-
-    <div class='box'>
-        <h3>PARECER IA (OLLAMA LOCAL)</h3>
-        {parecer}
-    </div>
-
-    <div class='box'>
-        <b>Veredito:</b> {diagnostico_fadiga}
-    </div>
-
-    {alerta_resistencia}
-
-    </body>
-    </html>
-    """
-    st.write("CHEGOU AQUI")
-    st.download_button(
-        label="📥 BAIXAR LAUDO",
-        data=html_final_estendido,
-        file_name=f"LAUDO_{primeiro_nome}.html",
-        mime="text/html"
-    )             
+                # --------------------------
+                # RENDERIZAÇÃO DO BOTÃO
+                # --------------------------
+                st.write("---")
+                st.info(f"✅ Laudo gerado para {primeiro_nome}")
+                
+                st.download_button(
+                        label="📥 BAIXAR LAUDO PERICIAL",
+                        data=html_final_estendido,
+                        file_name=f"LAUDO_{primeiro_nome}.html",
+                        mime="text/html",
+                        key=f"btn_dl_{primeiro_nome}",
+                        use_container_width=True
+                )             
         
 
 # --- VISUALIZAÇÃO ---
