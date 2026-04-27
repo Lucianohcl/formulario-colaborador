@@ -1973,84 +1973,75 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 SISTEMA LHAMA: VISUALIZAÇÃO AUTO + EXPORTAÇÃO POR BOTÃO
+        # 🧠 MÓDULO LHAMA: INTELIGÊNCIA JSON + EXPORTAÇÃO HTML
         # ============================================================
         import json
         import plotly.express as px
 
-        # 1. SIDEBAR: CARREGAMENTO
+        # 1. FUNÇÃO DE CONSTRUÇÃO DO LAUDO (Defina isso antes ou no topo do arquivo)
+        def preparar_laudo_html(dados, dom, amp, percs, equilibrado):
+            cor = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}.get(dom[0], "#333")
+            status = "PERFIL EQUILIBRADO" if equilibrado else "PERFIL ESPECIALISTA"
+            
+            html = f"""
+            <html><head><meta charset="UTF-8"><style>
+                body {{ font-family: sans-serif; padding: 30px; color: #333; }}
+                .header {{ border-bottom: 5px solid {cor}; padding-bottom: 10px; }}
+                .box {{ background: #f4f4f4; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 10px solid {cor}; }}
+                h1, h2 {{ color: {cor}; }}
+            </style></head><body>
+                <div class="header"><h1>LAUDO ESTRATÉGICO: {dados['colaborador'].upper()}</h1></div>
+                <div class="box"><h2>PERFIL DOMINANTE: {dom}</h2><p>Tipo: {status}</p></div>
+                <div class="box"><h2>AMPLITUDE: {amp:.1f}%</h2></div>
+                <div class="box"><h2>DIFICULDADES</h2><p>{", ".join([d.get('Dificuldade','') for d in dados.get('tabelas',{}).get('dificuldades',[])])}</p></div>
+                <div class="footer"><p>Gerado por NETEXAME 2026</p></div>
+            </body></html>
+            """
+            return html
+
+        # 2. INTERFACE DE RESGATE
         st.sidebar.markdown("---")
         st.sidebar.subheader("🧬 Resgate de Inteligência")
-        arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama_final")
+        arquivo_lhama = st.sidebar.file_uploader("Subir JSON Lhama", type="json", key="up_lhama_final")
 
-        # 2. PROCESSAMENTO DOS DADOS (SEM EXIBIR NADA AINDA)
         f_alvo = None
-        if arquivo_resgate is not None:
+        if arquivo_lhama:
             try:
-                conteudo = json.load(arquivo_resgate)
+                raw = json.load(arquivo_lhama)
                 f_alvo = {
-                    "colaborador": conteudo["identificacao"]["nome"],
-                    "cargo": conteudo["identificacao"]["cargo"],
-                    "tabelas": conteudo["tabelas_operacionais"],
-                    "metricas": conteudo["metricas_disc"],
-                    "respostas": conteudo.get("respostas_originais", {})
+                    "colaborador": raw["identificacao"]["nome"],
+                    "cargo": raw["identificacao"]["cargo"],
+                    "tabelas": raw["tabelas_operacionais"],
+                    "metricas": raw["metricas_disc"],
+                    "respostas": raw.get("respostas_originais", {})
                 }
             except Exception as e:
                 st.sidebar.error(f"Erro no JSON: {e}")
 
-        # 3. RENDERIZAÇÃO DA ANÁLISE NA TELA (AUTOMÁTICA)
+        # 3. RENDERIZAÇÃO E BOTÃO DE GERAÇÃO
         if f_alvo:
-            # Cálculos de variáveis para a tela
-            dom = f_alvo["metricas"]["perfil_dominante"]
-            amp = f_alvo["metricas"]["amplitude_nominal"]
+            # Processa a inteligência (Amplitude e Perfil)
+            dom_at = f_alvo["metricas"]["perfil_dominante"]
+            amp_at = f_alvo["metricas"]["amplitude_nominal"]
+            is_eq = amp_at <= 12
             
-            # Cálculo de Percentuais para o Gráfico
-            if f_alvo.get("respostas"):
-                percs, _ = calcular_disc(f_alvo["respostas"])
-            else:
-                percs = {"D": 25, "I": 25, "S": 25, "C": 25}
+            # Gráfico na tela
+            st.markdown(f"### 🧠 Inteligência Lhama: {f_alvo['colaborador']}")
+            percs_at, _ = calcular_disc(f_alvo["respostas"]) if f_alvo.get("respostas") else ({"D":25,"I":25,"S":25,"C":25}, None)
+            
+            st.metric("Perfil Identificado", dom_at, f"Amplitude: {amp_at:.1f}%")
 
-            st.markdown(f"# 🧠 Laudo de Perfil: {f_alvo['colaborador'].upper()}")
-            
-            col1, col2 = st.columns([2, 1])
-            with col1:
-                fig = px.bar(x=list(percs.keys()), y=list(percs.values()), color=list(percs.keys()),
-                             color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
-                fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False)
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                st.metric("Perfil Dominante", dom)
-                st.metric("Amplitude", f"{amp:.1f}%")
-                if amp <= 12:
-                    st.success("⚖️ Perfil Equilibrado")
-                else:
-                    st.info("🎯 Perfil Especialista")
-
-            # Tabelas Operacionais
+            # --- O BOTÃO QUE VOCÊ QUERIA ---
             st.markdown("---")
-            c_dif, c_sug = st.columns(2)
-            with c_dif:
-                st.subheader("⚠️ Dificuldades")
-                for d in f_alvo.get("tabelas", {}).get("dificuldades", []):
-                    if d.get("Dificuldade"): st.warning(d["Dificuldade"])
-            with c_sug:
-                st.subheader("💡 Sugestões")
-                for s in f_alvo.get("tabelas", {}).get("sugestoes", []):
-                    if s.get("Sugestão"): st.info(s["Sugestão"])
-
-            # ========================================================
-            # 📥 O BOTÃO QUE GERA O HTML (SÓ SE CLICAR)
-            # ========================================================
-            st.markdown("---")
-            if st.button("📄 GERAR ARQUIVO DE LAUDO (HTML)", use_container_width=True):
-                # Aqui a função é chamada APENAS após o clique
-                html_final = gerar_html_laudo(f_alvo, dom, amp, percs, (amp <= 12))
+            if st.button("📄 GERAR DOCUMENTO HTML", use_container_width=True, type="primary"):
+                # A inteligência é consolidada AQUI
+                conteudo_laudo = preparar_laudo_html(f_alvo, dom_at, amp_at, percs_at, is_eq)
                 
+                # Gera o botão de download após o processamento
                 st.download_button(
-                    label="⬇️ CLIQUE AQUI PARA BAIXAR O ARQUIVO",
-                    data=html_final,
-                    file_name=f"LAUDO_{f_alvo['colaborador']}.html",
+                    label="📥 CLIQUE PARA BAIXAR O LAUDO AGORA",
+                    data=conteudo_laudo,
+                    file_name=f"LAUDO_LHAMA_{f_alvo['colaborador']}.html",
                     mime="text/html",
                     use_container_width=True
                 )             
