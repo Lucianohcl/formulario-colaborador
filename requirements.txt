@@ -10,3 +10,5 @@ requests
 python-dotenv
 python-docx
 fpdf
+google-generativeai
+anthropic
