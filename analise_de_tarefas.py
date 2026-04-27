@@ -1812,9 +1812,53 @@ if st.session_state.pagina == "disc":
                 for item in analise_interna:
                     st.markdown(f"🔹 {item}")
 
-        # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
-        # ============================================================
+import streamlit as st
+import google.generativeai as genai
+import time
+import json
+import os
+
+# ============================================================
+# 1. FUNÇÕES DE SUPORTE (COLOQUE NO TOPO DO ARQUIVO)
+# ============================================================
+@st.cache_resource
+def selecionar_motor_pericial():
+    """Varre modelos para evitar erro 404 e garantir versão estável"""
+    try:
+        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        for m in modelos:
+            if 'gemini-1.5-flash' in m: return m.replace('models/', '')
+        return modelos[0].replace('models/', '')
+    except:
+        return 'gemini-1.5-flash'
+
+@st.cache_data(show_spinner="IA Gerando Parecer Técnico...", ttl=600)
+def obter_analise_ia(nome, cargo, perfil, amplitude):
+    """Gera conteúdo via Gemini com Retry para erro de cota (429)"""
+    try:
+        motor = selecionar_motor_pericial()
+        model = genai.GenerativeModel(motor)
+        prompt = f"Perito DISC: Analise {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%. Retorne APENAS JSON: 'parecer' (3 linhas), 'nota' (impacto amplitude), 'pontos' (lista 3 riscos)."
+        
+        for tentativa in range(3):
+            try:
+                response = model.generate_content(prompt)
+                texto = response.text.replace('```json', '').replace('```', '').strip()
+                return json.loads(texto)
+            except Exception as e:
+                if "429" in str(e):
+                    time.sleep((tentativa + 1) * 6)
+                    continue
+                break
+    except: pass
+    return {"parecer": "Análise técnica em processamento.", "nota": "Aguardando liberação de cota.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento de Fluxo"]}
+
+# ============================================================
+# 2. BLOCO DO LAUDO (COM 8 ESPAÇOS DE RECUO)
+# ============================================================
+
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO INTEGRADA GEMINI)
+        # ------------------------------------------------------------
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
         grafico_html_div = "" 
@@ -1825,37 +1869,30 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
+        # 1. BUSCA DE DADOS NA IA E TRATAMENTO DE VARIÁVEIS
+        dados_ia = obter_analise_ia(primeiro_nome, cargo_bruto, dominante, amplitude)
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
         # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
-        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
         if amplitude > 50:
             status_perfil = "Especialista de Alto Impacto"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. GERCINO possui um 'trilho' de atuação claro, gerando fadiga severa em tarefas multifuncionais."
         else:
             status_perfil = "Generalista Versátil"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com flexibilidade para transição entre tarefas com menor desgaste."
 
-        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
+        # 3. CONSTRUÇÃO DOS ALERTAS
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
             <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
                 <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
-                A ausência de reportes de dificuldades sugere uma postura de <b>autopreservação</b>. Em perfis especialistas, isso pode mascarar gargalos que levam ao burnout técnico.
+                A ausência de reportes sugere postura de autopreservação, mascarando gargalos técnicos.
             </div>
             """
 
-        nota_consultor = f"""
-        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
-            {diagnostico_fadiga}
-        </div>
-        """
-
-        # 4. MONTAGEM DA STRING HTML
+        # 4. MONTAGEM DA STRING HTML FINAL
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1865,14 +1902,11 @@ if st.session_state.pagina == "disc":
                 body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
                 .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
                 .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
-                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 28px; text-transform: uppercase; }}
                 .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 35px; }}
                 .stat-card {{ background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
                 .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; }}
                 .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 14px; font-weight: bold; text-transform: uppercase; }}
-                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; text-align: center; }}
                 .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; }}
-                .footer {{ margin-top: 60px; text-align: center; font-size: 11px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
             </style>
         </head>
         <body>
@@ -1881,39 +1915,30 @@ if st.session_state.pagina == "disc":
                     <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
                     <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
                 </div>
-
                 <div class='grid-info'>
                     <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
                     <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
                     <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
                     <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
                 </div>
-
                 <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
-                <div class='chart-box'>{grafico_html_div}</div>
-
-                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
+                <div style='border:1px solid #eee; padding:15px; border-radius:12px; background:#fff;'>{grafico_html_div}</div>
+                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA</div>
                 <div class='parecer-box'>
-                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
-                    {info.get('desc', 'Análise técnica em processamento.')}
+                    <h4 style='margin:0;'>Parecer do Especialista:</h4>
+                    {dados_ia['parecer']}
                     <br><br>
-                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
+                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual.
                 </div>
-
-                {nota_consultor}
+                <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; font-style: italic; border-left: 5px solid #1B1E5D;'>
+                    <b>💡 Nota do Consultor:</b> Identificamos perfil <b>{status_perfil}</b>. {dados_ia['nota']}
+                </div>
                 {alerta_resistencia}
-
                 <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
-                <div style='margin-top: 20px; font-size: 14px;'>
-                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
-                    <ul>
-                        <li>Intervenções sociais não planejadas.</li>
-                        <li>Gestão multifocal de processos sem POP definido.</li>
-                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
-                    </ul>
-                </div>
-
-                <div class='footer'>
+                <ul style='margin-top:20px;'>
+                    {"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}
+                </ul>
+                <div style='margin-top:60px; text-align:center; font-size:11px; color:#bdc3c7; border-top:1px solid #eee; padding-top:25px;'>
                     <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
             </div>
@@ -1929,7 +1954,7 @@ if st.session_state.pagina == "disc":
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )             
+        )                     
         
 
 # --- VISUALIZAÇÃO ---
