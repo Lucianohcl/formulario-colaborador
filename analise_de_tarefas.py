@@ -4537,4 +4537,4 @@ if st.session_state.get("pagina") == "analise":
     )
 
 
-obter_analise_ia("FORCE", "FORCE", "FORCE", 100)
+
