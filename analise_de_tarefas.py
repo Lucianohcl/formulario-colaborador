@@ -68,53 +68,27 @@ repo = g.get_repo("lucianohcl/formulario-colaborador")
 import streamlit as st
 import google.generativeai as genai
 import json
+import time
+import re
 
 # =========================
 # DEBUG CENTRAL (GARANTIDO)
 # =========================
 def debug(msg):
-    st.write(msg)              # tela principal (NUNCA some)
-    st.sidebar.write(msg)      # sidebar (extra)
-    print(msg)                 # terminal/log
+    st.write(msg)
+    st.sidebar.write(msg)
+    print(msg)
 
 # =========================
-# MOTOR DINÂMICO (SEM CACHE)
+# MOTOR DINÂMICO (SIMPLIFICADO E SEGURO)
 # =========================
 def selecionar_motor_pericial():
-    debug("🔍 Listando modelos disponíveis...")
-
-    try:
-        modelos = list(genai.list_models())
-        
-        for m in modelos:
-            debug(f"Modelo encontrado: {m.name} | Métodos: {m.supported_generation_methods}")
-
-        validos = [
-            m.name.replace("models/", "")
-            for m in modelos
-            if "generateContent" in m.supported_generation_methods
-        ]
-
-        if not validos:
-            debug("⚠️ Nenhum modelo compatível encontrado")
-            return "gemini-1.0-pro"
-
-        # prioridade segura
-        for preferido in ["gemini-1.5-pro", "gemini-1.0-pro"]:
-            if preferido in validos:
-                debug(f"✅ Usando modelo preferido: {preferido}")
-                return preferido
-
-        debug(f"⚠️ Usando fallback: {validos[0]}")
-        return validos[0]
-
-    except Exception as e:
-        debug(f"💥 ERRO AO LISTAR MODELOS: {str(e)}")
-        return "gemini-1.0-pro"
-
+    # evita gastar quota listando toda hora
+    return "gemini-2.5-flash"  # principal
+    # fallback será tratado depois
 
 # =========================
-# FUNÇÃO PRINCIPAL COM DEBUG HARD
+# FUNÇÃO PRINCIPAL BLINDADA
 # =========================
 def obter_analise_ia(nome, cargo, perfil, amplitude):
 
@@ -134,24 +108,23 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 
         debug("✅ API KEY OK")
 
-        # -------- MOTOR --------
-        debug("⚙️ Selecionando motor...")
+        # -------- MODELO INICIAL --------
         motor = selecionar_motor_pericial()
-        debug(f"🤖 Motor escolhido: {motor}")
+        debug(f"🤖 Motor inicial: {motor}")
 
-        # -------- MODELO --------
-        debug("🧠 Criando modelo...")
         model = genai.GenerativeModel(model_name=motor)
 
         # -------- PROMPT --------
         prompt = f"""
+        Responda SOMENTE com JSON válido. NÃO use markdown.
+
         Analise:
         Nome: {nome}
         Cargo: {cargo}
         Perfil: {perfil}
         Amplitude: {amplitude}%
 
-        Retorne JSON válido com:
+        Retorne:
         - parecer
         - nota
         - pontos (lista)
@@ -159,31 +132,61 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 
         debug("📡 Enviando requisição...")
 
-        response = model.generate_content(prompt, request_options={"timeout": 30})
-        st.write("✅ PASSOU DO GENERATE")
+        response = None
+
+        # =========================
+        # RETRY INTELIGENTE
+        # =========================
+        for tentativa in range(3):
+            try:
+                debug(f"🔁 Tentativa {tentativa+1}")
+
+                response = model.generate_content(
+                    prompt,
+                    request_options={"timeout": 30}
+                )
+
+                debug("✅ PASSOU DO GENERATE")
+                break
+
+            except Exception as e:
+                erro = str(e)
+                debug(f"⚠️ Erro: {erro}")
+
+                # -------- TRATAMENTO 429 --------
+                if "429" in erro:
+                    debug("⏳ Quota atingida, aguardando 30s...")
+                    time.sleep(30)
+
+                    # troca modelo na segunda tentativa
+                    if tentativa == 1:
+                        debug("🔄 Trocando modelo para gemini-1.0-pro")
+                        model = genai.GenerativeModel("gemini-1.0-pro")
+                else:
+                    raise e
+
+        if not response:
+            raise Exception("Falha após múltiplas tentativas")
 
         debug("📬 Resposta recebida")
 
-        if not response:
-            debug("❌ Resposta vazia")
-            raise Exception("Resposta None")
-
-        debug(f"📄 RAW RESPONSE: {response}")
-
         if not hasattr(response, "text") or not response.text:
-            debug("❌ Sem texto na resposta")
             raise Exception("Resposta sem texto")
 
         debug(f"🧾 TEXTO: {response.text}")
 
-        # -------- PARSE JSON --------
+        # =========================
+        # PARSE JSON ROBUSTO
+        # =========================
         try:
-            import re
-            dados = json.loads(re.sub(r"```json|```", "", response.text).strip())
+            texto_limpo = re.sub(r"```json|```", "", response.text).strip()
+            dados = json.loads(texto_limpo)
             debug("✅ JSON PARSE OK")
             return dados
+
         except Exception as e:
-            debug(f"⚠️ ERRO AO PARSEAR JSON: {str(e)}")
+            debug(f"⚠️ ERRO JSON: {str(e)}")
+
             return {
                 "parecer": response.text,
                 "nota": "Resposta não estruturada",
@@ -194,8 +197,10 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
         debug(f"💥 ERRO GERAL: {str(e)}")
         st.error(f"💥 FALHA NO GEMINI: {str(e)}")
 
-    # -------- FALLBACK --------
-    debug("🛑 USANDO MODO OFFLINE")
+    # =========================
+    # FALLBACK FINAL
+    # =========================
+    debug("🛑 MODO OFFLINE ATIVADO")
 
     return {
         "parecer": "Modo de segurança ativado.",
