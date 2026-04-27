@@ -57,86 +57,53 @@ st.set_page_config(
 
 import streamlit as st
 import google.generativeai as genai
-import os
-
-# 1. INICIALIZAÇÃO
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
-else:
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
-
-import streamlit as st
-import google.generativeai as genai
-import os
 import time
 
-# 1. CONFIGURAÇÃO INICIAL
+# --- CONFIGURAÇÃO (Certifique-se de que a KEY está correta nos Secrets) ---
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
-else:
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
 
-# 2. SELEÇÃO DINÂMICA (Blindada contra 404)
-@st.cache_resource
-def carregar_modelo_seguro():
-    try:
-        # Tenta listar para pegar o melhor disponível
-        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        if 'models/gemini-1.5-flash' in modelos:
-            return 'gemini-1.5-flash'
-        return modelos[0].replace('models/', '')
-    except:
-        return 'gemini-1.5-flash' # Fallback absoluto
-
-NOME_MODELO = carregar_modelo_seguro()
-
-# 3. FUNÇÃO À PROVA DE FALHAS (Blindada contra 429 - Quota)
-@st.cache_data(show_spinner="Analisando perfil comportamental...", ttl=300)
-def gerar_parecer_gemini(nome, dominante, amplitude, info_desc):
-    model = genai.GenerativeModel(NOME_MODELO)
-    prompt = f"Aja como perito DISC. Analise {nome}, Dominância {dominante}, Amplitude {amplitude}%. Contexto: {info_desc}"
+# --- FUNÇÃO DE ANÁLISE SEM "LIXO" ---
+@st.cache_data(show_spinner="Analisando Perfil DISC...", ttl=300)
+def gerar_laudo_pericial(nome, dominante, amplitude, info_desc):
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    prompt = f"""
+    Aja como um Perito DISC. 
+    Analise o perfil de {nome} com Dominância {dominante} e Amplitude {amplitude}%.
+    Foco: {info_desc}.
+    Gere um parecer direto, técnico e estratégico.
+    """
     
-    max_retries = 3
-    for i in range(max_retries):
+    # Retry para evitar erro de cota
+    for i in range(3):
         try:
             response = model.generate_content(prompt)
-            return {"status": "sucesso", "conteudo": response.text}
-            
+            return response.text
         except Exception as e:
-            msg_erro = str(e)
-            
-            # Se for erro de COTA (429), ele espera e tenta de novo
-            if "429" in msg_erro or "quota" in msg_erro.lower():
-                if i < max_retries - 1:
-                    wait_time = (i + 1) * 6 # Espera 6s, depois 12s...
-                    st.warning(f"Muita demanda! Reorganizando motor em {wait_time}s (Tentativa {i+1})...")
-                    time.sleep(wait_time)
-                    continue
-                else:
-                    return {"status": "erro", "conteudo": "Servidor do Google ocupado. Tente novamente em 1 minuto."}
-            
-            # Se for erro de SEGURANÇA do Google (bloqueio de conteúdo)
-            if "finish_reason" in msg_erro:
-                return {"status": "erro", "conteudo": "O modelo não pôde gerar o laudo por restrições de segurança."}
+            if "429" in str(e):
+                time.sleep(5)
+                continue
+            return f"Erro na análise: {str(e)}"
+    return "Erro: Limite de requisições excedido."
 
-            return {"status": "erro", "conteudo": f"Erro inesperado: {msg_erro}"}
+# --- INTERFACE (Onde você remove o 'lixo') ---
+st.title("NetExame - Auditoria Estratégica")
 
-# 4. CHAMADA NA INTERFACE
-st.title("Sistema de Auditoria Estratégica")
-
-# Use st.session_state para garantir que as variáveis existam
-nome = st.session_state.get('nome', 'Gercino')
-dominante = st.session_state.get('dominante', 'Estável')
+# Dados vindos do seu formulário
+nome = st.session_state.get('nome', 'GERCINO')
+dominante = st.session_state.get('dominante', 'C')
 amplitude = st.session_state.get('amplitude', 58.3)
 
-if st.button("🚀 Gerar Laudo Pericial"):
-    resultado = gerar_parecer_gemini(nome, dominante, amplitude, "Auditoria NetExame")
+if st.button("🚀 GERAR PARECER CONSOLIDADO"):
+    conteudo_laudo = gerar_laudo_pericial(nome, dominante, amplitude, "Análise de Riscos")
     
-    if resultado["status"] == "sucesso":
-        st.markdown("### 📄 Parecer Técnico")
-        st.write(resultado["conteudo"])
-    else:
-        st.error(resultado["conteudo"])
+    # EXIBIÇÃO DIRETA (Sem mensagens de erro técnico ou metadados de 20%)
+    st.markdown("---")
+    st.subheader(f"💡 Parecer Consolidado: {nome}")
+    st.markdown(conteudo_laudo)
+    
+    # Rodapé simples e profissional
+    st.caption("Análise gerada por Inteligência Pericial - Auditoria Estratégica 2026")
 
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
