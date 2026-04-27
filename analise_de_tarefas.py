@@ -4648,3 +4648,6 @@ if st.session_state.get("pagina") == "analise":
         use_container_width=True,
         key="btn_laudo_final_2026"
     )
+
+
+obter_analise_ia("FORCE", "FORCE", "FORCE", 100)
