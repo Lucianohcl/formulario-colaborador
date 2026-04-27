@@ -59,66 +59,48 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# =========================================================
-# 1. INICIALIZAÇÃO DO GEMINI
-# No seu Secrets do Streamlit, use o nome: GEMINI_API_KEY
-# =========================================================
+# 1. INICIALIZAÇÃO
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
 else:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
 
-# Instancia o modelo (Gemini 1.5 Flash é rápido e preciso para laudos)
-# Use exatamente assim:
-model = genai.GenerativeModel('gemini-1.5-flash')
+# 2. SELEÇÃO DINÂMICA DO MODELO (Sem erro 404)
+@st.cache_resource
+def carregar_modelo_seguro():
+    try:
+        # Lista todos os modelos disponíveis para a sua chave
+        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        
+        # Prioridade: 1.5 Flash -> 1.5 Pro -> 1.0 Pro -> Primeiro da lista
+        if 'models/gemini-1.5-flash' in modelos:
+            return genai.GenerativeModel('gemini-1.5-flash')
+        elif 'models/gemini-1.5-pro' in modelos:
+            return genai.GenerativeModel('gemini-1.5-pro')
+        else:
+            # Pega o primeiro que suportar geração de conteúdo
+            return genai.GenerativeModel(modelos[0].replace('models/', ''))
+    except Exception as e:
+        st.error(f"Erro ao listar modelos: {e}")
+        return genai.GenerativeModel('gemini-1.5-flash') # Fallback final
 
-# =========================================================
-# 2. FUNÇÃO DE ANÁLISE (Adaptada para Gemini)
-# =========================================================
-@st.cache_data(show_spinner="Gemini analisando perfil comportamental...", ttl=300)
+model = carregar_modelo_seguro()
+
+# 3. FUNÇÃO DE PARECER
+@st.cache_data(show_spinner="Analisando perfil...", ttl=300)
 def gerar_parecer_gemini(nome, dominante, amplitude, info_desc):
     try:
-        prompt = f"""
-        Aja como um Perito Sênior em análise comportamental DISC.
-        Analise o perfil de: {nome}
-        Fator Dominante: {dominante}
-        Amplitude: {amplitude}%
-        Contexto/Cargo: {info_desc}
-        
-        Forneça um parecer técnico detalhado sobre os riscos e talentos deste perfil.
-        Seja direto, profissional e estratégico.
-        """
-        
+        prompt = f"Analise o perfil DISC: {nome}, Dominante {dominante}, Amplitude {amplitude}%."
         response = model.generate_content(prompt)
-        
-        return {
-            "status": "sucesso", 
-            "conteudo": response.text, 
-            "modelo": "Gemini 1.5 Flash (Motor Google)"
-        }
+        return {"status": "sucesso", "conteudo": response.text}
     except Exception as e:
-        return {"status": "erro", "conteudo": f"Erro no Gemini: {str(e)}", "modelo": "Nenhum"}
+        return {"status": "erro", "conteudo": str(e)}
 
-# =========================================================
-# 3. INTERFACE E EXECUÇÃO
-# =========================================================
+# 4. CHAMADA
+if st.button("🚀 Gerar Laudo"):
+    res = gerar_parecer_gemini("Gercino", "Estável", 58, "Auditoria")
+    st.write(res["conteudo"])
 
-# Captura de dados (Sincronize com os nomes das suas variáveis)
-nome_f = st.session_state.get('nome', 'Colaborador')
-dom_f = st.session_state.get('dominante', 'D')
-amp_f = st.session_state.get('amplitude', 50)
-desc_f = "Análise Estratégica de Tarefas e Comportamento"
-
-st.divider()
-if st.button("🚀 Gerar Parecer (Motor Gemini)"):
-    res = gerar_parecer_gemini(nome_f, dom_f, amp_f, desc_f)
-    
-    if res["status"] == "sucesso":
-        st.success(f"Análise concluída via {res['modelo']}")
-        st.markdown(res["conteudo"])
-        st.download_button("Baixar Laudo", res["conteudo"], file_name="laudo_gemini.txt")
-    else:
-        st.error(res["conteudo"])
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
