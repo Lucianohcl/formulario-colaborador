@@ -838,7 +838,9 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
         return res_claude.content[0].text
 
     except Exception as e:
-        return f"Nota técnica: O perfil de {nome} apresenta amplitude de {amplitude}%, indicando necessidade de monitoramento de carga cognitiva."
+        # Mensagem de Debug para você ver o erro real no laudo
+        erro_detalhado = f"ERRO TÉCNICO: {type(e).__name__} - {str(e)}"
+        return f"Nota técnica: O perfil de {nome} apresenta amplitude de {amplitude}%. [LOG IA: {erro_detalhado}]"
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
