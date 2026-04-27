@@ -71,91 +71,59 @@ import time
 import json
 import os
 
-# 1. CONFIGURAÇÃO DA CHAVE
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
-
-# 2. MOTOR DINÂMICO (EVITA ERRO 404)
+# 1. MOTOR DINÂMICO
 @st.cache_resource
 def selecionar_motor_pericial():
     try:
         modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        for m in modelos:
-            if 'gemini-1.5-flash' in m: return m.replace('models/', '')
-        return modelos[0].replace('models/', '')
-    except:
+        motor = next((m.replace('models/', '') for m in modelos if 'gemini-1.5-flash' in m), modelos[0].replace('models/', ''))
+        return motor
+    except Exception as e:
         return 'gemini-1.5-flash'
 
-# 3. FUNÇÃO DE DEBUG (SEM CACHE PARA MOSTRAR OS ERROS EM TEMPO REAL)
+# 2. FUNÇÃO DE IA COM DEBUG TOTAL (SEM CACHE)
 def obter_analise_ia(nome, cargo, perfil, amplitude):
+    # Força a exibição de que a função iniciou na Sidebar
+    st.sidebar.write(f"⏳ Tentando IA para: {nome}")
+    
     try:
-        # Check de Chave nos Secrets
+        # Validação de Secrets
         if "GEMINI_API_KEY" not in st.secrets:
-            st.error("🚨 ERRO: GEMINI_API_KEY não encontrada nos Secrets do Streamlit!")
-            return {
-                "parecer": "Erro de Configuração: Chave ausente.",
-                "nota": "Verifique o painel Settings > Secrets.",
-                "pontos": ["Configurar API Key", "Reiniciar App", "Checar Secrets"]
-            }
+            st.error("🚨 CRÍTICO: GEMINI_API_KEY não encontrada nos Secrets!")
+            return {"parecer": "Erro de Chave", "nota": "Chave Ausente", "pontos": ["Configurar Secrets"]}
 
-        # Configuração imediata para garantir a leitura da chave
-        genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
+        # Configuração da API
+        chave = st.secrets["GEMINI_API_KEY"].strip()
+        genai.configure(api_key=chave)
         
         motor = selecionar_motor_pericial()
-        # Log visual do motor selecionado
-        st.info(f"🔍 Debug: Usando motor {motor}")
+        st.sidebar.info(f"🤖 Motor Ativo: {motor}")
 
         model = genai.GenerativeModel(
             model_name=motor,
             generation_config={"response_mime_type": "application/json"}
         )
         
-        prompt = f"""
-        Aja como um Perito DISC. Analise o colaborador {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%.
-        Retorne este formato JSON exato:
-        {{
-            "parecer": "texto curto",
-            "nota": "impacto amplitude",
-            "pontos": ["risco1", "risco2", "risco3"]
-        }}
-        """
+        prompt = f"Analise {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%. Retorne JSON: 'parecer' (3 linhas), 'nota' (impacto amplitude), 'pontos' (lista 3 itens)."
         
         response = model.generate_content(prompt)
         
-        # DEBUG: Se a resposta for bloqueada por segurança
-        if hasattr(response, 'candidate') and response.candidates[0].finish_reason != 1:
-            st.warning(f"⚠️ Resposta bloqueada por segurança. Motivo: {response.candidates[0].finish_reason}")
-            return None
-
-        if not response or not response.text:
-            st.warning("⚠️ IA retornou resposta vazia ou nula.")
-            return None
-
-        # Tenta parsear o JSON
-        try:
+        # Se a resposta existir, tenta o parse
+        if response and response.text:
             dados = json.loads(response.text)
-            st.success("✅ IA respondeu com sucesso!")
+            st.sidebar.success(f"✅ IA respondeu {nome}")
             return dados
-        except Exception as e:
-            st.error(f"❌ ERRO DE PARSE JSON: {str(e)}")
-            st.code(response.text) 
-            return None
-
+            
     except Exception as e:
-        # CAPTURA O ERRO REAL DA API
-        st.error(f"💥 ERRO CRÍTICO NA API: {str(e)}")
+        # Esse erro VAI aparecer no topo da página
+        st.error(f"💥 FALHA NO GEMINI: {str(e)}")
+        st.sidebar.error(f"Erro técnico: {str(e)}")
         
-        if "429" in str(e):
-            st.warning("Cota esgotada (Rate Limit). Espere 60 segundos.")
-        elif "API_KEY_INVALID" in str(e):
-            st.warning("Chave de API inválida.")
-        
-        # Fallback para não quebrar o restante do script
-        return {
-            "parecer": f"Erro técnico: {str(e)[:50]}...",
-            "nota": "Falha na comunicação com Google Gemini.",
-            "pontos": ["Checar cotas", "Validar API Key", "Tentar novamente"]
-        }
+    return {
+        "parecer": "Análise técnica em modo de segurança (IA Offline).",
+        "nota": f"Amplitude de {amplitude}% exige cautela técnica.",
+        "pontos": ["Risco de sobrecarga", "Necessidade de revisão manual", "Ajuste de escopo"]
+    }
 
 # No topo do script, após os imports
 if 't' not in locals(): t = None
