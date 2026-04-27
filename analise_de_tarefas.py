@@ -31,7 +31,6 @@ from fpdf import FPDF
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-import requests
 
 
 # ============================================================
@@ -53,56 +52,11 @@ st.set_page_config(
 )
 
 
-import requests
-import json
-import streamlit as st
-
-def obter_analise_ia(nome, cargo, perfil, amplitude):
-
-    try:
-        url = "http://localhost:11434/api/generate"
-
-        prompt = f"""
-        Analise o perfil DISC:
-
-        Nome: {nome}
-        Cargo: {cargo}
-        Perfil: {perfil}
-        Amplitude: {amplitude}
-
-        Retorne APENAS JSON válido:
-        {{
-            "parecer": "texto",
-            "nota": "texto",
-            "pontos": ["item1", "item2"]
-        }}
-        """
-
-        payload = {
-            "model": "tinyllama",
-            "prompt": prompt,
-            "stream": False
-        }
-
-        r = requests.post(url, json=payload, timeout=120)
-
-        if r.status_code != 200:
-            raise Exception(f"Erro Ollama HTTP {r.status_code}")
-
-        text = r.json()["response"]
-
-        # limpa possíveis blocos markdown
-        text = text.replace("```json", "").replace("```", "").strip()
-
-        return json.loads(text)
-
-    except Exception as e:
-        return {
-            "parecer": "Falha na análise local (Ollama).",
-            "nota": f"Erro: {str(e)}",
-            "pontos": ["Fallback ativado"]
-        }
-
+# 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
+# Isso garante que 'g' e 'repo' existam em qualquer parte do script
+TOKEN = st.secrets["DB_TOKEN"]
+g = Github(TOKEN)
+repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 
 # 2. TRAVA DE SEGURANÇA (Vem logo em seguida)
@@ -110,6 +64,7 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 # st.error("### 🚧 O FORMULÁRIO ENCONTRA-SE INDISPONÍVEL NO MOMENTO.")
 # st.stop() 
 # ============================================================
+
 
 # No topo do script, após os imports
 if 't' not in locals(): t = None
@@ -1857,116 +1812,124 @@ if st.session_state.pagina == "disc":
                 for item in analise_interna:
                     st.markdown(f"🔹 {item}")
 
-# ============================================================
-# 📥 LAUDO PERICIAL MASTER (VERSÃO LIMPA E FUNCIONAL)
-# ============================================================
+        # ============================================================
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
+        # ============================================================
 
-def gerar_laudo(primeiro_nome, cargo_bruto, dominante, porcentagem_comp, amplitude, tabelas, fig=None):
+        # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
+        grafico_html_div = "" 
+        try:
+            import plotly.io as pio
+            if 'fig' in locals():
+                grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
+        except Exception:
+            grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-    # --------------------------
-    # GRÁFICO
-    # --------------------------
-    grafico_html_div = ""
-    try:
-        import plotly.io as pio
-        if fig:
-            grafico_html_div = pio.to_html(fig, full_html=False, include_plotlyjs='cdn')
-    except:
-        grafico_html_div = "<p>Gráfico indisponível</p>"
+        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
+        lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
+        lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
+        
+        # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
+        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
+        if amplitude > 50:
+            status_perfil = "Especialista de Alto Impacto"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
+        else:
+            status_perfil = "Generalista Versátil"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
 
-    # --------------------------
-    # LISTAS
-    # --------------------------
-    lista_sugestoes = [
-        s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")
-    ]
-    lista_dificuldades = [
-        d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")
-    ]
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
+        alerta_resistencia = ""
+        if not lista_sugestoes and not lista_dificuldades:
+            alerta_resistencia = f"""
+            <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
+                <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
+                A ausência de reportes de dificuldades sugere uma postura de <b>autopreservação</b>. Em perfis especialistas, isso pode mascarar gargalos que levam ao burnout técnico.
+            </div>
+            """
 
-    # --------------------------
-    # PERFIL
-    # --------------------------
-    if amplitude > 50:
-        status_perfil = "Especialista de Alto Impacto"
-        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil focado (especialista)."
-    else:
-        status_perfil = "Generalista Versátil"
-        diagnostico_fadiga = f"Amplitude {amplitude:.1f}% indica perfil equilibrado."
-
-    # --------------------------
-    # IA (OLLAMA OU GEMINI JÁ INJETADO)
-    # --------------------------
-    try:
-        dados_ia = obter_analise_ia(primeiro_nome, cargo_bruto, dominante, amplitude)
-        parecer = dados_ia.get("parecer", "Parecer indisponível.")
-    except Exception as e:
-        parecer = f"⚠️ Falha na IA: {str(e)}"
-
-    # --------------------------
-    # ALERTA
-    # --------------------------
-    alerta_resistencia = ""
-    if not lista_sugestoes and not lista_dificuldades:
-        alerta_resistencia = """
-        <div style='background:#fff5f5;padding:20px;border-left:6px solid red;margin-top:20px;'>
-            <b>ALERTA:</b> ausência de feedback operacional.
+        nota_consultor = f"""
+        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
+            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
+            {diagnostico_fadiga}
         </div>
         """
 
-    # --------------------------
-    # HTML FINAL
-    # --------------------------
-    html_final_estendido = f"""
-    <html>
-    <head>
-        <meta charset='utf-8'>
-        <style>
-            body {{ font-family: Arial; padding: 40px; color: #333; }}
-            .box {{ padding: 20px; border: 1px solid #ddd; margin: 10px 0; border-radius: 8px; }}
-        </style>
-    </head>
+        # 4. MONTAGEM DA STRING HTML
+        html_final_estendido = f"""
+        <!DOCTYPE html>
+        <html lang='pt-br'>
+        <head>
+            <meta charset='utf-8'>
+            <style>
+                body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
+                .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
+                .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
+                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 28px; text-transform: uppercase; }}
+                .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 35px; }}
+                .stat-card {{ background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
+                .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; }}
+                .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 14px; font-weight: bold; text-transform: uppercase; }}
+                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; text-align: center; }}
+                .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ margin-top: 60px; text-align: center; font-size: 11px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
+            </style>
+        </head>
+        <body>
+            <div class='page'>
+                <div class='header'>
+                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
+                    <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
+                </div>
 
-    <body>
+                <div class='grid-info'>
+                    <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
+                    <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
+                    <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
+                </div>
 
-    <h1>LAUDO PERICIAL COMPORTAMENTAL</h1>
+                <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
+                <div class='chart-box'>{grafico_html_div}</div>
 
-    <div class='box'>
-        <b>Colaborador:</b> {primeiro_nome}<br>
-        <b>Cargo:</b> {cargo_bruto}<br>
-        <b>Perfil:</b> {dominante}<br>
-        <b>Fit:</b> {porcentagem_comp}
-    </div>
+                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
+                <div class='parecer-box'>
+                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
+                    {info.get('desc', 'Análise técnica em processamento.')}
+                    <br><br>
+                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
+                </div>
 
-    <div class='box'>
-        <h3>ANÁLISE QUANTITATIVA</h3>
-        {grafico_html_div}
-    </div>
+                {nota_consultor}
+                {alerta_resistencia}
 
-    <div class='box'>
-        <h3>PARECER IA</h3>
-        {parecer}
-    </div>
+                <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
+                <div style='margin-top: 20px; font-size: 14px;'>
+                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
+                    <ul>
+                        <li>Intervenções sociais não planejadas.</li>
+                        <li>Gestão multifocal de processos sem POP definido.</li>
+                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
+                    </ul>
+                </div>
 
-    <div class='box'>
-        <b>Veredito:</b> {diagnostico_fadiga}
-    </div>
+                <div class='footer'>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
 
-    {alerta_resistencia}
-
-    </body>
-    </html>
-    """
-
-    st.download_button(
-        label="📥 BAIXAR LAUDO PERICIAL",
-        data=html_final_estendido,
-        file_name=f"LAUDO_{primeiro_nome}.html",
-        mime="text/html",
-        key=f"btn_{primeiro_nome}",
-        use_container_width=True
-    )
-                     
+        # 5. RENDERIZAÇÃO DO BOTÃO
+        st.download_button(
+            label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
+            data=html_final_estendido,
+            file_name=f"LAUDO_PERICIAL_{primeiro_nome}.html",
+            mime="text/html",
+            key="btn_laudo_final_deploy",
+            use_container_width=True
+        )             
         
 
 # --- VISUALIZAÇÃO ---
@@ -4546,6 +4509,8 @@ if st.session_state.get("pagina") == "analise":
         use_container_width=True,
         key="btn_laudo_final_2026"
     )
+
+
 
 
 
