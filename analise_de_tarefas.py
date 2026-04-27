@@ -4415,89 +4415,73 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# 🎯 PÁGINA DISC: CARREGAMENTO E PROCESSAMENTO COLETIVO
+# 🚀 COMANDO MASTER: PROCESSAR TODOS OS PERFIS DISC
 # ============================================================
 
 if st.session_state.pagina == "disc":
-    st.title("🎯 Panorama Coletivo")
-    st.subheader(f"Operador: Luciano")
+    st.title("📊 Processamento Coletivo DISC")
+    st.subheader(f"Operador: {st.session_state.get('user_name', 'Luciano')}")
 
-    # 1. O COMPONENTE DE CARGA (TUDO EM UM SÓ LUGAR)
-    st.info("Arraste todos os arquivos JSON da equipe abaixo para gerar o Panorama Coletivo.")
-    
-    arquivos_equipe = st.file_uploader(
-        "Selecionar arquivos JSON", 
-        type=["json"], 
-        accept_multiple_files=True,
-        key="uploader_direto_luciano" # Chave única para evitar erro de ID
-    )
-
-    # 2. PROCESSAMENTO AUTOMÁTICO AO CARREGAR
-    if arquivos_equipe:
-        lista_resultados = []
+    # 1. BOTÃO DE AÇÃO TOTAL
+    if st.button("🔥 PROCESSAR E SOMAR TUDO AGORA", key="btn_processar_disc_total_luciano"):
         
-        # Barra de progresso para dar aquele visual profissional
-        progresso = st.progress(0)
-        
-        for i, f in enumerate(arquivos_equipe):
-            try:
-                dados = json.load(f)
-                disc_data = dados.get("disc")
-                
-                if disc_data:
-                    # Usa sua função calcular_disc para converter as letras em %
-                    res_percentual, _ = calcular_disc(disc_data)
-                    lista_resultados.append(res_percentual)
-                
-                # Atualiza a barra de progresso
-                progresso.progress((i + 1) / len(arquivos_equipe))
-                
-            except Exception as e:
-                st.error(f"Erro ao ler o arquivo {f.name}: {e}")
+        # Busca os dados brutos na gaveta de memória
+        dados_brutos = st.session_state.get("formularios", [])
 
-        # 3. GERAÇÃO DO GRÁFICO SE HOUVER RESULTADOS
-        if lista_resultados:
-            st.divider()
-            st.success(f"✅ Sucesso! {len(lista_resultados)} perfis processados e somados.")
-
-            # Consolida as médias do grupo
-            df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
-            medias = df_equipe.mean()
-            dominante = medias.idxmax()
-
-            # Layout em Colunas
-            col_info, col_chart = st.columns([1, 2])
-
-            with col_info:
-                st.markdown("### 📊 Resultado do Grupo")
-                st.metric("Perfil Dominante", dominante)
-                st.write("Média de Amplitude por Fator:")
-                st.dataframe(medias.rename("Média %"), use_container_width=True)
-
-            with col_chart:
-                # Gráfico com as cores oficiais DISC
-                fig = px.bar(
-                    medias.reset_index(), 
-                    x="index", y=0, 
-                    color="index",
-                    text_auto='.1f',
-                    color_discrete_map={
-                        "D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"
-                    }
-                )
-                fig.update_layout(
-                    height=400, 
-                    showlegend=False,
-                    xaxis_title="Fatores DISC",
-                    yaxis_title="Amplitude (%)"
-                )
-                st.plotly_chart(fig, use_container_width=True)
+        if not dados_brutos:
+            st.error("❌ Erro: Não há dados carregados para processar!")
         else:
-            st.warning("⚠️ Nenhum dado DISC válido foi encontrado nos arquivos enviados.")
-    else:
-        st.write("---")
-        st.caption("Aguardando upload dos arquivos para iniciar o processamento coletivo...")
+            resultados_calculados = []
 
-# --- Finalização do Script ---
+            # 2. LOOP DE PROCESSAMENTO (TRANSFORMA RESPOSTAS EM NÚMEROS)
+            for f in dados_brutos:
+                respostas = f.get("disc")
+                if respostas:
+                    # Roda a sua função de cálculo (A, B, C, D -> %)
+                    percentuais, _ = calcular_disc(respostas)
+                    resultados_calculados.append(percentuais)
+
+            if resultados_calculados:
+                # 3. MATEMÁTICA COLETIVA (SOMA E MÉDIA)
+                df = pd.DataFrame(resultados_calculados).apply(pd.to_numeric).dropna()
+                
+                soma_absoluta = df.sum()  # Soma total de todos os perfis
+                media_grupo = df.mean()    # Média para o gráfico
+                
+                st.divider()
+                st.success(f"✅ Processados {len(resultados_calculados)} perfis com sucesso!")
+
+                # 4. EXIBIÇÃO EM COLUNAS
+                col_txt, col_chart = st.columns([1, 2])
+
+                with col_txt:
+                    st.markdown("### 📈 Soma dos Fatores")
+                    st.write(soma_absoluta.rename("Total Acumulado"))
+                    
+                    dominante = media_grupo.idxmax()
+                    st.info(f"**Perfil Dominante do Grupo: {dominante}**")
+
+                with col_chart:
+                    # Gráfico de barras com as cores oficiais
+                    fig = px.bar(
+                        media_grupo.reset_index(), 
+                        x="index", y=0, 
+                        color="index",
+                        text_auto='.1f',
+                        color_discrete_map={
+                            "D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"
+                        }
+                    )
+                    fig.update_layout(
+                        height=400, 
+                        showlegend=False,
+                        xaxis_title="Fator DISC",
+                        yaxis_title="Amplitude Média (%)"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("⚠️ Os perfis na memória não contêm o campo 'disc' para processamento.")
+
+# --- Rodapé ---
 st.markdown("---")
-st.caption("NetExame 2026 | Auditoria Estratégica")
+st.caption("NetExame 2026 | Engenharia de Processos")
