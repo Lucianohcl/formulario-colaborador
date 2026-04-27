@@ -84,7 +84,7 @@ def debug(msg):
 # =========================
 def selecionar_motor_pericial():
     # evita gastar quota listando toda hora
-    return "gemini-2.5-flash"  # principal
+    return "gemini-2.0-flash-lite"
     # fallback será tratado depois
 
 # =========================
@@ -156,12 +156,12 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
                 # -------- TRATAMENTO 429 --------
                 if "429" in erro:
                     debug("⏳ Quota atingida, aguardando 30s...")
-                    time.sleep(30)
+                    time.sleep(60)
 
                     # troca modelo na segunda tentativa
                     if tentativa == 1:
                         debug("🔄 Trocando modelo para gemini-1.0-pro")
-                        model = genai.GenerativeModel("gemini-1.0-pro")
+                        model = genai.GenerativeModel("gemini-2.0-flash-lite")
                 else:
                     raise e
 
