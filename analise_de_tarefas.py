@@ -4415,79 +4415,89 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# 🎯 ÁREA DE CONTEÚDO (PÁGINA DISC) - COM BOTÃO DE PROCESSAR
+# 🎯 PÁGINA DISC: CARREGAMENTO E PROCESSAMENTO COLETIVO
 # ============================================================
 
 if st.session_state.pagina == "disc":
-    st.title("🎯 Análise de Perfil Comportamental")
-    st.markdown(f"### Olá, Luciano! 👋")
-    st.write("Clique no botão abaixo para consolidar todos os perfis da sessão.")
+    st.title("🎯 Panorama Coletivo")
+    st.subheader(f"Operador: Luciano")
 
-    # 1. BOTÃO DE PROCESSAMENTO ÚNICO
-    # A 'key' garante que o Streamlit não confunda esse botão com outros
-    if st.button("🚀 PROCESSAR PANORAMA COLETIVO", key="btn_processar_total_luciano"):
+    # 1. O COMPONENTE DE CARGA (TUDO EM UM SÓ LUGAR)
+    st.info("Arraste todos os arquivos JSON da equipe abaixo para gerar o Panorama Coletivo.")
+    
+    arquivos_equipe = st.file_uploader(
+        "Selecionar arquivos JSON", 
+        type=["json"], 
+        accept_multiple_files=True,
+        key="uploader_direto_luciano" # Chave única para evitar erro de ID
+    )
+
+    # 2. PROCESSAMENTO AUTOMÁTICO AO CARREGAR
+    if arquivos_equipe:
+        lista_resultados = []
         
-        # Recupera os dados da "gaveta" de memória
-        dados_equipe = st.session_state.get("formularios", [])
-
-        if not dados_equipe:
-            st.error("❌ Não há dados na memória para processar. Carregue os perfis primeiro!")
-        else:
-            lista_resultados = []
-            
-            # 2. VARREDURA E CÁLCULO
-            for f in dados_equipe:
-                disc_data = f.get("disc")
+        # Barra de progresso para dar aquele visual profissional
+        progresso = st.progress(0)
+        
+        for i, f in enumerate(arquivos_equipe):
+            try:
+                dados = json.load(f)
+                disc_data = dados.get("disc")
+                
                 if disc_data:
-                    # Aqui usamos a sua função de cálculo para transformar respostas em %
+                    # Usa sua função calcular_disc para converter as letras em %
                     res_percentual, _ = calcular_disc(disc_data)
                     lista_resultados.append(res_percentual)
-
-            if lista_resultados:
-                # 3. CONSOLIDAÇÃO DOS DADOS
-                df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
-                medias = df_equipe.mean()
-                dominante = medias.idxmax()
-
-                st.divider()
-                st.success(f"✅ Processamento concluído! {len(lista_resultados)} perfis analisados.")
-
-                # 4. EXIBIÇÃO DO RESULTADO COLETIVO
-                col1, col2 = st.columns([1, 1.5])
                 
-                with col1:
-                    st.markdown("#### 🧠 Perfil Médio do Grupo")
-                    st.info(f"**Predominância: {dominante}**")
-                    
-                    # Exibe as médias formatadas
-                    for perfil, valor in medias.items():
-                        st.write(f"**{perfil}:** {valor:.1f}%")
+                # Atualiza a barra de progresso
+                progresso.progress((i + 1) / len(arquivos_equipe))
                 
-                with col2:
-                    # Gráfico Plotly com as cores padrão DISC
-                    fig_coletivo = px.bar(
-                        medias.reset_index(), 
-                        x="index", y=0, 
-                        color="index",
-                        text_auto='.1f',
-                        color_discrete_map={
-                            "D":"#FF4136", # Vermelho
-                            "I":"#FF851B", # Laranja
-                            "S":"#2ECC40", # Verde
-                            "C":"#0074D9"  # Azul
-                        }
-                    )
-                    fig_coletivo.update_layout(
-                        height=350, 
-                        showlegend=False,
-                        xaxis_title="Fatores DISC",
-                        yaxis_title="Amplitude Média (%)",
-                        margin=dict(l=20, r=20, t=20, b=20)
-                    )
-                    st.plotly_chart(fig_coletivo, use_container_width=True)
-            else:
-                st.warning("⚠️ Os dados carregados não contêm informações de Perfil DISC válidas.")
+            except Exception as e:
+                st.error(f"Erro ao ler o arquivo {f.name}: {e}")
 
-# --- Rodapé ---
-st.sidebar.markdown("---")
-st.sidebar.caption(f"Operador: Luciano | NetExame 2026")
+        # 3. GERAÇÃO DO GRÁFICO SE HOUVER RESULTADOS
+        if lista_resultados:
+            st.divider()
+            st.success(f"✅ Sucesso! {len(lista_resultados)} perfis processados e somados.")
+
+            # Consolida as médias do grupo
+            df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
+            medias = df_equipe.mean()
+            dominante = medias.idxmax()
+
+            # Layout em Colunas
+            col_info, col_chart = st.columns([1, 2])
+
+            with col_info:
+                st.markdown("### 📊 Resultado do Grupo")
+                st.metric("Perfil Dominante", dominante)
+                st.write("Média de Amplitude por Fator:")
+                st.dataframe(medias.rename("Média %"), use_container_width=True)
+
+            with col_chart:
+                # Gráfico com as cores oficiais DISC
+                fig = px.bar(
+                    medias.reset_index(), 
+                    x="index", y=0, 
+                    color="index",
+                    text_auto='.1f',
+                    color_discrete_map={
+                        "D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"
+                    }
+                )
+                fig.update_layout(
+                    height=400, 
+                    showlegend=False,
+                    xaxis_title="Fatores DISC",
+                    yaxis_title="Amplitude (%)"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.warning("⚠️ Nenhum dado DISC válido foi encontrado nos arquivos enviados.")
+    else:
+        st.write("---")
+        st.caption("Aguardando upload dos arquivos para iniciar o processamento coletivo...")
+
+# --- Finalização do Script ---
+st.markdown("---")
+st.caption("NetExame 2026 | Auditoria Estratégica")
