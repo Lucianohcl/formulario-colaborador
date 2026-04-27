@@ -69,6 +69,7 @@ else:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
 
 # Instancia o modelo (Gemini 1.5 Flash é rápido e preciso para laudos)
+# Use exatamente assim:
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # =========================================================
