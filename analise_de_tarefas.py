@@ -793,54 +793,60 @@ def gerar_pdf(form):
     buffer.seek(0)
     return buffer
 
+import logging
+import time
 
-# --- CONFIGURAÇÃO DE ACESSO SEGURO ÀS IAs ---
-try:
-    # Inicialização limpa e direta
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
-except Exception as e:
-    st.error(f"Erro de Configuração: {str(e)}")
+# Configuração de Logs para Auditoria
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-@st.cache_data(show_spinner="IA Analisando Perfil...") # <--- Adicione isso
+@st.cache_data(show_spinner="IA Analisando Perfil...", ttl=300) # TTL de 5 min para evitar cache eterno de falhas
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
-    """
-    Cadeia de comando: 
-    1. Gemini analisa a parte técnica/matemática.
-    2. Claude redige o texto final com tom pericial.
-    """
-    try:
-        # --- 1. CHAMADA AO GEMINI (Analista Lógico) ---
-        model_gemini = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
-        prompt_tecnico = f"""
-        Analise como perito: Colaborador {nome}, Perfil {dominante}, Amplitude {amplitude}%.
-        Se a amplitude for > 50%, ele NÃO é equilibrado, ele é um especialista de foco estrito.
-        Liste 2 riscos de fadiga para este cenário.
-        """
-        res_gemini = model_gemini.generate_content(prompt_tecnico)
-        dados_tecnicos = res_gemini.text
+    modelos_tentar = ['gemini-1.5-flash', 'gemini-1.5-pro']
+    dados_tecnicos = None
+    erros_log = []
 
-        # --- 2. CHAMADA AO CLAUDE (Escritor Pericial) ---
-        # O Claude pega o 'rascunho' do Gemini e deixa elegante
-        prompt_claude = f"""
-        Com base nestes dados técnicos: {dados_tecnicos}
-        E nesta descrição de cargo: {info_desc}
-        Redija um 'Parecer do Especialista' para um Laudo Pericial Master.
-        Use um tom sério, técnico e direto. 
-        Máximo de 4 parágrafos. Não use saudações.
-        """
+    # --- FASE 1: EXTRAÇÃO TÉCNICA (GEMINI com Retry e Backoff) ---
+    for modelo_nome in modelos_tentar:
+        model = genai.GenerativeModel(modelo_nome)
+        for tentativa in range(2): # 2 tentativas por modelo
+            try:
+                prompt = f"Analise pericial: {nome}, {dominante}, Amplitude {amplitude}%. Liste 2 riscos de fadiga cognitiva."
+                response = model.generate_content(prompt)
+                
+                # Validação Semântica: O conteúdo é útil ou é "lixo"?
+                texto = response.text.lower()
+                if any(k in texto for k in ["risco", "fadiga", "cognitiva", "atenção"]):
+                    dados_tecnicos = response.text
+                    break 
+                else:
+                    logging.warning(f"Resposta irrelevante do modelo {modelo_nome}")
+            except Exception as e:
+                erros_log.append(f"Erro {modelo_nome} (T{tentativa}): {str(e)}")
+                time.sleep(1 * (tentativa + 1)) # Backoff simples
         
-        res_claude = client_claude.messages.create(
-            model="claude-3-sonnet-20240229",
-            max_tokens=1000,
-            messages=[{"role": "user", "content": prompt_claude}]
-        )
-        return res_claude.content[0].text
+        if dados_tecnicos: break
 
-    except Exception as e:
-        # Mensagem de Debug para você ver o erro real no laudo
-        erro_detalhado = f"ERRO TÉCNICO: {type(e).__name__} - {str(e)}"
-        return f"Nota técnica: O perfil de {nome} apresenta amplitude de {amplitude}%. [LOG IA: {erro_detalhado}]"
+    # --- FASE 2: REDAÇÃO (CLAUDE) ---
+    if dados_tecnicos:
+        try:
+            res_claude = client_claude.messages.create(
+                model="claude-3-sonnet-20240229",
+                max_tokens=800,
+                messages=[{"role": "user", "content": f"Dados: {dados_tecnicos}. Cargo: {info_desc}. Redija parecer master."}]
+            )
+            return {"status": "sucesso", "conteudo": res_claude.content[0].text, "modelo": modelo_nome}
+        except Exception as e:
+            logging.error(f"Falha Claude: {str(e)}")
+            return {"status": "parcial", "conteudo": f"Análise Técnica: {dados_tecnicos}", "modelo": "Gemini-Only"}
+
+    # --- FASE 3: FALLBACK E LOG DE ERROS ---
+    logging.error(f"Falha total IA para {nome}: {'; '.join(erros_log)}")
+    return {
+        "status": "fallback", 
+        "conteudo": f"Parecer Técnico: O perfil apresenta amplitude de {amplitude}%, sugerindo alocação em processos de alta padronização técnica.",
+        "modelo": "Nenhum"
+    }
+
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
@@ -1881,16 +1887,30 @@ if st.session_state.pagina == "disc":
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
-        # 2. CHAMADA DA IA (AQUI É ONDE A MÁGICA ACONTECE)
-        # Substituímos o bloco estático pela análise dinâmica do Gemini + Claude
-        parecer_pericial_ia = gerar_parecer_especialista(
+        # 2. CHAMADA DA IA (EXECUÇÃO E EXIBIÇÃO NA UI DO STREAMLIT)
+        # Chamamos a função blindada que criamos anteriormente
+        res_ia = gerar_parecer_especialista(
             nome=primeiro_nome, 
             dominante=dominante, 
             amplitude=amplitude, 
             info_desc=info.get('desc', 'Cargo de Auditoria Estratégica')
         )
 
-        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO DINÂMICOS
+        # Lógica de Score e Cores para a Interface
+        score_confianca = 100 if res_ia["status"] == "sucesso" else (60 if res_ia["status"] == "parcial" else 20)
+        cor_score = "green" if score_confianca > 70 else ("orange" if score_confianca > 30 else "red")
+
+        # Exibição imediata na tela do App
+        st.markdown(f"### 💡 Parecer Consolidado")
+        st.write(res_ia["conteudo"])
+
+        with st.expander("🔍 Metadados da Auditoria Digital"):
+            st.markdown(f"**Confiança da Análise:** :{cor_score}[{score_confianca}%]")
+            st.markdown(f"**Motor de Processamento:** {res_ia['modelo']}")
+            if res_ia["status"] != "sucesso":
+                st.info("Nota: Parte da análise seguiu protocolos de contingência devido à instabilidade nos motores de IA.")
+
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO DINÂMICOS (PARA O HTML)
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
@@ -1900,15 +1920,19 @@ if st.session_state.pagina == "disc":
             </div>
             """
 
-        # O HTML da Nota do Consultor agora recebe o 'parecer_pericial_ia'
+        # Injetamos o parecer da IA e a rastreabilidade no bloco do Consultor
         nota_consultor = f"""
         <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
             <b>💡 Parecer Consolidado (Auditoria Digital - Gemini & Claude):</b><br>
-            {parecer_pericial_ia}
+            {res_ia["conteudo"]}
+            <br><br>
+            <div style='font-size: 10px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; font-style: normal;'>
+                🔐 <b>Rastreabilidade Técnica:</b> Confiança {score_confianca}% | Motor: {res_ia['modelo']} | Status: {res_ia['status'].upper()}
+            </div>
         </div>
         """
 
-        # 4. MONTAGEM DA STRING HTML (O corpo do laudo permanece o mesmo)
+        # 4. MONTAGEM DA STRING HTML (O corpo do laudo)
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1980,7 +2004,7 @@ if st.session_state.pagina == "disc":
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )             
+        )
         
 
 # --- VISUALIZAÇÃO ---
