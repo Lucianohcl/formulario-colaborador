@@ -4492,6 +4492,37 @@ if st.session_state.pagina == "disc":
                             )
                             fig.update_layout(height=400, showlegend=False, template="plotly_white")
                             st.plotly_chart(fig, use_container_width=True)
+
+                        # ============================================================
+                        # ADIÇÃO: EXPLICAÇÃO DO PERFIL PREDOMINANTE (O QUE VOCÊ PEDIU)
+                        # ============================================================
+                        st.markdown("---")
+                        st.subheader(f"🧠 Diagnóstico da Cultura do Grupo: {dominante_grupo}")
+
+                        explicações = {
+                            "D": {
+                                "titulo": "Cultura de Resultados e Velocidade",
+                                "texto": "O time é focado em metas, direto e competitivo. Possui entrega rápida e facilidade para lidar com crises, mas pode faltar paciência com detalhes e processos longos."
+                            },
+                            "I": {
+                                "titulo": "Cultura de Conexão e Entusiasmo",
+                                "texto": "O time é comunicativo, otimista e focado em pessoas. Excelente clima organizacional e criatividade, mas pode ter dificuldade com a organização de dados e rotinas repetitivas."
+                            },
+                            "S": {
+                                "titulo": "Cultura de Colaboração e Persistência",
+                                "texto": "O time é leal, constante e trabalha em harmonia. Garante processos seguros e baixa rotatividade, mas pode mostrar resistência a mudanças bruscas e inovações disruptivas."
+                            },
+                            "C": {
+                                "titulo": "Cultura de Precisão e Qualidade",
+                                "texto": "O time é analítico, detalhista e pautado por regras. Erro quase zero e organização impecável, mas a velocidade pode ser reduzida pelo excesso de perfeccionismo e análise fria."
+                            }
+                        }
+
+                        exp = explicações.get(dominante_grupo)
+                        if exp:
+                            st.markdown(f"**{exp['titulo']}**")
+                            st.write(exp['texto'])
+
                     else:
                         st.warning("⚠️ Os arquivos foram lidos, mas nenhum continha dados DISC válidos.")
 
