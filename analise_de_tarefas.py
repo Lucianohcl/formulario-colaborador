@@ -799,52 +799,58 @@ import time
 # Configuração de Logs para Auditoria
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-@st.cache_data(show_spinner="IA Analisando Perfil...", ttl=300) # TTL de 5 min para evitar cache eterno de falhas
+@st.cache_data(show_spinner="IA Analisando Perfil...", ttl=300)
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
-    modelos_tentar = ['gemini-1.5-flash', 'gemini-1.5-pro']
+    modelos_gemini = ['gemini-1.5-flash', 'gemini-1.5-pro']
     dados_tecnicos = None
-    erros_log = []
+    
+    # --- FASE 1: EXTRAÇÃO TÉCNICA (GEMINI) ---
+    for m_nome in modelos_gemini:
+        try:
+            model = genai.GenerativeModel(m_nome)
+            # Prompt focado em extrair a "matéria-prima" para o Claude
+            prompt_gemini = f"Analise técnica DISC: {nome}, {dominante}, Amplitude {amplitude}%. Foque em riscos de fadiga para o cargo {info_desc}."
+            response = model.generate_content(prompt_gemini)
+            
+            if response.text and len(response.text) > 50:
+                dados_tecnicos = response.text
+                break
+        except Exception as e:
+            logging.error(f"Erro Gemini ({m_nome}): {e}")
+            continue
 
-    # --- FASE 1: EXTRAÇÃO TÉCNICA (GEMINI com Retry e Backoff) ---
-    for modelo_nome in modelos_tentar:
-        model = genai.GenerativeModel(modelo_nome)
-        for tentativa in range(2): # 2 tentativas por modelo
-            try:
-                prompt = f"Analise pericial: {nome}, {dominante}, Amplitude {amplitude}%. Liste 2 riscos de fadiga cognitiva."
-                response = model.generate_content(prompt)
-                
-                # Validação Semântica: O conteúdo é útil ou é "lixo"?
-                texto = response.text.lower()
-                if any(k in texto for k in ["risco", "fadiga", "cognitiva", "atenção"]):
-                    dados_tecnicos = response.text
-                    break 
-                else:
-                    logging.warning(f"Resposta irrelevante do modelo {modelo_nome}")
-            except Exception as e:
-                erros_log.append(f"Erro {modelo_nome} (T{tentativa}): {str(e)}")
-                time.sleep(1 * (tentativa + 1)) # Backoff simples
-        
-        if dados_tecnicos: break
-
-    # --- FASE 2: REDAÇÃO (CLAUDE) ---
+    # --- FASE 2: REDAÇÃO PERICIAL (CLAUDE) ---
     if dados_tecnicos:
         try:
+            # Garanta que o nome do modelo está correto: "claude-3-5-sonnet-20240620" ou "claude-3-sonnet-20240229"
             res_claude = client_claude.messages.create(
-                model="claude-3-sonnet-20240229",
-                max_tokens=800,
-                messages=[{"role": "user", "content": f"Dados: {dados_tecnicos}. Cargo: {info_desc}. Redija parecer master."}]
+                model="claude-3-sonnet-20240229", 
+                max_tokens=1000,
+                messages=[{
+                    "role": "user", 
+                    "content": f"Aja como um Perito Sênior. Use estes dados técnicos: {dados_tecnicos}. Redija um laudo mestre para o colaborador {nome}."
+                }]
             )
-            return {"status": "sucesso", "conteudo": res_claude.content[0].text, "modelo": modelo_nome}
+            # SUCESSO TOTAL: Retorna 100%
+            return {
+                "status": "sucesso", 
+                "conteudo": res_claude.content[0].text, 
+                "modelo": "Gemini + Claude (Multi-Agente)"
+            }
         except Exception as e:
-            logging.error(f"Falha Claude: {str(e)}")
-            return {"status": "parcial", "conteudo": f"Análise Técnica: {dados_tecnicos}", "modelo": "Gemini-Only"}
+            logging.error(f"Erro Claude: {e}")
+            # SUCESSO PARCIAL: Gemini funcionou, Claude não. Retorna 60%
+            return {
+                "status": "parcial", 
+                "conteudo": dados_tecnicos, 
+                "modelo": "Gemini-Only (Falha no Claude)"
+            }
 
-    # --- FASE 3: FALLBACK E LOG DE ERROS ---
-    logging.error(f"Falha total IA para {nome}: {'; '.join(erros_log)}")
+    # --- FASE 3: FALLBACK CRÍTICO (Nada funcionou) ---
     return {
         "status": "fallback", 
-        "conteudo": f"Parecer Técnico: O perfil apresenta amplitude de {amplitude}%, sugerindo alocação em processos de alta padronização técnica.",
-        "modelo": "Nenhum"
+        "conteudo": f"O perfil de {nome} apresenta dominância {dominante} com amplitude de {amplitude}%, indicando um padrão comportamental estável.",
+        "modelo": "Nenhum (Modo de Contingência)"
     }
 
 
