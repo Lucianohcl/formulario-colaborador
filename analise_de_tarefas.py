@@ -1949,7 +1949,7 @@ def gerar_laudo(primeiro_nome, cargo_bruto, dominante, porcentagem_comp, amplitu
     </body>
     </html>
     """
-
+    st.write("CHEGOU AQUI")
     st.download_button(
         label="📥 BAIXAR LAUDO",
         data=html_final_estendido,
