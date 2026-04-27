@@ -1818,9 +1818,10 @@ import time
 import json
 import os
 
-# ============================================================
-# 1. FUNÇÕES DE SUPORTE (COLOQUE NO TOPO DO ARQUIVO)
-# ============================================================
+# CONFIGURAÇÃO DE SEGURANÇA
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
+
 @st.cache_resource
 def selecionar_motor_pericial():
     """Varre modelos para evitar erro 404 e garantir versão estável"""
@@ -1851,11 +1852,9 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
                     continue
                 break
     except: pass
-    return {"parecer": "Análise técnica em processamento.", "nota": "Aguardando liberação de cota.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento de Fluxo"]}
+    return {"parecer": "Análise técnica em processamento.", "nota": "Cota de IA atingida.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento"]}
 
-# ============================================================
-# 2. BLOCO DO LAUDO (COM 8 ESPAÇOS DE RECUO)
-# ============================================================
+
 
         # 📥 LAUDO PERICIAL MASTER (VERSÃO INTEGRADA GEMINI)
         # ------------------------------------------------------------
@@ -1880,7 +1879,7 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
             diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. GERCINO possui um 'trilho' de atuação claro, gerando fadiga severa em tarefas multifuncionais."
         else:
             status_perfil = "Generalista Versátil"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com flexibilidade para transição entre tarefas com menor desgaste."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com flexibilidade funcional."
 
         # 3. CONSTRUÇÃO DOS ALERTAS
         alerta_resistencia = ""
@@ -1911,36 +1910,26 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
         </head>
         <body>
             <div class='page'>
-                <div class='header'>
-                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
-                    <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
-                </div>
+                <div class='header'><h1>LAUDO PERICIAL 360°</h1><p>AUDITORIA TÉCNICA - 2026</p></div>
                 <div class='grid-info'>
                     <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
-                    <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
-                    <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
-                    <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
+                    <div class='stat-card'><label>Cargo</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Perfil</label><b>{dominante}</b></div>
+                    <div class='stat-card'><label>Fit</label><b>{porcentagem_comp}</b></div>
                 </div>
-                <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
+                <div class='section-title'>1. ANÁLISE QUANTITATIVA</div>
                 <div style='border:1px solid #eee; padding:15px; border-radius:12px; background:#fff;'>{grafico_html_div}</div>
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA</div>
                 <div class='parecer-box'>
                     <h4 style='margin:0;'>Parecer do Especialista:</h4>
                     {dados_ia['parecer']}
-                    <br><br>
-                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual.
                 </div>
                 <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-                    <b>💡 Nota do Consultor:</b> Identificamos perfil <b>{status_perfil}</b>. {dados_ia['nota']}
+                    <b>💡 Nota do Consultor:</b> Perfil <b>{status_perfil}</b>. {dados_ia['nota']}
                 </div>
                 {alerta_resistencia}
-                <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
-                <ul style='margin-top:20px;'>
-                    {"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}
-                </ul>
-                <div style='margin-top:60px; text-align:center; font-size:11px; color:#bdc3c7; border-top:1px solid #eee; padding-top:25px;'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
-                </div>
+                <div class='section-title'>3. PONTOS DE ATENÇÃO</div>
+                <ul>{"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}</ul>
             </div>
         </body>
         </html>
