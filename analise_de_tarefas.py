@@ -1973,78 +1973,106 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 MÓDULO LHAMA: INTELIGÊNCIA JSON + EXPORTAÇÃO HTML
+        # 🧠 MÓDULO LHAMA: SALVAMENTO DE INTELIGÊNCIA -> EXPORTAÇÃO HTML
         # ============================================================
         import json
         import plotly.express as px
 
-        # 1. FUNÇÃO DE CONSTRUÇÃO DO LAUDO (Defina isso antes ou no topo do arquivo)
-        def preparar_laudo_html(dados, dom, amp, percs, equilibrado):
+        # 1. DEFINIÇÃO DO TEMPLATE DE LAUDO (HTML)
+        def gerar_template_html(dados_lhama):
+            nome = dados_lhama["colaborador"].upper()
+            dom = dados_lhama["metricas"]["perfil_dominante"]
+            amp = dados_lhama["metricas"]["amplitude_nominal"]
             cor = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}.get(dom[0], "#333")
-            status = "PERFIL EQUILIBRADO" if equilibrado else "PERFIL ESPECIALISTA"
             
             html = f"""
             <html><head><meta charset="UTF-8"><style>
-                body {{ font-family: sans-serif; padding: 30px; color: #333; }}
-                .header {{ border-bottom: 5px solid {cor}; padding-bottom: 10px; }}
-                .box {{ background: #f4f4f4; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 10px solid {cor}; }}
-                h1, h2 {{ color: {cor}; }}
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; background-color: #fff; }}
+                .header {{ border-bottom: 8px solid {cor}; padding-bottom: 20px; margin-bottom: 30px; text-align: center; }}
+                .card {{ background: #fdfdfd; border: 1px solid #eee; border-left: 12px solid {cor}; padding: 25px; margin-bottom: 25px; border-radius: 4px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05); }}
+                .metric {{ font-size: 24px; font-weight: bold; color: {cor}; }}
+                h1 {{ margin: 0; color: #2c3e50; }}
+                h2 {{ color: {cor}; text-transform: uppercase; font-size: 18px; }}
+                .footer {{ margin-top: 50px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 10px; }}
             </style></head><body>
-                <div class="header"><h1>LAUDO ESTRATÉGICO: {dados['colaborador'].upper()}</h1></div>
-                <div class="box"><h2>PERFIL DOMINANTE: {dom}</h2><p>Tipo: {status}</p></div>
-                <div class="box"><h2>AMPLITUDE: {amp:.1f}%</h2></div>
-                <div class="box"><h2>DIFICULDADES</h2><p>{", ".join([d.get('Dificuldade','') for d in dados.get('tabelas',{}).get('dificuldades',[])])}</p></div>
-                <div class="footer"><p>Gerado por NETEXAME 2026</p></div>
+                <div class="header">
+                    <h1>LAUDO ESTRATÉGICO DE PERFIL</h1>
+                    <p>NETEXAME AUDITORIA ESTRATÉGICA - 2026</p>
+                </div>
+                <div class="card">
+                    <h2>Identificação</h2>
+                    <p><strong>COLABORADOR:</strong> {nome}</p>
+                    <p><strong>CARGO:</strong> {dados_lhama.get('cargo', 'N/A')}</p>
+                </div>
+                <div style="display: flex; gap: 20px;">
+                    <div class="card" style="flex: 1;">
+                        <h2>Perfil Dominante</h2>
+                        <div class="metric">{dom}</div>
+                    </div>
+                    <div class="card" style="flex: 1;">
+                        <h2>Amplitude</h2>
+                        <div class="metric">{amp:.1f}%</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Análise Operacional</h2>
+                    <p><strong>Dificuldades:</strong> {", ".join([d.get('Dificuldade','') for d in dados_lhama.get('tabelas',{}).get('dificuldades',[])]) or "Não informadas."}</p>
+                    <p><strong>Sugestões:</strong> {", ".join([s.get('Sugestão','') for s in dados_lhama.get('tabelas',{}).get('sugestoes',[])]) or "Não informadas."}</p>
+                </div>
+                <div class="footer">Gerado via Lhama Intelligence - Auditoria Estratégica</div>
             </body></html>
             """
             return html
 
-        # 2. INTERFACE DE RESGATE
+        # 2. CONSOLIDAÇÃO DA ANÁLISE PRONTA (BOTÃO JSON)
+        st.markdown("---")
+        st.subheader("💾 Etapa 1: Consolidar Inteligência Lhama")
+        
+        if formulario_sel:
+            # Estrutura o JSON com a "Análise Pronta"
+            pacote_inteligencia = {
+                "colaborador": formulario_sel.get("colaborador"),
+                "cargo": formulario_sel.get("cargo"),
+                "tabelas": formulario_sel.get("tabelas", {}),
+                "metricas": {
+                    "perfil_dominante": dominante, # Variável vinda do seu cálculo anterior
+                    "amplitude_nominal": amplitude
+                },
+                "raw_disc": formulario_sel.get("disc", {})
+            }
+
+            st.download_button(
+                label="📥 SALVAR ANÁLISE COMPLETA (JSON)",
+                data=json.dumps(pacote_inteligencia, indent=4, ensure_ascii=False),
+                file_name=f"ANALISE_LHAMA_{formulario_sel['colaborador'].replace(' ', '_')}.json",
+                mime="application/json",
+                use_container_width=True,
+                type="primary"
+            )
+
+        # 3. CONVERSÃO PARA HTML (BOTÃO FINAL)
         st.sidebar.markdown("---")
-        st.sidebar.subheader("🧬 Resgate de Inteligência")
-        arquivo_lhama = st.sidebar.file_uploader("Subir JSON Lhama", type="json", key="up_lhama_final")
+        st.sidebar.subheader("📄 Etapa 2: Gerar Laudo HTML")
+        arquivo_analise = st.sidebar.file_uploader("Upload da Análise JSON", type="json", key="resgate_final")
 
-        f_alvo = None
-        if arquivo_lhama:
+        if arquivo_analise:
             try:
-                raw = json.load(arquivo_lhama)
-                f_alvo = {
-                    "colaborador": raw["identificacao"]["nome"],
-                    "cargo": raw["identificacao"]["cargo"],
-                    "tabelas": raw["tabelas_operacionais"],
-                    "metricas": raw["metricas_disc"],
-                    "respostas": raw.get("respostas_originais", {})
-                }
-            except Exception as e:
-                st.sidebar.error(f"Erro no JSON: {e}")
-
-        # 3. RENDERIZAÇÃO E BOTÃO DE GERAÇÃO
-        if f_alvo:
-            # Processa a inteligência (Amplitude e Perfil)
-            dom_at = f_alvo["metricas"]["perfil_dominante"]
-            amp_at = f_alvo["metricas"]["amplitude_nominal"]
-            is_eq = amp_at <= 12
-            
-            # Gráfico na tela
-            st.markdown(f"### 🧠 Inteligência Lhama: {f_alvo['colaborador']}")
-            percs_at, _ = calcular_disc(f_alvo["respostas"]) if f_alvo.get("respostas") else ({"D":25,"I":25,"S":25,"C":25}, None)
-            
-            st.metric("Perfil Identificado", dom_at, f"Amplitude: {amp_at:.1f}%")
-
-            # --- O BOTÃO QUE VOCÊ QUERIA ---
-            st.markdown("---")
-            if st.button("📄 GERAR DOCUMENTO HTML", use_container_width=True, type="primary"):
-                # A inteligência é consolidada AQUI
-                conteudo_laudo = preparar_laudo_html(f_alvo, dom_at, amp_at, percs_at, is_eq)
+                dados_final = json.load(arquivo_analise)
+                st.sidebar.success(f"✅ Dados de {dados_final['colaborador']} carregados!")
                 
-                # Gera o botão de download após o processamento
-                st.download_button(
-                    label="📥 CLIQUE PARA BAIXAR O LAUDO AGORA",
-                    data=conteudo_laudo,
-                    file_name=f"LAUDO_LHAMA_{f_alvo['colaborador']}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )             
+                # Botão que gera o HTML a partir do JSON carregado
+                if st.sidebar.button("🔨 FABRICAR LAUDO HTML", use_container_width=True):
+                    html_pronto = gerar_template_html(dados_final)
+                    
+                    st.download_button(
+                        label="🚀 BAIXAR LAUDO FINAL (HTML)",
+                        data=html_pronto,
+                        file_name=f"LAUDO_FINAL_{dados_final['colaborador']}.html",
+                        mime="text/html",
+                        use_container_width=True
+                    )
+            except Exception as e:
+                st.sidebar.error(f"Erro ao processar JSON: {e}")             
         
 
 # --- VISUALIZAÇÃO ---
