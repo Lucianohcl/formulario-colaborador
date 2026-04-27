@@ -4415,7 +4415,7 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# 🚀 COMANDO MASTER DO LUCIANO: PROCESSAMENTO COLETIVO TOTAL
+# 🚀 COMANDO MASTER DO LUCIANO: PROCESSAMENTO, SOMA E DIAGNÓSTICO
 # ============================================================
 
 if st.session_state.pagina == "disc":
@@ -4425,7 +4425,7 @@ if st.session_state.pagina == "disc":
     # BOTÃO MASTER: O TIRO ÚNICO
     if st.button("🔥 GERAR E SOMAR TODOS OS PERFIS DA EQUIPE", key="btn_master_soma_coletiva"):
         
-        with st.spinner("Sincronizando com GitHub e processando perfis..."):
+        with st.spinner("Sincronizando com GitHub e processando DNA da equipe..."):
             try:
                 # 1. Garante a Conexão com o Repo
                 repo = st.session_state.get('repo_conectado')
@@ -4445,31 +4445,30 @@ if st.session_state.pagina == "disc":
                     # Mapa de tradução DISC
                     mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
 
-                    # 3. LOOP DE PROCESSAMENTO (O CORAÇÃO DO BOTÃO)
+                    # 3. LOOP DE PROCESSAMENTO
                     for f in lista_fresca:
                         respostas_raw = f.get("disc", {})
                         if respostas_raw:
                             # Traduz as respostas A,B,C,D para D,I,S,C
                             respostas_traduzidas = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
                             
-                            # Calcula os percentuais individuais (Usando sua função calcular_disc)
+                            # Calcula os percentuais individuais
                             percentuais, _ = calcular_disc(respostas_traduzidas)
                             resultados_acumulados.append(percentuais)
 
-                    # 4. CONSOLIDAÇÃO E SOMA
+                    # 4. CONSOLIDAÇÃO E MATEMÁTICA
                     if resultados_acumulados:
                         # Criamos o DataFrame com todos os colaboradores
                         df_total = pd.DataFrame(resultados_acumulados).apply(pd.to_numeric).dropna()
                         
-                        # Calculamos a MÉDIA (que representa a força do grupo)
+                        # Médias para força do grupo e Somas para peso total
                         medias = df_total.mean()
-                        # Calculamos a SOMA (para ver o peso total)
                         somas = df_total.sum()
                         
                         st.divider()
                         st.success(f"✅ SUCESSO! {len(resultados_acumulados)} perfis processados e somados.")
 
-                        # 5. EXIBIÇÃO DO PANORAMA
+                        # 5. EXIBIÇÃO DOS RESULTADOS VISUAIS
                         col_info, col_chart = st.columns([1, 2])
 
                         with col_info:
@@ -4478,10 +4477,9 @@ if st.session_state.pagina == "disc":
                             
                             dominante_grupo = medias.idxmax()
                             st.info(f"**Cultura Dominante: {dominante_grupo}**")
-                            st.caption(f"Análise baseada na integração de {len(resultados_acumulados)} colaboradores.")
+                            st.caption(f"Análise baseada em {len(resultados_acumulados)} colaboradores.")
 
                         with col_chart:
-                            # Gráfico Coletivo com cores oficiais
                             fig = px.bar(
                                 medias.reset_index(), 
                                 x="index", y=0, 
@@ -4494,15 +4492,15 @@ if st.session_state.pagina == "disc":
                             st.plotly_chart(fig, use_container_width=True)
 
                         # ============================================================
-                        # ADIÇÃO: EXPLICAÇÃO DO PERFIL PREDOMINANTE (O QUE VOCÊ PEDIU)
+                        # 🧠 DIAGNÓSTICO AUTOMÁTICO (TEXTO AJUSTADO PELO LUCIANO)
                         # ============================================================
                         st.markdown("---")
-                        st.subheader(f"🧠 Diagnóstico da Cultura do Grupo: {dominante_grupo}")
+                        st.subheader(f"🔍 Diagnóstico da Cultura do Grupo: {dominante_grupo}")
 
                         explicações = {
                             "D": {
                                 "titulo": "Cultura de Resultados e Velocidade",
-                                "texto": "O time é focado em metas, direto e competitivo. Possui entrega rápida e facilidade para lidar com crises, mas pode faltar paciência com detalhes e processos longos."
+                                "texto": "O time é focado em metas, direto e competitivo. Possui entrega rápida e facilidade para lidar com crises, mas pode faltar paciência com processos longos e detalhes burocráticos."
                             },
                             "I": {
                                 "titulo": "Cultura de Conexão e Entusiasmo",
@@ -4510,25 +4508,31 @@ if st.session_state.pagina == "disc":
                             },
                             "S": {
                                 "titulo": "Cultura de Colaboração e Persistência",
-                                "texto": "O time é leal, constante e trabalha em harmonia. Garante processos seguros e baixa rotatividade, mas pode mostrar resistência a mudanças bruscas e inovações disruptivas."
+                                "texto": "O time é leal, constante e trabalha em harmonia. Garante processos seguros e baixa rotatividade, mas pode mostrar resistência a mudanças bruscas."
                             },
                             "C": {
-                                "titulo": "Cultura de Precisão e Qualidade",
-                                "texto": "O time é analítico, detalhista e pautado por regras. Erro quase zero e organização impecável, mas a velocidade pode ser reduzida pelo excesso de perfeccionismo e análise fria."
+                                "titulo": "Cultura de Precisão e Qualidade (Alerta de Inconsistência)",
+                                "texto": (
+                                    "O time tem DNA analítico e detalhista, pautado por regras e lógica. "
+                                    "**NOTA CRÍTICA:** Se este grupo apresenta altos índices de erro, o diagnóstico indica 'Pane Operacional'. "
+                                    "Perfis de Conformidade erram quando submetidos a processos ambíguos, falta de checklists claros ou pressão extrema por velocidade em detrimento da qualidade. "
+                                    "O erro aqui não é falta de atenção, é sobrecarga cognitiva. Para corrigir: implemente processos padronizados (POPs) "
+                                    "e elimine a subjetividade das tarefas. O time precisa de trilhos, não de velocidade cega."
+                                )
                             }
                         }
 
                         exp = explicações.get(dominante_grupo)
                         if exp:
-                            st.markdown(f"**{exp['titulo']}**")
+                            st.warning(f"### {exp['titulo']}")
                             st.write(exp['texto'])
 
                     else:
-                        st.warning("⚠️ Os arquivos foram lidos, mas nenhum continha dados DISC válidos.")
+                        st.warning("⚠️ Nenhum dado DISC válido encontrado nos arquivos.")
 
             except Exception as e:
                 st.error(f"❌ Erro crítico no processamento: {e}")
 
-# --- Rodapé ---
+# --- Rodapé Final ---
 st.markdown("---")
-st.caption("NetExame 2026 | Inteligência Comportamental - Luciano")
+st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
