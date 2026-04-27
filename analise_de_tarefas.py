@@ -4415,70 +4415,35 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# PARTE 1: CARGA DE DADOS (COLOQUE NO INÍCIO OU NA SIDEBAR)
+# 📊 PANORAMA COLETIVO (COLE ESTE BLOCO NO FINAL DO SCRIPT)
 # ============================================================
 
-# Inicializa o estado da sessão se não existir
-if "formularios" not in st.session_state:
-    st.session_state.formularios = []
+# ✅ Tenta recuperar os formulários salvos na sessão
+lista_para_panorama = st.session_state.get("formularios", [])
 
-# Componente de Upload Múltiplo
-uploaded_files = st.sidebar.file_uploader(
-    "📂 Carregue os JSONs da Equipe", 
-    type=["json"], 
-    accept_multiple_files=True
-)
-
-# Se houver novos arquivos, processa e guarda no "Cérebro" do App
-if uploaded_files:
-    lista_temp = []
-    for file in uploaded_files:
-        try:
-            dados = json.load(file)
-            if "disc" in dados:
-                lista_temp.append(dados)
-        except Exception as e:
-            st.sidebar.error(f"Erro no arquivo {file.name}")
-    
-    st.session_state.formularios = lista_temp
-
-# Define a variável local para uso nos blocos abaixo
-formularios = st.session_state.formularios
-
-
-# ============================================================
-# PARTE 2: MENU DE NAVEGAÇÃO (EXEMPLO)
-# ============================================================
-if st.sidebar.button("📊 Ver Panorama DISC"):
-    st.session_state.pagina = "disc"
-    st.rerun()
-
-
-# ============================================================
-# PARTE 3: O PANORAMA COLETIVO (O BLOCO QUE VOCÊ QUERIA)
-# ============================================================
-
+# Só renderiza se a página ativa for "disc" e houver dados
 if st.session_state.get("pagina") == "disc":
 
-    if formularios:
+    if lista_para_panorama:
         with st.expander("📊 Ver Panorama Coletivo da Equipe", expanded=True):
             st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
             
             lista_resultados = []
             atividades_coletivas = []
 
-            for f in formularios:
-                # Cálculo individual para compor a média
-                res_percentual, _ = calcular_disc(f.get("disc", {}))
-                lista_resultados.append(res_percentual)
+            # Processamento dos dados recuperados
+            for f in lista_para_panorama:
+                if f.get("disc"):
+                    res_percentual, _ = calcular_disc(f.get("disc", {}))
+                    lista_resultados.append(res_percentual)
 
-                # Coleta atividades de todos para o ranking de desafios
                 for a in f.get("atividades", []):
                     desc = a.get("Atividade Descrita", "").strip()
                     if desc:
                         atividades_coletivas.append(desc)
 
             if lista_resultados:
+                # Criando DataFrame com a média de todos os perfis
                 df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric, errors='coerce').dropna()
                 
                 if not df_equipe.empty:
@@ -4497,9 +4462,9 @@ if st.session_state.get("pagina") == "disc":
                             "C": "💎 **Conformidade:** Alta precisão técnica e perfeccionismo."
                         }
                         
-                        st.info(f"**Perfil Dominante do Time:** {dominante_grupo}\n\n{explicacoes.get(dominante_grupo)}")
-                        st.warning(f"**Menor Presença no Time:** {menor_grupo}")
-                        st.caption(f"Análise baseada em {len(formularios)} formulários.")
+                        st.info(f"**Perfil Dominante:** {dominante_grupo}\n\n{explicacoes.get(dominante_grupo)}")
+                        st.warning(f"**Menor Presença:** {menor_grupo}")
+                        st.caption(f"Baseado em {len(lista_para_panorama)} formulários.")
 
                     with col_grf:
                         dados_plot = medias.reset_index()
@@ -4517,9 +4482,8 @@ if st.session_state.get("pagina") == "disc":
                         st.plotly_chart(fig_eq, use_container_width=True)
 
                     st.divider()
-                    st.markdown(f"#### ⚠ Principais desafios de adaptação para o grupo")
+                    st.markdown(f"#### ⚠ Desafios de Adaptação para o Grupo ({dominante_grupo})")
                     
-                    # Lógica de compatibilidade baseada no dominante do grupo
                     compatibilidade_ativ = {
                         "D": ["decisão","meta","resultado","liderar","estratégia"],
                         "I": ["apresentar","comunicar","clientes","reunião"],
@@ -4533,10 +4497,15 @@ if st.session_state.get("pagina") == "disc":
                         score = sum(p in texto for p in compatibilidade_ativ.get(dominante_grupo, []))
                         ranking.append((score, ativ))
                     
-                    ranking.sort(key=lambda x: x[0]) # Menor score = maior desafio
+                    ranking.sort(key=lambda x: x[0])
                     
                     if ranking:
-                        for _, atividade in ranking[:5]: # Mostra os top 5 desafios
+                        for _, atividade in ranking[:5]:
                             st.write(f"• {atividade}")
     else:
-        st.warning("📂 Nenhum formulário detectado. Carregue os JSONs na barra lateral para ativar a visão coletiva.")
+        # Se você carregou e continua vendo isso, verifique o seu código de UPLOAD lá no topo!
+        st.warning("⚠️ Memória vazia. Certifique-se de que o upload salvou os dados em 'st.session_state.formularios'.")
+
+# --- Rodapé Final ---
+st.markdown("---")
+st.caption("NetExame 2026 - Auditoria Estratégica e Engenharia de Processos")
