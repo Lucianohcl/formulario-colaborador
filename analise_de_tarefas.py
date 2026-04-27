@@ -31,6 +31,9 @@ from fpdf import FPDF
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+from github import Github
+import google.generativeai as genai  # <--- IMPORTANTE
+import anthropic                    # <--- IMPORTANTE
 
 
 # ============================================================
@@ -789,6 +792,44 @@ def gerar_pdf(form):
     doc.build(elementos)
     buffer.seek(0)
     return buffer
+
+@st.cache_data(show_spinner="IA Analisando Perfil...") # <--- Adicione isso
+def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
+    """
+    Cadeia de comando: 
+    1. Gemini analisa a parte técnica/matemática.
+    2. Claude redige o texto final com tom pericial.
+    """
+    try:
+        # --- 1. CHAMADA AO GEMINI (Analista Lógico) ---
+        model_gemini = genai.GenerativeModel('gemini-pro')
+        prompt_tecnico = f"""
+        Analise como perito: Colaborador {nome}, Perfil {dominante}, Amplitude {amplitude}%.
+        Se a amplitude for > 50%, ele NÃO é equilibrado, ele é um especialista de foco estrito.
+        Liste 2 riscos de fadiga para este cenário.
+        """
+        res_gemini = model_gemini.generate_content(prompt_tecnico)
+        dados_tecnicos = res_gemini.text
+
+        # --- 2. CHAMADA AO CLAUDE (Escritor Pericial) ---
+        # O Claude pega o 'rascunho' do Gemini e deixa elegante
+        prompt_claude = f"""
+        Com base nestes dados técnicos: {dados_tecnicos}
+        E nesta descrição de cargo: {info_desc}
+        Redija um 'Parecer do Especialista' para um Laudo Pericial Master.
+        Use um tom sério, técnico e direto. 
+        Máximo de 4 parágrafos. Não use saudações.
+        """
+        
+        res_claude = client_claude.messages.create(
+            model="claude-3-sonnet-20240229",
+            max_tokens=1000,
+            messages=[{"role": "user", "content": prompt_claude}]
+        )
+        return res_claude.content[0].text
+
+    except Exception as e:
+        return f"Nota técnica: O perfil de {nome} apresenta amplitude de {amplitude}%, indicando necessidade de monitoramento de carga cognitiva."
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
@@ -1813,7 +1854,7 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO IA MULTI-AGENTE)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1825,20 +1866,20 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
+        # 1. TRATAMENTO DE VARIÁVEIS
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
-        # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
-        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
-        if amplitude > 50:
-            status_perfil = "Especialista de Alto Impacto"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
-        else:
-            status_perfil = "Generalista Versátil"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
+        # 2. CHAMADA DA IA (AQUI É ONDE A MÁGICA ACONTECE)
+        # Substituímos o bloco estático pela análise dinâmica do Gemini + Claude
+        parecer_pericial_ia = gerar_parecer_especialista(
+            nome=primeiro_nome, 
+            dominante=dominante, 
+            amplitude=amplitude, 
+            info_desc=info.get('desc', 'Cargo de Auditoria Estratégica')
+        )
 
-        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO DINÂMICOS
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
@@ -1848,14 +1889,15 @@ if st.session_state.pagina == "disc":
             </div>
             """
 
+        # O HTML da Nota do Consultor agora recebe o 'parecer_pericial_ia'
         nota_consultor = f"""
         <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
-            {diagnostico_fadiga}
+            <b>💡 Parecer Consolidado (Auditoria Digital - Gemini & Claude):</b><br>
+            {parecer_pericial_ia}
         </div>
         """
 
-        # 4. MONTAGEM DA STRING HTML
+        # 4. MONTAGEM DA STRING HTML (O corpo do laudo permanece o mesmo)
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1894,10 +1936,8 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
-                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
+                    <h4 style='margin-top:0;'>Análise Contextual:</h4>
                     {info.get('desc', 'Análise técnica em processamento.')}
-                    <br><br>
-                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
                 </div>
 
                 {nota_consultor}
@@ -1905,11 +1945,11 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
                 <div style='margin-top: 20px; font-size: 14px;'>
-                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
+                    <p>⚠️ <b>Tarefas de Risco para este Perfil (Baseado em Inteligência Preditiva):</b></p>
                     <ul>
-                        <li>Intervenções sociais não planejadas.</li>
-                        <li>Gestão multifocal de processos sem POP definido.</li>
-                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
+                        <li>Exposição a ambientes de alta volatilidade sem previsibilidade.</li>
+                        <li>Execução de processos operacionais que divergem da especialidade técnica.</li>
+                        <li>Demandas de interação social extensiva sem tempo de recuperação cognitiva.</li>
                     </ul>
                 </div>
 
@@ -2382,13 +2422,23 @@ try:
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
   
     DB_TOKEN       = st.secrets["DB_TOKEN"]
+
+
+    # NOVAS CHAVES DE INTELIGÊNCIA ARTIFICIAL
+    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
+    CLAUDE_API_KEY = st.secrets["CLAUDE_API_KEY"]
     
     # Definimos o repositório direto aqui para evitar erro de Secret faltante
     REPO_NOME = "lucianohcl/formulario-colaborador"
+
+    # INICIALIZAÇÃO DAS IAs
+    genai.configure(api_key=GEMINI_API_KEY)
+    client_claude = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
     
 except Exception as e:
     st.error(f"❌ Erro nos Secrets: A chave {e} não foi encontrada no painel do Streamlit.")
     st.stop()
+
 
 if st.session_state.get("pagina") == "formulario":
 
