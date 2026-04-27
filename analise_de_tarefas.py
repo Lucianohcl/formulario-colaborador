@@ -57,53 +57,42 @@ st.set_page_config(
 
 import streamlit as st
 import google.generativeai as genai
-import time
 
-# --- CONFIGURAÇÃO (Certifique-se de que a KEY está correta nos Secrets) ---
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
-
-# --- FUNÇÃO DE ANÁLISE SEM "LIXO" ---
-@st.cache_data(show_spinner="Analisando Perfil DISC...", ttl=300)
-def gerar_laudo_pericial(nome, dominante, amplitude, info_desc):
+# --- FUNÇÃO DE ANÁLISE LIMPA ---
+@st.cache_data(show_spinner="Gerando análise pericial...", ttl=300)
+def gerar_laudo_final(nome, dominante, amplitude):
+    # O motor agora é exclusivamente Gemini
     model = genai.GenerativeModel('gemini-1.5-flash')
     prompt = f"""
-    Aja como um Perito DISC. 
-    Analise o perfil de {nome} com Dominância {dominante} e Amplitude {amplitude}%.
-    Foco: {info_desc}.
-    Gere um parecer direto, técnico e estratégico.
+    Aja como um Perito DISC de alto nível. 
+    Analise o perfil: {nome}
+    Dominância: {dominante}
+    Amplitude: {amplitude}%
+    Gere um parecer técnico sem introduções desnecessárias, focado em riscos e talentos.
     """
+    try:
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        return "Serviço temporariamente indisponível. Por favor, tente novamente em instantes."
+
+# --- FLUXO DE EXIBIÇÃO NO APP ---
+# Captura de dados (ajuste as chaves se necessário)
+nome_alvo = st.session_state.get('nome', 'GERCINO')
+dom_alvo = st.session_state.get('dominante', 'C')
+amp_alvo = st.session_state.get('amplitude', 58.3)
+
+if st.button("🚀 Gerar Parecer Consolidado"):
+    # 1. Chama a análise (sem menção a Claude ou erros técnicos)
+    analise_real = gerar_laudo_final(nome_alvo, dom_alvo, amp_alvo)
     
-    # Retry para evitar erro de cota
-    for i in range(3):
-        try:
-            response = model.generate_content(prompt)
-            return response.text
-        except Exception as e:
-            if "429" in str(e):
-                time.sleep(5)
-                continue
-            return f"Erro na análise: {str(e)}"
-    return "Erro: Limite de requisições excedido."
-
-# --- INTERFACE (Onde você remove o 'lixo') ---
-st.title("NetExame - Auditoria Estratégica")
-
-# Dados vindos do seu formulário
-nome = st.session_state.get('nome', 'GERCINO')
-dominante = st.session_state.get('dominante', 'C')
-amplitude = st.session_state.get('amplitude', 58.3)
-
-if st.button("🚀 GERAR PARECER CONSOLIDADO"):
-    conteudo_laudo = gerar_laudo_pericial(nome, dominante, amplitude, "Análise de Riscos")
-    
-    # EXIBIÇÃO DIRETA (Sem mensagens de erro técnico ou metadados de 20%)
+    # 2. Exibe o resultado direto e limpo
     st.markdown("---")
-    st.subheader(f"💡 Parecer Consolidado: {nome}")
-    st.markdown(conteudo_laudo)
+    st.markdown(analise_real)
     
-    # Rodapé simples e profissional
-    st.caption("Análise gerada por Inteligência Pericial - Auditoria Estratégica 2026")
+    # 3. Encerramento (Aparece apenas após a análise)
+    st.markdown("---")
+    st.markdown("### **Sistema de Auditoria Estratégica**")
 
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
