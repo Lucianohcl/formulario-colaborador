@@ -4414,98 +4414,135 @@ if st.session_state.get("pagina") == "analise":
     )
 
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+import json
+
 # ============================================================
-# 📊 PANORAMA COLETIVO (COLE ESTE BLOCO NO FINAL DO SCRIPT)
+# 1. CONFIGURAÇÕES E FUNÇÕES DE APOIO
 # ============================================================
+st.set_page_config(page_title="NetExame - Auditoria", layout="wide")
 
-# ✅ Tenta recuperar os formulários salvos na sessão
-lista_para_panorama = st.session_state.get("formularios", [])
-
-# Só renderiza se a página ativa for "disc" e houver dados
-if st.session_state.get("pagina") == "disc":
-
-    if lista_para_panorama:
-        with st.expander("📊 Ver Panorama Coletivo da Equipe", expanded=True):
-            st.markdown("## 👥 Gestão Coletiva: Panorama da Equipe")
+def calcular_disc(respostas_disc):
+    """
+    Simulação da sua função de cálculo DISC. 
+    Ajuste conforme sua lógica real de 'amplitude'.
+    """
+    # Exemplo simples de contagem (A=D, B=I, C=S, D=C)
+    counts = {"D": 0, "I": 0, "S": 0, "C": 0}
+    mapping = {"A": "D", "B": "I", "C": "S", "D": "C"}
+    
+    for r in respostas_disc.values():
+        perfil = mapping.get(r)
+        if perfil:
+            counts[perfil] += 1
             
-            lista_resultados = []
-            atividades_coletivas = []
+    total = sum(counts.values()) if sum(counts.values()) > 0 else 1
+    percentuais = {k: (v / total) * 100 for k, v in counts.items()}
+    return percentuais, counts
 
-            # Processamento dos dados recuperados
-            for f in lista_para_panorama:
-                if f.get("disc"):
-                    res_percentual, _ = calcular_disc(f.get("disc", {}))
-                    lista_resultados.append(res_percentual)
+# ============================================================
+# 2. GESTÃO DE MEMÓRIA (CÉREBRO DO APP)
+# ============================================================
+if "formularios" not in st.session_state:
+    st.session_state.formularios = []
 
-                for a in f.get("atividades", []):
-                    desc = a.get("Atividade Descrita", "").strip()
-                    if desc:
-                        atividades_coletivas.append(desc)
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "home"
 
-            if lista_resultados:
-                # Criando DataFrame com a média de todos os perfis
-                df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric, errors='coerce').dropna()
-                
-                if not df_equipe.empty:
+# ============================================================
+# 3. BARRA LATERAL (UPLOAD E NAVEGAÇÃO)
+# ============================================================
+st.sidebar.title("🚀 NetExame Auditoria")
+
+# O MOTOR DE CARGA: É aqui que o JSON do Adson entra na memória
+uploaded_files = st.sidebar.file_uploader(
+    "📂 Carregue os JSONs da Equipe", 
+    type=["json"], 
+    accept_multiple_files=True
+)
+
+if uploaded_files:
+    lista_temp = []
+    for f in uploaded_files:
+        try:
+            dados = json.load(f)
+            # Verifica se o JSON tem a estrutura que você mandou (campos ou disc)
+            lista_temp.append(dados)
+        except Exception as e:
+            st.sidebar.error(f"Erro ao ler {f.name}")
+    
+    # SALVA NA GAVETA GLOBAL
+    st.session_state.formularios = lista_temp
+    st.sidebar.success(f"✅ {len(lista_temp)} arquivos na memória")
+
+st.sidebar.divider()
+
+# NAVEGAÇÃO
+if st.sidebar.button("🏠 Home"):
+    st.session_state.pagina = "home"
+if st.sidebar.button("📊 Perfil DISC"):
+    st.session_state.pagina = "disc"
+
+# ============================================================
+# 4. ÁREA DE CONTEÚDO (PÁGINA DISC)
+# ============================================================
+
+if st.session_state.pagina == "disc":
+    st.title("🎯 Análise de Perfil Comportamental")
+    
+    # Recupera os dados da memória
+    dados_para_exibir = st.session_state.get("formularios", [])
+
+    if not dados_para_exibir:
+        st.warning("⚠️ Memória vazia. Por favor, carregue os arquivos JSON na barra lateral.")
+    else:
+        # Bloco do Panorama Coletivo (O que você queria no final)
+        with st.container():
+            st.markdown("---")
+            with st.expander("📊 VER PANORAMA COLETIVO DA EQUIPE", expanded=True):
+                lista_resultados = []
+                atividades_coletivas = []
+
+                for f in dados_para_exibir:
+                    # Tenta pegar o DISC (formato do Adson)
+                    disc_data = f.get("disc")
+                    if disc_data:
+                        res_percentual, _ = calcular_disc(disc_data)
+                        lista_resultados.append(res_percentual)
+
+                    # Tenta pegar atividades (tabelas -> alta/normal/baixa no JSON do Adson)
+                    tabelas = f.get("tabelas", {})
+                    for categoria in ["alta", "normal", "baixa"]:
+                        for ativ in tabelas.get(categoria, []):
+                            desc = ativ.get("Atividade", "").strip()
+                            if desc:
+                                atividades_coletivas.append(desc)
+
+                if lista_resultados:
+                    df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
                     medias = df_equipe.mean()
                     dominante_grupo = medias.idxmax()
-                    menor_grupo = medias.idxmin()
 
-                    col_txt, col_grf = st.columns([1, 1.5])
-                    
-                    with col_txt:
-                        st.write("### 🧠 Insight do Grupo")
-                        explicacoes = {
-                            "D": "🔥 **Dominância:** Foco em metas e execução rápida.",
-                            "I": "☀️ **Influência:** Comunicação e criatividade em alta.",
-                            "S": "🌱 **Estabilidade:** Time leal, processual e resiliente.",
-                            "C": "💎 **Conformidade:** Alta precisão técnica e perfeccionismo."
-                        }
-                        
-                        st.info(f"**Perfil Dominante:** {dominante_grupo}\n\n{explicacoes.get(dominante_grupo)}")
-                        st.warning(f"**Menor Presença:** {menor_grupo}")
-                        st.caption(f"Baseado em {len(lista_para_panorama)} formulários.")
+                    col1, col2 = st.columns([1, 1.5])
+                    with col1:
+                        st.info(f"**Perfil Dominante do Time: {dominante_grupo}**")
+                        st.write("O gráfico ao lado representa a média comportamental de todos os arquivos carregados.")
+                        st.caption(f"Análise baseada em {len(lista_resultados)} colaboradores.")
 
-                    with col_grf:
-                        dados_plot = medias.reset_index()
-                        dados_plot.columns = ["Tipo", "Media"]
-                        
-                        fig_eq = px.bar(
-                            dados_plot, x="Tipo", y="Media", color="Tipo",
-                            text_auto='.1f',
+                    with col2:
+                        fig = px.bar(
+                            medias.reset_index(), x="index", y=0, 
+                            color="index", text_auto='.1f',
+                            labels={'index': 'Perfil', '0': 'Média %'},
                             color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
                         )
-                        fig_eq.update_layout(
-                            template="plotly_white", height=280, showlegend=False,
-                            yaxis_range=[0, 100], margin=dict(l=10, r=10, t=10, b=10)
-                        )
-                        st.plotly_chart(fig_eq, use_container_width=True)
+                        fig.update_layout(height=300, showlegend=False, yaxis_range=[0, 100])
+                        st.plotly_chart(fig, use_container_width=True)
 
-                    st.divider()
-                    st.markdown(f"#### ⚠ Desafios de Adaptação para o Grupo ({dominante_grupo})")
-                    
-                    compatibilidade_ativ = {
-                        "D": ["decisão","meta","resultado","liderar","estratégia"],
-                        "I": ["apresentar","comunicar","clientes","reunião"],
-                        "S": ["suporte","atender","organizar","rotina","apoio"],
-                        "C": ["analisar","dados","relatório","planilha","controle"]
-                    }
-
-                    ranking = []
-                    for ativ in atividades_coletivas:
-                        texto = ativ.lower()
-                        score = sum(p in texto for p in compatibilidade_ativ.get(dominante_grupo, []))
-                        ranking.append((score, ativ))
-                    
-                    ranking.sort(key=lambda x: x[0])
-                    
-                    if ranking:
-                        for _, atividade in ranking[:5]:
-                            st.write(f"• {atividade}")
-    else:
-        # Se você carregou e continua vendo isso, verifique o seu código de UPLOAD lá no topo!
-        st.warning("⚠️ Memória vazia. Certifique-se de que o upload salvou os dados em 'st.session_state.formularios'.")
-
-# --- Rodapé Final ---
+# ============================================================
+# 5. RODAPÉ (FINAL DO SCRIPT)
+# ============================================================
 st.markdown("---")
-st.caption("NetExame 2026 - Auditoria Estratégica e Engenharia de Processos")
+st.caption("NetExame 2026 - Gestão Estratégica de DP")
