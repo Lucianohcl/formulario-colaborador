@@ -796,11 +796,13 @@ def gerar_pdf(form):
 
 # --- CONFIGURAÇÃO DE ACESSO SEGURO ÀS IAs (via Secrets) ---
 try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # Configura o Gemini forçando a versão da API para v1 (mais estável)
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"], transport='rest')
+    
+    # Inicializa o Claude
     client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
 except Exception as e:
-    st.error("Erro: Verifique se as chaves GEMINI_API_KEY e CLAUDE_API_KEY estão no Secrets do Streamlit.")
-
+    st.error(f"Erro de Configuração: {str(e)}")
 
 @st.cache_data(show_spinner="IA Analisando Perfil...") # <--- Adicione isso
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
@@ -811,7 +813,7 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
     """
     try:
         # --- 1. CHAMADA AO GEMINI (Analista Lógico) ---
-        model_gemini = genai.GenerativeModel('gemini-1.5-flash')
+        model_gemini = genai.GenerativeModel('models/gemini-1.5-flash')
         prompt_tecnico = f"""
         Analise como perito: Colaborador {nome}, Perfil {dominante}, Amplitude {amplitude}%.
         Se a amplitude for > 50%, ele NÃO é equilibrado, ele é um especialista de foco estrito.
