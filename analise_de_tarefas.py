@@ -1973,59 +1973,76 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 CONSOLIDAÇÃO DA ANÁLISE LHAMA (JSON -> HTML)
+        # 🧠 CONSOLIDAÇÃO DA ANÁLISE LHAMA (INTELIGÊNCIA INTEGRADA)
         # ============================================================
         import json
 
-        # 1. BOTÃO PARA SALVAR A ANÁLISE PRONTA EM JSON
         st.markdown("---")
         st.subheader("💾 1. Consolidação da Inteligência (JSON)")
 
         if formulario_sel:
-            # Aqui montamos o pacote da ANALISE PRONTA
+            # Capturamos as variáveis que o seu motor de análise já calculou
+            # (Garante que as variáveis existem antes de montar o dicionário)
+            perfil_final = dominante if 'dominante' in locals() else "N/A"
+            amp_final = amplitude if 'amplitude' in locals() else 0
+            is_eq = (amp_final <= 12)
+            
+            # Montamos o pacote com as ANALISES GERADAS (Texto Puro)
             analise_lhama = {
-                "colaborador": formulario_sel.get("colaborador"),
-                "cargo": formulario_sel.get("cargo"),
+                "colaborador": str(formulario_sel.get("colaborador")).upper(),
+                "cargo": formulario_sel.get("cargo", "N/A"),
+                "data_geracao": "2026",
                 "analise_comportamental": {
-                    "perfil": dominante,
-                    "amplitude": amplitude,
-                    "is_equilibrado": (amplitude <= 12)
+                    "perfil": perfil_final,
+                    "amplitude": round(amp_final, 1),
+                    "natureza": "⚖️ Perfil Híbrido" if is_eq else "🎯 Perfil Especialista",
+                    "diagnostico": "Alta Aderência" if is_eq or (perfil_final in perfil_exigido_1) else "Ponto de Atenção"
                 },
                 "tabelas_operacionais": {
-                    "dificuldades": [d.get("Dificuldade", "") for d in formulario_sel.get("tabelas", {}).get("dificuldades", []) if d.get("Dificuldade")],
-                    "sugestoes": [s.get("Sugestão", "") for s in formulario_sel.get("tabelas", {}).get("sugestoes", []) if s.get("Sugestão")]
+                    "dificuldades": [d.get("Dificuldade", "") for d in formulario_sel.get("tabelas", {}).get("dificuldades", []) if len(d.get("Dificuldade", "")) > 3],
+                    "sugestoes": [s.get("Sugestão", "") for s in formulario_sel.get("tabelas", {}).get("sugestoes", []) if len(s.get("Sugestão", "")) > 3]
                 },
-                "data_geracao": "2026"
+                "inteligencia_rh": {
+                    "exigencia_tarefas": exigencia_final if 'exigencia_final' in locals() else "N/A",
+                    "compatibilidade": porcentagem_comp if 'porcentagem_comp' in locals() else "0%",
+                    "nota_consultor": f"Sua distribuição de energia é equilibrada. Flexibilidade nativa." if is_eq else f"Perfil concentrado em {perfil_final[0]}. Demanda esforço consciente para tarefas divergentes.",
+                    "alerta_resistencia": not (tem_algo_dif or tem_algo_sug) if 'tem_algo_dif' in locals() else False
+                }
             }
 
+            # BOTÃO PARA SALVAR O CÉREBRO DA ANÁLISE
             st.download_button(
-                label="📥 SALVAR ARQUIVO DE ANÁLISE (.JSON)",
+                label="📥 SALVAR ANÁLISE COMPLETA COM INTELIGÊNCIA (.JSON)",
                 data=json.dumps(analise_lhama, indent=4, ensure_ascii=False),
-                file_name=f"INTELIGENCIA_LHAMA_{formulario_sel['colaborador']}.json",
+                file_name=f"INTELIGENCIA_LHAMA_{analise_lhama['colaborador']}.json",
                 mime="application/json",
                 use_container_width=True,
                 type="primary"
             )
 
-        # 2. BOTÃO PARA GERAR O HTML A PARTIR DA ANÁLISE SALVA
+        # 2. ÁREA DE RESGATE PARA O HTML
         st.sidebar.markdown("---")
         st.sidebar.subheader("📄 2. Exportação para HTML/Nuvem")
         arquivo_resgate = st.sidebar.file_uploader("Upload do JSON da Análise", type="json", key="resgate_nuvem")
 
         if arquivo_resgate:
-            dados_resgatados = json.load(arquivo_resgate)
-            
-            if st.sidebar.button("🔨 GERAR LAUDO ESTRATÉGICO (HTML)", use_container_width=True):
-                # Chama a função de construção (garanta que ela existe no seu código)
-                html_final = construir_html_laudo(dados_resgatados) 
+            try:
+                dados_resgatados = json.load(arquivo_resgate)
+                st.sidebar.success(f"✅ Análise de {dados_resgatados['colaborador']} carregada!")
                 
-                st.download_button(
-                    label="🚀 BAIXAR LAUDO FINAL PARA NUVEM",
-                    data=html_final,
-                    file_name=f"LAUDO_NETEXAME_{dados_resgatados['colaborador']}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )            
+                if st.sidebar.button("🔨 GERAR LAUDO ESTRATÉGICO (HTML)", use_container_width=True):
+                    # Agora a função 'construir_html_laudo' recebe o JSON rico em inteligência
+                    html_final = construir_html_laudo(dados_resgatados) 
+                    
+                    st.download_button(
+                        label="🚀 BAIXAR LAUDO FINAL PARA NUVEM",
+                        data=html_final,
+                        file_name=f"LAUDO_NETEXAME_{dados_resgatados['colaborador']}.html",
+                        mime="text/html",
+                        use_container_width=True
+                    )
+            except Exception as e:
+                st.sidebar.error(f"Erro ao ler análise: {e}")            
         
 
 # --- VISUALIZAÇÃO ---
