@@ -159,7 +159,8 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 
         debug("📡 Enviando requisição...")
 
-        response = model.generate_content(prompt)
+        response = model.generate_content(prompt, request_options={"timeout": 30})
+        st.write("✅ PASSOU DO GENERATE")
 
         debug("📬 Resposta recebida")
 
