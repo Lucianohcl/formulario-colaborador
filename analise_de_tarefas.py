@@ -31,10 +31,7 @@ from fpdf import FPDF
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-from github import Github
-import google.generativeai as genai  # <--- IMPORTANTE
-import anthropic                    # <--- IMPORTANTE
-import datetime
+
 
 # ============================================================
 
@@ -53,46 +50,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 
 )
-
-
-import streamlit as st
-import google.generativeai as genai
-
-# --- FUNÇÃO DE ANÁLISE LIMPA ---
-@st.cache_data(show_spinner="Gerando análise pericial...", ttl=300)
-def gerar_laudo_final(nome, dominante, amplitude):
-    # O motor agora é exclusivamente Gemini
-    model = genai.GenerativeModel('gemini-1.5-flash')
-    prompt = f"""
-    Aja como um Perito DISC de alto nível. 
-    Analise o perfil: {nome}
-    Dominância: {dominante}
-    Amplitude: {amplitude}%
-    Gere um parecer técnico sem introduções desnecessárias, focado em riscos e talentos.
-    """
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        return "Serviço temporariamente indisponível. Por favor, tente novamente em instantes."
-
-# --- FLUXO DE EXIBIÇÃO NO APP ---
-# Captura de dados (ajuste as chaves se necessário)
-nome_alvo = st.session_state.get('nome', 'GERCINO')
-dom_alvo = st.session_state.get('dominante', 'C')
-amp_alvo = st.session_state.get('amplitude', 58.3)
-
-if st.button("🚀 Gerar Parecer Consolidado"):
-    # 1. Chama a análise (sem menção a Claude ou erros técnicos)
-    analise_real = gerar_laudo_final(nome_alvo, dom_alvo, amp_alvo)
-    
-    # 2. Exibe o resultado direto e limpo
-    st.markdown("---")
-    st.markdown(analise_real)
-    
-    # 3. Encerramento (Aparece apenas após a análise)
-    st.markdown("---")
-    st.markdown("### **Sistema de Auditoria Estratégica**")
 
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
@@ -832,72 +789,6 @@ def gerar_pdf(form):
     doc.build(elementos)
     buffer.seek(0)
     return buffer
-
-import logging
-import time
-
-# Configuração de Logs para Auditoria
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
-@st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
-def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
-    """
-    Motor exclusivo Claude-3 para Laudos Periciais com Debug de Interface.
-    """
-    try:
-        # 1. Configuração do Prompt Pericial
-        prompt_pericial = f"""
-        Aja como um Perito em Análise Comportamental e Auditor de RH.
-        Analise o seguinte perfil DISC:
-        - Nome: {nome}
-        - Dominância: {dominante}
-        - Amplitude: {amplitude}%
-        - Contexto/Cargo: {info_desc}
-
-        Redija um parecer técnico (Laudo Pericial) focando em:
-        1. Estabilidade e Adaptação técnica.
-        2. Riscos de fadiga cognitiva baseada na amplitude.
-        3. Nexo causal entre o perfil e as demandas de auditoria estratégica.
-        Use uma linguagem formal, técnica e imparcial.
-        """
-
-        # 2. Chamada Direta ao Claude
-        # O erro pode estar aqui: client_claude precisa estar definido globalmente
-        response = client_claude.messages.create(
-            model="claude-3-5-sonnet-20240620", 
-            max_tokens=1500,
-            temperature=0.7,
-            messages=[{"role": "user", "content": prompt_pericial}]
-        )
-
-        # 3. Extração do Conteúdo
-        conteudo_final = response.content[0].text
-
-        # 4. Retorno de Sucesso (Score 100%)
-        return {
-            "status": "sucesso", 
-            "conteudo": conteudo_final, 
-            "modelo": "Claude 3.5 Sonnet (Motor Pericial Dedicado)"
-        }
-
-    except Exception as e:
-        # --- BLOCO DE DEBUG (MOSTRA NA TELA DO APP) ---
-        erro_msg = str(e)
-        tipo_erro = type(e).__name__
-        
-        # Isso vai aparecer no seu Streamlit em um box vermelho
-        st.error(f"❌ ERRO TÉCNICO NO CLAUDE ({tipo_erro})")
-        st.code(f"Detalhes: {erro_msg}")
-        
-        # Log para o console/terminal
-        print(f"ERRO CRÍTICO NO CLAUDE: {tipo_erro} - {erro_msg}")
-        
-        # Fallback de Segurança (Score 20%)
-        return {
-            "status": "fallback", 
-            "conteudo": f"Análise preliminar: O perfil de {nome} (Dominância {dominante}) apresenta amplitude de {amplitude}%. Erro técnico: {tipo_erro}.",
-            "modelo": "Nenhum (Erro de Processamento)"
-        }
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
@@ -1922,7 +1813,7 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO IA CLAUDE DEDICADA)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1934,36 +1825,20 @@ if st.session_state.pagina == "disc":
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. TRATAMENTO DE VARIÁVEIS
+        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
-        # 2. CHAMADA DA IA (EXECUÇÃO E EXIBIÇÃO NA UI DO STREAMLIT)
-        # Chamada ao motor pericial (ajustado para priorizar Claude 3.5 Sonnet)
-        res_ia = gerar_parecer_especialista(
-            nome=primeiro_nome, 
-            dominante=dominante, 
-            amplitude=amplitude, 
-            info_desc=info.get('desc', 'Cargo de Auditoria Estratégica')
-        )
+        # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
+        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
+        if amplitude > 50:
+            status_perfil = "Especialista de Alto Impacto"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
+        else:
+            status_perfil = "Generalista Versátil"
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
 
-        # Lógica de Score Binária: Se o status é sucesso, a confiança é total (100%)
-        score_confianca = 100 if res_ia["status"] == "sucesso" else 20
-        cor_score = "green" if score_confianca == 100 else "red"
-
-        # Exibição imediata na tela do App
-        st.markdown(f"### 💡 Parecer Consolidado")
-        st.write(res_ia["conteudo"])
-
-        with st.expander("🔍 Metadados da Auditoria Digital"):
-            st.markdown(f"**Confiança da Análise:** :{cor_score}[{score_confianca}%]")
-            st.markdown(f"**Motor de Processamento:** {res_ia['modelo']}")
-            
-            # Alerta de contingência apenas em caso de falha real
-            if res_ia["status"] != "sucesso":
-                st.error("🚨 Nota: O motor pericial principal está indisponível. Foi aplicada uma análise de contingência baseada em padrões estatísticos.")
-
-        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO DINÂMICOS (PARA O HTML)
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
@@ -1973,19 +1848,14 @@ if st.session_state.pagina == "disc":
             </div>
             """
 
-        # Nota do Consultor: Agora referenciando corretamente a Inteligência Pericial
         nota_consultor = f"""
         <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-            <b>💡 Parecer Consolidado (Inteligência Pericial - Claude 3.5 Sonnet):</b><br>
-            {res_ia["conteudo"]}
-            <br><br>
-            <div style='font-size: 10px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; font-style: normal;'>
-                🔐 <b>Rastreabilidade Técnica:</b> Confiança {score_confianca}% | Motor: {res_ia['modelo']} | Status: {res_ia['status'].upper()}
-            </div>
+            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
+            {diagnostico_fadiga}
         </div>
         """
 
-        # 4. MONTAGEM DA STRING HTML (O corpo do laudo)
+        # 4. MONTAGEM DA STRING HTML
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -2024,8 +1894,10 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
-                    <h4 style='margin-top:0;'>Análise Contextual:</h4>
+                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
                     {info.get('desc', 'Análise técnica em processamento.')}
+                    <br><br>
+                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
                 </div>
 
                 {nota_consultor}
@@ -2033,16 +1905,16 @@ if st.session_state.pagina == "disc":
 
                 <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
                 <div style='margin-top: 20px; font-size: 14px;'>
-                    <p>⚠️ <b>Tarefas de Risco para este Perfil (Baseado em Inteligência Preditiva):</b></p>
+                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
                     <ul>
-                        <li>Exposição a ambientes de alta volatilidade sem previsibilidade.</li>
-                        <li>Execução de processos operacionais que divergem da especialidade técnica.</li>
-                        <li>Demandas de interação social extensiva sem tempo de recuperação cognitiva.</li>
+                        <li>Intervenções sociais não planejadas.</li>
+                        <li>Gestão multifocal de processos sem POP definido.</li>
+                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
                     </ul>
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - {__import__('datetime').datetime.now().year}</b>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
             </div>
         </body>
@@ -2057,7 +1929,7 @@ if st.session_state.pagina == "disc":
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )
+        )             
         
 
 # --- VISUALIZAÇÃO ---
@@ -2510,23 +2382,13 @@ try:
     OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
   
     DB_TOKEN       = st.secrets["DB_TOKEN"]
-
-
-    # NOVAS CHAVES DE INTELIGÊNCIA ARTIFICIAL
-    GEMINI_API_KEY = st.secrets["GEMINI_API_KEY"]
-    CLAUDE_API_KEY = st.secrets["CLAUDE_API_KEY"]
     
     # Definimos o repositório direto aqui para evitar erro de Secret faltante
     REPO_NOME = "lucianohcl/formulario-colaborador"
-
-    # INICIALIZAÇÃO DAS IAs
-    genai.configure(api_key=GEMINI_API_KEY)
-    client_claude = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
     
 except Exception as e:
     st.error(f"❌ Erro nos Secrets: A chave {e} não foi encontrada no painel do Streamlit.")
     st.stop()
-
 
 if st.session_state.get("pagina") == "formulario":
 
