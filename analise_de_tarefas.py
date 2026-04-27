@@ -65,41 +65,78 @@ if "GEMINI_API_KEY" in st.secrets:
 else:
     genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
 
-# 2. SELEÇÃO DINÂMICA DO MODELO (Sem erro 404)
+import streamlit as st
+import google.generativeai as genai
+import os
+import time
+
+# 1. CONFIGURAÇÃO INICIAL
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
+else:
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
+
+# 2. SELEÇÃO DINÂMICA (Blindada contra 404)
 @st.cache_resource
 def carregar_modelo_seguro():
     try:
-        # Lista todos os modelos disponíveis para a sua chave
+        # Tenta listar para pegar o melhor disponível
         modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        
-        # Prioridade: 1.5 Flash -> 1.5 Pro -> 1.0 Pro -> Primeiro da lista
         if 'models/gemini-1.5-flash' in modelos:
-            return genai.GenerativeModel('gemini-1.5-flash')
-        elif 'models/gemini-1.5-pro' in modelos:
-            return genai.GenerativeModel('gemini-1.5-pro')
-        else:
-            # Pega o primeiro que suportar geração de conteúdo
-            return genai.GenerativeModel(modelos[0].replace('models/', ''))
-    except Exception as e:
-        st.error(f"Erro ao listar modelos: {e}")
-        return genai.GenerativeModel('gemini-1.5-flash') # Fallback final
+            return 'gemini-1.5-flash'
+        return modelos[0].replace('models/', '')
+    except:
+        return 'gemini-1.5-flash' # Fallback absoluto
 
-model = carregar_modelo_seguro()
+NOME_MODELO = carregar_modelo_seguro()
 
-# 3. FUNÇÃO DE PARECER
-@st.cache_data(show_spinner="Analisando perfil...", ttl=300)
+# 3. FUNÇÃO À PROVA DE FALHAS (Blindada contra 429 - Quota)
+@st.cache_data(show_spinner="Analisando perfil comportamental...", ttl=300)
 def gerar_parecer_gemini(nome, dominante, amplitude, info_desc):
-    try:
-        prompt = f"Analise o perfil DISC: {nome}, Dominante {dominante}, Amplitude {amplitude}%."
-        response = model.generate_content(prompt)
-        return {"status": "sucesso", "conteudo": response.text}
-    except Exception as e:
-        return {"status": "erro", "conteudo": str(e)}
+    model = genai.GenerativeModel(NOME_MODELO)
+    prompt = f"Aja como perito DISC. Analise {nome}, Dominância {dominante}, Amplitude {amplitude}%. Contexto: {info_desc}"
+    
+    max_retries = 3
+    for i in range(max_retries):
+        try:
+            response = model.generate_content(prompt)
+            return {"status": "sucesso", "conteudo": response.text}
+            
+        except Exception as e:
+            msg_erro = str(e)
+            
+            # Se for erro de COTA (429), ele espera e tenta de novo
+            if "429" in msg_erro or "quota" in msg_erro.lower():
+                if i < max_retries - 1:
+                    wait_time = (i + 1) * 6 # Espera 6s, depois 12s...
+                    st.warning(f"Muita demanda! Reorganizando motor em {wait_time}s (Tentativa {i+1})...")
+                    time.sleep(wait_time)
+                    continue
+                else:
+                    return {"status": "erro", "conteudo": "Servidor do Google ocupado. Tente novamente em 1 minuto."}
+            
+            # Se for erro de SEGURANÇA do Google (bloqueio de conteúdo)
+            if "finish_reason" in msg_erro:
+                return {"status": "erro", "conteudo": "O modelo não pôde gerar o laudo por restrições de segurança."}
 
-# 4. CHAMADA
-if st.button("🚀 Gerar Laudo"):
-    res = gerar_parecer_gemini("Gercino", "Estável", 58, "Auditoria")
-    st.write(res["conteudo"])
+            return {"status": "erro", "conteudo": f"Erro inesperado: {msg_erro}"}
+
+# 4. CHAMADA NA INTERFACE
+st.title("Sistema de Auditoria Estratégica")
+
+# Use st.session_state para garantir que as variáveis existam
+nome = st.session_state.get('nome', 'Gercino')
+dominante = st.session_state.get('dominante', 'Estável')
+amplitude = st.session_state.get('amplitude', 58.3)
+
+if st.button("🚀 Gerar Laudo Pericial"):
+    resultado = gerar_parecer_gemini(nome, dominante, amplitude, "Auditoria NetExame")
+    
+    if resultado["status"] == "sucesso":
+        st.markdown("### 📄 Parecer Técnico")
+        st.write(resultado["conteudo"])
+    else:
+        st.error(resultado["conteudo"])
 
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
