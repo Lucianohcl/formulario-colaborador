@@ -65,6 +65,61 @@ repo = g.get_repo("lucianohcl/formulario-colaborador")
 # st.stop() 
 # ============================================================
 
+import streamlit as st
+import google.generativeai as genai
+import time
+import json
+import os
+
+# 1. CONFIGURAÇÃO DA CHAVE
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
+
+# 2. MOTOR DINÂMICO (EVITA ERRO 404)
+@st.cache_resource
+def selecionar_motor_pericial():
+    try:
+        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        for m in modelos:
+            if 'gemini-1.5-flash' in m: return m.replace('models/', '')
+        return modelos[0].replace('models/', '')
+    except:
+        return 'gemini-1.5-flash'
+
+# 3. FUNÇÃO DE PROCESSAMENTO COM RETRY (EVITA ERRO 429)
+@st.cache_data(show_spinner="IA Gerando Parecer Técnico...", ttl=600)
+def obter_analise_ia(nome, cargo, perfil, amplitude):
+    try:
+        motor = selecionar_motor_pericial()
+        model = genai.GenerativeModel(motor)
+        prompt = f"""
+        Aja como um Perito DISC Sênior. Analise o colaborador {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%.
+        Retorne APENAS um JSON (sem markdown) com as chaves:
+        "parecer": "Texto técnico de 3 linhas sobre o comportamento.",
+        "nota": "Explicação técnica sobre o impacto da amplitude de {amplitude}%.",
+        "pontos": ["risco 1", "risco 2", "risco 3"]
+        """
+        
+        for tentativa in range(3):
+            try:
+                response = model.generate_content(prompt)
+                texto_limpo = response.text.replace('```json', '').replace('```', '').strip()
+                return json.loads(texto_limpo)
+            except Exception as e:
+                if "429" in str(e):
+                    time.sleep((tentativa + 1) * 6) # Pausa progressiva
+                    continue
+                break
+    except Exception: 
+        pass
+        
+    # FALLBACK (Caso a API falhe totalmente)
+    return {
+        "parecer": "Análise técnica em processamento devido à alta demanda.",
+        "nota": f"Perfil com amplitude de {amplitude}%, focado em especialidade técnica.",
+        "pontos": ["Intervenções sociais não planejadas.", "Gestão multifocal sem POP.", "Alta flexibilidade imediata."]
+    }
+
 
 # No topo do script, após os imports
 if 't' not in locals(): t = None
