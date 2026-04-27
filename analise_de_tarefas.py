@@ -4415,73 +4415,89 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# 🚀 COMANDO MASTER: PROCESSAR TODOS OS PERFIS DISC
+# 🚀 COMANDO MASTER DO LUCIANO: PROCESSAMENTO COLETIVO TOTAL
 # ============================================================
 
 if st.session_state.pagina == "disc":
-    st.title("📊 Processamento Coletivo DISC")
-    st.subheader(f"Operador: {st.session_state.get('user_name', 'Luciano')}")
+    st.title("📊 Panorama Estratégico da Equipe")
+    st.subheader(f"Operador: Luciano")
 
-    # 1. BOTÃO DE AÇÃO TOTAL
-    if st.button("🔥 PROCESSAR E SOMAR TUDO AGORA", key="btn_processar_disc_total_luciano"):
+    # BOTÃO MASTER: O TIRO ÚNICO
+    if st.button("🔥 GERAR E SOMAR TODOS OS PERFIS DA EQUIPE", key="btn_master_soma_coletiva"):
         
-        # Busca os dados brutos na gaveta de memória
-        dados_brutos = st.session_state.get("formularios", [])
+        with st.spinner("Sincronizando com GitHub e processando perfis..."):
+            try:
+                # 1. Garante a Conexão com o Repo
+                repo = st.session_state.get('repo_conectado')
+                if repo is None:
+                    g = Github(st.secrets["DB_TOKEN"])
+                    repo = g.get_repo("lucianohcl/formulario-colaborador")
+                    st.session_state.repo_conectado = repo
 
-        if not dados_brutos:
-            st.error("❌ Erro: Não há dados carregados para processar!")
-        else:
-            resultados_calculados = []
-
-            # 2. LOOP DE PROCESSAMENTO (TRANSFORMA RESPOSTAS EM NÚMEROS)
-            for f in dados_brutos:
-                respostas = f.get("disc")
-                if respostas:
-                    # Roda a sua função de cálculo (A, B, C, D -> %)
-                    percentuais, _ = calcular_disc(respostas)
-                    resultados_calculados.append(percentuais)
-
-            if resultados_calculados:
-                # 3. MATEMÁTICA COLETIVA (SOMA E MÉDIA)
-                df = pd.DataFrame(resultados_calculados).apply(pd.to_numeric).dropna()
+                # 2. Carrega todos os arquivos da pasta /dados/
+                lista_fresca = carregar_todos_formularios(repo)
                 
-                soma_absoluta = df.sum()  # Soma total de todos os perfis
-                media_grupo = df.mean()    # Média para o gráfico
-                
-                st.divider()
-                st.success(f"✅ Processados {len(resultados_calculados)} perfis com sucesso!")
-
-                # 4. EXIBIÇÃO EM COLUNAS
-                col_txt, col_chart = st.columns([1, 2])
-
-                with col_txt:
-                    st.markdown("### 📈 Soma dos Fatores")
-                    st.write(soma_absoluta.rename("Total Acumulado"))
+                if not lista_fresca:
+                    st.error("❌ Nenhum formulário encontrado no repositório.")
+                else:
+                    resultados_acumulados = []
                     
-                    dominante = media_grupo.idxmax()
-                    st.info(f"**Perfil Dominante do Grupo: {dominante}**")
+                    # Mapa de tradução DISC
+                    mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
 
-                with col_chart:
-                    # Gráfico de barras com as cores oficiais
-                    fig = px.bar(
-                        media_grupo.reset_index(), 
-                        x="index", y=0, 
-                        color="index",
-                        text_auto='.1f',
-                        color_discrete_map={
-                            "D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"
-                        }
-                    )
-                    fig.update_layout(
-                        height=400, 
-                        showlegend=False,
-                        xaxis_title="Fator DISC",
-                        yaxis_title="Amplitude Média (%)"
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.warning("⚠️ Os perfis na memória não contêm o campo 'disc' para processamento.")
+                    # 3. LOOP DE PROCESSAMENTO (O CORAÇÃO DO BOTÃO)
+                    for f in lista_fresca:
+                        respostas_raw = f.get("disc", {})
+                        if respostas_raw:
+                            # Traduz as respostas A,B,C,D para D,I,S,C
+                            respostas_traduzidas = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
+                            
+                            # Calcula os percentuais individuais (Usando sua função calcular_disc)
+                            percentuais, _ = calcular_disc(respostas_traduzidas)
+                            resultados_acumulados.append(percentuais)
+
+                    # 4. CONSOLIDAÇÃO E SOMA
+                    if resultados_acumulados:
+                        # Criamos o DataFrame com todos os colaboradores
+                        df_total = pd.DataFrame(resultados_acumulados).apply(pd.to_numeric).dropna()
+                        
+                        # Calculamos a MÉDIA (que representa a força do grupo)
+                        medias = df_total.mean()
+                        # Calculamos a SOMA (para ver o peso total)
+                        somas = df_total.sum()
+                        
+                        st.divider()
+                        st.success(f"✅ SUCESSO! {len(resultados_acumulados)} perfis processados e somados.")
+
+                        # 5. EXIBIÇÃO DO PANORAMA
+                        col_info, col_chart = st.columns([1, 2])
+
+                        with col_info:
+                            st.markdown("### 📈 Peso Total da Equipe")
+                            st.write(somas.rename("Pontuação Acumulada"))
+                            
+                            dominante_grupo = medias.idxmax()
+                            st.info(f"**Cultura Dominante: {dominante_grupo}**")
+                            st.caption(f"Análise baseada na integração de {len(resultados_acumulados)} colaboradores.")
+
+                        with col_chart:
+                            # Gráfico Coletivo com cores oficiais
+                            fig = px.bar(
+                                medias.reset_index(), 
+                                x="index", y=0, 
+                                color="index",
+                                text_auto='.1f',
+                                labels={'index': 'Fator DISC', '0': 'Amplitude Média %'},
+                                color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
+                            )
+                            fig.update_layout(height=400, showlegend=False, template="plotly_white")
+                            st.plotly_chart(fig, use_container_width=True)
+                    else:
+                        st.warning("⚠️ Os arquivos foram lidos, mas nenhum continha dados DISC válidos.")
+
+            except Exception as e:
+                st.error(f"❌ Erro crítico no processamento: {e}")
 
 # --- Rodapé ---
 st.markdown("---")
-st.caption("NetExame 2026 | Engenharia de Processos")
+st.caption("NetExame 2026 | Inteligência Comportamental - Luciano")
