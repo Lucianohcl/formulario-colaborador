@@ -1973,116 +1973,132 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-    # 🧠 MÓDULO LHAMA: RESGATE E GERAÇÃO DE ANÁLISE
-    # ============================================================
-    import json
-    import plotly.express as px
+        # 🧠 SISTEMA INTEGRADO LHAMA: INTELIGÊNCIA & LAUDO
+        # ============================================================
+        import json
+        import plotly.express as px
 
-    # 1. Interface de Resgate no Sidebar
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("🧬 Resgate de Inteligência")
-    arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama")
-
-    # 2. Lógica de Seleção de Fonte (Arquivo ou GitHub)
-    if arquivo_resgate is not None:
-        try:
-            dados_lhama = json.load(arquivo_resgate)
-            # Prepara o formulário fake baseado no JSON
-            formulario_sel = {
-                "colaborador": dados_lhama["identificacao"]["nome"],
-                "cargo": dados_lhama["identificacao"]["cargo"],
-                "tabelas": dados_lhama["tabelas_operacionais"],
-                "metricas_json": dados_lhama["metricas_disc"] # Metadados salvos
-            }
-            st.sidebar.success(f"✅ Pronto para analisar: {formulario_sel['colaborador'].split()[0]}")
-        except Exception as e:
-            st.sidebar.error(f"Erro no arquivo: {e}")
-            formulario_sel = None
-    else:
-        # Se não tem arquivo, 'formulario_sel' continua sendo o que veio do selectbox do GitHub
-        pass
-
-    # 3. O BOTÃO DE DISPARO
-    if formulario_sel:
-        if st.button("🔎 GERAR ANÁLISE COMPLETA", use_container_width=True, type="primary"):
+        # 1. FUNÇÃO PARA GERAR O HTML DO LAUDO (LAYOUT PROFISSIONAL)
+        def gerar_html_laudo(form, dominante, amplitude, percentuais, is_equilibrado):
+            cor_perfil = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}.get(dominante[0], "#333")
+            tipo_perfil = "HÍBRIDO / EQUILIBRADO" if is_equilibrado else "ESPECIALISTA / FOCADO"
             
-            # --- PROCESSAMENTO DOS DADOS ---
-            form = formulario_sel
-            
-            # Se veio do JSON, resgatamos as métricas prontas. Se não, calculamos.
-            if "metricas_json" in form:
-                dominante = form["metricas_json"]["perfil_dominante"]
-                amplitude = form["metricas_json"]["amplitude_nominal"]
-                # Para o gráfico, tentamos recalcular ou usar dummy se não houver respostas
-                percentuais = { "D": 25, "I": 25, "S": 25, "C": 25 } # Fallback
-                if "disc" in form: # Se houver respostas brutas no JSON
-                     percentuais, _ = calcular_disc(form["disc"])
-            else:
-                # Lógica padrão via GitHub
-                respostas_raw = form.get("disc", {})
-                mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
-                respostas_disc = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
-                percentuais, _ = calcular_disc(respostas_disc)
-                
-                ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
-                p1, v1 = ranking[0]
-                p2, v2 = ranking[1]
-                dominante = f"{p1}/{p2}" if (v1 - v2) < 8 else p1
-                amplitude = max(percentuais.values()) - min(percentuais.values())
+            html_content = f"""
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ font-family: 'Helvetica', sans-serif; padding: 30px; line-height: 1.6; color: #2c3e50; }}
+                    .header {{ text-align: center; border-bottom: 5px solid {cor_perfil}; padding-bottom: 15px; margin-bottom: 30px; }}
+                    .container {{ max-width: 900px; margin: auto; }}
+                    .card {{ background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 8px solid {cor_perfil}; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }}
+                    .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }}
+                    .metric-val {{ font-size: 28px; font-weight: bold; color: {cor_perfil}; }}
+                    h2 {{ color: {cor_perfil}; text-transform: uppercase; font-size: 18px; margin-top: 0; }}
+                    .footer {{ text-align: center; font-size: 10px; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }}
+                    .label {{ font-weight: bold; color: #7f8c8d; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>LAUDO ESTRATÉGICO DE PERFIL</h1>
+                        <p><strong>COLABORADOR:</strong> {form['colaborador'].upper()} | <strong>CARGO:</strong> {form.get('cargo', 'N/A').upper()}</p>
+                    </div>
+                    <div class="grid">
+                        <div class="card">
+                            <h2>Perfil Dominante</h2>
+                            <div class="metric-val">{dominante}</div>
+                            <p class="label">{tipo_perfil}</p>
+                        </div>
+                        <div class="card">
+                            <h2>Amplitude de Eixo</h2>
+                            <div class="metric-val">{amplitude:.1f}%</div>
+                            <p class="label">Intensidade Comportamental</p>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>Distribuição DISC</h2>
+                        <table style="width: 100%; text-align: center;">
+                            <tr>
+                                <td><strong>D</strong>: {percentuais.get('D',0):.1f}%</td>
+                                <td><strong>I</strong>: {percentuais.get('I',0):.1f}%</td>
+                                <td><strong>S</strong>: {percentuais.get('S',0):.1f}%</td>
+                                <td><strong>C</strong>: {percentuais.get('C',0):.1f}%</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="card">
+                        <h2>Análise de Dificuldades & Sugestões</h2>
+                        <p><strong>Dificuldades:</strong> {", ".join([d.get('Dificuldade','') for d in form.get('tabelas',{}).get('dificuldades',[]) if len(d.get('Dificuldade','')) > 2]) or "Nenhuma."}</p>
+                        <p><strong>Sugestões:</strong> {", ".join([s.get('Sugestão','') for s in form.get('tabelas',{}).get('sugestoes',[]) if len(s.get('Sugestão','')) > 2]) or "Nenhuma."}</p>
+                    </div>
+                    <div class="footer">NETEXAME AUDITORIA ESTRATÉGICA - 2026</div>
+                </div>
+            </body>
+            </html>
+            """
+            return html_content
 
-            # --- RENDERIZAÇÃO DA ANÁLISE ---
-            st.markdown(f"# 🧠 Laudo de Perfil: {form['colaborador'].upper()}")
-            # Busca o cargo em minúsculo, maiúsculo ou define um padrão se não achar nenhum
-            cargo_display = form.get('cargo') or form.get('Cargo') or "Não Informado"
-            st.caption(f"Cargo Analisado: {cargo_display}")
+        # 2. INTERFACE SIDEBAR
+        st.sidebar.markdown("---")
+        st.sidebar.subheader("🧬 Resgate de Inteligência")
+        arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama")
 
-            # Gráfico e Métricas
-            col_graf, col_met = st.columns([2, 1])
-            with col_graf:
-                fig = px.bar(
-                    x=list(percentuais.keys()), 
-                    y=list(percentuais.values()),
-                    color=list(percentuais.keys()),
-                    text=[f"{v:.1f}%" for v in percentuais.values()],
-                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
-                )
-                fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False, margin=dict(t=10, b=10))
-                st.plotly_chart(fig, use_container_width=True)
+        if arquivo_resgate is not None:
+            try:
+                dados_lhama = json.load(arquivo_resgate)
+                formulario_sel = {
+                    "colaborador": dados_lhama["identificacao"]["nome"],
+                    "cargo": dados_lhama["identificacao"]["cargo"],
+                    "tabelas": dados_lhama["tabelas_operacionais"],
+                    "metricas_json": dados_lhama["metricas_disc"],
+                    "disc_bruto": dados_lhama.get("respostas_originais", {})
+                }
+                st.sidebar.success("✅ Arquivo carregado!")
+            except Exception as e:
+                st.sidebar.error(f"Erro no JSON: {e}")
+                formulario_sel = None
 
-            with col_met:
-                st.metric("Perfil Dominante", dominante)
-                is_equilibrado = amplitude <= 12
-                
-                if is_equilibrado:
-                    st.success("⚖️ **Híbrido/Equilibrado**")
-                    st.write(f"Amplitude: {amplitude:.1f}% (Baixa)")
+        # 3. DISPARO E RENDERIZAÇÃO
+        if formulario_sel:
+            if st.button("🔎 GERAR ANÁLISE COMPLETA", use_container_width=True, type="primary"):
+                form = formulario_sel
+                if "metricas_json" in form:
+                    dominante = form["metricas_json"]["perfil_dominante"]
+                    amplitude = form["metricas_json"]["amplitude_nominal"]
+                    percentuais = {"D": 25, "I": 25, "S": 25, "C": 25}
+                    if form.get("disc_bruto"):
+                        percentuais, _ = calcular_disc(form["disc_bruto"])
                 else:
-                    st.info("🎯 **Especialista**")
-                    st.write(f"Amplitude: {amplitude:.1f}% (Alta)")
+                    respostas_raw = form.get("disc", {})
+                    mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
+                    respostas_disc = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
+                    percentuais, _ = calcular_disc(respostas_disc)
+                    ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
+                    p1, v1 = ranking[0]
+                    p2, v2 = ranking[1]
+                    dominante = f"{p1}/{p2}" if (v1 - v2) < 8 else p1
+                    amplitude = max(percentuais.values()) - min(percentuais.values())
 
-            # Diagnóstico de Coerência (Dificuldades e Sugestões)
-            st.markdown("---")
-            col_d, col_s = st.columns(2)
-            tabelas = form.get("tabelas", {})
-            
-            with col_d:
-                st.subheader("⚠️ Dificuldades")
-                for d in tabelas.get("dificuldades", []):
-                    txt = d.get("Dificuldade", "")
-                    if len(txt) > 2: st.warning(f"• {txt}")
+                is_equilibrado = amplitude <= 12
 
-            with col_s:
-                st.subheader("💡 Sugestões")
-                for s in tabelas.get("sugestoes", []):
-                    txt = s.get("Sugestão", "")
-                    if len(txt) > 2: st.info(f"• {txt}")
+                st.markdown(f"# 🧠 Laudo de Perfil: {form['colaborador'].upper()}")
+                st.caption(f"Cargo: {form.get('cargo') or 'Consultor'}")
 
-            # Nota do Consultor
-            st.markdown("---")
-            if is_equilibrado:
-                st.info(f"**Parecer:** O colaborador possui flexibilidade nativa. A amplitude de {amplitude:.1f}% indica que ele transita entre os eixos sem grande fadiga mental.")
-            else:
-                st.warning(f"**Parecer:** Perfil focado. A amplitude de {amplitude:.1f}% mostra uma especialização comportamental forte no eixo {dominante}.")             
+                col_graf, col_met = st.columns([2, 1])
+                with col_graf:
+                    fig = px.bar(x=list(percentuais.keys()), y=list(percentuais.values()), color=list(percentuais.keys()), color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
+                    fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False)
+                    st.plotly_chart(fig, use_container_width=True)
+
+                with col_met:
+                    st.metric("Perfil Dominante", dominante)
+                    st.write(f"Amplitude: **{amplitude:.1f}%**")
+
+                st.markdown("---")
+                html_laudo = gerar_html_laudo(form, dominante, amplitude, percentuais, is_equilibrado)
+                st.download_button(label="📥 BAIXAR LAUDO HTML PROFISSIONAL", data=html_laudo, file_name="LAUDO_LHAMA.html", mime="text/html", use_container_width=True)             
         
 
 # --- VISUALIZAÇÃO ---
