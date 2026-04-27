@@ -1929,7 +1929,48 @@ if st.session_state.pagina == "disc":
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )             
+        )
+
+        # ============================================================
+        # 💾 BOTÃO SEPARADO: EXPORTAR INTELIGÊNCIA DISC (JSON)
+        # ============================================================
+        import json
+
+        # 1. Preparação do Pacote de Dados para Resgate
+        dados_para_resgate = {
+                "identificacao": {
+                        "nome": primeiro_nome,
+                        "cargo": cargo_bruto,
+                        "data_analise": "2026-04-27"
+                },
+                "metricas_disc": {
+                        "perfil_dominante": dominante,
+                        "amplitude_nominal": amplitude,
+                        "compatibilidade_atividades": porcentagem_comp,
+                        "status_estratégico": "Especialista" if amplitude > 50 else "Híbrido/Equilibrado"
+                },
+                "tabelas_operacionais": tabelas
+        }
+
+        # 2. Conversão para String JSON
+        json_string = json.dumps(dados_para_resgate, indent=4, ensure_ascii=False)
+
+        # 3. Renderização do Botão Independente
+        st.write("---")
+        st.markdown("### 🛠️ Gestão de Dados")
+        
+        st.download_button(
+                label="💾 EXPORTAR DADOS PARA O SISTEMA (JSON)",
+                data=json_string,
+                file_name=f"DATA_DISC_{primeiro_nome.upper()}.json",
+                mime="application/json",
+                key=f"btn_resgate_json_{primeiro_nome}",
+                use_container_width=True,
+                help="Clique para baixar o arquivo de dados que permite ao app resgatar esta análise futuramente."
+        )
+
+        if st.checkbox("🔍 Visualizar JSON de saída", key=f"check_json_{primeiro_nome}"):
+                st.json(dados_para_resgate)             
         
 
 # --- VISUALIZAÇÃO ---
