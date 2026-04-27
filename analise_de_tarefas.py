@@ -1973,97 +1973,108 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 SISTEMA LHAMA: TRAVAMENTO DE TELA (ANTI-RESET)
+        # 🧠 SISTEMA LHAMA: GATILHO AUTOMÁTICO (CLICOU, ABRIU)
         # ============================================================
         import json
         import plotly.express as px
 
-        # 1. SIDEBAR: CARREGAMENTO INVISÍVEL
+        # 1. SIDEBAR: CARREGAMENTO
         st.sidebar.markdown("---")
         st.sidebar.subheader("🧬 Resgate de Inteligência")
         
-        # O uso do 'key' é vital para o Streamlit manter o arquivo no buffer
+        # O arquivo_resgate aqui funciona como o próprio botão
         arquivo_resgate = st.sidebar.file_uploader(
             "Subir JSON do Lhama", 
             type="json", 
-            key="uploader_lhama_final"
+            key="uploader_lhama_auto"
         )
 
-        # 2. LOGICA DE PERSISTÊNCIA: Se subiu o arquivo, guarda no "cofre" (session_state)
+        # 2. PROCESSO AUTOMÁTICO
+        # Se arquivo_resgate tiver algo, a análise abre SOZINHA
+        f_alvo = None
+
         if arquivo_resgate is not None:
             try:
-                # Só processa se ainda não estiver na memória para não gastar recurso
-                if "dados_lhama" not in st.session_state:
-                    conteudo_json = json.load(arquivo_resgate)
-                    st.session_state["dados_lhama"] = {
-                        "colaborador": conteudo_json["identificacao"]["nome"],
-                        "cargo": conteudo_json["identificacao"]["cargo"],
-                        "tabelas": conteudo_json["tabelas_operacionais"],
-                        "metricas": conteudo_json["metricas_disc"],
-                        "respostas": conteudo_json.get("respostas_originais", {})
-                    }
-                    st.sidebar.success("✅ Inteligência Resgatada!")
+                conteudo = json.load(arquivo_resgate)
+                f_alvo = {
+                    "colaborador": conteudo["identificacao"]["nome"],
+                    "cargo": conteudo["identificacao"]["cargo"],
+                    "tabelas": conteudo["tabelas_operacionais"],
+                    "metricas": conteudo["metricas_disc"],
+                    "respostas": conteudo.get("respostas_originais", {})
+                }
+                st.sidebar.success(f"✅ Análise de {f_alvo['colaborador'].split()[0]} Ativa!")
             except Exception as e:
-                st.sidebar.error(f"Erro ao ler JSON: {e}")
+                st.sidebar.error(f"Erro no arquivo: {e}")
+        else:
+            # Se não subiu arquivo, tenta usar o que veio do GitHub (opcional)
+            f_alvo = formulario_sel
 
-        # 3. CONTROLE DE EXIBIÇÃO: O botão apenas liga o "interruptor"
-        # Se houver dados (do JSON ou do GitHub), mostra o botão
-        if st.session_state.get("dados_lhama") or formulario_sel:
-            
-            if st.button("🔎 GERAR ANÁLISE COMPLETA", type="primary", use_container_width=True):
-                st.session_state["exibir_painel"] = True
-
-            # 4. RENDERIZAÇÃO: Só entra aqui se o interruptor estiver ON
-            if st.session_state.get("exibir_painel"):
-                # Define qual fonte usar (Prioridade para o JSON)
-                f = st.session_state.get("dados_lhama") or formulario_sel
-                
-                # Resgate de Métricas
-                if "metricas" in f:
-                    dom = f["metricas"]["perfil_dominante"]
-                    amp = f["metricas"]["amplitude_nominal"]
-                    # Recalcula percs se houver respostas, senão gera visual dummy
-                    if f.get("respostas"):
-                        percs, _ = calcular_disc(f["respostas"])
-                    else:
-                        percs = {"D": 25, "I": 25, "S": 25, "C": 25}
+        # 3. RENDERIZAÇÃO IMEDIATA
+        if f_alvo:
+            # --- LÓGICA DE DADOS ---
+            if "metricas" in f_alvo:
+                dom = f_alvo["metricas"]["perfil_dominante"]
+                amp = f_alvo["metricas"]["amplitude_nominal"]
+                # Tenta calcular percentuais se houver respostas
+                if f_alvo.get("respostas"):
+                    percs, _ = calcular_disc(f_alvo["respostas"])
                 else:
-                    # Cálculo manual para dados do GitHub
-                    resp_raw = f.get("disc", {})
-                    mapa = {"A": "D", "B": "I", "C": "S", "D": "C"}
-                    resp_disc = {k: mapa[v] for k, v in resp_raw.items() if v in mapa}
-                    percs, _ = calcular_disc(resp_disc)
-                    ranking = sorted(percs.items(), key=lambda x: x[1], reverse=True)
-                    dom = f"{ranking[0][0]}/{ranking[1][0]}" if (ranking[0][1] - ranking[1][1]) < 8 else ranking[0][0]
-                    amp = max(percs.values()) - min(percs.values())
+                    percs = {"D": 25, "I": 25, "S": 25, "C": 25}
+            else:
+                # Fallback para dados manuais
+                resp_raw = f_alvo.get("disc", {})
+                mapa = {"A": "D", "B": "I", "C": "S", "D": "C"}
+                resp_disc = {k: mapa[v] for k, v in resp_raw.items() if v in mapa}
+                percs, _ = calcular_disc(resp_disc)
+                ranking = sorted(percs.items(), key=lambda x: x[1], reverse=True)
+                dom = f"{ranking[0][0]}/{ranking[1][0]}" if (ranking[0][1] - ranking[1][1]) < 8 else ranking[0][0]
+                amp = max(percs.values()) - min(percs.values())
 
-                # --- INTERFACE DE ANÁLISE (O QUE FICA NA TELA) ---
-                st.markdown(f"## 📊 Laudo Estratégico: {f['colaborador'].upper()}")
-                
-                c1, c2 = st.columns([2,1])
-                with c1:
-                    fig = px.bar(x=list(percs.keys()), y=list(percs.values()), color=list(percs.keys()),
-                                 color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
-                    fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False)
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                with c2:
-                    st.metric("Perfil Dominante", dom)
-                    st.metric("Amplitude", f"{amp:.1f}%")
-                    if amp <= 12:
-                        st.success("⚖️ Perfil Equilibrado")
-                    else:
-                        st.info("🎯 Perfil Especialista")
+            # --- RENDERIZAÇÃO DO PAINEL ---
+            st.markdown(f"# 🧠 Laudo de Perfil: {f_alvo['colaborador'].upper()}")
+            
+            c1, c2 = st.columns([2, 1])
+            with c1:
+                fig = px.bar(
+                    x=list(percs.keys()), y=list(percs.values()), 
+                    color=list(percs.keys()), text=[f"{v:.1f}%" for v in percs.values()],
+                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+                )
+                fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False, margin=dict(t=10, b=10))
+                st.plotly_chart(fig, use_container_width=True)
 
-                # Botão de exportar que não reseta a tela
-                html_laudo = gerar_html_laudo(f, dom, amp, percs, (amp <= 12))
-                st.download_button(
-                    label="📥 BAIXAR LAUDO HTML",
-                    data=html_laudo,
-                    file_name=f"Laudo_{f['colaborador']}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )             
+            with c2:
+                st.metric("Perfil Dominante", dom)
+                st.metric("Amplitude", f"{amp:.1f}%")
+                if amp <= 12:
+                    st.success("⚖️ Perfil Equilibrado")
+                else:
+                    st.info("🎯 Perfil Especialista")
+
+            # Tabelas de Dificuldades e Sugestões (Vindo direto do Lhama)
+            st.markdown("---")
+            col_d, col_s = st.columns(2)
+            tabs = f_alvo.get("tabelas", {})
+            with col_d:
+                st.subheader("⚠️ Dificuldades")
+                for d in tabs.get("dificuldades", []):
+                    if len(d.get("Dificuldade","")) > 2: st.warning(d["Dificuldade"])
+            with col_s:
+                st.subheader("💡 Sugestões")
+                for s in tabs.get("sugestoes", []):
+                    if len(s.get("Sugestão","")) > 2: st.info(s["Sugestão"])
+
+            # 4. BOTÃO DE DOWNLOAD (Caso queira salvar)
+            st.markdown("---")
+            html_laudo = gerar_html_laudo(f_alvo, dom, amp, percs, (amp <= 12))
+            st.download_button(
+                label="📥 BAIXAR LAUDO COMPLETO",
+                data=html_laudo,
+                file_name=f"Laudo_{f_alvo['colaborador']}.html",
+                mime="text/html",
+                use_container_width=True
+            )             
         
 
 # --- VISUALIZAÇÃO ---
