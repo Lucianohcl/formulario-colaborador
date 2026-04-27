@@ -1818,7 +1818,7 @@ import time
 import json
 import os
 
-# CONFIGURAÇÃO DE SEGURANÇA
+# CONFIGURAÇÃO DE SEGURANÇA DA API
 if "GEMINI_API_KEY" in st.secrets:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
 
@@ -1854,10 +1854,9 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
     except: pass
     return {"parecer": "Análise técnica em processamento.", "nota": "Cota de IA atingida.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento"]}
 
-
-
+        # ============================================================
         # 📥 LAUDO PERICIAL MASTER (VERSÃO INTEGRADA GEMINI)
-        # ------------------------------------------------------------
+        # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
         grafico_html_div = "" 
@@ -1870,6 +1869,9 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 
         # 1. BUSCA DE DADOS NA IA E TRATAMENTO DE VARIÁVEIS
         dados_ia = obter_analise_ia(primeiro_nome, cargo_bruto, dominante, amplitude)
+        
+        # Fallback para tabelas se o JSON de entrada estiver vazio
+        if 'tabelas' not in locals(): tabelas = {}
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
@@ -1879,19 +1881,19 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
             diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. GERCINO possui um 'trilho' de atuação claro, gerando fadiga severa em tarefas multifuncionais."
         else:
             status_perfil = "Generalista Versátil"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com flexibilidade funcional."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com maior flexibilidade funcional nativa."
 
-        # 3. CONSTRUÇÃO DOS ALERTAS
+        # 3. CONSTRUÇÃO DOS ALERTAS DE RESISTÊNCIA
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
             <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
                 <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
-                A ausência de reportes sugere postura de autopreservação, mascarando gargalos técnicos.
+                A ausência de reportes sugere postura de autopreservação, mascarando gargalos técnicos que levam ao burnout.
             </div>
             """
 
-        # 4. MONTAGEM DA STRING HTML FINAL
+        # 4. MONTAGEM DA STRING HTML FINAL (MASTER)
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1901,41 +1903,56 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
                 body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #2c3e50; line-height: 1.6; background: #eceff1; }}
                 .page {{ background: white; padding: 50px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 15px solid #1B1E5D; }}
                 .header {{ text-align: center; border-bottom: 3px solid #f1f1f1; padding-bottom: 25px; margin-bottom: 35px; }}
+                .header h1 {{ margin: 0; color: #1B1E5D; font-size: 28px; text-transform: uppercase; }}
                 .grid-info {{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 35px; }}
                 .stat-card {{ background: #fdfdfd; padding: 15px; border-radius: 10px; border: 1px solid #e0e6ed; text-align: center; border-bottom: 4px solid #1B1E5D; }}
                 .stat-card label {{ font-size: 10px; text-transform: uppercase; color: #95a5a6; font-weight: 800; display: block; }}
                 .section-title {{ background: #1B1E5D; color: white; padding: 12px 20px; border-radius: 8px; margin-top: 40px; font-size: 14px; font-weight: bold; text-transform: uppercase; }}
+                .chart-box {{ border: 1px solid #eee; margin: 20px 0; border-radius: 12px; padding: 15px; background: #fff; text-align: center; }}
                 .parecer-box {{ background: #f0f7ff; border-left: 6px solid #1B1E5D; padding: 25px; border-radius: 8px; margin: 20px 0; }}
+                .footer {{ margin-top: 60px; text-align: center; font-size: 11px; color: #bdc3c7; border-top: 1px solid #eee; padding-top: 25px; }}
             </style>
         </head>
         <body>
             <div class='page'>
-                <div class='header'><h1>LAUDO PERICIAL 360°</h1><p>AUDITORIA TÉCNICA - 2026</p></div>
+                <div class='header'>
+                    <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
+                    <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
+                </div>
                 <div class='grid-info'>
                     <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
-                    <div class='stat-card'><label>Cargo</label><b>{cargo_bruto.upper()}</b></div>
-                    <div class='stat-card'><label>Perfil</label><b>{dominante}</b></div>
-                    <div class='stat-card'><label>Fit</label><b>{porcentagem_comp}</b></div>
+                    <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
+                    <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
+                    <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
                 </div>
-                <div class='section-title'>1. ANÁLISE QUANTITATIVA</div>
-                <div style='border:1px solid #eee; padding:15px; border-radius:12px; background:#fff;'>{grafico_html_div}</div>
-                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA</div>
+                <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
+                <div class='chart-box'>{grafico_html_div}</div>
+                <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
                     <h4 style='margin:0;'>Parecer do Especialista:</h4>
                     {dados_ia['parecer']}
+                    <br><br>
+                    <b>Veredito:</b> {primeiro_nome} possui alinhamento técnico para a função de {cargo_bruto}.
                 </div>
-                <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-                    <b>💡 Nota do Consultor:</b> Perfil <b>{status_perfil}</b>. {dados_ia['nota']}
+                <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
+                    <b>💡 Nota do Consultor:</b> Perfil identificado como <b>{status_perfil}</b>. {dados_ia['nota']}
                 </div>
                 {alerta_resistencia}
-                <div class='section-title'>3. PONTOS DE ATENÇÃO</div>
-                <ul>{"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}</ul>
+                <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
+                <div style='margin-top: 20px; font-size: 14px;'>
+                    <ul>
+                        {"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}
+                    </ul>
+                </div>
+                <div class='footer'>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
+                </div>
             </div>
         </body>
         </html>
         """
 
-        # 5. RENDERIZAÇÃO DO BOTÃO
+        # 5. RENDERIZAÇÃO DO BOTÃO DE DOWNLOAD
         st.download_button(
             label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
             data=html_final_estendido,
