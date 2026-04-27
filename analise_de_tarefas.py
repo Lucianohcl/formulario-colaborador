@@ -55,17 +55,42 @@ st.set_page_config(
 )
 
 
+import streamlit as st
 import anthropic
+import os
+import logging
 
-# Inicializa o cliente do Claude usando os segredos do Streamlit
-# Certifique-se de que o nome da chave no seu Secrets seja 'CLAUDE_KEY'
+# 1. INICIALIZAÇÃO DO CLIENTE (O coração do motor)
+# Isso deve vir ANTES de qualquer função que use o Claude
 if "CLAUDE_KEY" in st.secrets:
     client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_KEY"])
 else:
-    # Se estiver rodando local sem secrets, ele tenta pegar do ambiente
-    import os
-    client_claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI"))
+    # Fallback para desenvolvimento local
+    api_key_local = os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI")
+    client_claude = anthropic.Anthropic(api_key=api_key_local)
 
+# 2. CONFIGURAÇÃO DE LOGS
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# 3. SUA FUNÇÃO DE PARECER (Agora ela vai encontrar o 'client_claude')
+@st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
+def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
+    try:
+        # Agora o Python sabe quem é o client_claude!
+        response = client_claude.messages.create(
+            model="claude-3-5-sonnet-20240620",
+            max_tokens=1500,
+            temperature=0.7,
+            messages=[{"role": "user", "content": f"Analise o perfil de {nome}..."}]
+        )
+        return {
+            "status": "sucesso", 
+            "conteudo": response.content[0].text, 
+            "modelo": "Claude 3.5 Sonnet (Motor Pericial Dedicado)"
+        }
+    except Exception as e:
+        # Se der erro de saldo ou chave, ele cai aqui
+        return {"status": "fallback", "conteudo": "Erro técnico...", "modelo": "Nenhum"}
 
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
