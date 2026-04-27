@@ -1812,48 +1812,6 @@ if st.session_state.pagina == "disc":
                 for item in analise_interna:
                     st.markdown(f"🔹 {item}")
 
-import streamlit as st
-import google.generativeai as genai
-import time
-import json
-import os
-
-# CONFIGURAÇÃO DE SEGURANÇA DA API
-if "GEMINI_API_KEY" in st.secrets:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
-
-@st.cache_resource
-def selecionar_motor_pericial():
-    """Varre modelos para evitar erro 404 e garantir versão estável"""
-    try:
-        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        for m in modelos:
-            if 'gemini-1.5-flash' in m: return m.replace('models/', '')
-        return modelos[0].replace('models/', '')
-    except:
-        return 'gemini-1.5-flash'
-
-@st.cache_data(show_spinner="IA Gerando Parecer Técnico...", ttl=600)
-def obter_analise_ia(nome, cargo, perfil, amplitude):
-    """Gera conteúdo via Gemini com Retry para erro de cota (429)"""
-    try:
-        motor = selecionar_motor_pericial()
-        model = genai.GenerativeModel(motor)
-        prompt = f"Perito DISC: Analise {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%. Retorne APENAS JSON: 'parecer' (3 linhas), 'nota' (impacto amplitude), 'pontos' (lista 3 riscos)."
-        
-        for tentativa in range(3):
-            try:
-                response = model.generate_content(prompt)
-                texto = response.text.replace('```json', '').replace('```', '').strip()
-                return json.loads(texto)
-            except Exception as e:
-                if "429" in str(e):
-                    time.sleep((tentativa + 1) * 6)
-                    continue
-                break
-    except: pass
-    return {"parecer": "Análise técnica em processamento.", "nota": "Cota de IA atingida.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento"]}
-
         # ============================================================
         # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
         # ============================================================
@@ -1972,7 +1930,6 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
             key="btn_laudo_final_deploy",
             use_container_width=True
         )             
-
         
 
 # --- VISUALIZAÇÃO ---
