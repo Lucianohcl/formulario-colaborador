@@ -4415,57 +4415,79 @@ if st.session_state.get("pagina") == "analise":
 
 
 # ============================================================
-# 4. ÁREA DE CONTEÚDO (PÁGINA DISC)
+# 🎯 ÁREA DE CONTEÚDO (PÁGINA DISC) - COM BOTÃO DE PROCESSAR
 # ============================================================
 
 if st.session_state.pagina == "disc":
     st.title("🎯 Análise de Perfil Comportamental")
-    
-    # --- O UPLOAD AGORA É AQUI DENTRO DA PÁGINA ---
-    st.markdown("### 📥 Carregar Dados da Equipe")
-    arquivos_internos = st.file_uploader(
-        "Arraste os JSONs aqui para gerar o Panorama", 
-        type=["json"], 
-        accept_multiple_files=True,
-        key="uploader_interno_pagina_disc" # KEY ÚNICA PARA NÃO DAR ERRO
-    )
+    st.markdown(f"### Olá, Luciano! 👋")
+    st.write("Clique no botão abaixo para consolidar todos os perfis da sessão.")
 
-    # Processa os arquivos assim que forem soltos aqui
-    if arquivos_internos:
-        lista_temp = []
-        for f in arquivos_internos:
-            try:
-                lista_temp.append(json.load(f))
-            except:
-                st.error(f"Erro no arquivo {f.name}")
-        st.session_state.formularios = lista_temp
-
-    # --- SÓ MOSTRA O PANORAMA SE TIVER DADOS NA MEMÓRIA ---
-    if not st.session_state.formularios:
-        st.info("👆 Use o campo acima para carregar os JSONs e visualizar o Panorama Coletivo.")
-    else:
-        st.success(f"📊 {len(st.session_state.formularios)} Perfis carregados com sucesso!")
+    # 1. BOTÃO DE PROCESSAMENTO ÚNICO
+    # A 'key' garante que o Streamlit não confunda esse botão com outros
+    if st.button("🚀 PROCESSAR PANORAMA COLETIVO", key="btn_processar_total_luciano"):
         
-        with st.container():
-            st.markdown("---")
-            with st.expander("📊 PANORAMA COLETIVO DA EQUIPE", expanded=True):
-                
-                lista_resultados = []
-                # ... resto da sua lógica de processamento (calcular_disc, etc)
-                for f in st.session_state.formularios:
-                    disc_data = f.get("disc")
-                    if disc_data:
-                        res, _ = calcular_disc(disc_data)
-                        lista_resultados.append(res)
+        # Recupera os dados da "gaveta" de memória
+        dados_equipe = st.session_state.get("formularios", [])
 
-                if lista_resultados:
-                    df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
-                    medias = df_equipe.mean()
+        if not dados_equipe:
+            st.error("❌ Não há dados na memória para processar. Carregue os perfis primeiro!")
+        else:
+            lista_resultados = []
+            
+            # 2. VARREDURA E CÁLCULO
+            for f in dados_equipe:
+                disc_data = f.get("disc")
+                if disc_data:
+                    # Aqui usamos a sua função de cálculo para transformar respostas em %
+                    res_percentual, _ = calcular_disc(disc_data)
+                    lista_resultados.append(res_percentual)
+
+            if lista_resultados:
+                # 3. CONSOLIDAÇÃO DOS DADOS
+                df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
+                medias = df_equipe.mean()
+                dominante = medias.idxmax()
+
+                st.divider()
+                st.success(f"✅ Processamento concluído! {len(lista_resultados)} perfis analisados.")
+
+                # 4. EXIBIÇÃO DO RESULTADO COLETIVO
+                col1, col2 = st.columns([1, 1.5])
+                
+                with col1:
+                    st.markdown("#### 🧠 Perfil Médio do Grupo")
+                    st.info(f"**Predominância: {dominante}**")
                     
-                    # RENDERIZAÇÃO DO GRÁFICO (IGUAL AO ANTERIOR)
-                    fig = px.bar(
-                        medias.reset_index(), x="index", y=0, 
-                        color="index", text_auto='.1f',
-                        color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
+                    # Exibe as médias formatadas
+                    for perfil, valor in medias.items():
+                        st.write(f"**{perfil}:** {valor:.1f}%")
+                
+                with col2:
+                    # Gráfico Plotly com as cores padrão DISC
+                    fig_coletivo = px.bar(
+                        medias.reset_index(), 
+                        x="index", y=0, 
+                        color="index",
+                        text_auto='.1f',
+                        color_discrete_map={
+                            "D":"#FF4136", # Vermelho
+                            "I":"#FF851B", # Laranja
+                            "S":"#2ECC40", # Verde
+                            "C":"#0074D9"  # Azul
+                        }
                     )
-                    st.plotly_chart(fig, use_container_width=True)
+                    fig_coletivo.update_layout(
+                        height=350, 
+                        showlegend=False,
+                        xaxis_title="Fatores DISC",
+                        yaxis_title="Amplitude Média (%)",
+                        margin=dict(l=20, r=20, t=20, b=20)
+                    )
+                    st.plotly_chart(fig_coletivo, use_container_width=True)
+            else:
+                st.warning("⚠️ Os dados carregados não contêm informações de Perfil DISC válidas.")
+
+# --- Rodapé ---
+st.sidebar.markdown("---")
+st.sidebar.caption(f"Operador: Luciano | NetExame 2026")
