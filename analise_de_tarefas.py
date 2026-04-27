@@ -67,62 +67,142 @@ repo = g.get_repo("lucianohcl/formulario-colaborador")
 
 import streamlit as st
 import google.generativeai as genai
-import time
 import json
-import os
 
-# 1. MOTOR DINÂMICO
-@st.cache_resource
+# =========================
+# DEBUG CENTRAL (GARANTIDO)
+# =========================
+def debug(msg):
+    st.write(msg)              # tela principal (NUNCA some)
+    st.sidebar.write(msg)      # sidebar (extra)
+    print(msg)                 # terminal/log
+
+# =========================
+# MOTOR DINÂMICO (SEM CACHE)
+# =========================
 def selecionar_motor_pericial():
+    debug("🔍 Listando modelos disponíveis...")
+
     try:
-        modelos = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
-        motor = next((m.replace('models/', '') for m in modelos if 'gemini-1.5-flash' in m), modelos[0].replace('models/', ''))
-        return motor
+        modelos = list(genai.list_models())
+        
+        for m in modelos:
+            debug(f"Modelo encontrado: {m.name} | Métodos: {m.supported_generation_methods}")
+
+        validos = [
+            m.name.replace("models/", "")
+            for m in modelos
+            if "generateContent" in m.supported_generation_methods
+        ]
+
+        if not validos:
+            debug("⚠️ Nenhum modelo compatível encontrado")
+            return "gemini-1.0-pro"
+
+        # prioridade segura
+        for preferido in ["gemini-1.5-pro", "gemini-1.0-pro"]:
+            if preferido in validos:
+                debug(f"✅ Usando modelo preferido: {preferido}")
+                return preferido
+
+        debug(f"⚠️ Usando fallback: {validos[0]}")
+        return validos[0]
+
     except Exception as e:
-        return 'gemini-1.5-flash'
+        debug(f"💥 ERRO AO LISTAR MODELOS: {str(e)}")
+        return "gemini-1.0-pro"
 
-# 2. FUNÇÃO DE IA COM DEBUG TOTAL (SEM CACHE)
+
+# =========================
+# FUNÇÃO PRINCIPAL COM DEBUG HARD
+# =========================
 def obter_analise_ia(nome, cargo, perfil, amplitude):
-    # Força a exibição de que a função iniciou na Sidebar
-    st.sidebar.write(f"⏳ Tentando IA para: {nome}")
-    
-    try:
-        # Validação de Secrets
-        if "GEMINI_API_KEY" not in st.secrets:
-            st.error("🚨 CRÍTICO: GEMINI_API_KEY não encontrada nos Secrets!")
-            return {"parecer": "Erro de Chave", "nota": "Chave Ausente", "pontos": ["Configurar Secrets"]}
 
-        # Configuração da API
+    debug("🚀 FUNÇÃO INICIADA")
+
+    try:
+        # -------- CHAVE --------
+        debug("🔑 Verificando API KEY...")
+
+        if "GEMINI_API_KEY" not in st.secrets:
+            debug("❌ API KEY NÃO ENCONTRADA")
+            st.error("SEM GEMINI_API_KEY")
+            return
+
         chave = st.secrets["GEMINI_API_KEY"].strip()
         genai.configure(api_key=chave)
-        
-        motor = selecionar_motor_pericial()
-        st.sidebar.info(f"🤖 Motor Ativo: {motor}")
 
-        model = genai.GenerativeModel(
-            model_name=motor,
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        prompt = f"Analise {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%. Retorne JSON: 'parecer' (3 linhas), 'nota' (impacto amplitude), 'pontos' (lista 3 itens)."
-        
+        debug("✅ API KEY OK")
+
+        # -------- MOTOR --------
+        debug("⚙️ Selecionando motor...")
+        motor = selecionar_motor_pericial()
+        debug(f"🤖 Motor escolhido: {motor}")
+
+        # -------- MODELO --------
+        debug("🧠 Criando modelo...")
+        model = genai.GenerativeModel(model_name=motor)
+
+        # -------- PROMPT --------
+        prompt = f"""
+        Analise:
+        Nome: {nome}
+        Cargo: {cargo}
+        Perfil: {perfil}
+        Amplitude: {amplitude}%
+
+        Retorne JSON válido com:
+        - parecer
+        - nota
+        - pontos (lista)
+        """
+
+        debug("📡 Enviando requisição...")
+
         response = model.generate_content(prompt)
-        
-        # Se a resposta existir, tenta o parse
-        if response and response.text:
+
+        debug("📬 Resposta recebida")
+
+        if not response:
+            debug("❌ Resposta vazia")
+            raise Exception("Resposta None")
+
+        debug(f"📄 RAW RESPONSE: {response}")
+
+        if not hasattr(response, "text") or not response.text:
+            debug("❌ Sem texto na resposta")
+            raise Exception("Resposta sem texto")
+
+        debug(f"🧾 TEXTO: {response.text}")
+
+        # -------- PARSE JSON --------
+        try:
             dados = json.loads(response.text)
-            st.sidebar.success(f"✅ IA respondeu {nome}")
+            debug("✅ JSON PARSE OK")
             return dados
-            
+        except Exception as e:
+            debug(f"⚠️ ERRO AO PARSEAR JSON: {str(e)}")
+            return {
+                "parecer": response.text,
+                "nota": "Resposta não estruturada",
+                "pontos": ["Falha no parse"]
+            }
+
     except Exception as e:
-        # Esse erro VAI aparecer no topo da página
+        debug(f"💥 ERRO GERAL: {str(e)}")
         st.error(f"💥 FALHA NO GEMINI: {str(e)}")
-        st.sidebar.error(f"Erro técnico: {str(e)}")
-        
+
+    # -------- FALLBACK --------
+    debug("🛑 USANDO MODO OFFLINE")
+
     return {
-        "parecer": "Análise técnica em modo de segurança (IA Offline).",
-        "nota": f"Amplitude de {amplitude}% exige cautela técnica.",
-        "pontos": ["Risco de sobrecarga", "Necessidade de revisão manual", "Ajuste de escopo"]
+        "parecer": "Modo de segurança ativado.",
+        "nota": f"Amplitude de {amplitude}% requer revisão.",
+        "pontos": [
+            "Falha na IA",
+            "Revisão manual necessária",
+            "Verificar logs"
+        ]
     }
 
 # No topo do script, após os imports
