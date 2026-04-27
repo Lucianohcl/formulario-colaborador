@@ -802,7 +802,7 @@ logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %
 @st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
     """
-    Motor exclusivo Claude-3 para Laudos Periciais.
+    Motor exclusivo Claude-3 para Laudos Periciais com Debug de Interface.
     """
     try:
         # 1. Configuração do Prompt Pericial
@@ -822,9 +822,9 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
         """
 
         # 2. Chamada Direta ao Claude
-        # Certifique-se de que o client_claude está inicializado com sua API KEY
+        # O erro pode estar aqui: client_claude precisa estar definido globalmente
         response = client_claude.messages.create(
-            model="claude-3-5-sonnet-20240620", # Ou claude-3-sonnet-20240229
+            model="claude-3-5-sonnet-20240620", 
             max_tokens=1500,
             temperature=0.7,
             messages=[{"role": "user", "content": prompt_pericial}]
@@ -841,16 +841,23 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
         }
 
     except Exception as e:
-        # Log de erro real para o desenvolvedor ver no terminal
-        print(f"ERRO CRÍTICO NO CLAUDE: {str(e)}")
+        # --- BLOCO DE DEBUG (MOSTRA NA TELA DO APP) ---
+        erro_msg = str(e)
+        tipo_erro = type(e).__name__
+        
+        # Isso vai aparecer no seu Streamlit em um box vermelho
+        st.error(f"❌ ERRO TÉCNICO NO CLAUDE ({tipo_erro})")
+        st.code(f"Detalhes: {erro_msg}")
+        
+        # Log para o console/terminal
+        print(f"ERRO CRÍTICO NO CLAUDE: {tipo_erro} - {erro_msg}")
         
         # Fallback de Segurança (Score 20%)
         return {
             "status": "fallback", 
-            "conteudo": f"Análise preliminar: O perfil de {nome} (Dominância {dominante}) apresenta amplitude de {amplitude}%. Recomenda-se revisão técnica manual devido a instabilidade no processamento remoto.",
-            "modelo": "Nenhum (Modo de Segurança)"
+            "conteudo": f"Análise preliminar: O perfil de {nome} (Dominância {dominante}) apresenta amplitude de {amplitude}%. Erro técnico: {tipo_erro}.",
+            "modelo": "Nenhum (Erro de Processamento)"
         }
-
 
 # ============================================================
 # CALCULAR DISC PERCENTUAL E DOMINANTE
