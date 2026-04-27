@@ -90,35 +90,52 @@ def selecionar_motor_pericial():
 @st.cache_data(show_spinner="IA Gerando Parecer Técnico...", ttl=600)
 def obter_analise_ia(nome, cargo, perfil, amplitude):
     try:
+        # 1. TESTE DE CHAVE
+        if "GEMINI_API_KEY" not in st.secrets:
+            st.error("🚨 ERRO: GEMINI_API_KEY não encontrada nos Secrets!")
+            return None
+
         motor = selecionar_motor_pericial()
-        model = genai.GenerativeModel(motor)
+        
+        # 2. CONFIGURAÇÃO COM MIME-TYPE
+        model = genai.GenerativeModel(
+            model_name=motor,
+            generation_config={"response_mime_type": "application/json"}
+        )
+        
         prompt = f"""
-        Aja como um Perito DISC Sênior. Analise o colaborador {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%.
-        Retorne APENAS um JSON (sem markdown) com as chaves:
-        "parecer": "Texto técnico de 3 linhas sobre o comportamento.",
-        "nota": "Explicação técnica sobre o impacto da amplitude de {amplitude}%.",
-        "pontos": ["risco 1", "risco 2", "risco 3"]
+        Aja como um Perito DISC. Analise o colaborador {nome}, cargo {cargo}, perfil {perfil}, amplitude {amplitude}%.
+        Retorne este formato JSON exato:
+        {{
+            "parecer": "texto curto",
+            "nota": "impacto amplitude",
+            "pontos": ["risco1", "risco2", "risco3"]
+        }}
         """
         
-        for tentativa in range(3):
-            try:
-                response = model.generate_content(prompt)
-                texto_limpo = response.text.replace('```json', '').replace('```', '').strip()
-                return json.loads(texto_limpo)
-            except Exception as e:
-                if "429" in str(e):
-                    time.sleep((tentativa + 1) * 6) # Pausa progressiva
-                    continue
-                break
-    except Exception: 
-        pass
+        # 3. TENTATIVA COM PRINT DE DEBUG
+        response = model.generate_content(prompt)
         
-    # FALLBACK (Caso a API falhe totalmente)
-    return {
-        "parecer": "Análise técnica em processamento devido à alta demanda.",
-        "nota": f"Perfil com amplitude de {amplitude}%, focado em especialidade técnica.",
-        "pontos": ["Intervenções sociais não planejadas.", "Gestão multifocal sem POP.", "Alta flexibilidade imediata."]
-    }
+        if not response or not response.text:
+            st.warning("⚠️ IA retornou resposta vazia.")
+            return None
+
+        # Tenta parsear o JSON
+        try:
+            return json.loads(response.text)
+        except Exception as e:
+            st.error(f"❌ ERRO DE PARSE JSON: {str(e)}")
+            st.code(response.text) # Mostra o que a IA mandou de errado
+            return None
+
+    except Exception as e:
+        # O DEBUG REAL APARECE AQUI
+        st.error(f"💥 ERRO CRÍTICO NA API: {str(e)}")
+        if "429" in str(e):
+            st.info("Motivo: Cota gratuita excedida. Aguarde 60 segundos.")
+        elif "API_KEY_INVALID" in str(e):
+            st.info("Motivo: Sua chave de API está incorreta ou expirada.")
+        return None
 
 
 # No topo do script, após os imports
