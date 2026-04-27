@@ -60,35 +60,43 @@ import anthropic
 import os
 import logging
 
-# 1. INICIALIZAÇÃO (Exatamente como você fez)
-if "CLAUDE_KEY" in st.secrets:
-    client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_KEY"])
+# 1. INICIALIZAÇÃO (Sincronizada com o nome do seu Secrets)
+if "CLAUDE_API_KEY" in st.secrets:
+    # O .strip() é vital: ele remove espaços invisíveis que causam o Erro 401
+    chave_limpa = st.secrets["CLAUDE_API_KEY"].strip()
+    client_claude = anthropic.Anthropic(api_key=chave_limpa)
 else:
-    client_claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI"))
+    # Fallback para rodar no seu computador (Local)
+    token_local = os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI").strip()
+    client_claude = anthropic.Anthropic(api_key=token_local)
 
-# 3. FUNÇÃO ALTERADA
-# O '_' antes do client_claude avisa ao Streamlit: "não tente cachear este objeto"
+# 2. FUNÇÃO (Com o '_' para não travar o cache do Streamlit)
 @st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc, _client_claude):
     try:
-        # Agora usamos a variável que entrou pelo argumento
         response = _client_claude.messages.create(
             model="claude-3-5-sonnet-20240620",
             max_tokens=1500,
             temperature=0.7,
-            messages=[{"role": "user", "content": f"Analise o perfil de {nome}..."}]
+            messages=[{"role": "user", "content": f"Aja como Perito DISC. Analise {nome}, Dominância {dominante}, Amplitude {amplitude}% no contexto {info_desc}."}]
         )
         return {
             "status": "sucesso", 
             "conteudo": response.content[0].text, 
-            "modelo": "Claude 3.5 Sonnet (Motor Pericial Dedicado)"
+            "modelo": "Claude 3.5 Sonnet (Motor Pericial)"
         }
     except Exception as e:
-        return {"status": "fallback", "conteudo": f"Erro: {str(e)}", "modelo": "Nenhum"}
+        return {"status": "fallback", "conteudo": f"Erro de Autenticação/API: {str(e)}", "modelo": "Nenhum"}
 
-# 4. NA HORA DE CHAMAR A FUNÇÃO (Onde você gera o laudo)
-# Você deve passar o client_claude como o último argumento:
-# resultado = gerar_parecer_especialista(nome, dominante, amplitude, info_desc, client_claude)
+# 3. A CHAMADA (Onde você gera o Laudo na tela)
+# IMPORTANTE: Passe o 'client_claude' como o QUINTO argumento
+resultado = gerar_parecer_especialista(nome, dominante, amplitude, info_desc, client_claude)
+
+if resultado["status"] == "sucesso":
+    st.markdown(f"### 📄 Parecer do Especialista")
+    st.write(resultado["conteudo"])
+else:
+    st.error(resultado["conteudo"])
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
