@@ -56,27 +56,26 @@ st.set_page_config(
 
 
 import streamlit as st
-import anthropic
+import google.generativeai as genai
 import os
-import logging
 
 # =========================================================
-# 1. INICIALIZAÇÃO DO MOTOR (Escopo Global)
+# 1. INICIALIZAÇÃO DO GEMINI
+# No seu Secrets do Streamlit, use o nome: GEMINI_API_KEY
 # =========================================================
-if "CLAUDE_API_KEY" in st.secrets:
-    # O .strip() elimina o Erro 401 (chave inválida por espaço vazio)
-    token = st.secrets["CLAUDE_API_KEY"].strip()
-    client_claude = anthropic.Anthropic(api_key=token)
+if "GEMINI_API_KEY" in st.secrets:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
 else:
-    # Fallback para desenvolvimento local
-    token_local = os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI").strip()
-    client_claude = anthropic.Anthropic(api_key=token_local)
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY", "SUA_CHAVE_AQUI"))
+
+# Instancia o modelo (Gemini 1.5 Flash é rápido e preciso para laudos)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 # =========================================================
-# 2. FUNÇÃO PERICIAL (Com cache e injeção de dependência)
+# 2. FUNÇÃO DE ANÁLISE (Adaptada para Gemini)
 # =========================================================
-@st.cache_data(show_spinner="Claude 3.5 Sonnet analisando perfil...", ttl=300)
-def gerar_parecer_especialista(nome, dominante, amplitude, info_desc, _client_claude):
+@st.cache_data(show_spinner="Gemini analisando perfil comportamental...", ttl=300)
+def gerar_parecer_gemini(nome, dominante, amplitude, info_desc):
     try:
         prompt = f"""
         Aja como um Perito Sênior em análise comportamental DISC.
@@ -86,58 +85,39 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc, _client_cl
         Contexto/Cargo: {info_desc}
         
         Forneça um parecer técnico detalhado sobre os riscos e talentos deste perfil.
+        Seja direto, profissional e estratégico.
         """
         
-        response = _client_claude.messages.create(
-            model="claude-3-5-sonnet-20240620",
-            max_tokens=1500,
-            temperature=0.7,
-            messages=[{"role": "user", "content": prompt}]
-        )
+        response = model.generate_content(prompt)
+        
         return {
             "status": "sucesso", 
-            "conteudo": response.content[0].text, 
-            "modelo": "Claude 3.5 Sonnet"
+            "conteudo": response.text, 
+            "modelo": "Gemini 1.5 Flash (Motor Google)"
         }
     except Exception as e:
-        return {"status": "fallback", "conteudo": f"Erro na API: {str(e)}", "modelo": "Nenhum"}
+        return {"status": "erro", "conteudo": f"Erro no Gemini: {str(e)}", "modelo": "Nenhum"}
 
 # =========================================================
-# 3. INTERFACE E CHAMADA (Onde o Laudo aparece)
+# 3. INTERFACE E EXECUÇÃO
 # =========================================================
 
-# --- PROTEÇÃO CONTRA NAMEERROR ---
-# Tentamos capturar as variáveis do seu formulário/session_state. 
-# Se elas não existirem ainda, definimos como None para o app não quebrar.
-nome_final = st.session_state.get('nome_usuario') or st.session_state.get('nome') or "Colaborador"
-dom_final = st.session_state.get('perfil_dominante') or "Não identificado"
-amp_final = st.session_state.get('amplitude_calculada') or 0
-desc_final = "Análise Pericial de Competências Técnicas e Comportamentais"
+# Captura de dados (Sincronize com os nomes das suas variáveis)
+nome_f = st.session_state.get('nome', 'Colaborador')
+dom_f = st.session_state.get('dominante', 'D')
+amp_f = st.session_state.get('amplitude', 50)
+desc_f = "Análise Estratégica de Tarefas e Comportamento"
 
 st.divider()
-st.subheader("🤖 Inteligência Pericial")
-
-if st.button("🚀 Gerar Parecer Estratégico (100% Confiança)"):
-    # Só dispara se o cliente foi criado com sucesso
-    if client_claude:
-        res = gerar_parecer_especialista(
-            nome_final, 
-            dom_final, 
-            amp_final, 
-            desc_final, 
-            client_claude  # O 5º argumento obrigatório
-        )
-        
-        if res["status"] == "sucesso":
-            st.success(f"Parecer gerado com sucesso via {res['modelo']}")
-            st.markdown(res["conteudo"])
-            
-            # Opção de exportação
-            st.download_button("Baixar Parecer (TXT)", res["conteudo"], file_name="laudo_pericial.txt")
-        else:
-            st.error(res["conteudo"])
+if st.button("🚀 Gerar Parecer (Motor Gemini)"):
+    res = gerar_parecer_gemini(nome_f, dom_f, amp_f, desc_f)
+    
+    if res["status"] == "sucesso":
+        st.success(f"Análise concluída via {res['modelo']}")
+        st.markdown(res["conteudo"])
+        st.download_button("Baixar Laudo", res["conteudo"], file_name="laudo_gemini.txt")
     else:
-        st.error("O motor Claude não foi inicializado. Verifique a CLAUDE_API_KEY nos Secrets.")
+        st.error(res["conteudo"])
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
