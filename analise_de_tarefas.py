@@ -55,6 +55,19 @@ st.set_page_config(
 )
 
 
+import anthropic
+
+# Inicializa o cliente do Claude usando os segredos do Streamlit
+# Certifique-se de que o nome da chave no seu Secrets seja 'CLAUDE_KEY'
+if "CLAUDE_KEY" in st.secrets:
+    client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_KEY"])
+else:
+    # Se estiver rodando local sem secrets, ele tenta pegar do ambiente
+    import os
+    client_claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI"))
+
+
+
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
 TOKEN = st.secrets["DB_TOKEN"]
