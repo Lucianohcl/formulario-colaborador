@@ -34,7 +34,7 @@ import plotly.express as px
 from github import Github
 import google.generativeai as genai  # <--- IMPORTANTE
 import anthropic                    # <--- IMPORTANTE
-
+import datetime
 
 # ============================================================
 
