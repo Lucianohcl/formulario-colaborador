@@ -793,6 +793,15 @@ def gerar_pdf(form):
     buffer.seek(0)
     return buffer
 
+
+# --- CONFIGURAÇÃO DE ACESSO SEGURO ÀS IAs (via Secrets) ---
+try:
+    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
+except Exception as e:
+    st.error("Erro: Verifique se as chaves GEMINI_API_KEY e CLAUDE_API_KEY estão no Secrets do Streamlit.")
+
+
 @st.cache_data(show_spinner="IA Analisando Perfil...") # <--- Adicione isso
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
     """
