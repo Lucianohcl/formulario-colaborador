@@ -1855,7 +1855,7 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
     return {"parecer": "Análise técnica em processamento.", "nota": "Cota de IA atingida.", "pontos": ["Risco de Burnout", "Sobrecarga Cognitiva", "Desalinhamento"]}
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO INTEGRADA GEMINI)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO REVISADA - PONDERAÇÃO GERCINO)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1867,33 +1867,37 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
         except Exception:
             grafico_html_div = "<p style='text-align:center; color:gray;'>Gráfico Indisponível</p>"
 
-        # 1. BUSCA DE DADOS NA IA E TRATAMENTO DE VARIÁVEIS
-        dados_ia = obter_analise_ia(primeiro_nome, cargo_bruto, dominante, amplitude)
-        
-        # Fallback para tabelas se o JSON de entrada estiver vazio
-        if 'tabelas' not in locals(): tabelas = {}
+        # 1. TRATAMENTO DE VARIÁVEIS E BUSCA NO JSON
         lista_sugestoes = [s.get("Sugestão", "") for s in tabelas.get("sugestoes", []) if s.get("Sugestão")]
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
         # 2. NOVA PONDERAÇÃO TÉCNICA (NEXO CAUSAL REVISADO)
+        # Amplitude alta (>50%) = Perfil Especialista/Pico (Menos Equilíbrio, Mais Foco)
         if amplitude > 50:
             status_perfil = "Especialista de Alto Impacto"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. GERCINO possui um 'trilho' de atuação claro, gerando fadiga severa em tarefas multifuncionais."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil com picos comportamentais definidos. Ao contrário de perfis equilibrados, GERCINO possui um 'trilho' de atuação muito claro, o que gera <b>fadiga severa</b> quando exposto a tarefas multifuncionais ou que fujam de sua especialidade técnica."
         else:
             status_perfil = "Generalista Versátil"
-            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, com maior flexibilidade funcional nativa."
+            diagnostico_fadiga = f"A amplitude de {amplitude:.1f}% indica um perfil equilibrado, onde a flexibilidade nativa permite a transição entre tarefas técnicas e sociais com menor desgaste funcional."
 
-        # 3. CONSTRUÇÃO DOS ALERTAS DE RESISTÊNCIA
+        # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO
         alerta_resistencia = ""
         if not lista_sugestoes and not lista_dificuldades:
             alerta_resistencia = f"""
             <div style='background: #fff5f5; border-left: 6px solid #e74c3c; padding: 20px; border-radius: 8px; margin-top: 20px;'>
                 <b style='color: #c0392b;'>🚨 ALERTA DE RESISTÊNCIA À MUDANÇA:</b><br>
-                A ausência de reportes sugere postura de autopreservação, mascarando gargalos técnicos que levam ao burnout.
+                A ausência de reportes de dificuldades sugere uma postura de <b>autopreservação</b>. Em perfis especialistas, isso pode mascarar gargalos que levam ao burnout técnico.
             </div>
             """
 
-        # 4. MONTAGEM DA STRING HTML FINAL (MASTER)
+        nota_consultor = f"""
+        <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
+            <b>💡 Nota do Consultor:</b> Identificamos que o perfil de {primeiro_nome} é <b>{status_perfil}</b>. 
+            {diagnostico_fadiga}
+        </div>
+        """
+
+        # 4. MONTAGEM DA STRING HTML
         html_final_estendido = f"""
         <!DOCTYPE html>
         <html lang='pt-br'>
@@ -1919,31 +1923,38 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
                     <h1>LAUDO PERICIAL COMPORTAMENTAL 360°</h1>
                     <p>AUDITORIA TÉCNICA E ANÁLISE DE NEXO CAUSAL</p>
                 </div>
+
                 <div class='grid-info'>
                     <div class='stat-card'><label>Colaborador</label><b>{primeiro_nome}</b></div>
                     <div class='stat-card'><label>Cargo Atual</label><b>{cargo_bruto.upper()}</b></div>
                     <div class='stat-card'><label>Perfil Resultante</label><b>{dominante}</b></div>
                     <div class='stat-card'><label>Índice Fit</label><b style='color:#27ae60'>{porcentagem_comp}</b></div>
                 </div>
+
                 <div class='section-title'>1. ANÁLISE QUANTITATIVA (GRÁFICO DISC)</div>
                 <div class='chart-box'>{grafico_html_div}</div>
+
                 <div class='section-title'>2. DIAGNÓSTICO DE COERÊNCIA E ADAPTAÇÃO</div>
                 <div class='parecer-box'>
-                    <h4 style='margin:0;'>Parecer do Especialista:</h4>
-                    {dados_ia['parecer']}
+                    <h4 style='margin-top:0;'>Parecer do Especialista:</h4>
+                    {info.get('desc', 'Análise técnica em processamento.')}
                     <br><br>
-                    <b>Veredito:</b> {primeiro_nome} possui alinhamento técnico para a função de {cargo_bruto}.
+                    <b>Veredito:</b> {primeiro_nome} possui as competências críticas para a cadeira atual, exigindo apenas monitoramento de carga cognitiva.
                 </div>
-                <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-                    <b>💡 Nota do Consultor:</b> Perfil identificado como <b>{status_perfil}</b>. {dados_ia['nota']}
-                </div>
+
+                {nota_consultor}
                 {alerta_resistencia}
+
                 <div class='section-title'>3. PONTOS DE ATENÇÃO (NEXO CAUSAL)</div>
                 <div style='margin-top: 20px; font-size: 14px;'>
+                    <p>⚠️ <b>Tarefas de Alto Risco de Esgotamento para este Perfil:</b></p>
                     <ul>
-                        {"".join([f"<li>{p}</li>" for p in dados_ia['pontos']])}
+                        <li>Intervenções sociais não planejadas.</li>
+                        <li>Gestão multifocal de processos sem POP definido.</li>
+                        <li>Demandas que exijam alta flexibilidade comportamental imediata.</li>
                     </ul>
                 </div>
+
                 <div class='footer'>
                     <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
                 </div>
@@ -1952,7 +1963,7 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
         </html>
         """
 
-        # 5. RENDERIZAÇÃO DO BOTÃO DE DOWNLOAD
+        # 5. RENDERIZAÇÃO DO BOTÃO
         st.download_button(
             label="📥 BAIXAR LAUDO PERICIAL COMPLETO",
             data=html_final_estendido,
@@ -1960,7 +1971,8 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )
+        )             
+
         
 
 # --- VISUALIZAÇÃO ---
