@@ -1960,7 +1960,7 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
             mime="text/html",
             key="btn_laudo_final_deploy",
             use_container_width=True
-        )                     
+        )
         
 
 # --- VISUALIZAÇÃO ---
