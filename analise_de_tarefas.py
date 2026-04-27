@@ -1973,78 +1973,73 @@ if st.session_state.pagina == "disc":
                 st.json(dados_para_resgate)
 
         # ============================================================
-        # 🧠 SISTEMA LHAMA: DISPARO DIRETO
+        # 🧠 SISTEMA LHAMA: CARREGAMENTO VIA NAVEGADOR
         # ============================================================
         import json
         import plotly.express as px
 
-        # 1. SIDEBAR: CARREGAMENTO
+        # 1. SIDEBAR: OBRIGAR O UPLOAD MANUAL
         st.sidebar.markdown("---")
         st.sidebar.subheader("🧬 Resgate de Inteligência")
-        arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama")
+        
+        # O key="uploader_lhama" garante que o Streamlit não perca a referência
+        arquivo_resgate = st.sidebar.file_uploader(
+            "Selecione o JSON do seu PC", 
+            type="json", 
+            key="uploader_lhama"
+        )
 
-        # 2. PERSISTÊNCIA DE DADOS (SESSION STATE)
+        # 2. PROCESSAMENTO (SÓ RODA SE O ARQUIVO SUBIR)
         if arquivo_resgate is not None:
-            if 'dados_lhama' not in st.session_state:
-                try:
-                    conteudo = json.load(arquivo_resgate)
-                    st.session_state['dados_lhama'] = {
-                        "colaborador": conteudo["identificacao"]["nome"],
-                        "cargo": conteudo["identificacao"]["cargo"],
-                        "tabelas": conteudo["tabelas_operacionais"],
-                        "metricas": conteudo["metricas_disc"],
-                        "respostas": conteudo.get("respostas_originais", {})
-                    }
-                    st.sidebar.success("✅ Arquivo Pronto!")
-                except Exception as e:
-                    st.sidebar.error(f"Erro no JSON: {e}")
-
-        # 3. VERIFICA SE HÁ ALGO PARA ANALISAR (JSON OU SELEÇÃO MANUAL)
-        analise_pronta = st.session_state.get('dados_lhama') or formulario_sel
-
-        if analise_pronta:
-            # BOTÃO DE DISPARO
-            if st.button("🔎 GERAR ANÁLISE COMPLETA", use_container_width=True, type="primary"):
-                st.session_state['trigger_analise'] = True
-
-            # SÓ ENTRA AQUI SE O BOTÃO FOI CLICADO
-            if st.session_state.get('trigger_analise'):
-                f = analise_pronta
+            try:
+                # Lendo o arquivo que o navegador acabou de enviar para o servidor
+                dados_brutos = arquivo_resgate.read().decode("utf-8")
+                conteudo = json.loads(dados_brutos)
                 
-                # Resgate das Métricas
-                if "metricas" in f:
-                    dom, amp = f["metricas"]["perfil_dominante"], f["metricas"]["amplitude_nominal"]
-                    # Tenta calcular percentuais reais para o gráfico
-                    if f.get("respostas"):
-                        percs, _ = calcular_disc(f["respostas"])
+                # Armazenando na Sessão para o botão não "esquecer"
+                st.session_state['dados_lhama'] = {
+                    "colaborador": conteudo["identificacao"]["nome"],
+                    "cargo": conteudo["identificacao"]["cargo"],
+                    "tabelas": conteudo["tabelas_operacionais"],
+                    "metricas": conteudo["metricas_disc"],
+                    "respostas": conteudo.get("respostas_originais", {})
+                }
+                st.sidebar.success(f"✅ {st.session_state['dados_lhama']['colaborador']} carregado!")
+            except Exception as e:
+                st.sidebar.error(f"Erro ao processar arquivo local: {e}")
+
+        # 3. GERAÇÃO DA ANÁLISE
+        # Prioriza o arquivo que acabou de ser subido localmente
+        analise_alvo = st.session_state.get('dados_lhama') or formulario_sel
+
+        if analise_alvo:
+            if st.button("🔎 GERAR ANÁLISE COMPLETA", type="primary", use_container_width=True):
+                # Forçamos a exibição
+                st.session_state['show_report'] = True
+            
+            if st.session_state.get('show_report'):
+                res = analise_alvo
+                
+                # Pega as métricas do JSON
+                if "metricas" in res:
+                    dom = res["metricas"]["perfil_dominante"]
+                    amp = res["metricas"]["amplitude_nominal"]
+                    # Calcula percentuais para o gráfico
+                    if res.get("respostas"):
+                        percs, _ = calcular_disc(res["respostas"])
                     else:
                         percs = {"D": 25, "I": 25, "S": 25, "C": 25}
-                else:
-                    # Cálculo manual (GitHub)
-                    resp_raw = f.get("disc", {})
-                    mapa = {"A": "D", "B": "I", "C": "S", "D": "C"}
-                    resp_disc = {k: mapa[v] for k, v in resp_raw.items() if v in mapa}
-                    percs, _ = calcular_disc(resp_disc)
-                    ranking = sorted(percs.items(), key=lambda x: x[1], reverse=True)
-                    dom = f"{ranking[0][0]}/{ranking[1][0]}" if (ranking[0][1] - ranking[1][1]) < 8 else ranking[0][0]
-                    amp = max(percs.values()) - min(percs.values())
-
-                # EXIBIÇÃO DO RESULTADO
-                st.markdown(f"# 📊 Análise de {f['colaborador'].upper()}")
                 
+                # Renderiza o Painel
+                st.markdown(f"# 📊 Laudo: {res['colaborador'].upper()}")
                 c1, c2 = st.columns([2,1])
                 with c1:
                     fig = px.bar(x=list(percs.keys()), y=list(percs.values()), color=list(percs.keys()),
                                  color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
-                    fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False)
                     st.plotly_chart(fig, use_container_width=True)
                 with c2:
                     st.metric("Perfil", dom)
-                    st.metric("Amplitude", f"{amp:.1f}%")
-
-                # BOTÃO DE DOWNLOAD DO HTML
-                # (Aqui você pode chamar sua função gerar_html_laudo definida antes)
-                st.success("Análise gerada com sucesso! Utilize o botão abaixo para exportar.")             
+                    st.metric("Amplitude", f"{amp:.1f}%")             
         
 
 # --- VISUALIZAÇÃO ---
