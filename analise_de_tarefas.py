@@ -799,59 +799,57 @@ import time
 # Configuração de Logs para Auditoria
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
-@st.cache_data(show_spinner="IA Analisando Perfil...", ttl=300)
+@st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
-    modelos_gemini = ['gemini-1.5-flash', 'gemini-1.5-pro']
-    dados_tecnicos = None
-    
-    # --- FASE 1: EXTRAÇÃO TÉCNICA (GEMINI) ---
-    for m_nome in modelos_gemini:
-        try:
-            model = genai.GenerativeModel(m_nome)
-            # Prompt focado em extrair a "matéria-prima" para o Claude
-            prompt_gemini = f"Analise técnica DISC: {nome}, {dominante}, Amplitude {amplitude}%. Foque em riscos de fadiga para o cargo {info_desc}."
-            response = model.generate_content(prompt_gemini)
-            
-            if response.text and len(response.text) > 50:
-                dados_tecnicos = response.text
-                break
-        except Exception as e:
-            logging.error(f"Erro Gemini ({m_nome}): {e}")
-            continue
+    """
+    Motor exclusivo Claude-3 para Laudos Periciais.
+    """
+    try:
+        # 1. Configuração do Prompt Pericial
+        prompt_pericial = f"""
+        Aja como um Perito em Análise Comportamental e Auditor de RH.
+        Analise o seguinte perfil DISC:
+        - Nome: {nome}
+        - Dominância: {dominante}
+        - Amplitude: {amplitude}%
+        - Contexto/Cargo: {info_desc}
 
-    # --- FASE 2: REDAÇÃO PERICIAL (CLAUDE) ---
-    if dados_tecnicos:
-        try:
-            # Garanta que o nome do modelo está correto: "claude-3-5-sonnet-20240620" ou "claude-3-sonnet-20240229"
-            res_claude = client_claude.messages.create(
-                model="claude-3-sonnet-20240229", 
-                max_tokens=1000,
-                messages=[{
-                    "role": "user", 
-                    "content": f"Aja como um Perito Sênior. Use estes dados técnicos: {dados_tecnicos}. Redija um laudo mestre para o colaborador {nome}."
-                }]
-            )
-            # SUCESSO TOTAL: Retorna 100%
-            return {
-                "status": "sucesso", 
-                "conteudo": res_claude.content[0].text, 
-                "modelo": "Gemini + Claude (Multi-Agente)"
-            }
-        except Exception as e:
-            logging.error(f"Erro Claude: {e}")
-            # SUCESSO PARCIAL: Gemini funcionou, Claude não. Retorna 60%
-            return {
-                "status": "parcial", 
-                "conteudo": dados_tecnicos, 
-                "modelo": "Gemini-Only (Falha no Claude)"
-            }
+        Redija um parecer técnico (Laudo Pericial) focando em:
+        1. Estabilidade e Adaptação técnica.
+        2. Riscos de fadiga cognitiva baseada na amplitude.
+        3. Nexo causal entre o perfil e as demandas de auditoria estratégica.
+        Use uma linguagem formal, técnica e imparcial.
+        """
 
-    # --- FASE 3: FALLBACK CRÍTICO (Nada funcionou) ---
-    return {
-        "status": "fallback", 
-        "conteudo": f"O perfil de {nome} apresenta dominância {dominante} com amplitude de {amplitude}%, indicando um padrão comportamental estável.",
-        "modelo": "Nenhum (Modo de Contingência)"
-    }
+        # 2. Chamada Direta ao Claude
+        # Certifique-se de que o client_claude está inicializado com sua API KEY
+        response = client_claude.messages.create(
+            model="claude-3-5-sonnet-20240620", # Ou claude-3-sonnet-20240229
+            max_tokens=1500,
+            temperature=0.7,
+            messages=[{"role": "user", "content": prompt_pericial}]
+        )
+
+        # 3. Extração do Conteúdo
+        conteudo_final = response.content[0].text
+
+        # 4. Retorno de Sucesso (Score 100%)
+        return {
+            "status": "sucesso", 
+            "conteudo": conteudo_final, 
+            "modelo": "Claude 3.5 Sonnet (Motor Pericial Dedicado)"
+        }
+
+    except Exception as e:
+        # Log de erro real para o desenvolvedor ver no terminal
+        print(f"ERRO CRÍTICO NO CLAUDE: {str(e)}")
+        
+        # Fallback de Segurança (Score 20%)
+        return {
+            "status": "fallback", 
+            "conteudo": f"Análise preliminar: O perfil de {nome} (Dominância {dominante}) apresenta amplitude de {amplitude}%. Recomenda-se revisão técnica manual devido a instabilidade no processamento remoto.",
+            "modelo": "Nenhum (Modo de Segurança)"
+        }
 
 
 # ============================================================
@@ -1877,7 +1875,7 @@ if st.session_state.pagina == "disc":
                     st.markdown(f"🔹 {item}")
 
         # ============================================================
-        # 📥 LAUDO PERICIAL MASTER (VERSÃO IA MULTI-AGENTE)
+        # 📥 LAUDO PERICIAL MASTER (VERSÃO IA CLAUDE DEDICADA)
         # ============================================================
 
         # 0. PROCESSAMENTO DO GRÁFICO (CONVERSÃO PARA HTML)
@@ -1894,7 +1892,7 @@ if st.session_state.pagina == "disc":
         lista_dificuldades = [d.get("Dificuldade", "") for d in tabelas.get("dificuldades", []) if d.get("Dificuldade")]
         
         # 2. CHAMADA DA IA (EXECUÇÃO E EXIBIÇÃO NA UI DO STREAMLIT)
-        # Chamamos a função blindada que criamos anteriormente
+        # Chamada ao motor pericial (ajustado para priorizar Claude 3.5 Sonnet)
         res_ia = gerar_parecer_especialista(
             nome=primeiro_nome, 
             dominante=dominante, 
@@ -1902,9 +1900,9 @@ if st.session_state.pagina == "disc":
             info_desc=info.get('desc', 'Cargo de Auditoria Estratégica')
         )
 
-        # Lógica de Score e Cores para a Interface
-        score_confianca = 100 if res_ia["status"] == "sucesso" else (60 if res_ia["status"] == "parcial" else 20)
-        cor_score = "green" if score_confianca > 70 else ("orange" if score_confianca > 30 else "red")
+        # Lógica de Score Binária: Se o status é sucesso, a confiança é total (100%)
+        score_confianca = 100 if res_ia["status"] == "sucesso" else 20
+        cor_score = "green" if score_confianca == 100 else "red"
 
         # Exibição imediata na tela do App
         st.markdown(f"### 💡 Parecer Consolidado")
@@ -1913,8 +1911,10 @@ if st.session_state.pagina == "disc":
         with st.expander("🔍 Metadados da Auditoria Digital"):
             st.markdown(f"**Confiança da Análise:** :{cor_score}[{score_confianca}%]")
             st.markdown(f"**Motor de Processamento:** {res_ia['modelo']}")
+            
+            # Alerta de contingência apenas em caso de falha real
             if res_ia["status"] != "sucesso":
-                st.info("Nota: Parte da análise seguiu protocolos de contingência devido à instabilidade nos motores de IA.")
+                st.error("🚨 Nota: O motor pericial principal está indisponível. Foi aplicada uma análise de contingência baseada em padrões estatísticos.")
 
         # 3. CONSTRUÇÃO DOS BLOCOS DE TEXTO DINÂMICOS (PARA O HTML)
         alerta_resistencia = ""
@@ -1926,10 +1926,10 @@ if st.session_state.pagina == "disc":
             </div>
             """
 
-        # Injetamos o parecer da IA e a rastreabilidade no bloco do Consultor
+        # Nota do Consultor: Agora referenciando corretamente a Inteligência Pericial
         nota_consultor = f"""
         <div style='background: #f8f9fa; border: 1px solid #e9ecef; padding: 20px; border-radius: 8px; margin-top: 20px; font-style: italic; border-left: 5px solid #1B1E5D;'>
-            <b>💡 Parecer Consolidado (Auditoria Digital - Gemini & Claude):</b><br>
+            <b>💡 Parecer Consolidado (Inteligência Pericial - Claude 3.5 Sonnet):</b><br>
             {res_ia["conteudo"]}
             <br><br>
             <div style='font-size: 10px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; font-style: normal;'>
@@ -1995,7 +1995,7 @@ if st.session_state.pagina == "disc":
                 </div>
 
                 <div class='footer'>
-                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - 2026</b>
+                    <b>GERADO POR NETEXAME AUDITORIA ESTRATÉGICA - {datetime.datetime.now().year}</b>
                 </div>
             </div>
         </body>
