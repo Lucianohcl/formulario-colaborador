@@ -796,11 +796,15 @@ def gerar_pdf(form):
 
 # --- CONFIGURAÇÃO DE ACESSO SEGURO ÀS IAs ---
 try:
-    # Forçamos a API version para 'v1' para evitar o erro 404 da v1beta
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+    # FORÇANDO A ROTA V1 (Estável) PARA MATAR O ERRO 404
+    genai.configure(
+        api_key=st.secrets["GEMINI_API_KEY"],
+        api_version='v1' 
+    )
     client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_API_KEY"])
 except Exception as e:
     st.error(f"Erro de Configuração: {str(e)}")
+
 
 @st.cache_data(show_spinner="IA Analisando Perfil...") # <--- Adicione isso
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
