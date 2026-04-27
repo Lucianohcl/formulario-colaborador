@@ -60,43 +60,84 @@ import anthropic
 import os
 import logging
 
-# 1. INICIALIZAÇÃO (Sincronizada com o nome do seu Secrets)
+# =========================================================
+# 1. INICIALIZAÇÃO DO MOTOR (Escopo Global)
+# =========================================================
 if "CLAUDE_API_KEY" in st.secrets:
-    # O .strip() é vital: ele remove espaços invisíveis que causam o Erro 401
-    chave_limpa = st.secrets["CLAUDE_API_KEY"].strip()
-    client_claude = anthropic.Anthropic(api_key=chave_limpa)
+    # O .strip() elimina o Erro 401 (chave inválida por espaço vazio)
+    token = st.secrets["CLAUDE_API_KEY"].strip()
+    client_claude = anthropic.Anthropic(api_key=token)
 else:
-    # Fallback para rodar no seu computador (Local)
+    # Fallback para desenvolvimento local
     token_local = os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI").strip()
     client_claude = anthropic.Anthropic(api_key=token_local)
 
-# 2. FUNÇÃO (Com o '_' para não travar o cache do Streamlit)
-@st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
+# =========================================================
+# 2. FUNÇÃO PERICIAL (Com cache e injeção de dependência)
+# =========================================================
+@st.cache_data(show_spinner="Claude 3.5 Sonnet analisando perfil...", ttl=300)
 def gerar_parecer_especialista(nome, dominante, amplitude, info_desc, _client_claude):
     try:
+        prompt = f"""
+        Aja como um Perito Sênior em análise comportamental DISC.
+        Analise o perfil de: {nome}
+        Fator Dominante: {dominante}
+        Amplitude: {amplitude}%
+        Contexto/Cargo: {info_desc}
+        
+        Forneça um parecer técnico detalhado sobre os riscos e talentos deste perfil.
+        """
+        
         response = _client_claude.messages.create(
             model="claude-3-5-sonnet-20240620",
             max_tokens=1500,
             temperature=0.7,
-            messages=[{"role": "user", "content": f"Aja como Perito DISC. Analise {nome}, Dominância {dominante}, Amplitude {amplitude}% no contexto {info_desc}."}]
+            messages=[{"role": "user", "content": prompt}]
         )
         return {
             "status": "sucesso", 
             "conteudo": response.content[0].text, 
-            "modelo": "Claude 3.5 Sonnet (Motor Pericial)"
+            "modelo": "Claude 3.5 Sonnet"
         }
     except Exception as e:
-        return {"status": "fallback", "conteudo": f"Erro de Autenticação/API: {str(e)}", "modelo": "Nenhum"}
+        return {"status": "fallback", "conteudo": f"Erro na API: {str(e)}", "modelo": "Nenhum"}
 
-# 3. A CHAMADA (Onde você gera o Laudo na tela)
-# IMPORTANTE: Passe o 'client_claude' como o QUINTO argumento
-resultado = gerar_parecer_especialista(nome, dominante, amplitude, info_desc, client_claude)
+# =========================================================
+# 3. INTERFACE E CHAMADA (Onde o Laudo aparece)
+# =========================================================
 
-if resultado["status"] == "sucesso":
-    st.markdown(f"### 📄 Parecer do Especialista")
-    st.write(resultado["conteudo"])
-else:
-    st.error(resultado["conteudo"])
+# --- PROTEÇÃO CONTRA NAMEERROR ---
+# Tentamos capturar as variáveis do seu formulário/session_state. 
+# Se elas não existirem ainda, definimos como None para o app não quebrar.
+nome_final = st.session_state.get('nome_usuario') or st.session_state.get('nome') or "Colaborador"
+dom_final = st.session_state.get('perfil_dominante') or "Não identificado"
+amp_final = st.session_state.get('amplitude_calculada') or 0
+desc_final = "Análise Pericial de Competências Técnicas e Comportamentais"
+
+st.divider()
+st.subheader("🤖 Inteligência Pericial")
+
+if st.button("🚀 Gerar Parecer Estratégico (100% Confiança)"):
+    # Só dispara se o cliente foi criado com sucesso
+    if client_claude:
+        res = gerar_parecer_especialista(
+            nome_final, 
+            dom_final, 
+            amp_final, 
+            desc_final, 
+            client_claude  # O 5º argumento obrigatório
+        )
+        
+        if res["status"] == "sucesso":
+            st.success(f"Parecer gerado com sucesso via {res['modelo']}")
+            st.markdown(res["conteudo"])
+            
+            # Opção de exportação
+            st.download_button("Baixar Parecer (TXT)", res["conteudo"], file_name="laudo_pericial.txt")
+        else:
+            st.error(res["conteudo"])
+    else:
+        st.error("O motor Claude não foi inicializado. Verifique a CLAUDE_API_KEY nos Secrets.")
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
