@@ -4414,144 +4414,58 @@ if st.session_state.get("pagina") == "analise":
     )
 
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import json
+# ============================================================
+# 4. ÁREA DE CONTEÚDO (PÁGINA DISC)
+# ============================================================
 
-# ============================================================
-# 1. CONFIGURAÇÕES INICIAIS
-# ============================================================
-st.set_page_config(page_title="NetExame - Auditoria", layout="wide")
-
-# Inicialização do Estado (A gaveta de memória)
-if "formularios" not in st.session_state:
-    st.session_state.formularios = []
-if "pagina" not in st.session_state:
-    st.session_state.pagina = "home"
-
-# ============================================================
-# 2. FUNÇÕES TÉCNICAS (CÁLCULO DISC)
-# ============================================================
-def calcular_disc(respostas_disc):
-    """Calcula as amplitudes DISC baseadas no JSON do Adson"""
-    counts = {"D": 0, "I": 0, "S": 0, "C": 0}
-    # Mapeamento padrão: A=D, B=I, C=S, D=C
-    mapping = {"A": "D", "B": "I", "C": "S", "D": "C"}
+if st.session_state.pagina == "disc":
+    st.title("🎯 Análise de Perfil Comportamental")
     
-    for r in respostas_disc.values():
-        perfil = mapping.get(r)
-        if perfil:
-            counts[perfil] += 1
-            
-    total = sum(counts.values()) if sum(counts.values()) > 0 else 1
-    percentuais = {k: (v / total) * 100 for k, v in counts.items()}
-    return percentuais, counts
-
-# ============================================================
-# 3. BARRA LATERAL (UPLOAD E NAVEGAÇÃO ÚNICA)
-# ============================================================
-with st.sidebar:
-    st.title("🚀 NetExame Auditoria")
-    st.subheader("Configurações de Dados")
-
-    # Upload dos arquivos (Onde o JSON do Adson entra)
-    uploaded_files = st.file_uploader(
-        "📂 Carregue os JSONs da Equipe", 
+    # --- O UPLOAD AGORA É AQUI DENTRO DA PÁGINA ---
+    st.markdown("### 📥 Carregar Dados da Equipe")
+    arquivos_internos = st.file_uploader(
+        "Arraste os JSONs aqui para gerar o Panorama", 
         type=["json"], 
         accept_multiple_files=True,
-        key="upload_principal_auditoria" # KEY ÚNICA
+        key="uploader_interno_pagina_disc" # KEY ÚNICA PARA NÃO DAR ERRO
     )
 
-    if uploaded_files:
+    # Processa os arquivos assim que forem soltos aqui
+    if arquivos_internos:
         lista_temp = []
-        for f in uploaded_files:
+        for f in arquivos_internos:
             try:
-                dados = json.load(f)
-                lista_temp.append(dados)
+                lista_temp.append(json.load(f))
             except:
                 st.error(f"Erro no arquivo {f.name}")
         st.session_state.formularios = lista_temp
-        st.success(f"✅ {len(lista_temp)} arquivos carregados")
 
-    st.divider()
-
-    # NAVEGAÇÃO - COM KEYS ÚNICAS PARA MATAR O ERRO DE DUPLICATA
-    st.write("📌 Navegação")
-    if st.button("🏠 Home", key="btn_navegacao_home"):
-        st.session_state.pagina = "home"
-        st.rerun()
-
-    if st.button("📊 Perfil DISC", key="btn_navegacao_disc"):
-        st.session_state.pagina = "disc"
-        st.rerun()
-
-# ============================================================
-# 4. CONTEÚDO PRINCIPAL
-# ============================================================
-
-# PÁGINA HOME
-if st.session_state.pagina == "home":
-    st.title("🏠 Painel de Auditoria Estratégica")
-    st.info("Bem-vindo ao sistema NetExame. Utilize a barra lateral para carregar os dados e navegar.")
-
-# PÁGINA DISC (ONDE O PANORAMA APARECE)
-elif st.session_state.pagina == "disc":
-    st.title("🎯 Análise de Perfil Comportamental")
-    
-    dados_equipe = st.session_state.get("formularios", [])
-
-    if not dados_equipe:
-        st.warning("⚠️ Carregue os arquivos JSON na lateral para visualizar os resultados.")
+    # --- SÓ MOSTRA O PANORAMA SE TIVER DADOS NA MEMÓRIA ---
+    if not st.session_state.formularios:
+        st.info("👆 Use o campo acima para carregar os JSONs e visualizar o Panorama Coletivo.")
     else:
-        # --- BLOCO DO PANORAMA COLETIVO ---
+        st.success(f"📊 {len(st.session_state.formularios)} Perfis carregados com sucesso!")
+        
         with st.container():
             st.markdown("---")
-            # Adicionamos uma KEY no expander também por segurança
             with st.expander("📊 PANORAMA COLETIVO DA EQUIPE", expanded=True):
                 
                 lista_resultados = []
-                atividades_coletivas = []
-
-                for f in dados_equipe:
-                    # 1. Pega o DISC
+                # ... resto da sua lógica de processamento (calcular_disc, etc)
+                for f in st.session_state.formularios:
                     disc_data = f.get("disc")
                     if disc_data:
                         res, _ = calcular_disc(disc_data)
                         lista_resultados.append(res)
 
-                    # 2. Pega as Atividades das tabelas do Adson
-                    tabelas = f.get("tabelas", {})
-                    for cat in ["alta", "normal", "baixa"]:
-                        for ativ in tabelas.get(cat, []):
-                            desc = ativ.get("Atividade", "").strip()
-                            if desc:
-                                atividades_coletivas.append(desc)
-
                 if lista_resultados:
-                    # Gera a média do grupo
                     df_equipe = pd.DataFrame(lista_resultados).apply(pd.to_numeric).dropna()
                     medias = df_equipe.mean()
-                    dominante = medias.idxmax()
-
-                    col1, col2 = st.columns([1, 1.5])
                     
-                    with col1:
-                        st.subheader("🧠 Insight Coletivo")
-                        st.info(f"**Perfil Dominante: {dominante}**")
-                        st.write(f"Análise baseada em {len(lista_resultados)} colaboradores.")
-                        
-                    with col2:
-                        fig = px.bar(
-                            medias.reset_index(), x="index", y=0, 
-                            color="index", text_auto='.1f',
-                            color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
-                        )
-                        fig.update_layout(height=300, showlegend=False, yaxis_title="Média %", xaxis_title="Perfil")
-                        st.plotly_chart(fig, use_container_width=True)
-
-# ============================================================
-# 5. RODAPÉ
-# ============================================================
-st.markdown("---")
-st.caption("NetExame 2026 - Auditoria e Processos | Engenharia de Dados")
+                    # RENDERIZAÇÃO DO GRÁFICO (IGUAL AO ANTERIOR)
+                    fig = px.bar(
+                        medias.reset_index(), x="index", y=0, 
+                        color="index", text_auto='.1f',
+                        color_discrete_map={"D":"#FF4136", "I":"#FF851B", "S":"#2ECC40", "C":"#0074D9"}
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
