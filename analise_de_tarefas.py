@@ -1979,129 +1979,109 @@ if st.session_state.pagina == "disc":
 
         # 1. FUNÇÃO MESTRE: GERA O HTML "BONITÃO" COM TODA A INTELIGÊNCIA
         def construir_html_laudo(d):
-            # Define cores baseadas no perfil
-            cor = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}.get(d['analise_comportamental']['perfil'][0], "#333")
-            
-            html = f"""
-            <html><head><meta charset="UTF-8"><style>
-                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #f4f7f6; color: #333; }}
-                .container {{ max-width: 900px; margin: auto; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 15px solid {cor}; }}
-                .header {{ text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }}
-                .badge {{ display: inline-block; padding: 8px 15px; background: {cor}; color: white; border-radius: 20px; font-weight: bold; text-transform: uppercase; }}
-                .section {{ margin-bottom: 30px; padding: 20px; border-radius: 10px; background: #fafafa; border-left: 5px solid {cor}; }}
-                h1 {{ color: #2c3e50; margin: 0; }}
-                h2 {{ color: {cor}; font-size: 1.2em; text-transform: uppercase; }}
-                .grid {{ display: flex; gap: 20px; margin-top: 20px; }}
-                .card {{ flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }}
-                .valor {{ font-size: 24px; font-weight: bold; color: {cor}; }}
-                .footer {{ text-align: center; margin-top: 50px; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
-            </style></head><body>
-                <div class="container">
-                    <div class="header">
-                        <img src="https://via.placeholder.com/150x50?text=NETEXAME" alt="Logo NetExame" style="margin-bottom: 15px;">
-                        <h1>LAUDO PERICIAL MASTER - 2026</h1>
-                        <p>Análise Estratégica de Perfil Comportamental</p>
-                    </div>
-
-                    <div class="section">
-                        <h2>📋 Identificação</h2>
-                        <p><strong>COLABORADOR:</strong> {d['colaborador']}</p>
-                        <p><strong>CARGO ANALISADO:</strong> {d['cargo']}</p>
-                    </div>
-
-                    <div class="grid">
-                        <div class="card">
-                            <p>PERFIL DOMINANTE</p>
-                            <div class="valor">{d['analise_comportamental']['perfil']}</div>
+                # Lógica de cor dinâmica baseada no perfil
+                p_letra = str(d['analise_comportamental']['perfil'])[0].upper()
+                cores = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}
+                cor_tema = cores.get(p_letra, "#333")
+                
+                html = f"""
+                <html><head><meta charset="UTF-8"><style>
+                        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; background-color: #f4f7f6; color: #333; }}
+                        .container {{ max-width: 900px; margin: auto; background: white; padding: 50px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-top: 15px solid {cor_tema}; }}
+                        .header {{ text-align: center; border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }}
+                        .section {{ margin-bottom: 30px; padding: 20px; border-radius: 10px; background: #fafafa; border-left: 5px solid {cor_tema}; }}
+                        h1 {{ color: #2c3e50; margin: 0; }}
+                        h2 {{ color: {cor_tema}; font-size: 1.2em; text-transform: uppercase; }}
+                        .grid {{ display: flex; gap: 20px; margin-top: 20px; }}
+                        .card {{ flex: 1; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center; }}
+                        .valor {{ font-size: 24px; font-weight: bold; color: {cor_tema}; }}
+                        .footer {{ text-align: center; margin-top: 50px; font-size: 12px; color: #999; border-top: 1px solid #eee; padding-top: 20px; }}
+                </style></head><body>
+                        <div class="container">
+                                <div class="header">
+                                        <h1>NETEXAME AUDITORIA ESTRATÉGICA</h1>
+                                        <p>Laudo Pericial de Perfil Comportamental - 2026</p>
+                                </div>
+                                <div class="section">
+                                        <h2>📋 Identificação</h2>
+                                        <p><strong>COLABORADOR:</strong> {d['colaborador']}</p>
+                                        <p><strong>CARGO ANALISADO:</strong> {d['cargo']}</p>
+                                </div>
+                                <div class="grid">
+                                        <div class="card"><p>PERFIL</p><div class="valor">{d['analise_comportamental']['perfil']}</div></div>
+                                        <div class="card"><p>AMPLITUDE</p><div class="valor">{d['analise_comportamental']['amplitude']}%</div></div>
+                                        <div class="card"><p>ADERÊNCIA</p><div class="valor">{d['inteligencia_rh']['compatibilidade']}</div></div>
+                                </div>
+                                <div class="section">
+                                        <h2>🧠 Parecer do Especialista</h2>
+                                        <p><strong>Natureza:</strong> {d['analise_comportamental']['natureza']}</p>
+                                        <div style="background: #fff; padding: 15px; border-radius: 5px; font-style: italic; border: 1px solid #eee;">
+                                                "{d['inteligencia_rh']['nota_consultor']}"
+                                        </div>
+                                </div>
+                                <div class="section">
+                                        <h2>📑 Mapeamento Técnico</h2>
+                                        <p><strong>Dificuldades:</strong> {", ".join(d['tabelas_operacionais']['dificuldades']) or "Nenhuma informada"}</p>
+                                        <p><strong>Sugestões:</strong> {", ".join(d['tabelas_operacionais']['sugestoes']) or "Nenhuma informada"}</p>
+                                </div>
+                                <div class="footer">Gerado em {d['data_geracao']} • NetExame Auditoria</div>
                         </div>
-                        <div class="card">
-                            <p>AMPLITUDE / INTENSIDADE</p>
-                            <div class="valor">{d['analise_comportamental']['amplitude']}%</div>
-                        </div>
-                        <div class="card">
-                            <p>COMPATIBILIDADE</p>
-                            <div class="valor">{d['inteligencia_rh']['compatibilidade']}</div>
-                        </div>
-                    </div>
-
-                    <div class="section">
-                        <h2>🧠 Parecer do Especialista</h2>
-                        <p><strong>Natureza:</strong> {d['analise_comportamental']['natureza']}</p>
-                        <p><strong>Diagnóstico de Aderência:</strong> {d['analise_comportamental']['diagnostico']}</p>
-                        <p style="background: #fff; padding: 15px; border-radius: 5px; font-style: italic;">
-                            " {d['inteligencia_rh']['nota_consultor']} "
-                        </p>
-                    </div>
-
-                    <div class="section">
-                        <h2>📑 Mapeamento Técnico</h2>
-                        <p><strong>Exigência das Atividades:</strong> Eixo {d['inteligencia_rh']['exigencia_tarefas']}</p>
-                        <p><strong>Dificuldades Identificadas:</strong> {", ".join(d['tabelas_operacionais']['dificuldades']) or "Nenhuma informada"}</p>
-                        <p><strong>Sugestões de Evolução:</strong> {", ".join(d['tabelas_operacionais']['sugestoes']) or "Nenhuma informada"}</p>
-                    </div>
-
-                    <div class="footer">
-                        Este documento é confidencial e propriedade da NETEXAME Auditoria Estratégica.<br>
-                        Gerado em: {d['data_geracao']}
-                    </div>
-                </div>
-            </body></html>
-            """
-            return html
+                </body></html>
+                """
+                return html
 
         st.markdown("---")
         st.subheader("💾 1. Consolidação da Inteligência (JSON)")
 
         if formulario_sel:
-            # 2. MONTAGEM DO JSON COMPLETÍSSIMO
-            analise_lhama = {
-                "colaborador": str(formulario_sel.get("colaborador", "N/A")).upper(),
-                "cargo": str(formulario_sel.get("cargo", "N/A")).upper(),
-                "data_geracao": "2026",
-                "analise_comportamental": {
-                    "perfil": dominante,
-                    "amplitude": round(amplitude, 1),
-                    "natureza": "⚖️ Perfil Híbrido" if is_equilibrado else "🎯 Perfil Especialista",
-                    "diagnostico": "Alta Aderência" if (amplitude <= 12 or match_real) else "Ponto de Atenção"
-                },
-                "tabelas_operacionais": {
-                    "dificuldades": [d.get("Dificuldade", "") for d in formulario_sel.get("tabelas", {}).get("dificuldades", []) if len(str(d.get("Dificuldade", ""))) > 3],
-                    "sugestoes": [s.get("Sugestão", "") for s in formulario_sel.get("tabelas", {}).get("sugestoes", []) if len(str(s.get("Sugestão", ""))) > 3]
-                },
-                "inteligencia_rh": {
-                    "exigencia_tarefas": exigencia_final if 'exigencia_final' in locals() else "N/A",
-                    "compatibilidade": porcentagem_comp if 'porcentagem_comp' in locals() else "0%",
-                    "nota_consultor": f"Sua distribuição de energia é equilibrada (Amplitude: {amplitude:.1f}%). Flexibilidade nativa para mitigar conflitos entre eixos." if is_equilibrado else f"Perfil concentrado no eixo {dominante[0]}. Atividades de outros eixos demandarão maior esforço consciente.",
-                    "alerta_resistencia": not (tem_algo_dif or tem_algo_sug)
+                # 2. MONTAGEM DO PACOTE DE DADOS
+                analise_lhama = {
+                        "colaborador": str(formulario_sel.get("colaborador", "N/A")).upper(),
+                        "cargo": str(formulario_sel.get("cargo", "N/A")).upper(),
+                        "data_geracao": "2026",
+                        "analise_comportamental": {
+                                "perfil": dominante,
+                                "amplitude": round(amplitude, 1),
+                                "natureza": "⚖️ Perfil Híbrido" if is_equilibrado else "🎯 Perfil Especialista",
+                                "diagnostico": "Alta Aderência" if (amplitude <= 12 or match_real) else "Ponto de Atenção"
+                        },
+                        "tabelas_operacionais": {
+                                "dificuldades": [d.get("Dificuldade", "") for d in formulario_sel.get("tabelas", {}).get("dificuldades", []) if len(str(d.get("Dificuldade", ""))) > 3],
+                                "sugestoes": [s.get("Sugestão", "") for s in formulario_sel.get("tabelas", {}).get("sugestoes", []) if len(str(s.get("Sugestão", ""))) > 3]
+                        },
+                        "inteligencia_rh": {
+                                "exigencia_tarefas": exigencia_final if 'exigencia_final' in locals() else "N/A",
+                                "compatibilidade": porcentagem_comp if 'porcentagem_comp' in locals() else "0%",
+                                "nota_consultor": f"Distribuição equilibrada ({amplitude:.1f}%). Alta versatilidade técnica." if is_equilibrado else f"Perfil concentrado no eixo {dominante}. Foco em precisão e conformidade técnica.",
+                                "alerta_resistencia": not (tem_algo_dif or tem_algo_sug)
+                        }
                 }
-            }
 
-            st.download_button(
-                label="📥 SALVAR ARQUIVO DE ANÁLISE LHAMA (.JSON)",
-                data=json.dumps(analise_lhama, indent=4, ensure_ascii=False),
-                file_name=f"LHAMA_ANALISE_{analise_lhama['colaborador']}.json",
-                mime="application/json",
-                use_container_width=True,
-                type="primary"
-            )
+                st.download_button(
+                        label="📥 SALVAR ARQUIVO DE ANÁLISE LHAMA (.JSON)",
+                        data=json.dumps(analise_lhama, indent=4, ensure_ascii=False),
+                        file_name=f"LHAMA_DATA_{analise_lhama['colaborador']}.json",
+                        mime="application/json",
+                        use_container_width=True,
+                        type="primary"
+                )
 
-        # 3. BOTÃO DE EXPORTAÇÃO (LÊ DO JSON E COSME O HTML BONITÃO)
+        # 3. ÁREA DE RESGATE E TRANSFORMAÇÃO NO SIDEBAR
         st.sidebar.markdown("---")
         st.sidebar.subheader("📄 2. Gerar Laudo HTML")
-        arquivo_resgate = st.sidebar.file_uploader("Subir JSON para gerar Laudo", type="json")
+        arquivo_resgate = st.sidebar.file_uploader("Subir JSON", type="json", key="resgate_json_btn")
 
         if arquivo_resgate:
-            dados = json.load(arquivo_resgate)
-            if st.sidebar.button("🔨 GERAR HTML COMPLETO", use_container_width=True):
-                html_bonitao = construir_html_laudo(dados)
-                st.sidebar.success("Laudo Gerado!")
-                st.download_button(
-                    label="🚀 BAIXAR LAUDO NETEXAME",
-                    data=html_bonitao,
-                    file_name=f"LAUDO_ESTRATEGICO_{dados['colaborador']}.html",
-                    mime="text/html",
-                    use_container_width=True
-                )            
+                dados_c = json.load(arquivo_resgate)
+                if st.sidebar.button("🔨 GERAR LAUDO FINAL", use_container_width=True):
+                        html_laudo = construir_html_laudo(dados_c)
+                        st.sidebar.download_button(
+                                label="🚀 BAIXAR HTML BONITÃO",
+                                data=html_laudo,
+                                file_name=f"LAUDO_NETEXAME_{dados_c['colaborador']}.html",
+                                mime="text/html",
+                                use_container_width=True
+                        )            
         
 
 # --- VISUALIZAÇÃO ---
