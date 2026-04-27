@@ -1970,7 +1970,117 @@ if st.session_state.pagina == "disc":
         )
 
         if st.checkbox("🔍 Visualizar JSON de saída", key=f"check_json_{primeiro_nome}"):
-                st.json(dados_para_resgate)             
+                st.json(dados_para_resgate)
+
+        # ============================================================
+    # 🧠 MÓDULO LHAMA: RESGATE E GERAÇÃO DE ANÁLISE
+    # ============================================================
+    import json
+    import plotly.express as px
+
+    # 1. Interface de Resgate no Sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🧬 Resgate de Inteligência")
+    arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama")
+
+    # 2. Lógica de Seleção de Fonte (Arquivo ou GitHub)
+    if arquivo_resgate is not None:
+        try:
+            dados_lhama = json.load(arquivo_resgate)
+            # Prepara o formulário fake baseado no JSON
+            formulario_sel = {
+                "colaborador": dados_lhama["identificacao"]["nome"],
+                "cargo": dados_lhama["identificacao"]["cargo"],
+                "tabelas": dados_lhama["tabelas_operacionais"],
+                "metricas_json": dados_lhama["metricas_disc"] # Metadados salvos
+            }
+            st.sidebar.success(f"✅ Pronto para analisar: {formulario_sel['colaborador'].split()[0]}")
+        except Exception as e:
+            st.sidebar.error(f"Erro no arquivo: {e}")
+            formulario_sel = None
+    else:
+        # Se não tem arquivo, 'formulario_sel' continua sendo o que veio do selectbox do GitHub
+        pass
+
+    # 3. O BOTÃO DE DISPARO
+    if formulario_sel:
+        if st.button("🔎 GERAR ANÁLISE COMPLETA", use_container_width=True, type="primary"):
+            
+            # --- PROCESSAMENTO DOS DADOS ---
+            form = formulario_sel
+            
+            # Se veio do JSON, resgatamos as métricas prontas. Se não, calculamos.
+            if "metricas_json" in form:
+                dominante = form["metricas_json"]["perfil_dominante"]
+                amplitude = form["metricas_json"]["amplitude_nominal"]
+                # Para o gráfico, tentamos recalcular ou usar dummy se não houver respostas
+                percentuais = { "D": 25, "I": 25, "S": 25, "C": 25 } # Fallback
+                if "disc" in form: # Se houver respostas brutas no JSON
+                     percentuais, _ = calcular_disc(form["disc"])
+            else:
+                # Lógica padrão via GitHub
+                respostas_raw = form.get("disc", {})
+                mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
+                respostas_disc = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
+                percentuais, _ = calcular_disc(respostas_disc)
+                
+                ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
+                p1, v1 = ranking[0]
+                p2, v2 = ranking[1]
+                dominante = f"{p1}/{p2}" if (v1 - v2) < 8 else p1
+                amplitude = max(percentuais.values()) - min(percentuais.values())
+
+            # --- RENDERIZAÇÃO DA ANÁLISE ---
+            st.markdown(f"# 🧠 Laudo de Perfil: {form['colaborador'].upper()}")
+            st.caption(f"Cargo Analisado: {form['cargo']}")
+
+            # Gráfico e Métricas
+            col_graf, col_met = st.columns([2, 1])
+            with col_graf:
+                fig = px.bar(
+                    x=list(percentuais.keys()), 
+                    y=list(percentuais.values()),
+                    color=list(percentuais.keys()),
+                    text=[f"{v:.1f}%" for v in percentuais.values()],
+                    color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"}
+                )
+                fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False, margin=dict(t=10, b=10))
+                st.plotly_chart(fig, use_container_width=True)
+
+            with col_met:
+                st.metric("Perfil Dominante", dominante)
+                is_equilibrado = amplitude <= 12
+                
+                if is_equilibrado:
+                    st.success("⚖️ **Híbrido/Equilibrado**")
+                    st.write(f"Amplitude: {amplitude:.1f}% (Baixa)")
+                else:
+                    st.info("🎯 **Especialista**")
+                    st.write(f"Amplitude: {amplitude:.1f}% (Alta)")
+
+            # Diagnóstico de Coerência (Dificuldades e Sugestões)
+            st.markdown("---")
+            col_d, col_s = st.columns(2)
+            tabelas = form.get("tabelas", {})
+            
+            with col_d:
+                st.subheader("⚠️ Dificuldades")
+                for d in tabelas.get("dificuldades", []):
+                    txt = d.get("Dificuldade", "")
+                    if len(txt) > 2: st.warning(f"• {txt}")
+
+            with col_s:
+                st.subheader("💡 Sugestões")
+                for s in tabelas.get("sugestoes", []):
+                    txt = s.get("Sugestão", "")
+                    if len(txt) > 2: st.info(f"• {txt}")
+
+            # Nota do Consultor
+            st.markdown("---")
+            if is_equilibrado:
+                st.info(f"**Parecer:** O colaborador possui flexibilidade nativa. A amplitude de {amplitude:.1f}% indica que ele transita entre os eixos sem grande fadiga mental.")
+            else:
+                st.warning(f"**Parecer:** Perfil focado. A amplitude de {amplitude:.1f}% mostra uma especialização comportamental forte no eixo {dominante}.")             
         
 
 # --- VISUALIZAÇÃO ---
