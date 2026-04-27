@@ -86,18 +86,25 @@ def selecionar_motor_pericial():
     except:
         return 'gemini-1.5-flash'
 
-# 3. FUNÇÃO DE PROCESSAMENTO COM RETRY (EVITA ERRO 429)
-@st.cache_data(show_spinner="IA Gerando Parecer Técnico...", ttl=600)
+# 3. FUNÇÃO DE DEBUG (SEM CACHE PARA MOSTRAR OS ERROS EM TEMPO REAL)
 def obter_analise_ia(nome, cargo, perfil, amplitude):
     try:
-        # 1. TESTE DE CHAVE
+        # Check de Chave nos Secrets
         if "GEMINI_API_KEY" not in st.secrets:
-            st.error("🚨 ERRO: GEMINI_API_KEY não encontrada nos Secrets!")
-            return None
+            st.error("🚨 ERRO: GEMINI_API_KEY não encontrada nos Secrets do Streamlit!")
+            return {
+                "parecer": "Erro de Configuração: Chave ausente.",
+                "nota": "Verifique o painel Settings > Secrets.",
+                "pontos": ["Configurar API Key", "Reiniciar App", "Checar Secrets"]
+            }
 
-        motor = selecionar_motor_pericial()
+        # Configuração imediata para garantir a leitura da chave
+        genai.configure(api_key=st.secrets["GEMINI_API_KEY"].strip())
         
-        # 2. CONFIGURAÇÃO COM MIME-TYPE
+        motor = selecionar_motor_pericial()
+        # Log visual do motor selecionado
+        st.info(f"🔍 Debug: Usando motor {motor}")
+
         model = genai.GenerativeModel(
             model_name=motor,
             generation_config={"response_mime_type": "application/json"}
@@ -113,30 +120,42 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
         }}
         """
         
-        # 3. TENTATIVA COM PRINT DE DEBUG
         response = model.generate_content(prompt)
         
+        # DEBUG: Se a resposta for bloqueada por segurança
+        if hasattr(response, 'candidate') and response.candidates[0].finish_reason != 1:
+            st.warning(f"⚠️ Resposta bloqueada por segurança. Motivo: {response.candidates[0].finish_reason}")
+            return None
+
         if not response or not response.text:
-            st.warning("⚠️ IA retornou resposta vazia.")
+            st.warning("⚠️ IA retornou resposta vazia ou nula.")
             return None
 
         # Tenta parsear o JSON
         try:
-            return json.loads(response.text)
+            dados = json.loads(response.text)
+            st.success("✅ IA respondeu com sucesso!")
+            return dados
         except Exception as e:
             st.error(f"❌ ERRO DE PARSE JSON: {str(e)}")
-            st.code(response.text) # Mostra o que a IA mandou de errado
+            st.code(response.text) 
             return None
 
     except Exception as e:
-        # O DEBUG REAL APARECE AQUI
+        # CAPTURA O ERRO REAL DA API
         st.error(f"💥 ERRO CRÍTICO NA API: {str(e)}")
+        
         if "429" in str(e):
-            st.info("Motivo: Cota gratuita excedida. Aguarde 60 segundos.")
+            st.warning("Cota esgotada (Rate Limit). Espere 60 segundos.")
         elif "API_KEY_INVALID" in str(e):
-            st.info("Motivo: Sua chave de API está incorreta ou expirada.")
-        return None
-
+            st.warning("Chave de API inválida.")
+        
+        # Fallback para não quebrar o restante do script
+        return {
+            "parecer": f"Erro técnico: {str(e)[:50]}...",
+            "nota": "Falha na comunicação com Google Gemini.",
+            "pontos": ["Checar cotas", "Validar API Key", "Tentar novamente"]
+        }
 
 # No topo do script, após os imports
 if 't' not in locals(): t = None
