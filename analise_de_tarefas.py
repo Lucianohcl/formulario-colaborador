@@ -811,7 +811,7 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
     """
     try:
         # --- 1. CHAMADA AO GEMINI (Analista Lógico) ---
-        model_gemini = genai.GenerativeModel('gemini-1.0-pro')
+        model_gemini = genai.GenerativeModel('gemini-1.5-flash')
         prompt_tecnico = f"""
         Analise como perito: Colaborador {nome}, Perfil {dominante}, Amplitude {amplitude}%.
         Se a amplitude for > 50%, ele NÃO é equilibrado, ele é um especialista de foco estrito.
