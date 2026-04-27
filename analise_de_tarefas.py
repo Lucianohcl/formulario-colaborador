@@ -1978,92 +1978,60 @@ if st.session_state.pagina == "disc":
         import json
         import plotly.express as px
 
-        # 1. FUNÇÃO PARA GERAR O HTML DO LAUDO (LAYOUT PROFISSIONAL)
+        # 1. FUNÇÃO PARA GERAR O HTML DO LAUDO
         def gerar_html_laudo(form, dominante, amplitude, percentuais, is_equilibrado):
             cor_perfil = {"D": "#FF4136", "I": "#FF851B", "S": "#2ECC40", "C": "#0074D9"}.get(dominante[0], "#333")
             tipo_perfil = "HÍBRIDO / EQUILIBRADO" if is_equilibrado else "ESPECIALISTA / FOCADO"
             
             html_content = f"""
             <html>
-            <head>
-                <meta charset="UTF-8">
-                <style>
-                    body {{ font-family: 'Helvetica', sans-serif; padding: 30px; line-height: 1.6; color: #2c3e50; }}
-                    .header {{ text-align: center; border-bottom: 5px solid {cor_perfil}; padding-bottom: 15px; margin-bottom: 30px; }}
-                    .container {{ max-width: 900px; margin: auto; }}
-                    .card {{ background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px; border-left: 8px solid {cor_perfil}; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }}
-                    .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }}
-                    .metric-val {{ font-size: 28px; font-weight: bold; color: {cor_perfil}; }}
-                    h2 {{ color: {cor_perfil}; text-transform: uppercase; font-size: 18px; margin-top: 0; }}
-                    .footer {{ text-align: center; font-size: 10px; color: #95a5a6; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }}
-                    .label {{ font-weight: bold; color: #7f8c8d; }}
-                </style>
-            </head>
+            <head><meta charset="UTF-8"><style>
+                body {{ font-family: sans-serif; padding: 20px; line-height: 1.6; }}
+                .card {{ border-left: 8px solid {cor_perfil}; background: #f4f4f4; padding: 15px; margin: 10px 0; border-radius: 5px; }}
+                h1 {{ color: {cor_perfil}; text-align: center; }}
+            </style></head>
             <body>
-                <div class="container">
-                    <div class="header">
-                        <h1>LAUDO ESTRATÉGICO DE PERFIL</h1>
-                        <p><strong>COLABORADOR:</strong> {form['colaborador'].upper()} | <strong>CARGO:</strong> {form.get('cargo', 'N/A').upper()}</p>
-                    </div>
-                    <div class="grid">
-                        <div class="card">
-                            <h2>Perfil Dominante</h2>
-                            <div class="metric-val">{dominante}</div>
-                            <p class="label">{tipo_perfil}</p>
-                        </div>
-                        <div class="card">
-                            <h2>Amplitude de Eixo</h2>
-                            <div class="metric-val">{amplitude:.1f}%</div>
-                            <p class="label">Intensidade Comportamental</p>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h2>Distribuição DISC</h2>
-                        <table style="width: 100%; text-align: center;">
-                            <tr>
-                                <td><strong>D</strong>: {percentuais.get('D',0):.1f}%</td>
-                                <td><strong>I</strong>: {percentuais.get('I',0):.1f}%</td>
-                                <td><strong>S</strong>: {percentuais.get('S',0):.1f}%</td>
-                                <td><strong>C</strong>: {percentuais.get('C',0):.1f}%</td>
-                            </tr>
-                        </table>
-                    </div>
-                    <div class="card">
-                        <h2>Análise de Dificuldades & Sugestões</h2>
-                        <p><strong>Dificuldades:</strong> {", ".join([d.get('Dificuldade','') for d in form.get('tabelas',{}).get('dificuldades',[]) if len(d.get('Dificuldade','')) > 2]) or "Nenhuma."}</p>
-                        <p><strong>Sugestões:</strong> {", ".join([s.get('Sugestão','') for s in form.get('tabelas',{}).get('sugestoes',[]) if len(s.get('Sugestão','')) > 2]) or "Nenhuma."}</p>
-                    </div>
-                    <div class="footer">NETEXAME AUDITORIA ESTRATÉGICA - 2026</div>
-                </div>
-            </body>
-            </html>
-            """
+                <h1>LAUDO: {form['colaborador'].upper()}</h1>
+                <div class="card"><h2>Perfil: {dominante}</h2><p>{tipo_perfil}</p></div>
+                <div class="card"><h2>Amplitude: {amplitude:.1f}%</h2></div>
+                <div class="footer">NETEXAME 2026</div>
+            </body></html>"""
             return html_content
 
-        # 2. INTERFACE SIDEBAR
+        # 2. INTERFACE SIDEBAR COM MEMÓRIA (SESSION STATE)
         st.sidebar.markdown("---")
         st.sidebar.subheader("🧬 Resgate de Inteligência")
         arquivo_resgate = st.sidebar.file_uploader("Subir JSON do Lhama", type="json", key="uploader_lhama")
 
-        if arquivo_resgate is not None:
+        # Se um novo arquivo for subido, salva no session_state
+        if arquivo_resgate:
             try:
                 dados_lhama = json.load(arquivo_resgate)
-                formulario_sel = {
+                st.session_state['form_lhama'] = {
                     "colaborador": dados_lhama["identificacao"]["nome"],
                     "cargo": dados_lhama["identificacao"]["cargo"],
                     "tabelas": dados_lhama["tabelas_operacionais"],
                     "metricas_json": dados_lhama["metricas_disc"],
                     "disc_bruto": dados_lhama.get("respostas_originais", {})
                 }
-                st.sidebar.success("✅ Arquivo carregado!")
+                st.sidebar.success("✅ Dados Carregados!")
             except Exception as e:
-                st.sidebar.error(f"Erro no JSON: {e}")
-                formulario_sel = None
+                st.sidebar.error(f"Erro: {e}")
 
-        # 3. DISPARO E RENDERIZAÇÃO
-        if formulario_sel:
+        # 3. VERIFICAÇÃO E RENDERIZAÇÃO
+        # Usamos o dado da sessão se disponível, senão o que você já tinha definido antes
+        form_para_analise = st.session_state.get('form_lhama') or formulario_sel
+
+        if form_para_analise:
+            # Botão agora apenas altera uma flag de visualização
             if st.button("🔎 GERAR ANÁLISE COMPLETA", use_container_width=True, type="primary"):
-                form = formulario_sel
+                st.session_state['exibir_laudo'] = True
+
+            # Se a flag for True, abre o HTML e a análise na tela
+            if st.session_state.get('exibir_laudo'):
+                form = form_para_analise
+                
+                # --- LÓGICA DE CÁLCULO ---
                 if "metricas_json" in form:
                     dominante = form["metricas_json"]["perfil_dominante"]
                     amplitude = form["metricas_json"]["amplitude_nominal"]
@@ -2071,34 +2039,39 @@ if st.session_state.pagina == "disc":
                     if form.get("disc_bruto"):
                         percentuais, _ = calcular_disc(form["disc_bruto"])
                 else:
+                    # Cálculo padrão do GitHub
                     respostas_raw = form.get("disc", {})
                     mapa_disc = {"A": "D", "B": "I", "C": "S", "D": "C"}
                     respostas_disc = {k: mapa_disc[v] for k, v in respostas_raw.items() if v in mapa_disc}
                     percentuais, _ = calcular_disc(respostas_disc)
                     ranking = sorted(percentuais.items(), key=lambda x: x[1], reverse=True)
-                    p1, v1 = ranking[0]
-                    p2, v2 = ranking[1]
-                    dominante = f"{p1}/{p2}" if (v1 - v2) < 8 else p1
+                    dominante = f"{ranking[0][0]}/{ranking[1][0]}" if (ranking[0][1] - ranking[1][1]) < 8 else ranking[0][0]
                     amplitude = max(percentuais.values()) - min(percentuais.values())
 
                 is_equilibrado = amplitude <= 12
 
-                st.markdown(f"# 🧠 Laudo de Perfil: {form['colaborador'].upper()}")
-                st.caption(f"Cargo: {form.get('cargo') or 'Consultor'}")
-
-                col_graf, col_met = st.columns([2, 1])
-                with col_graf:
-                    fig = px.bar(x=list(percentuais.keys()), y=list(percentuais.values()), color=list(percentuais.keys()), color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
-                    fig.update_layout(yaxis_range=[0,100], height=300, showlegend=False)
+                # --- RENDERIZAÇÃO NA INTERFACE ---
+                st.markdown(f"## 🧠 Resultado: {form['colaborador'].upper()}")
+                
+                col1, col2 = st.columns([2, 1])
+                with col1:
+                    fig = px.bar(x=list(percentuais.keys()), y=list(percentuais.values()), color=list(percentuais.keys()),
+                                 color_discrete_map={"D":"#FF4136","I":"#FF851B","S":"#2ECC40","C":"#0074D9"})
                     st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    st.metric("Dominante", dominante)
+                    st.metric("Amplitude", f"{amplitude:.1f}%")
 
-                with col_met:
-                    st.metric("Perfil Dominante", dominante)
-                    st.write(f"Amplitude: **{amplitude:.1f}%**")
-
-                st.markdown("---")
-                html_laudo = gerar_html_laudo(form, dominante, amplitude, percentuais, is_equilibrado)
-                st.download_button(label="📥 BAIXAR LAUDO HTML PROFISSIONAL", data=html_laudo, file_name="LAUDO_LHAMA.html", mime="text/html", use_container_width=True)             
+                # --- BOTÃO DE DOWNLOAD (O "HTML BONITÃO") ---
+                html_final = gerar_html_laudo(form, dominante, amplitude, percentuais, is_equilibrado)
+                st.download_button(
+                    label="📥 BAIXAR LAUDO PARA IMPRESSÃO",
+                    data=html_final,
+                    file_name=f"LAUDO_{form['colaborador']}.html",
+                    mime="text/html",
+                    use_container_width=True
+                )             
         
 
 # --- VISUALIZAÇÃO ---
