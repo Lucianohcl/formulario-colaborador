@@ -177,7 +177,8 @@ def obter_analise_ia(nome, cargo, perfil, amplitude):
 
         # -------- PARSE JSON --------
         try:
-            dados = json.loads(response.text)
+            import re
+            dados = json.loads(re.sub(r"```json|```", "", response.text).strip())
             debug("✅ JSON PARSE OK")
             return dados
         except Exception as e:
