@@ -60,24 +60,19 @@ import anthropic
 import os
 import logging
 
-# 1. INICIALIZAÇÃO DO CLIENTE (O coração do motor)
-# Isso deve vir ANTES de qualquer função que use o Claude
+# 1. INICIALIZAÇÃO (Exatamente como você fez)
 if "CLAUDE_KEY" in st.secrets:
     client_claude = anthropic.Anthropic(api_key=st.secrets["CLAUDE_KEY"])
 else:
-    # Fallback para desenvolvimento local
-    api_key_local = os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI")
-    client_claude = anthropic.Anthropic(api_key=api_key_local)
+    client_claude = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", "SUA_CHAVE_AQUI"))
 
-# 2. CONFIGURAÇÃO DE LOGS
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
-
-# 3. SUA FUNÇÃO DE PARECER (Agora ela vai encontrar o 'client_claude')
+# 3. FUNÇÃO ALTERADA
+# O '_' antes do client_claude avisa ao Streamlit: "não tente cachear este objeto"
 @st.cache_data(show_spinner="Claude 3 analisando perfil...", ttl=300)
-def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
+def gerar_parecer_especialista(nome, dominante, amplitude, info_desc, _client_claude):
     try:
-        # Agora o Python sabe quem é o client_claude!
-        response = client_claude.messages.create(
+        # Agora usamos a variável que entrou pelo argumento
+        response = _client_claude.messages.create(
             model="claude-3-5-sonnet-20240620",
             max_tokens=1500,
             temperature=0.7,
@@ -89,9 +84,11 @@ def gerar_parecer_especialista(nome, dominante, amplitude, info_desc):
             "modelo": "Claude 3.5 Sonnet (Motor Pericial Dedicado)"
         }
     except Exception as e:
-        # Se der erro de saldo ou chave, ele cai aqui
-        return {"status": "fallback", "conteudo": "Erro técnico...", "modelo": "Nenhum"}
+        return {"status": "fallback", "conteudo": f"Erro: {str(e)}", "modelo": "Nenhum"}
 
+# 4. NA HORA DE CHAMAR A FUNÇÃO (Onde você gera o laudo)
+# Você deve passar o client_claude como o último argumento:
+# resultado = gerar_parecer_especialista(nome, dominante, amplitude, info_desc, client_claude)
 
 # 1. CONEXÃO GLOBAL (FORA DE QUALQUER IF OU FUNÇÃO)
 # Isso garante que 'g' e 'repo' existam em qualquer parte do script
