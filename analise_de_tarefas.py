@@ -5000,51 +5000,42 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # 🎨 ESTILO ISOLADO (Não quebra o restante do app)
-            st.markdown("""
-                <style>
-                /* Estiliza apenas o botão dentro desta área específica */
-                .stButton > button {
-                    background: linear-gradient(45deg, #d90429, #ef233c) !important;
-                    color: white !important;
-                    border-radius: 12px !important;
-                    border: none !important;
-                    padding: 18px 24px !important;
-                    font-size: 1.1rem !important;
-                    font-weight: 700 !important;
-                    transition: all 0.3s ease-in-out !important;
-                    box-shadow: 0 4px 15px rgba(217, 4, 41, 0.3) !important;
-                    margin-bottom: 1rem !important;
-                }
-                .stButton > button:hover {
-                    transform: translateY(-2px) !important;
-                    box-shadow: 0 6px 22px rgba(217, 4, 41, 0.5) !important;
-                    background: linear-gradient(45deg, #ef233c, #d90429) !important;
-                }
-                </style>
-            """, unsafe_allow_html=True)
-
-            # 🚀 EXECUÇÃO DO LAUDO
+            # 🚀 EXECUÇÃO DO LAUDO (ESTILO NATIVO E LIMPO)
             if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
-                with st.spinner("IA processando cruzamento de dados..."):
-                    # Uso do cache para proteger seu saldo de $4.89
+                with st.spinner("IA processando dados..."):
+                    # 1. Prevenção de erro: verifica se a função existe, se não, usa a padrão
                     dados_string = json.dumps(dados_lidos, ensure_ascii=False)
-                    laudo = processar_parecer_com_cache(dados_string)
                     
+                    try:
+                        # Tenta usar o cache, se falhar, chama a função direta
+                        if 'processar_parecer_com_cache' in globals():
+                            laudo_html = processar_parecer_com_cache(dados_string)
+                        else:
+                            laudo_html = realizar_pericia_direta(dados_string)
+                    except Exception as e:
+                        st.error(f"Erro no processamento: {e}")
+                        laudo_html = "Erro ao gerar laudo."
+
                     st.divider()
-                    st.markdown(laudo)
                     
-                    # Botão de exportar (padrão, para não gerar conflito visual)
+                    # 2. Exibição Minimalista em HTML (sem quebrar o app)
+                    st.components.v1.html(f"""
+                        <div style="font-family: sans-serif; border: 1px solid #ddd; padding: 20px; border-radius: 10px; background: #fff;">
+                            {laudo_html}
+                        </div>
+                    """, height=500, scrolling=True)
+                    
+                    # 3. Exportação Simples
                     st.download_button(
-                        label="📥 EXPORTAR LAUDO FINAL (.MD)", 
-                        data=laudo, 
-                        file_name=f"pericia_{dados_lidos.get('colaborador')}.md",
+                        label="📥 BAIXAR LAUDO (HTML)", 
+                        data=laudo_html, 
+                        file_name=f"laudo_{dados_lidos.get('colaborador')}.html",
+                        mime="text/html",
                         use_container_width=True
                     )
 
 if __name__ == "__main__":
     main()
-
 
 
 # ==============================================================================
