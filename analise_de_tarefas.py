@@ -4920,4 +4920,86 @@ if st.session_state['analise_concluida']:
             href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
             st.markdown(href, unsafe_allow_html=True)
 
+
+# =========================================================
+# BLOCO FINAL: MOTOR DE PERÍCIA E AUDITORIA UNIVERSAL
+# =========================================================
+
+# 1. Configuração dos Perfis DISC (Dicionário de Tradução)
+tradutor_disc = {
+    "A": {"perfil": "Dominância", "cor": "red", "desc": "Foco em Resultados e Execução."},
+    "B": {"perfil": "Influência", "cor": "orange", "desc": "Foco em Pessoas e Comunicação."},
+    "C": {"perfil": "Estabilidade", "cor": "green", "desc": "Foco em Processos e Ritmo."},
+    "D": {"perfil": "Conformidade", "cor": "blue", "desc": "Foco em Regras e Detalhes."}
+}
+
+def realizar_pericia(dados):
+    st.divider()
+    st.header("🔍 Laudo de Perícia Operacional (IA)")
+
+    try:
+        # --- CÁLCULO DE TEMPO UNIVERSAL ---
+        minutos_diarios = 0
+        
+        # Mapeamento de Frequência para peso diário
+        pesos = {"D": 1, "S": 0.2, "M": 0.05, "T": 0.33, "A": 0} 
+
+        for nivel in ['alta', 'normal', 'baixa']:
+            for tarefa in dados['tabelas'].get(nivel, []):
+                h = int(tarefa.get('Horas', '0').split()[0])
+                m = int(tarefa.get('Minutos', '0').split()[0])
+                freq = tarefa.get('Frequência', 'D')
+                
+                tempo_total_min = (h * 60) + m
+                minutos_diarios += tempo_total_min * pesos.get(freq, 1)
+
+        # --- PROCESSAMENTO DO DISC ---
+        respostas = list(dados.get('disc', {}).values())
+        if respostas:
+            letra_principal = max(set(respostas), key=respostas.count)
+            perfil_info = tradutor_disc.get(letra_principal)
+        else:
+            perfil_info = {"perfil": "Não Informado", "cor": "gray", "desc": "-"}
+
+        # --- INTERFACE DE RESULTADOS ---
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            status_cor = "inverse" if minutos_diarios > 480 else "normal"
+            st.metric("Carga Diária Estimada", f"{int(minutos_diarios)} min", 
+                      delta=f"{int(minutos_diarios - 480)} min" if minutos_diarios > 480 else "OK",
+                      delta_color=status_cor)
+
+        with col2:
+            st.subheader(f":{perfil_info['cor']}[{perfil_info['perfil']}]")
+            st.caption(perfil_info['desc'])
+
+        with col3:
+            dificuldade = dados['tabelas'].get('dificuldades', [{}])[0].get('Dificuldade', '').lower()
+            st.metric("Dificuldades Reportadas", "Nenhuma" if "nenhuma" in dificuldade else "Ver Alerta")
+
+        # --- INSIGHTS AUTOMÁTICOS (A "Mente" do Auditor) ---
+        st.subheader("📝 Insights do Auditor")
+        
+        # Alerta 1: Sobrecarga vs Negação
+        if minutos_diarios > 550 and "nenhuma" in dificuldade:
+            st.error(f"⚠️ **ALERTA DE CEGUEIRA OPERACIONAL:** O colaborador (Perfil {perfil_info['perfil']}) possui uma carga de {int(minutos_diarios)} min/dia, mas relata não ter dificuldades. Há alto risco de centralização e esgotamento oculto.")
+        
+        # Alerta 2: Gestor no Operacional
+        if "GESTOR" in dados['campos'].get('cargo', '').upper():
+            tempo_baixa = len(dados['tabelas'].get('baixa', []))
+            if tempo_baixa > 5:
+                st.warning(f"🚩 **DESVIO DE FUNÇÃO:** Identificamos {tempo_baixa} tarefas de BAIXA prioridade para um cargo de Gestão. Oportunidade imediata de delegação para liberar foco estratégico.")
+
+        # Alerta 3: Perfil Dominante (Caso do Adson)
+        if letra_principal == "A" and minutos_diarios > 480:
+            st.info("💡 **DICA DE LIDERANÇA:** Colaboradores com alta Dominância tendem a 'puxar' o trabalho para garantir o prazo. Monitore a qualidade das entregas da equipe dele, pois ele pode estar refazendo o trabalho dos outros.")
+
+    except Exception as e:
+        st.error(f"Erro ao processar perícia: {e}")
+
+# CHAMADA DA FUNÇÃO (Coloque isso após o carregamento do seu JSON)
+if 'colaborador' in dados_json or 'campos' in dados_json:
+    realizar_pericia(dados_json)
+
     
