@@ -5000,59 +5000,45 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # 🚀 EXECUÇÃO DO LAUDO (VERSÃO BLINDADA)
+            # 💉 VACINA ANTI-ERRO: Import e leitura imediata
+            import json
+            import streamlit as st
+
+            try:
+                with open('dados_projeto.json', 'r', encoding='utf-8') as f:
+                    dados_lidos = json.load(f)
+            except Exception as e:
+                st.error(f"Erro ao carregar o arquivo: {e}")
+                st.stop()
+
+            # 🚀 EXECUÇÃO DO LAUDO (ESTILO NATIVO)
             if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
                 with st.spinner("IA processando cruzamento de dados..."):
-                    try:
-                        # Garante os imports AQUI dentro para não dar NameError nem Unbound
-                        import json
-                        from openai import OpenAI
-                        
-                        # Tenta ler o arquivo de dados se dados_lidos não existir
-                        if 'dados_lidos' not in locals() and 'dados_lidos' not in globals():
-                            with open('dados_projeto.json', 'r', encoding='utf-8') as f:
-                                dados_lidos = json.load(f)
-
-                        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-                        
-                        # Template que você enviou (resumido para a IA preencher)
-                        template_html = """
-                        <html><head><style>
-                        body { font-family: Arial; margin: 20px; }
-                        h1 { color: #2c3e50; }
-                        table { width: 100%; border-collapse: collapse; }
-                        th, td { border: 1px solid #bdc3c7; padding: 10px; }
-                        th { background: #ecf0f1; }
-                        </style></head><body>
-                        <h1>Laudo Pericial Forense</h1>
-                        {{CONTEUDO_GERADO_PELA_IA}}
-                        </body></html>
-                        """
-
-                        response = client.chat.completions.create(
-                            model="gpt-4o-mini",
-                            messages=[
-                                {"role": "system", "content": "Você é um perito. Gere o corpo do laudo em HTML (tabelas e textos) baseado nos dados fornecidos."},
-                                {"role": "user", "content": f"Dados: {json.dumps(dados_lidos)}"}
-                            ]
-                        )
-                        
-                        conteudo = response.choices[0].message.content
-                        laudo_final = template_html.replace("{{CONTEUDO_GERADO_PELA_IA}}", conteudo)
-
-                        st.divider()
-                        st.markdown(laudo_final, unsafe_allow_html=True)
-                        
-                        st.download_button(
-                            label="📥 BAIXAR LAUDO COMPLETO",
-                            data=laudo_final,
-                            file_name="laudo_pericial.html",
-                            mime="text/html",
-                            use_container_width=True
-                        )
-
-                    except Exception as e:
-                        st.error(f"Erro ao processar arquivo ou API: {e}")
+                    from openai import OpenAI
+                    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+                    
+                    # Converte para string para a IA processar
+                    dados_string = json.dumps(dados_lidos, ensure_ascii=False)
+                    
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",
+                        messages=[
+                            {"role": "system", "content": "Você é um Perito Forense. Gere o laudo em HTML."},
+                            {"role": "user", "content": f"Dados: {dados_string}"}
+                        ]
+                    )
+                    laudo = response.choices[0].message.content
+                    
+                    st.divider()
+                    st.markdown(laudo, unsafe_allow_html=True)
+                    
+                    st.download_button(
+                        label="📥 EXPORTAR LAUDO FINAL", 
+                        data=laudo, 
+                        file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
+                        mime="text/html",
+                        use_container_width=True
+                    )
 
 if __name__ == "__main__":
     main()
