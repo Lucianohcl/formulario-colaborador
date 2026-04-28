@@ -4675,40 +4675,55 @@ if st.session_state.get("pagina") == "parecer":
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     st.table(pd.DataFrame(dados_ia))
 
-                    # --- GERADOR DE HTML PARA DOWNLOAD ---
-                    html_content = ""
-                    html_content += "<html><head><meta charset='UTF-8'><title>POP IA</title></head><body>"
-                    html_content += "<h2>POP Padrao IA</h2>"
+                    # --- GERADOR DE WORD PARA DOWNLOAD ---
+                    from docx import Document
+                    import io
 
-                    html_content += "<table border='1' style='border-collapse:collapse;width:100%'>"
-                    html_content += "<tr>"
-                    html_content += "<th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diario</th><th>Eficiencia</th><th>Meta</th><th>Sistema</th><th>Execucao</th><th>Automacao</th><th>Ganho (min)</th>"
-                    html_content += "</tr>"
+                    doc = Document()
+
+                    doc.add_heading("POP Padrao IA", level=1)
+
+                    table = doc.add_table(rows=1, cols=10)
+                    hdr = table.rows[0].cells
+
+                    hdr[0].text = "Atividade"
+                    hdr[1].text = "Freq"
+                    hdr[2].text = "Tempo Base"
+                    hdr[3].text = "Impacto Diario"
+                    hdr[4].text = "Eficiencia"
+                    hdr[5].text = "Meta"
+                    hdr[6].text = "Sistema"
+                    hdr[7].text = "Execucao"
+                    hdr[8].text = "Automacao"
+                    hdr[9].text = "Ganho (min)"
 
                     for d in dados_ia:
-                        html_content += "<tr>"
-                        html_content += f"<td>{d['Atividade']}</td>"
-                        html_content += f"<td>{d['Freq']}</td>"
-                        html_content += f"<td>{d['Tempo Base']}</td>"
-                        html_content += f"<td>{d['Impacto Diário Convertido']}</td>"
-                        html_content += f"<td>{d['Eficiência vs 480m']}</td>"
-                        html_content += f"<td>{d['Meta Auditável']}</td>"
-                        html_content += f"<td>{d.get('Sistema','')}</td>"
-                        html_content += f"<td>{d.get('Execução','')}</td>"
-                        html_content += f"<td>{d.get('Automação Possível','')}</td>"
-                        html_content += f"<td>{d.get('Ganho Automação Min',0)}</td>"
-                        html_content += "</tr>"
+                        row = table.add_row().cells
 
-                    html_content += "</table>"
+                        row[0].text = str(d.get("Atividade", ""))
+                        row[1].text = str(d.get("Freq", ""))
+                        row[2].text = str(d.get("Tempo Base", ""))
+                        row[3].text = str(d.get("Impacto Diário Convertido", ""))
+                        row[4].text = str(d.get("Eficiência vs 480m", ""))
+                        row[5].text = str(d.get("Meta Auditável", ""))
+                        row[6].text = str(d.get("Sistema", ""))
+                        row[7].text = str(d.get("Execução", ""))
+                        row[8].text = str(d.get("Automação Possível", ""))
+                        row[9].text = str(d.get("Ganho Automação Min", 0))
 
-                    html_content += f"<p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>"
-                    html_content += "</body></html>"
+                    doc.add_paragraph(
+                        f"Carga Alvo: 480 min | Ocupacao: {total_ia_diario:.1f} min | Eficiência: {(total_ia_diario/480)*100:.1f}%"
+                    )
+
+                    buffer = io.BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
 
                     st.download_button(
-                        label="📥 Baixar POP em HTML",
-                        data=html_content,
-                        file_name="pop_ia_netexame.html",
-                        mime="text/html"
+                        label="📥 Baixar POP em WORD",
+                        data=buffer,
+                        file_name="pop_ia_netexame.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
 
                     # --------------------------------------------------------------
