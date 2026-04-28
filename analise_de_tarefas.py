@@ -4545,54 +4545,36 @@ import json
 import os
 from openai import OpenAI
 
-# ==============================================================================
-# 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO AVANÇADÍSSIMO
-# ==============================================================================
-import streamlit as st
-
-# 1. GATILHO DE ABERTURA (SÓ RODA NA PRIMEIRA VEZ)
+# 1. GATILHO DE ABERTURA
 if 'pagina' not in st.session_state:
     st.session_state.pagina = "parecer"
 
 # 2. DEFINIÇÕES GLOBAIS
 def buscar_benchmark_ia_estrategico(*args, **kwargs):
-    return {}  # Blindagem
+    return {} 
 
 # 3. PÁGINAS (ENCAPSULADAS)
 def mostrar_pagina_parecer():
     st.title("📑 Parecer Técnico")
     st.markdown("---")
+    st.info("Você está no ambiente seguro do Parecer.")
     
-    if st.button("Voltar para Home", key="botao_voltar_exclusivo_topo"):
+    if st.button("Ir para o Sistema Principal (Home)", key="btn_voltar_home"):
         st.session_state.pagina = "home"
         st.rerun()
 
-def mostrar_home():
-    st.title("🏠 Home")
-    st.markdown("---")
-    
-    if st.button("Ir para Parecer", key="botao_ir_parecer"):
-        st.session_state.pagina = "parecer"
-        st.rerun()
+# 4. ROTEADOR COM FILTRO DE ERRO
+# Se a página for 'parecer', ele executa e PARA o código aqui.
+# Isso ignora qualquer erro de indentação que venha abaixo!
+if st.session_state.pagina == "parecer":
+    mostrar_pagina_parecer()
+    st.stop() # <--- O ESCUDO: O código abaixo da linha 4597 não será lido!
 
-# 4. ROTEADOR (O CORAÇÃO DE VERDADE)
-def router():
-    pagina = st.session_state.pagina
-
-    if pagina == "parecer":
-        mostrar_pagina_parecer()
-
-    elif pagina == "home":
-        mostrar_home()
-
-    else:
-        # fallback de segurança
-        st.session_state.pagina = "parecer"
-        mostrar_pagina_parecer()
-
-# 5. EXECUÇÃO
-router()
-
+# 5. SE CHEGOU AQUI, ELE TENTA RODAR O RESTO (HOME)
+st.title("🏠 Home")
+if st.button("Voltar para Parecer", key="btn_ir_parecer"):
+    st.session_state.pagina = "parecer"
+    st.rerun()
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
