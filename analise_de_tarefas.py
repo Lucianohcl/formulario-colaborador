@@ -5001,3 +5001,129 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+
+# ==============================================================================
+# 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
+# ==============================================================================
+def realizar_super_pericia_ia(dados):
+    """
+    Realiza a auditoria cruzada: JSON + Benchmark + Nexo Causal + DISC.
+    """
+    # Preparação dos dados para o Prompt
+    contexto_dados = json.dumps(dados, indent=2, ensure_ascii=False)
+    
+    prompt = f"""
+    Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
+    Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
+
+    DADOS BRUTOS DO ALVO:
+    {contexto_dados}
+
+    SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
+    1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas de 'Alta' complexidade relatadas? 
+    2. CAPACIDADE vs. ENTREGA: O colaborador possui cursos de Pós/Especialização (ver em 'cursos') que estão sendo desperdiçados em tarefas operacionais?
+    3. HIBRIDISMO COMPORTAMENTAL: Analise o DISC. Como o perfil (Ex: Dominante/Conformidade) impacta a velocidade e a precisão nestas tarefas?
+    4. CRONOANÁLISE CRÍTICA: Se a soma das tarefas (D/S/M) converter para mais de 480min/dia, aponte risco de Burnout Mascarado e Erro Forense.
+    5. VEREDITO ESTRATÉGICO: O que ele deve PARAR de fazer, o que deve DELEGAR e onde deve ser o FOCO IMEDIATO.
+
+    FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+    {{
+        "parecer_executivo": "Texto profundo, crítico e técnico (estilo consultoria sênior) detalhando os desvios e o nexo causal.",
+        "pop_benchmark": [
+            {{"Atividade": "Nome da Tarefa", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI de Sucesso"}}
+        ],
+        "veredito_final": "Resumo executivo do plano de ação."
+    }}
+    """
+    
+    try:
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "Você é um auditor sênior especializado em eficiência operacional e capital humano."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={ "type": "json_object" },
+            temperature=0.3
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        st.error(f"Erro na Perícia IA: {e}")
+        return None
+
+# ==============================================================================
+# 🎨 ARTEFATO DE ENTREGA: GERADOR DE LAUDO HTML LUXO
+# ==============================================================================
+def gerar_html_laudo_luxo(dados, analise_ia):
+    nome = dados.get('colaborador', 'N/A')
+    cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
+    unidade = dados.get('campos', {}).get('unidade', 'Geral')
+    
+    # CSS Inline para garantir que o layout funcione em qualquer lugar (PDF/Browser)
+    estilo_css = """
+    <style>
+        body { font-family: 'Segoe UI', Helvetica, sans-serif; background-color: #f4f7f6; color: #1a1a1a; margin: 0; padding: 40px; }
+        .documento { background: white; max-width: 900px; margin: auto; padding: 50px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); border-top: 15px solid #d90429; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .logo-text { font-size: 26px; font-weight: bold; color: #2b2d42; letter-spacing: -1px; }
+        .tag-confidencial { background: #d90429; color: white; padding: 6px 15px; font-size: 11px; border-radius: 4px; font-weight: bold; }
+        .info-tab { width: 100%; margin-top: 30px; border-collapse: collapse; background: #fdfdfd; }
+        .info-tab td { padding: 15px; border: 1px solid #eee; font-size: 14px; }
+        .titulo-secao { color: #d90429; font-size: 18px; font-weight: bold; margin-top: 40px; border-bottom: 1px solid #ffccd5; padding-bottom: 8px; text-transform: uppercase; }
+        .parecer-texto { margin-top: 20px; line-height: 1.8; text-align: justify; font-size: 15px; color: #333; white-space: pre-wrap; }
+        .pop-table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        .pop-table th { background: #2b2d42; color: white; padding: 12px; text-align: left; font-size: 13px; text-transform: uppercase; }
+        .pop-table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .veredito-box { background: #2b2d42; color: #fff; padding: 25px; border-radius: 6px; margin-top: 30px; font-weight: bold; text-align: center; border-left: 10px solid #d90429; }
+        .footer { text-align: center; margin-top: 60px; font-size: 11px; color: #aaa; border-top: 1px solid #eee; padding-top: 20px; }
+    </style>
+    """
+
+    # Gerar linhas da tabela de benchmark dinamicamente
+    linhas_pop = "".join([
+        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Meta']}</td></tr>" 
+        for x in analise_ia['pop_benchmark']
+    ])
+
+    html_final = f"""
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head><meta charset="UTF-8">{estilo_css}</head>
+    <body>
+        <div class="documento">
+            <div class="header">
+                <div class="logo-text">NETEXAME <span style="color:#d90429">INTEL</span></div>
+                <div class="tag-confidencial">CONFIDENCIAL / USO INTERNO</div>
+            </div>
+
+            <table class="info-tab">
+                <tr><td><strong>COLABORADOR:</strong> {nome}</td><td><strong>CARGO:</strong> {cargo}</td></tr>
+                <tr><td><strong>UNIDADE:</strong> {unidade}</td><td><strong>DATA DA PERÍCIA:</strong> 28/04/2026</td></tr>
+            </table>
+
+            <div class="titulo-secao">I. Análise de Nexo Causal e Parecer Técnico</div>
+            <div class="parecer-texto">{analise_ia['parecer_executivo']}</div>
+
+            <div class="titulo-secao">II. Benchmark Operacional IA (Padrão 480m)</div>
+            <table class="pop-table">
+                <tr><th>ATIVIDADE ESTRATÉGICA</th><th>FREQ</th><th>TEMPO ESTIMADO</th><th>META AUDITÁVEL</th></tr>
+                {linhas_pop}
+            </table>
+
+            <div class="titulo-secao">III. Veredito Forense e Recomendações</div>
+            <div class="veredito-box">
+                {analise_ia['veredito_final']}
+            </div>
+
+            <div class="footer">
+                Relatório Gerado por Motor de Perícia Forense NetExame IA.<br>
+                © 2026 Todos os direitos reservados à Auditoria de Capital Humano.
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return html_final
