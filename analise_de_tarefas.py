@@ -5000,41 +5000,49 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # 🚀 EXECUÇÃO DO LAUDO (TOTALMENTE INDEPENDENTE)
+            # 🚀 EXECUÇÃO DO LAUDO (ESTILO NATIVO E INDEPENDENTE)
             if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
                 with st.spinner("IA processando cruzamento de dados..."):
                     try:
                         from openai import OpenAI
+                        import json
                         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
                         
-                        # Converte dados para texto
+                        # Converte dados para enviar para a IA
                         dados_txt = json.dumps(dados_lidos, ensure_ascii=False)
 
-                        # Chamada direta para não ter erro de NameError
+                        # Chamada direta para a IA preencher o SEU modelo HTML
+                        prompt = f"""
+                        Você é um Perito Forense. Com base nos dados: {dados_txt}, 
+                        preencha exatamente o modelo HTML que vou te passar. 
+                        Retorne APENAS o código HTML completo, sem textos extras.
+                        Mantenha o CSS original. No Perfil DISC, use as pontuações reais dos dados.
+                        
+                        MODELO HTML:
+                        {'''insira_aqui_seu_html_acima'''} 
+                        """
+
                         response = client.chat.completions.create(
                             model="gpt-4o-mini",
-                            messages=[
-                                {"role": "system", "content": "Você é um Perito Forense. Gere um laudo em HTML focado em Perfil DISC, Nexo Causal e POP."},
-                                {"role": "user", "content": f"Gere o laudo para: {dados_txt}"}
-                            ]
+                            messages=[{"role": "user", "content": prompt}]
                         )
-                        laudo_html = response.choices[0].message.content
+                        laudo_final = response.choices[0].message.content
                         
                         st.divider()
                         
-                        # Exibição segura
-                        st.markdown(laudo_html, unsafe_allow_html=True)
+                        # Exibe o laudo na tela
+                        st.markdown(laudo_final, unsafe_allow_html=True)
                         
-                        # Download
+                        # Botão de Download
                         st.download_button(
-                            label="📥 BAIXAR LAUDO (HTML)", 
-                            data=laudo_html, 
-                            file_name=f"laudo_{dados_lidos.get('colaborador')}.html",
+                            label="📥 BAIXAR LAUDO PROFISSIONAL", 
+                            data=laudo_final, 
+                            file_name=f"laudo_pericial_{dados_lidos.get('colaborador', 'doc')}.html",
                             mime="text/html",
                             use_container_width=True
                         )
                     except Exception as e:
-                        st.error(f"Erro Crítico: {e}. Verifique sua chave da OpenAI nos Secrets.")
+                        st.error(f"Erro: {e}. Verifique se a chave API está nos Secrets.")
 
 if __name__ == "__main__":
     main()
