@@ -5054,15 +5054,70 @@ def realizar_super_pericia_ia(dados):
         st.error(f"Erro na Perícia IA: {e}")
         return None
 
+
+
+import streamlit as st
+import pandas as pd
+import json
+import os
+import glob
+import base64
+from openai import OpenAI
+
 # ==============================================================================
-# 🎨 ARTEFATO DE ENTREGA: GERADOR DE LAUDO HTML LUXO
+# 1. SETUP E MOTOR DE INTELIGÊNCIA (NEXO CAUSAL 360°)
+# ==============================================================================
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+def realizar_super_pericia_ia(dados):
+    """
+    O Cérebro do Sistema: Cruza JSON, Benchmark e Gera Parecer Forense.
+    """
+    contexto_puro = json.dumps(dados, indent=2, ensure_ascii=False)
+    
+    prompt = f"""
+    Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
+    Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
+
+    DADOS BRUTOS DO ALVO:
+    {contexto_puro}
+
+    SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
+    1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas relatadas? 
+    2. CAPACIDADE vs. ENTREGA: Há desperdício de formação (cursos) em tarefas operacionais?
+    3. HIBRIDISMO COMPORTAMENTAL: Como o perfil DISC impacta a execução?
+    4. CRONOANÁLISE: Se > 480min/dia, aponte risco de Burnout Mascarado.
+    5. VEREDITO: O que PARAR, DELEGAR e FOCO IMEDIATO.
+
+    FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+    {{
+        "parecer_executivo": "Texto profundo e técnico sobre desvios e nexo causal.",
+        "pop_benchmark": [
+            {{"Atividade": "Nome", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI"}}
+        ],
+        "veredito_final": "Resumo executivo do plano de ação."
+    }}
+    """
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "system", "content": "Você é um auditor sênior."},
+                      {"role": "user", "content": prompt}],
+            response_format={ "type": "json_object" }
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        st.error(f"Erro na IA: {e}")
+        return None
+
+# ==============================================================================
+# 2. ARTEFATO DE ENTREGA: GERADOR DE LAUDO HTML LUXO
 # ==============================================================================
 def gerar_html_laudo_luxo(dados, analise_ia):
     nome = dados.get('colaborador', 'N/A')
     cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
     unidade = dados.get('campos', {}).get('unidade', 'Geral')
     
-    # CSS Inline para garantir que o layout funcione em qualquer lugar (PDF/Browser)
     estilo_css = """
     <style>
         body { font-family: 'Segoe UI', Helvetica, sans-serif; background-color: #f4f7f6; color: #1a1a1a; margin: 0; padding: 40px; }
@@ -5082,7 +5137,6 @@ def gerar_html_laudo_luxo(dados, analise_ia):
     </style>
     """
 
-    # Gerar linhas da tabela de benchmark dinamicamente
     linhas_pop = "".join([
         f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Meta']}</td></tr>" 
         for x in analise_ia['pop_benchmark']
@@ -5098,32 +5152,78 @@ def gerar_html_laudo_luxo(dados, analise_ia):
                 <div class="logo-text">NETEXAME <span style="color:#d90429">INTEL</span></div>
                 <div class="tag-confidencial">CONFIDENCIAL / USO INTERNO</div>
             </div>
-
             <table class="info-tab">
                 <tr><td><strong>COLABORADOR:</strong> {nome}</td><td><strong>CARGO:</strong> {cargo}</td></tr>
-                <tr><td><strong>UNIDADE:</strong> {unidade}</td><td><strong>DATA DA PERÍCIA:</strong> 28/04/2026</td></tr>
+                <tr><td><strong>UNIDADE:</strong> {unidade}</td><td><strong>DATA:</strong> 28/04/2026</td></tr>
             </table>
-
             <div class="titulo-secao">I. Análise de Nexo Causal e Parecer Técnico</div>
             <div class="parecer-texto">{analise_ia['parecer_executivo']}</div>
-
             <div class="titulo-secao">II. Benchmark Operacional IA (Padrão 480m)</div>
             <table class="pop-table">
-                <tr><th>ATIVIDADE ESTRATÉGICA</th><th>FREQ</th><th>TEMPO ESTIMADO</th><th>META AUDITÁVEL</th></tr>
+                <tr><th>ATIVIDADE ESTRATÉGICA</th><th>FREQ</th><th>TEMPO</th><th>META</th></tr>
                 {linhas_pop}
             </table>
-
             <div class="titulo-secao">III. Veredito Forense e Recomendações</div>
-            <div class="veredito-box">
-                {analise_ia['veredito_final']}
-            </div>
-
-            <div class="footer">
-                Relatório Gerado por Motor de Perícia Forense NetExame IA.<br>
-                © 2026 Todos os direitos reservados à Auditoria de Capital Humano.
-            </div>
+            <div class="veredito-box">{analise_ia['veredito_final']}</div>
+            <div class="footer">Gerado por NetExame IA © 2026</div>
         </div>
     </body>
     </html>
     """
     return html_final
+
+# ==============================================================================
+# 3. INTERFACE E GATILHOS (O CORAÇÃO DO APP)
+# ==============================================================================
+def main():
+    st.title("🛡️ NetExame: Sistema Unificado de Auditoria Forense")
+    
+    # Busca arquivos
+    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+    if not arquivos:
+        st.warning("Pasta de dados vazia.")
+        return
+
+    colab_file = st.selectbox("🎯 Selecione o Colaborador:", arquivos)
+    
+    if colab_file:
+        with open(colab_file, 'r', encoding='utf-8') as f:
+            dados_alvo = json.load(f)
+
+        if st.button("🚀 INICIAR PERÍCIA COMPLETA", use_container_width=True):
+            with st.spinner("IA processando cruzamento de dados..."):
+                resultado_ia = realizar_super_pericia_ia(dados_alvo)
+                
+                if resultado_ia:
+                    # Salva no estado para não perder
+                    st.session_state['resultado_ia'] = resultado_ia
+                    st.success("Análise Concluída!")
+
+        # SE O RESULTADO EXISTIR, MOSTRA TUDO
+        if 'resultado_ia' in st.session_state:
+            res = st.session_state['resultado_ia']
+            
+            # 1. Exibição na Tela do App
+            st.markdown("### 🔍 Parecer Técnico Gerado")
+            st.info(res['parecer_executivo'])
+            
+            # 2. Geração e Download do HTML LUXO
+            html_final = gerar_html_laudo_luxo(dados_alvo, res)
+            b64 = base64.b64encode(html_final.encode('utf-8')).decode()
+            
+            download_btn = f'''
+                <a href="data:text/html;base64,{b64}" download="LAUDO_{dados_alvo.get('colaborador')}.html" style="text-decoration:none;">
+                    <button style="
+                        background-color: #d90429; color: white; padding: 20px; 
+                        border: none; border-radius: 10px; cursor: pointer; 
+                        font-weight: bold; width: 100%; font-size: 18px;
+                        box-shadow: 0 4px 15px rgba(217,4,41,0.3);
+                    ">
+                        📄 BAIXAR RELATÓRIO DE AUDITORIA LUXO (HTML)
+                    </button>
+                </a>
+            '''
+            st.markdown(download_btn, unsafe_allow_html=True)
+
+if __name__ == "__main__":
+    main()
