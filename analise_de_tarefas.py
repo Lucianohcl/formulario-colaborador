@@ -4939,7 +4939,15 @@ if st.session_state.get("pagina") == "parecer":
         <html>
         <head><meta charset="utf-8"><style>
             body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
-            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+            .container {{
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                max-width: 900px;
+                margin: auto;
+                border-top: 10px solid #d90429;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }}    
             .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
             .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
             footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
