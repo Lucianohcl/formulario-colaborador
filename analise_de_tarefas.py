@@ -5119,173 +5119,91 @@ import base64
 from openai import OpenAI
 
 # ==============================================================================
-# 1. MOTOR DE PERÍCIA COM CACHE (ECONOMIZA CRÉDITOS)
+# 1. MOTOR SIMPLES (GPT-4O-MINI) - O QUE SEMPRE FUNCIONOU
 # ==============================================================================
 @st.cache_data(show_spinner=False)
-def realizar_pericia_cached(dados_json_str):
-    """
-    Usa o cache do Streamlit para não chamar a API se os dados forem os mesmos.
-    Transformamos em string porque o cache não aceita dicionários mutáveis direto.
-    """
-    dados = json.loads(dados_json_str)
+def realizar_pericia_simples(dados_json_str):
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     
-    prompt = f"""
-    Cruze os dados abaixo e gere um Laudo Pericial focado em NEXO CAUSAL e PERFIL COMPORTAMENTAL DISC.
-    DADOS: {dados_json_str}
-    SAÍDA (JSON):
-    {{
-        "parecer_executivo": "Texto técnico sobre nexo causal e perfil.",
-        "pop_benchmark": [{{"Atividade": "X", "Freq": "D", "Tempo": "X min", "Meta": "KPI"}}],
-        "veredito_final": "Estratégia direta."
-    }}
-    """
     try:
         response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": "Você é um perito em RH."}],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except:
-        return None
-
-import streamlit as st
-import json
-import glob
-import base64
-from openai import OpenAI
-
-# ==============================================================================
-# 1. MOTOR DE PERÍCIA COM TRAVA DE CRÉDITO (CACHE)
-# ==============================================================================
-@st.cache_data(show_spinner=False)
-def realizar_pericia_ia_com_cache(dados_json_str):
-    """
-    A PRIMEIRA VEZ: Chama a API e gasta créditos.
-    A PARTIR DA SEGUNDA: Recupera da memória (Custo Zero).
-    """
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    
-    prompt = f"""
-    Aja como Perito Forense. Analise Nexo Causal e Perfil DISC.
-    DADOS: {dados_json_str}
-    
-    SAÍDA JSON ESTRITAMENTE:
-    {{
-        "parecer_executivo": "Análise técnica sobre o colaborador.",
-        "pop_benchmark": [{{"Atividade": "X", "Freq": "D", "Tempo": "X min", "Meta": "KPI"}}],
-        "veredito_final": "Estratégia final."
-    }}
-    """
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": "Auditor Sênior."}],
+            model="gpt-4o-mini", # VOLTAMOS PARA O PADRÃO LEVE
+            messages=[
+                {"role": "system", "content": "Você é um perito em RH. Responda apenas em JSON."},
+                {"role": "user", "content": f"Analise nexo causal e perfil DISC: {dados_json_str}"}
+            ],
             response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        return {"error": str(e)}
+        st.error(f"Erro na conexão: {e}")
+        return None
 
 # ==============================================================================
-# 2. GERADOR DO DOCUMENTO (HTML COMPLETO)
+# 2. GERADOR DE LAUDO (SIMPLES E DIRETO)
 # ==============================================================================
-def construir_html_final(dados, analise_ia):
+def gerar_html_laudo(dados, analise_ia):
     nome = dados.get('colaborador', 'N/A')
     cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
     
-    # Monta a tabela de atividades
-    corpo_tabela = ""
-    for item in analise_ia.get('pop_benchmark', []):
-        corpo_tabela += f"""
-        <tr>
-            <td>{item.get('Atividade')}</td>
-            <td>{item.get('Freq')}</td>
-            <td>{item.get('Tempo')}</td>
-            <td>{item.get('Meta')}</td>
-        </tr>"""
+    linhas = "".join([
+        f"<tr><td>{x.get('Atividade')}</td><td>{x.get('Freq')}</td><td>{x.get('Tempo')}</td><td>{x.get('Meta')}</td></tr>" 
+        for x in analise_ia.get('pop_benchmark', [])
+    ])
 
-    # O HTML que será baixado
-    html_template = f"""
+    return f"""
     <html>
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; background: #f4f7f6; }}
-            .laudo {{ background: white; padding: 40px; border-radius: 10px; border-top: 20px solid #d90429; box-shadow: 0 5px 25px rgba(0,0,0,0.1); max-width: 850px; margin: auto; }}
-            h1 {{ color: #2b2d42; margin-bottom: 5px; }}
-            h2 {{ color: #d90429; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 30px; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
-            th {{ background: #2b2d42; color: white; padding: 12px; text-align: left; }}
-            td {{ padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }}
-            .veredito {{ background: #2b2d42; color: white; padding: 25px; border-radius: 8px; margin-top: 40px; text-align: center; font-weight: bold; }}
-        </style>
-    </head>
-    <body>
-        <div class="laudo">
+    <body style="font-family: sans-serif; padding: 30px;">
+        <div style="border: 2px solid #333; padding: 20px; border-radius: 10px;">
             <h1>LAUDO PERICIAL: {nome}</h1>
-            <p><strong>CARGO:</strong> {cargo} | <strong>DATA DA PERÍCIA:</strong> 28/04/2026</p>
-            
-            <h2>I. PARECER TÉCNICO EXECUTIVO</h2>
-            <div style="line-height:1.8; text-align:justify;">{analise_ia.get('parecer_executivo')}</div>
-            
-            <h2>II. BENCHMARK OPERACIONAL (480 MIN)</h2>
-            <table>
-                <tr><th>ATIVIDADE</th><th>FREQUÊNCIA</th><th>TEMPO</th><th>META</th></tr>
-                {corpo_tabela}
+            <p><strong>CARGO:</strong> {cargo}</p>
+            <hr>
+            <h3>PARECER TÉCNICO:</h3>
+            <p>{analise_ia.get('parecer_executivo')}</p>
+            <h3>BENCHMARK:</h3>
+            <table border="1" style="width:100%; border-collapse: collapse;">
+                <tr style="background:#eee;"><th>ATIVIDADE</th><th>FREQ</th><th>TEMPO</th><th>META</th></tr>
+                {linhas}
             </table>
-            
-            <div class="veredito">
-                VEREDITO FINAL: {analise_ia.get('veredito_final')}
-            </div>
+            <h3 style="margin-top:20px;">VEREDITO: {analise_ia.get('veredito_final')}</h3>
         </div>
     </body>
     </html>
     """
-    return html_template
 
 # ==============================================================================
-# 3. INTERFACE MINIMALISTA (SÓ BOTÃO DE DOWNLOAD)
+# 3. INTERFACE (SÓ O NECESSÁRIO)
 # ==============================================================================
 def main():
-    st.set_page_config(page_title="NetExame Pro", layout="centered")
-    st.title("🛡️ NetExame: Gerador de Laudos")
+    st.title("🛡️ NetExame: Perícia Simples")
 
-    # Localiza arquivos JSON
-    caminhos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-    escolha = st.selectbox("🎯 Selecione o Perfil para Auditoria:", caminhos)
+    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+    colab_file = st.selectbox("🎯 Selecionar Perfil:", arquivos)
 
-    if escolha:
-        with open(escolha, 'r', encoding='utf-8') as f:
+    if colab_file:
+        with open(colab_file, 'r', encoding='utf-8') as f:
             dados_alvo = json.load(f)
 
-        if st.button("🚀 PROCESSAR PERÍCIA E GERAR EXPORTAÇÃO", use_container_width=True):
-            # Transforma em string para o cache identificar se é o mesmo dado
-            dados_string = json.dumps(dados_alvo, ensure_ascii=False)
+        if st.button("🚀 GERAR LAUDO AGORA", use_container_width=True):
+            dados_str = json.dumps(dados_alvo, ensure_ascii=False)
             
-            with st.spinner("IA Correlacionando Dados (Auditando Nexo Causal)..."):
-                resultado = realizar_pericia_ia_com_cache(dados_string)
+            with st.spinner("Analisando..."):
+                resultado = realizar_pericia_simples(dados_str)
                 
-                if resultado and "error" not in resultado:
-                    # GERA O HTML DE VERDADE
-                    documento_html = construir_html_final(dados_alvo, resultado)
-                    
-                    # Prepara para download
-                    b64 = base64.b64encode(documento_html.encode('utf-8')).decode()
+                if resultado:
+                    html_final = gerar_html_laudo(dados_alvo, resultado)
+                    b64 = base64.b64encode(html_final.encode('utf-8')).decode()
                     
                     st.markdown(f'''
-                        <div style="text-align:center; margin-top:30px;">
-                            <a href="data:text/html;base64,{b64}" download="LAUDO_TECNICO_{dados_alvo.get('colaborador')}.html" style="text-decoration:none;">
-                                <button style="background-color:#d90429; color:white; padding:25px; border:none; border-radius:15px; cursor:pointer; width:100%; font-size:22px; font-weight:bold; box-shadow: 0 10px 25px rgba(217,4,41,0.4);">
-                                    📥 BAIXAR LAUDO TÉCNICO (HTML LUXO)
+                        <div style="text-align:center; margin-top:20px;">
+                            <a href="data:text/html;base64,{b64}" download="LAUDO_{nome}.html">
+                                <button style="background:#d90429; color:white; padding:20px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">
+                                    📥 BAIXAR LAUDO FINAL
                                 </button>
                             </a>
                         </div>
                     ''', unsafe_allow_html=True)
-                    st.success("✅ Perícia finalizada com sucesso!")
-                else:
-                    st.error("❌ Falha na conexão com a OpenAI. Verifique seus créditos.")
+                    st.success("Pronto! Simples e funcional.")
 
 if __name__ == "__main__":
     main()
