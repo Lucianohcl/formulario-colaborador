@@ -5119,91 +5119,99 @@ import base64
 from openai import OpenAI
 
 # ==============================================================================
-# 1. MOTOR SIMPLES (GPT-4O-MINI) - O QUE SEMPRE FUNCIONOU
+# 1. MOTOR DE PERÍCIA (RESILIENTE)
 # ==============================================================================
 @st.cache_data(show_spinner=False)
-def realizar_pericia_simples(dados_json_str):
+def realizar_pericia_direta(dados_json_str):
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini", # VOLTAMOS PARA O PADRÃO LEVE
+            model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "Você é um perito em RH. Responda apenas em JSON."},
-                {"role": "user", "content": f"Analise nexo causal e perfil DISC: {dados_json_str}"}
+                {"role": "system", "content": "Você é um Perito Forense em RH. Gere um laudo técnico focado em PERFIL e NEXO CAUSAL."},
+                {"role": "user", "content": f"Una o Perfil DISC, as competências técnicas e os POPs necessários para este colaborador. Retorne APENAS um JSON com 'analise_perfil_nexo' (texto) e 'pop_estrategico' (texto): {dados_json_str}"}
             ],
             response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        st.error(f"Erro na conexão: {e}")
-        return None
+        return {"error": str(e)}
 
 # ==============================================================================
-# 2. GERADOR DE LAUDO (SIMPLES E DIRETO)
+# 2. GERADOR DE HTML (ESTRUTURA LIMPA)
 # ==============================================================================
-def gerar_html_laudo(dados, analise_ia):
+def construir_html_pericial(dados, analise_ia):
     nome = dados.get('colaborador', 'N/A')
     cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
     
-    linhas = "".join([
-        f"<tr><td>{x.get('Atividade')}</td><td>{x.get('Freq')}</td><td>{x.get('Tempo')}</td><td>{x.get('Meta')}</td></tr>" 
-        for x in analise_ia.get('pop_benchmark', [])
-    ])
+    # Pegando os textos da IA com proteção contra None
+    corpo_laudo = analise_ia.get('analise_perfil_nexo', 'Dados de análise não disponíveis.')
+    pop_texto = analise_ia.get('pop_estrategico', 'POP não definido.')
 
     return f"""
     <html>
-    <body style="font-family: sans-serif; padding: 30px;">
-        <div style="border: 2px solid #333; padding: 20px; border-radius: 10px;">
-            <h1>LAUDO PERICIAL: {nome}</h1>
-            <p><strong>CARGO:</strong> {cargo}</p>
-            <hr>
-            <h3>PARECER TÉCNICO:</h3>
-            <p>{analise_ia.get('parecer_executivo')}</p>
-            <h3>BENCHMARK:</h3>
-            <table border="1" style="width:100%; border-collapse: collapse;">
-                <tr style="background:#eee;"><th>ATIVIDADE</th><th>FREQ</th><th>TEMPO</th><th>META</th></tr>
-                {linhas}
-            </table>
-            <h3 style="margin-top:20px;">VEREDITO: {analise_ia.get('veredito_final')}</h3>
+    <head><meta charset="UTF-8">
+        <style>
+            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #2b2d42; line-height: 1.6; }}
+            .container {{ background: white; padding: 35px; border-radius: 12px; border-left: 10px solid #d90429; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 800px; margin: auto; }}
+            h1 {{ border-bottom: 2px solid #eee; padding-bottom: 10px; color: #d90429; }}
+            .section-title {{ font-weight: bold; text-transform: uppercase; margin-top: 25px; color: #2b2d42; background: #f4f7f6; padding: 5px 10px; }}
+            .content {{ margin-top: 10px; text-align: justify; }}
+            .footer {{ margin-top: 40px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>LAUDO TÉCNICO: {nome}</h1>
+            <p><strong>CARGO:</strong> {cargo} | <strong>AUDITORIA DE PROCESSO</strong></p>
+            
+            <div class="section-title">I. ANÁLISE COMPORTAMENTAL E NEXO CAUSAL</div>
+            <div class="content">{corpo_laudo}</div>
+            
+            <div class="section-title">II. DIRETRIZES DE POP (PROCEDIMENTO OPERACIONAL PADRÃO)</div>
+            <div class="content">{pop_texto}</div>
+            
+            <div class="footer">Documento gerado para fins de auditoria interna e otimização de processos.</div>
         </div>
     </body>
     </html>
     """
 
 # ==============================================================================
-# 3. INTERFACE (SÓ O NECESSÁRIO)
+# 3. INTERFACE
 # ==============================================================================
 def main():
-    st.title("🛡️ NetExame: Perícia Simples")
-
+    st.title("🛡️ NetExame: Perícia & POP")
+    
     arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-    colab_file = st.selectbox("🎯 Selecionar Perfil:", arquivos)
+    escolha = st.selectbox("🎯 Selecionar Perfil:", arquivos)
 
-    if colab_file:
-        with open(colab_file, 'r', encoding='utf-8') as f:
+    if escolha:
+        with open(escolha, 'r', encoding='utf-8') as f:
             dados_alvo = json.load(f)
 
-        if st.button("🚀 GERAR LAUDO AGORA", use_container_width=True):
+        if st.button("🚀 GERAR PERÍCIA TÉCNICA", use_container_width=True):
             dados_str = json.dumps(dados_alvo, ensure_ascii=False)
             
-            with st.spinner("Analisando..."):
-                resultado = realizar_pericia_simples(dados_str)
+            with st.spinner("Correlacionando Perfil e Processos..."):
+                resultado = realizar_pericia_direta(dados_str)
                 
-                if resultado:
-                    html_final = gerar_html_laudo(dados_alvo, resultado)
+                if "error" not in resultado:
+                    html_final = construir_html_pericial(dados_alvo, resultado)
                     b64 = base64.b64encode(html_final.encode('utf-8')).decode()
+                    nome_colab = dados_alvo.get('colaborador')
                     
                     st.markdown(f'''
                         <div style="text-align:center; margin-top:20px;">
-                            <a href="data:text/html;base64,{b64}" download="LAUDO_{dados_alvo.get('colaborador')}.html">
-                                <button style="background:#d90429; color:white; padding:20px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">
-                                    📥 BAIXAR LAUDO FINAL
+                            <a href="data:text/html;base64,{b64}" download="PERICIA_{nome_colab}.html">
+                                <button style="background:#d90429; color:white; padding:20px; border-radius:12px; cursor:pointer; width:100%; font-weight:bold; border:none; font-size:18px;">
+                                    📥 BAIXAR LAUDO TÉCNICO (HTML)
                                 </button>
                             </a>
                         </div>
                     ''', unsafe_allow_html=True)
-                    st.success("Pronto! Simples e funcional.")
+                    st.success("Perícia concluída com foco em Nexo e POP!")
 
 if __name__ == "__main__":
     main()
