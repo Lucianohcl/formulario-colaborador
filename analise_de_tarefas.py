@@ -4684,11 +4684,12 @@ if st.session_state.get("pagina") == "parecer":
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     st.table(pd.DataFrame(dados_ia))
 
-                                        # --- GERADOR DE HTML PARA DOWNLOAD ---
+                    # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
                     <html>
                     <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
                     <body style="font-family: sans-serif; padding: 20px;">
+                    """
 
                     <h2>[A] POP Padrão IA (Carga Diária 480m)</h2>
 
