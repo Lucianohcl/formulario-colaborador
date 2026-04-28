@@ -4575,47 +4575,45 @@ def buscar_benchmark_ia(cargo):
 if st.session_state.pagina == "parecer":
     st.title("🛡️ Sistema de Auditoria Forense - NetExame")
 
-    # --- 🟢 ETAPA 1: SELEÇÃO DO COLABORADOR ---
+    # --- 🟢 ETAPA 1: LOCALIZAÇÃO E SELEÇÃO ---
     caminho_dados = "dados" 
     
     if os.path.exists(caminho_dados):
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            # Criamos uma lista amigável para o Selectbox
+            # Interface de escolha
             colaborador_selecionado = st.selectbox(
                 "🎯 Selecione o Colaborador para Auditoria:",
                 options=arquivos,
                 format_func=lambda x: x.replace('.json', '').replace('_', ' ').upper()
             )
             
-            btn_processar = st.button("🚀 Iniciar Processamento Pericial")
-
-            if btn_processar:
-                # --- 🔵 ETAPA 2: CARGA E PROCESSAMENTO DO ESCOLHIDO ---
+            # O processamento só inicia ao clicar
+            if st.button("🚀 Iniciar Processamento Pericial"):
                 caminho_arquivo = os.path.join(caminho_dados, colaborador_selecionado)
                 
                 try:
                     with open(caminho_arquivo, 'r', encoding='utf-8') as f:
                         colab = json.load(f)
                     
+                    # Definição das variáveis locais para evitar NameError
                     nome = colab.get('colaborador', 'N/A').upper()
-                    # Acessa o cargo dentro da estrutura correta do seu JSON
                     campos = colab.get('campos', {})
                     cargo = campos.get('cargo', 'N/A').upper() if isinstance(campos, dict) else "N/A"
 
-                    st.success(f"✅ Dados de {nome} carregados com sucesso!")
-                    st.markdown(f"### 📑 Relatório Pericial: {nome}")
-                    st.info(f"🔍 **Análise de Engenharia:** {cargo}")
+                    st.markdown("---")
+                    st.subheader(f"⚖️ Processando Perícia: {nome}")
+                    st.info(f"🔍 **Cargo Auditado:** {cargo}")
 
-                    # 1. Busca do Benchmark de Mercado via IA
+                    # 1. Busca do Benchmark de Mercado via IA (Régua Externa)
                     pop_mkt = buscar_benchmark_ia(cargo)
                     
                     col1, col2 = st.columns(2)
                     with col1:
                         st.markdown("**📚 POP Padrão de Mercado**")
                         df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index')
-                        df_mkt.columns = ["Min Alvo", "Freq", "Meta Técnica"]
+                        df_mkt.columns = ["Min Alvo", "Freq", "Meta"]
                         st.table(df_mkt)
 
                     with col2:
@@ -4631,15 +4629,16 @@ if st.session_state.pagina == "parecer":
                             for item in atividades_alta:
                                 if termo_chave in item.get('Atividade', '').upper():
                                     try:
-                                        h = int(str(item.get('Horas', '0')).split()[0])
-                                        m = int(str(item.get('Minutos', '0')).split()[0])
-                                        tempo_real = (h * 60) + m
+                                        h_str = str(item.get('Horas', '0')).split()[0]
+                                        m_str = str(item.get('Minutos', '0')).split()[0]
+                                        tempo_real = (int(h_str) * 60) + int(m_str)
                                     except: continue
                             
                             if tempo_real > 0:
                                 desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100
                                 confronto.append({
                                     "Tarefa": tarefa_ia,
+                                    "Real": f"{tempo_real}m",
                                     "Desvio": f"{desvio:+.1f}%",
                                     "Status": "⚠️ GARGALO" if desvio > 15 else "✅ OK"
                                 })
@@ -4647,17 +4646,14 @@ if st.session_state.pagina == "parecer":
                         if confronto:
                             st.table(pd.DataFrame(confronto))
                         else:
-                            st.warning("Nenhuma atividade coincidente com o benchmark.")
+                            st.warning("Nenhum nexo causal encontrado com o benchmark.")
 
-                    st.markdown("---")
-                    st.subheader("🏆 Veredito Final")
-                    st.write(f"O colaborador **{nome}** foi auditado sob a régua de **{cargo}**. Gerando laudo...")
-                    st.button(f"📥 Exportar Laudo: {nome}")
+                    st.success(f"Perícia de {nome} concluída com sucesso.")
 
                 except Exception as e:
-                    st.error(f"Erro ao processar o arquivo: {e}")
+                    st.error(f"Erro ao carregar os dados: {e}")
         else:
-            st.error("❌ Nenhum arquivo .json encontrado na pasta /dados.")
+            st.error("❌ Nenhum JSON encontrado na pasta /dados.")
     else:
         st.error("❌ Pasta /dados não encontrada.")
 
