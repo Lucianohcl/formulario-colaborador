@@ -4552,10 +4552,6 @@ import streamlit as st
 if "pagina" not in st.session_state:
     st.session_state.pagina = "parecer"
 
-# botão na sidebar
-if st.sidebar.button("📑 Parecer"):
-    st.session_state.pagina = "parecer"
-
 # 👇 FUNÇÃO (CAIXA)
 def mostrar_parecer():
     st.title("📑 Parecer Técnico")
