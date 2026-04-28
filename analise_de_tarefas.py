@@ -4574,27 +4574,18 @@ if st.session_state.get("pagina") == "parecer":
             4. CRITÉRIO DE VALOR: Priorize atividades de ALTO VALOR AGREGADO (Gestão, Auditoria, Estratégia, Compliance). Elimine tarefas braçais.
             5. OBJETIVOS TÉCNICOS: Cada 'meta' deve ser um KPI ou um marco de controle auditável.
 
-            FORMATO DE SAÍDA (POP IA + AUTOMAÇÃO OBRIGATÓRIA):
-
-            {
-                "NOME_DA_ATIVIDADE": {
+            FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+            {{
+                "NOME_DA_ATIVIDADE": {{
                     "tempo": minutos_inteiros,
                     "freq": "DIÁRIA/SEMANAL/MENSAL",
-                    "meta": "KPI técnico mensurável",
+                    "meta": "Descrição técnica do objetivo e métrica de sucesso",
+                    "complexidade": "ALTA/MÉDIA/BAIXA"
+                }}
+            }}
 
-                    "sistema": "SIM / NÃO / SISTEMA_PRÓPRIO",
-                    "nome_sistema": "Excel / SAP / TOTVS / Manual / CRM / Outro",
-                    "execucao": "MANUAL / SEMI_AUTOMÁTICO / AUTOMÁTICO",
-
-                    "automacao_possivel": "SIM / NÃO",
-                    "ganho_automacao_min": numero_inteiro,
-
-                    "complexidade": "ALTA / MÉDIA / BAIXA"
-                }
-            }
-
-            Gere apenas JSON válido com total de 480 minutos diários, sem texto adicional.
-           
+            Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
+            """
 
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -4675,55 +4666,36 @@ if st.session_state.get("pagina") == "parecer":
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     st.table(pd.DataFrame(dados_ia))
 
-                    # --- GERADOR DE WORD PARA DOWNLOAD ---
-                    from docx import Document
-                    import io
-
-                    doc = Document()
-
-                    doc.add_heading("POP Padrao IA", level=1)
-
-                    table = doc.add_table(rows=1, cols=10)
-                    hdr = table.rows[0].cells
-
-                    hdr[0].text = "Atividade"
-                    hdr[1].text = "Freq"
-                    hdr[2].text = "Tempo Base"
-                    hdr[3].text = "Impacto Diario"
-                    hdr[4].text = "Eficiencia"
-                    hdr[5].text = "Meta"
-                    hdr[6].text = "Sistema"
-                    hdr[7].text = "Execucao"
-                    hdr[8].text = "Automacao"
-                    hdr[9].text = "Ganho (min)"
-
+                    # --- GERADOR DE HTML PARA DOWNLOAD ---
+                    html_content = f"""
+                    <html>
+                    <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
+                    <body style="font-family: sans-serif; padding: 20px;">
+                        <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
+                        <table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr style="background-color: #f2f2f2;">
+                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
+                            </tr>
+                    """
                     for d in dados_ia:
-                        row = table.add_row().cells
+                        html_content += f"""
+                            <tr>
+                                <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
+                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td>
+                            </tr>"""
 
-                        row[0].text = str(d.get("Atividade", ""))
-                        row[1].text = str(d.get("Freq", ""))
-                        row[2].text = str(d.get("Tempo Base", ""))
-                        row[3].text = str(d.get("Impacto Diário Convertido", ""))
-                        row[4].text = str(d.get("Eficiência vs 480m", ""))
-                        row[5].text = str(d.get("Meta Auditável", ""))
-                        row[6].text = str(d.get("Sistema", ""))
-                        row[7].text = str(d.get("Execução", ""))
-                        row[8].text = str(d.get("Automação Possível", ""))
-                        row[9].text = str(d.get("Ganho Automação Min", 0))
-
-                    doc.add_paragraph(
-                        f"Carga Alvo: 480 min | Ocupacao: {total_ia_diario:.1f} min | Eficiência: {(total_ia_diario/480)*100:.1f}%"
-                    )
-
-                    buffer = io.BytesIO()
-                    doc.save(buffer)
-                    buffer.seek(0)
+                    html_content += f"""
+                        </table>
+                        <p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>
+                    </body>
+                    </html>
+                    """
 
                     st.download_button(
-                        label="📥 Baixar POP em WORD",
-                        data=buffer,
-                        file_name="pop_ia_netexame.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        label="📥 Baixar POP em HTML",
+                        data=html_content,
+                        file_name="pop_ia_netexame.html",
+                        mime="text/html"
                     )
 
                     # --------------------------------------------------------------
