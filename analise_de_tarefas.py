@@ -4549,14 +4549,15 @@ from openai import OpenAI
 # 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO AVANÇADÍSSIMO
 # ==============================================================================
 
+# 1. INICIALIZAÇÃO (O "Gatilho" de abertura)
+if 'pagina' not in st.session_state:
+    st.session_state.pagina = "parecer" # Força o app a começar aqui
+
 def buscar_benchmark_ia_estrategico(*args, **kwargs):
-    return {} # O "seguro" contra erros nos loops de baixo
+    return {} 
 
 def mostrar_pagina_parecer():
     st.title("📑 Parecer Técnico")
-    if st.button("Voltar"):
-        st.session_state.pagina = "home"
-        st.rerun()
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
