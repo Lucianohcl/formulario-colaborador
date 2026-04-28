@@ -4927,98 +4927,113 @@ import json
 import os
 import glob
 
-# 1. CONFIGURAÇÃO DE TRADUÇÃO DISC
-tradutor_disc = {
-    "A": {"perfil": "Dominância", "cor": "red", "desc": "Foco em Resultados e Execução."},
-    "B": {"perfil": "Influência", "cor": "orange", "desc": "Foco em Pessoas e Comunicação."},
-    "C": {"perfil": "Estabilidade", "cor": "green", "desc": "Foco em Processos e Ritmo."},
-    "D": {"perfil": "Conformidade", "cor": "blue", "desc": "Foco em Regras e Detalhes."}
+# =========================================================
+# 1. CONFIGURAÇÕES TÉCNICAS E TRADUTOR DISC
+# =========================================================
+st.set_page_config(page_title="Auditoria IA Universal", layout="wide")
+
+TRADUTOR_DISC = {
+    "A": {"perfil": "Dominância", "cor": "red", "desc": "Resultados, Rapidez e Execução."},
+    "B": {"perfil": "Influência", "cor": "orange", "desc": "Comunicação, Pessoas e Entusiasmo."},
+    "C": {"perfil": "Estabilidade", "cor": "green", "desc": "Processos, Ritmo e Segurança."},
+    "D": {"perfil": "Conformidade", "cor": "blue", "desc": "Regras, Detalhes e Precisão."}
 }
 
-# 2. FUNÇÃO DO MOTOR DE PERÍCIA
+# =========================================================
+# 2. MOTOR DE PERÍCIA AVANÇADA (A IA ANALISA AQUI)
+# =========================================================
 def realizar_pericia(dados):
-    """
-    Analisa os dados de QUALQUER colaborador e gera o laudo de IA.
-    """
     nome = dados.get('colaborador', 'Colaborador')
     campos = dados.get('campos', {})
-    cargo = campos.get('cargo', 'Não Informado')
+    cargo = campos.get('cargo', 'Não Informado').upper()
     
     st.divider()
     st.header(f"🔍 Laudo de Perícia Operacional: {nome}")
-    st.info(f"**Cargo Analisado:** {cargo} | **Unidade:** {campos.get('unidade', 'N/A')}")
+    st.subheader(f"💼 {cargo} | {campos.get('unidade', 'Unidade Geral')}")
 
     try:
-        # --- CÁLCULO DE TEMPO UNIVERSAL ---
+        # --- CÁLCULO DE CARGA HORÁRIA LÍQUIDA ---
         minutos_diarios = 0
         pesos = {"D": 1, "S": 0.2, "M": 0.05, "T": 0.33, "A": 0} 
         tabelas = dados.get('tabelas', {})
         
         for nivel in ['alta', 'normal', 'baixa']:
-            for tarefa in tabelas.get(nivel, []):
-                # Limpeza de strings para números (Ex: "1 h" -> 1)
-                h = int(str(tarefa.get('Horas', '0')).split()[0])
-                m = int(str(tarefa.get('Minutos', '0')).split()[0])
-                freq = tarefa.get('Frequência', 'D')
-                minutos_diarios += ((h * 60) + m) * pesos.get(freq, 1)
+            for t in tabelas.get(nivel, []):
+                h = int(str(t.get('Horas', '0')).split()[0])
+                m = int(str(t.get('Minutos', '0')).split()[0])
+                f = t.get('Frequência', 'D')
+                minutos_diarios += ((h * 60) + m) * pesos.get(f, 1)
 
-        # --- PROCESSAMENTO DO PERFIL DISC ---
+        # --- ANÁLISE COMPORTAMENTAL (DISC) ---
         respostas = list(dados.get('disc', {}).values())
         if respostas:
             letra_principal = max(set(respostas), key=respostas.count)
-            perfil = tradutor_disc.get(letra_principal)
+            p = TRADUTOR_DISC.get(letra_principal)
         else:
-            perfil = {"perfil": "Não Identificado", "cor": "gray", "desc": "-"}
+            letra_principal, p = "N/A", {"perfil": "Indefinido", "cor": "gray", "desc": "-"}
 
-        # --- EXIBIÇÃO DE DASHBOARD ---
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            st.metric("Carga Diária", f"{int(minutos_diarios)} min", 
-                      delta=f"{int(minutos_diarios - 480)} min" if minutos_diarios > 480 else "OK",
+        # --- DASHBOARD DE MÉTRICAS ---
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            st.metric("Carga Diária Estimada", f"{int(minutos_diarios)} min", 
+                      delta=f"{int(minutos_diarios - 480)} min" if minutos_diarios > 480 else "DENTRO DO LIMITE",
                       delta_color="inverse" if minutos_diarios > 480 else "normal")
-        with c2:
-            st.markdown(f"**Perfil:** :{perfil['cor']}[{perfil['perfil']}]")
-            st.caption(perfil['desc'])
-        with col3 if 'col3' in locals() else c3:
-            dificuldade = tabelas.get('dificuldades', [{}])[0].get('Dificuldade', '').lower()
-            st.metric("Gargalos", "Detectados" if "nenhuma" not in dificuldade else "Zero")
+        with m2:
+            st.markdown(f"**Perfil Comportamental:** :{p['cor']}[{p['perfil']}]")
+            st.caption(f"Tendência natural para {p['desc']}")
+        with m3:
+            dificuldades = len(tabelas.get('dificuldades', []))
+            st.metric("Gargalos Reportados", "Nenhum" if "nenhuma" in str(tabelas.get('dificuldades')).lower() else f"{dificuldades} Alertas")
 
-        # --- INTELIGÊNCIA DE AUDITORIA ---
-        st.subheader(f"💡 Insights para Gestão de {nome}")
+        # --- AUDITORIA DE IA: CRUZAMENTO DE DADOS ---
+        st.subheader("💡 Insights do Auditor de Performance")
         with st.container(border=True):
-            # Lógica 1: Sobrecarga Real
-            if minutos_diarios > 550:
-                st.error(f"🚨 **ALERTA DE BURN-OUT:** A carga de {nome} ultrapassa 9 horas diárias líquidas. Risco alto de erros operacionais.")
+            col_a, col_b = st.columns(2)
             
-            # Lógica 2: Gestor no Operacional
-            if any(x in cargo.upper() for x in ["GESTOR", "CHEFE", "COORD"]):
-                operacionais = len(tabelas.get('baixa', []))
-                if operacionais > 3:
-                    st.warning(f"🚩 **EFICIÊNCIA DE LIDERANÇA:** {nome} está retendo {operacionais} tarefas de baixo valor. Delegar é urgente.")
+            with col_a:
+                st.markdown("### 🚫 Bloqueios e Riscos")
+                # Alerta de Sobrecarga (Matemática vs Realidade)
+                if minutos_diarios > 540:
+                    st.error(f"**ALERTA DE SATURAÇÃO:** {nome} declarou uma carga de {int(minutos_diarios)} min/dia. É humanamente impossível manter a qualidade técnica com este volume.")
+                
+                # Alerta de Desvio de Função (Gestor fazendo Operacional)
+                if "GESTOR" in cargo or "CHEFE" in cargo:
+                    tarefas_baixas = len(tabelas.get('baixa', []))
+                    if tarefas_baixas > 5:
+                        st.warning(f"**DESVIO ESTRATÉGICO:** Identificamos {tarefas_baixas} tarefas de BAIXA complexidade para um cargo de gestão. {nome} está 'apagando incêndio' em vez de gerir.")
+
+            with col_b:
+                st.markdown("### 🎯 Oportunidades de Otimização")
+                # Dica baseada no perfil DISC
+                if letra_principal == "A":
+                    st.info(f"**FOCO EM DELEGAÇÃO:** Como perfil Dominante, {nome} tende a centralizar para garantir o prazo. Treinar a equipe para assumir o operacional liberaria 40% da sua agenda.")
+                elif letra_principal == "B":
+                    st.info(f"**FOCO EM TREINAMENTO:** {nome} tem alta Influência. Use-o para padronizar processos e engajar o time, saindo da conferência manual de documentos.")
 
     except Exception as e:
-        st.error(f"Erro no Motor de Perícia: {e}")
+        st.error(f"Erro no processamento da perícia: {e}")
 
-# 3. BUSCADOR AUTOMÁTICO DE ARQUIVOS (A MÁGICA)
-def iniciar_sistema():
-    # Procura QUALQUER arquivo JSON na pasta dados ou subpastas
-    caminhos = ["**/dados/*.json", "dados/*.json", "*.json"]
-    arquivos = []
-    for c in caminhos:
-        arquivos.extend(glob.glob(c, recursive=True))
+# =========================================================
+# 3. INTERFACE UNIVERSAL (QUALQUER ARQUIVO)
+# =========================================================
+def main():
+    st.title("🛡️ Motor de Perícia e Auditoria IA")
+    
+    # Busca arquivos em qualquer lugar (Pasta 'dados' ou raiz)
+    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+    
+    if not arquivos:
+        st.warning("📂 Nenhum arquivo de colaborador (.json) encontrado. Salve os dados na pasta /dados.")
+        return
 
-    if arquivos:
-        # Cria um seletor para você escolher qual colaborador analisar
-        lista_formatada = {os.path.basename(f): f for f in arquivos}
-        selecionado = st.selectbox("👤 Escolha o colaborador para perícia:", list(lista_formatada.keys()))
-        
-        with open(lista_formatada[selecionado], "r", encoding="utf-8") as f:
-            dados = json.load(f)
-            realizar_pericia(dados)
-    else:
-        st.warning("📂 Nenhum arquivo de colaborador encontrado. Verifique a pasta /dados.")
+    # Seletor Universal
+    lista_colab = {os.path.basename(f): f for f in arquivos}
+    escolha = st.selectbox("🎯 Selecione o Colaborador para análise:", list(lista_colab.keys()))
 
-# EXECUÇÃO DO APP
+    if escolha:
+        with open(lista_colab[escolha], "r", encoding="utf-8") as f:
+            dados_lidos = json.load(f)
+            realizar_pericia(dados_lidos)
+
 if __name__ == "__main__":
-    st.title("🛡️ Sistema de Auditoria Operacional")
-    iniciar_sistema()
+    main()
