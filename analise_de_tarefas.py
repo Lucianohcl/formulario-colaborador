@@ -4585,9 +4585,10 @@ if st.session_state.get("pagina") == "parecer":
             - ganho_automacao_pct: ganho percentual de eficiência
             - dependencia_sistema: ALTA / MÉDIA / BAIXA
 
+            prompt = f"""
             FORMATO DE SAÍDA (JSON ESTRITO):
-            {
-                "NOME_DA_ATIVIDADE": {
+            {{
+                "NOME_DA_ATIVIDADE": {{
                     "tempo": 0,
                     "freq": "DIÁRIA/SEMANAL/MENSAL",
                     "meta": "KPI ou controle auditável",
@@ -4600,10 +4601,8 @@ if st.session_state.get("pagina") == "parecer":
                     "ganho_automacao_min": 0,
                     "ganho_automacao_pct": 0,
                     "dependencia_sistema": ""
-                }
-            }
-
-            Pense como auditor forense + arquiteto de automação + analista de eficiência operacional.
+                }}
+            }}
             """
 
             response = client.chat.completions.create(
