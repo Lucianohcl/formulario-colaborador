@@ -4585,7 +4585,7 @@ if st.session_state.get("pagina") == "parecer":
             - ganho_automacao_pct: ganho percentual de eficiência
             - dependencia_sistema: ALTA / MÉDIA / BAIXA
 
-            prompt = f"""
+            
             FORMATO DE SAÍDA (JSON ESTRITO):
             """
 
