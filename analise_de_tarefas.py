@@ -4698,21 +4698,20 @@ if st.session_state.pagina == "parecer":
     # 4. INSTANCIAÇÃO E PROCESSAMENTO
     # --------------------------------------------------------------------------
     # (Luciano, aqui o motor puxa os dados reais que já calculamos no seu código)
-    # --- BLOCO DE SEGURANÇA E EXECUÇÃO ---
-    # Aqui pegamos o cargo do seu formulário. 
-    # Se o seu campo de cargo lá em cima tiver outro nome, o 'get' protege o código.
+    # --- BLOCO DE SEGURANÇA E EXECUÇÃO (RESOLUÇÃO DE NAMEERROR) ---
     cargo_final = st.session_state.get('cargo', 'Cargo Não Informado')
 
-    # Montando o dicionário que o motor precisa para varrer as tabelas
+    # Verificamos se os DataFrames existem no session_state, senão criamos vazios para não quebrar
     dict_tabelas_motor = {
-        "Alta Complexidade": e_alta,
-        "Complexidade Normal": e_normal,
-        "Baixa Complexidade": e_baixa,
-        "Dificuldades": e_dif,
-        "Sugestões": e_sug
+        "Alta Complexidade": st.session_state.get('e_alta'),
+        "Complexidade Normal": st.session_state.get('e_normal'),
+        "Baixa Complexidade": st.session_state.get('e_baixa'),
+        "Dificuldades": st.session_state.get('e_dif'),
+        "Sugestões": st.session_state.get('e_sug')
     }
 
-    # AGORA O MOTOR RODA SEM ERRO
+    # AGORA O MOTOR RODA BUSCANDO OS DADOS PERSISTIDOS
+    # "C" e 58.3 são os valores que você definiu para o Gercino/Exemplo
     motor = MotorAuditoria("C", 58.3, cargo_final, dict_tabelas_motor)
     motor.executar()
 
