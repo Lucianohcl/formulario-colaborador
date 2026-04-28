@@ -4600,6 +4600,16 @@ def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
 # 🛡️ MOTOR DE AUDITORIA NETEXAME: TRÍPTICO PERICIAL
 # ==============================================================================
 
+@st.cache_data(show_spinner="Analisando dados e economizando créditos...")
+def processar_parecer_com_cache(dados_json_str):
+    """
+    Se o JSON for o mesmo, o Streamlit retorna o laudo da memória.
+    Custo: 0 créditos nas repetições.
+    """
+    # CHAME AQUI A SUA FUNÇÃO QUE CONECTA COM A OPENAI
+    # Certifique-se de que 'realizar_pericia_direta' existe no seu script
+    return realizar_pericia_direta(dados_json_str)
+
 def mostrar_pagina_parecer():
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
