@@ -4536,3 +4536,174 @@ if st.session_state.pagina == "disc":
 # --- Rodapé Final ---
 st.markdown("---")
 st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
+
+
+
+# ==============================================================================
+# 🛡️ MÓDULO MASTER: ENGENHARIA DE PROCESSOS & AUDITORIA ANALÍTICA (NETEXAME 2026)
+# ==============================================================================
+# Este bloco contém a inteligência de triangulação profunda entre Perfil, 
+# Carga Horária, Maturidade Digital e Risco de Burnout.
+
+if st.session_state.pagina == "parecer":
+    st.title("🛡️ Parecer Estratégico: Engenharia de Processos")
+
+    # --------------------------------------------------------------------------
+    # 1. CLASSE DE INTELIGÊNCIA: O MOTOR DE CÁLCULO (OOA - Auditoria)
+    # --------------------------------------------------------------------------
+    class AuditoriaNetExame:
+        """Classe responsável por processar a triangulação Perfil x Processo."""
+        
+        def __init__(self, perfil, amplitude, cargo, tabelas):
+            self.perfil = perfil
+            self.amplitude = amplitude
+            self.cargo = str(cargo).upper()
+            self.tabelas = tabelas
+            self.analise_dados = {
+                "horas_totais": 0, "nexo_funcional": 0, "atrito_comportamental": 0,
+                "oportunidades_rpa": [], "pops_criticos": [], "alerta_burnout": False
+            }
+
+        def processar_carga_horaria(self):
+            """Calcula a carga mensal baseada na frequência e tempo real."""
+            for nivel, df in self.tabelas.items():
+                if df is not None:
+                    col = "Atividade" if "Complexidade" in nivel else ("Dificuldade" if "Dificuldades" in nivel else "Sugestão")
+                    df_v = df[df[col].astype(str).str.strip() != ""]
+                    for _, r in df_v.iterrows():
+                        h = int(r.get('Horas', 0)) if str(r.get('Horas', 0)).isdigit() else 0
+                        m = int(r.get('Minutos', 0)) if str(r.get('Minutos', 0)).isdigit() else 0
+                        f = str(r.get('Frequência', '')).upper()
+                        fator = 22 if "DIÁRIA" in f else 4.4 if "SEMANAL" in f else 1
+                        self.analise_dados["horas_totais"] += ((h * 60) + m) * fator / 60
+            
+            if self.analise_dados["horas_totais"] > 190:
+                self.analise_dados["alerta_burnout"] = True
+
+        def analisar_nexo_tecnico(self, matriz_cargos, verbos):
+            """Cruza o comportamento com o benchmark do cargo."""
+            benchmark = next((v for k, v in matriz_cargos.items() if k in self.cargo), matriz_cargos["ADMINISTRATIVO"])
+            
+            # Cálculo de Nexo: Perfil vs Ideal
+            if self.perfil in benchmark["perfil_ideal"]:
+                self.analise_dados["nexo_funcional"] = 100
+            else:
+                self.analise_dados["nexo_funcional"] = 45
+                self.analise_dados["atrito_comportamental"] = 80 # % de atrito detectado
+
+            # Varredura de Oportunidades por Verbos
+            for nivel, df in self.tabelas.items():
+                if df is not None:
+                    col = "Atividade" if "Complexidade" in nivel else "Sugestão"
+                    if col in df.columns:
+                        for _, r in df.iterrows():
+                            txt = str(r.get(col, "")).upper()
+                            for v, meta in verbos.items():
+                                if v in txt:
+                                    if meta["tipo"] == "Braçal":
+                                        self.analise_dados["oportunidades_rpa"].append(txt)
+                                    if "ALTA" in nivel.upper() or meta["tipo"] == "Estratégico":
+                                        self.analise_dados["pops_criticos"].append(txt)
+
+    # --------------------------------------------------------------------------
+    # 2. MATRIZ DE CONHECIMENTO (O BANCO DE DADOS DA CONSULTORIA)
+    # --------------------------------------------------------------------------
+    matriz_cargos_master = {
+        "FINANCEIRO": {"perfil_ideal": ["C"], "foco": "Precisão", "risco": "Erros de Conciliação"},
+        "CONTROLADORIA": {"perfil_ideal": ["C", "S"], "foco": "Compliance", "risco": "Não conformidade"},
+        "RECURSOS HUMANOS": {"perfil_ideal": ["I", "S"], "foco": "Pessoas", "risco": "Conflitos Internos"},
+        "OPERACIONAL": {"perfil_ideal": ["S", "C"], "foco": "Execução", "risco": "Gargalos de Produção"},
+        "COMERCIAL": {"perfil_ideal": ["D", "I"], "foco": "Resultados", "risco": "Falta de Processo"},
+        "ADMINISTRATIVO": {"perfil_ideal": ["S", "C"], "foco": "Suporte", "risco": "Desorganização"},
+        "TI / DESENVOLVIMENTO": {"perfil_ideal": ["C", "D"], "foco": "Lógica", "risco": "Débito Técnico"},
+        "JURÍDICO": {"perfil_ideal": ["C"], "foco": "Regras", "risco": "Exposição Legal"},
+        "LOGÍSTICA": {"perfil_ideal": ["D", "S"], "foco": "Agilidade", "risco": "Atrasos de Fluxo"}
+    }
+
+    verbos_tecnicos = {
+        "DIGITAR": {"tipo": "Braçal", "roi": "Alto"}, "LANÇAR": {"tipo": "Braçal", "roi": "Médio"},
+        "CONCILIAR": {"tipo": "Técnico", "roi": "Médio"}, "ANALISAR": {"tipo": "Estratégico", "roi": "Baixo"},
+        "CONFERIR": {"tipo": "Técnico", "roi": "Médio"}, "EXPORTAR": {"tipo": "Braçal", "roi": "Alto"},
+        "AUDITAR": {"tipo": "Estratégico", "roi": "Baixo"}, "PLANEJAR": {"tipo": "Estratégico", "roi": "Baixo"}
+    }
+
+    # --------------------------------------------------------------------------
+    # 3. EXECUÇÃO DO MOTOR (INSTANCIAÇÃO)
+    # --------------------------------------------------------------------------
+    # Recuperando as variáveis globais (Perfil DISC e Amplitude)
+    perfil_res = "C"  # Luciano, aqui entra sua variável do DISC
+    amp_res = 58.3    # Luciano, aqui entra sua variável de Amplitude
+    
+    motor = AuditoriaNetExame(perfil_res, amp_res, cargo_f, dict_tabelas)
+    motor.processar_carga_horaria()
+    motor.analisar_nexo_tecnico(matriz_cargos_master, verbos_tecnicos)
+    res = motor.analise_dados
+
+    # --------------------------------------------------------------------------
+    # 4. EXIBIÇÃO DO LAUDO PERICIAL (INTERFACE DE ALTO IMPACTO)
+    # --------------------------------------------------------------------------
+    st.markdown("### 🛡️ Laudo Pericial Master de Engenharia de Processos")
+    
+    col_inf1, col_inf2, col_inf3, col_inf4 = st.columns(4)
+    col_inf1.metric("Carga Mensal", f"{res['horas_totais']:.1f}h", delta="Saturação" if res['alerta_burnout'] else "Normal")
+    col_inf2.metric("Nexo de Função", f"{res['nexo_funcional']}%")
+    col_inf3.metric("Atrito Comportamental", f"{res['atrito_comportamental']}%", delta_color="inverse")
+    col_inf4.metric("Amplitude DISC", f"{amp_res}%")
+
+    st.markdown("---")
+
+    # QUADRO TÁTICO
+    with st.container():
+        t1, t2 = st.tabs(["📊 Diagnóstico Operacional", "📋 Engenharia de POPs & ROI"])
+        
+        with t1:
+            st.subheader("Análise de Nexo e Performance")
+            if res["alerta_burnout"]:
+                st.error(f"🚨 **ALERTA CRÍTICO:** A carga horária de {res['horas_totais']:.1f}h indica um colapso iminente de produtividade.")
+            
+            if res["nexo_funcional"] < 100:
+                st.warning(f"⚠️ **CONFLITO TÁTICO:** O perfil {perfil_res} operando como {cargo_f} gera um custo adaptativo invisível.")
+                st.info("💡 **Veredito:** Recomenda-se realocação para funções que exijam maior rigor técnico e menos improviso.")
+            else:
+                st.success(f"✅ **ALINHAMENTO TOTAL:** O perfil está em sua zona de força máxima.")
+
+        with t2:
+            st.subheader("Plano de Aceleração Digital (ROI)")
+            if res["oportunidades_rpa"]:
+                st.write("**Oportunidades de Automação Detectadas (Corte de Custos):**")
+                for rpa in list(set(res["oportunidades_rpa"])):
+                    st.code(f"🤖 RPA CANDIDATO: {rpa}")
+            
+            st.subheader("Engenharia de POPs")
+            if res["pops_criticos"]:
+                for pop in list(set(res["pops_criticos"])):
+                    st.success(f"📌 GERAR POP: {pop}")
+
+    # --------------------------------------------------------------------------
+    # 5. SÍNTESE EXECUTIVA (A ÚLTIMA PALAVRA DO CONSULTOR)
+    # --------------------------------------------------------------------------
+    st.markdown("---")
+    st.subheader("🏆 Veredito Final NetExame")
+    
+    # Texto Técnico Denso
+    st.success(f"""
+    O colaborador apresenta uma **Maturidade Digital de nível {('Superior' if contador_sistemas >= 3 else 'Operacional')}**. 
+    A triangulação entre o perfil **{perfil_res}** e a senioridade de **{amp_res}%** revela que o maior ativo da empresa 
+    neste posto é a **Blindagem de Processos**. 
+    
+    A Engenharia de Processos recomenda a imediata conversão das tarefas de Alta Complexidade em **POPs Padrão**, 
+    removendo a dependência humana sobre o conhecimento técnico e permitindo a escalabilidade da unidade.
+    """)
+
+    # BOTÕES FINAIS
+    c_b1, c_b2, c_b3 = st.columns(3)
+    with c_b1: st.button("📂 Exportar PDF Completo")
+    with c_b2: st.button("📤 Enviar para CEO/Diretoria")
+    with c_b3: 
+        if st.button("⬅️ Voltar"):
+            st.session_state.pagina = "home"
+            st.rerun()
+
+# ==============================================================================
+# FIM DO MONSTRO: NETEXAME ESTRATÉGICA 2026
+# ==============================================================================
