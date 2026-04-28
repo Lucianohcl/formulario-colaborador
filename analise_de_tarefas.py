@@ -4545,36 +4545,25 @@ import json
 import os
 from openai import OpenAI
 
-# 1. GATILHO DE ABERTURA
-if 'pagina' not in st.session_state:
-    st.session_state.pagina = "parecer"
+import streamlit as st
 
-# 2. DEFINIÇÕES GLOBAIS
-def buscar_benchmark_ia_estrategico(*args, **kwargs):
-    return {} 
+# estado mínimo (persistência)
+if "mostrar" not in st.session_state:
+    st.session_state.mostrar = False
 
-# 3. PÁGINAS (ENCAPSULADAS)
-def mostrar_pagina_parecer():
-    st.title("📑 Parecer Técnico")
-    st.markdown("---")
-    st.info("Você está no ambiente seguro do Parecer.")
-    
-    if st.button("Ir para o Sistema Principal (Home)", key="btn_voltar_home"):
-        st.session_state.pagina = "home"
-        st.rerun()
+st.title("📑 Parecer Técnico")
 
-# 4. ROTEADOR COM FILTRO DE ERRO
-# Se a página for 'parecer', ele executa e PARA o código aqui.
-# Isso ignora qualquer erro de indentação que venha abaixo!
-if st.session_state.pagina == "parecer":
-    mostrar_pagina_parecer()
-    st.stop() # <--- O ESCUDO: O código abaixo da linha 4597 não será lido!
+# gatilho
+if st.button("Mostrar"):
+    st.session_state.mostrar = True
 
-# 5. SE CHEGOU AQUI, ELE TENTA RODAR O RESTO (HOME)
-st.title("🏠 Home")
-if st.button("Voltar para Parecer", key="btn_ir_parecer"):
-    st.session_state.pagina = "parecer"
-    st.rerun()
+# conteúdo persistente
+if st.session_state.mostrar:
+    st.write("Conteúdo exibido ✔️")
+
+# reset (opcional)
+if st.button("Limpar"):
+    st.session_state.mostrar = False
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
