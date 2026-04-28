@@ -4689,7 +4689,7 @@ if st.session_state.get("pagina") == "parecer":
                     <html>
                     <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
                     <body style="font-family: sans-serif; padding: 20px;">
-                    """
+                    
 
                     <h2>[A] POP Padrão IA (Carga Diária 480m)</h2>
 
