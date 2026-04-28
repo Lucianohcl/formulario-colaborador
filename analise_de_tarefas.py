@@ -5012,6 +5012,35 @@ def main():
 if __name__ == "__main__":
     main()
 
+            # --- BOTÃO ADICIONAL PARA EXPORTAR HTML ---
+            html_template = f"""
+            <!DOCTYPE html>
+            <html lang="pt-BR">
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
+                    h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
+                    table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                    th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
+                    th {{ background-color: #ecf0f1; font-weight: bold; }}
+                    .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
+                </style>
+            </head>
+            <body>
+                {laudo.replace('\\n', '<br>')}
+                <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
+            </body>
+            </html>
+            """
+            
+            st.download_button(
+                label="🌐 Exportar em HTML (Visual Profissional)",
+                data=html_template,
+                file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
+                mime="text/html",
+                use_container_width=True
+            )
 
 # ==============================================================================
 # 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
