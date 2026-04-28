@@ -4557,7 +4557,7 @@ if st.session_state.get("pagina") == "parecer":
             
             contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
             
-                        prompt = f"""
+            prompt = f"""
             Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
             Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
 
