@@ -4548,717 +4548,727 @@ from openai import OpenAI
 # ==============================================================================
 # 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO AVANÇADÍSSIMO
 # ==============================================================================
-@st.cache_data(show_spinner=True)
-def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
-    try:
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
-        
-        contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
-        
-        # PROMPT DE OURO: ENGENHARIA DE PROCESSOS E CRONOANÁLISE FORENSE
-        prompt = f"""
-        Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
-        Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
 
-        CONTEXTO DO ALVO:
-        {contexto_resumido}
-
-        REGRAS RÍGIDAS DE ARQUITETURA DE DADOS:
-        1. JORNADA TOTAL: Você deve preencher exatamente 480 minutos de impacto diário.
-        2. MULTIFREQUÊNCIA: Distribua as atividades em DIÁRIA, SEMANAL e MENSAL.
-        3. CONVERSÃO DE IMPACTO (CÁLCULO): 
-           - Atividade Semanal: (Tempo Total / 5 dias).
-           - Atividade Mensal: (Tempo Total / 22 dias).
-        4. CRITÉRIO DE VALOR: Priorize atividades de ALTO VALOR AGREGADO (Gestão, Auditoria, Estratégia, Compliance). Elimine tarefas braçais.
-        5. OBJETIVOS TÉCNICOS: Cada 'meta' deve ser um KPI ou um marco de controle auditável.
-
-        FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-        {{
-            "NOME_DA_ATIVIDADE": {{
-                "tempo": minutos_inteiros,
-                "freq": "DIÁRIA/SEMANAL/MENSAL",
-                "meta": "Descrição técnica do objetivo e métrica de sucesso",
-                "complexidade": "ALTA/MÉDIA/BAIXA"
-            }}
-        }}
-
-        Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
-        """
-
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "system", "content": "Você é um auditor forense de processos sênior."},
-                      {"role": "user", "content": prompt}],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        st.error(f"Erro na Inteligência: {e}")
-        return None
-
-# ==============================================================================
-# 🛡️ MOTOR DE AUDITORIA NETEXAME: TRÍPTICO PERICIAL
-# ==============================================================================
-
-@st.cache_data(show_spinner="Analisando dados e economizando créditos...")
-def processar_parecer_com_cache(dados_json_str):
-    """
-    Se o JSON for o mesmo, o Streamlit retorna o laudo da memória.
-    Custo: 0 créditos nas repetições.
-    """
-    # CHAME AQUI A SUA FUNÇÃO QUE CONECTA COM A OPENAI
-    # Certifique-se de que 'realizar_pericia_direta' existe no seu script
-    return realizar_pericia_direta(dados_json_str)
+def buscar_benchmark_ia_estrategico(*args, **kwargs):
+    return {} # O "seguro" contra erros nos loops de baixo
 
 def mostrar_pagina_parecer():
-    st.title("🛡️ NetExame: Auditoria Forense Estratégica")
-    st.markdown("---")
-    
-    caminho_dados = "dados"
-    if not os.path.exists(caminho_dados):
-        st.error("Pasta de 'dados' não encontrada.")
-        return
+    st.title("📑 Parecer Técnico")
+    if st.button("Voltar"):
+        st.session_state.pagina = "home"
+        st.rerun()
 
-    arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
-    
-    if arquivos:
-        colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
-        
-        if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
-            with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
-                colab = json.load(f)
+    @st.cache_data(show_spinner=True)
+    def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
+        try:
+            client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
             
-            # Execução do Cérebro IA
-            pop_ia = buscar_benchmark_ia_estrategico(
-                colab['campos'].get('cargo', 'N/A').upper(),
-                colab['campos'].get('funcao', 'GESTÃO').upper(),
-                colab['campos'].get('objetivo', ''),
-                colab['campos'].get('cursos', '')
+            contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
+            
+            # PROMPT DE OURO: ENGENHARIA DE PROCESSOS E CRONOANÁLISE FORENSE
+            prompt = f"""
+            Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
+            Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
+
+            CONTEXTO DO ALVO:
+            {contexto_resumido}
+
+            REGRAS RÍGIDAS DE ARQUITETURA DE DADOS:
+            1. JORNADA TOTAL: Você deve preencher exatamente 480 minutos de impacto diário.
+            2. MULTIFREQUÊNCIA: Distribua as atividades em DIÁRIA, SEMANAL e MENSAL.
+            3. CONVERSÃO DE IMPACTO (CÁLCULO): 
+            - Atividade Semanal: (Tempo Total / 5 dias).
+            - Atividade Mensal: (Tempo Total / 22 dias).
+            4. CRITÉRIO DE VALOR: Priorize atividades de ALTO VALOR AGREGADO (Gestão, Auditoria, Estratégia, Compliance). Elimine tarefas braçais.
+            5. OBJETIVOS TÉCNICOS: Cada 'meta' deve ser um KPI ou um marco de controle auditável.
+
+            FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+            {{
+                "NOME_DA_ATIVIDADE": {{
+                    "tempo": minutos_inteiros,
+                    "freq": "DIÁRIA/SEMANAL/MENSAL",
+                    "meta": "Descrição técnica do objetivo e métrica de sucesso",
+                    "complexidade": "ALTA/MÉDIA/BAIXA"
+                }}
+            }}
+
+            Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
+            """
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "system", "content": "Você é um auditor forense de processos sênior."},
+                        {"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
             )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"Erro na Inteligência: {e}")
+            return None
 
-            if pop_ia:
-                # --------------------------------------------------------------
-                # BLOCO 1: O DEVER (POP PADRÃO IA)
-                # --------------------------------------------------------------
-                st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-                dados_ia = []
-                total_ia_diario = 0
-                for ativ, info in pop_ia.items():
-                    t, f = info['tempo'], info['freq'].upper()
-                    imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                    total_ia_diario += imp
-                    dados_ia.append({
-                        "Atividade": ativ,
-                        "Freq": f,
-                        "Tempo Base": f"{t}m",
-                        "Impacto Diário Convertido": f"{imp:.1f}m",
-                        "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                        "Meta Auditável": info['meta']
-                    })
+    # ==============================================================================
+    # 🛡️ MOTOR DE AUDITORIA NETEXAME: TRÍPTICO PERICIAL
+    # ==============================================================================
+
+    @st.cache_data(show_spinner="Analisando dados e economizando créditos...")
+    def processar_parecer_com_cache(dados_json_str):
+        """
+        Se o JSON for o mesmo, o Streamlit retorna o laudo da memória.
+        Custo: 0 créditos nas repetições.
+        """
+        # CHAME AQUI A SUA FUNÇÃO QUE CONECTA COM A OPENAI
+        # Certifique-se de que 'realizar_pericia_direta' existe no seu script
+        return realizar_pericia_direta(dados_json_str)
+
+    def mostrar_pagina_parecer():
+        st.title("🛡️ NetExame: Auditoria Forense Estratégica")
+        st.markdown("---")
+        
+        caminho_dados = "dados"
+        if not os.path.exists(caminho_dados):
+            st.error("Pasta de 'dados' não encontrada.")
+            return
+
+        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+        
+        if arquivos:
+            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
+            
+            if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
+                with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
+                    colab = json.load(f)
                 
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Carga Alvo", "480 min")
-                c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                st.table(pd.DataFrame(dados_ia))
-
-                # --- GERADOR DE HTML PARA DOWNLOAD ---
-                html_content = f"""
-                <html>
-                <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
-                <body style="font-family: sans-serif; padding: 20px;">
-                    <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
-                    <table border="1" style="border-collapse: collapse; width: 100%;">
-                        <tr style="background-color: #f2f2f2;">
-                            <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
-                        </tr>
-                """
-                for d in dados_ia:
-                    html_content += f"""
-                        <tr>
-                            <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
-                            <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td>
-                        </tr>"""
-
-                html_content += f"""
-                    </table>
-                    <p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>
-                </body>
-                </html>
-                """
-
-                st.download_button(
-                    label="📥 Baixar POP em HTML",
-                    data=html_content,
-                    file_name="pop_ia_netexame.html",
-                    mime="text/html"
+                # Execução do Cérebro IA
+                pop_ia = buscar_benchmark_ia_estrategico(
+                    colab['campos'].get('cargo', 'N/A').upper(),
+                    colab['campos'].get('funcao', 'GESTÃO').upper(),
+                    colab['campos'].get('objetivo', ''),
+                    colab['campos'].get('cursos', '')
                 )
 
-                # --------------------------------------------------------------
-                # BLOCO 2: O SER (ATIVIDADES REALMENTE LISTADAS)
-                # --------------------------------------------------------------
-                st.header("📝 [B] Realidade Relatada (Análise de Esforço)")
-                atividades_relatadas = colab['tabelas'].get('alta', []) + \
-                                      colab['tabelas'].get('normal', []) + \
-                                      colab['tabelas'].get('baixa', [])
-                
-                dados_reais = []
-                total_real_diario = 0
-                for item in atividades_relatadas:
-                    h = int(str(item.get('Horas', '0')).split()[0])
-                    m = int(str(item.get('Minutos', '0')).split()[0])
-                    t_bruto = (h * 60) + m
-                    f_real = item.get('Frequência', '').upper()
-                    
-                    # Normalização de frequência para cálculo
-                    if "D" in f_real: imp = t_bruto
-                    elif "S" in f_real: imp = t_bruto / 5
-                    elif "M" in f_real: imp = t_bruto / 22
-                    else: imp = 0
-                    
-                    total_real_diario += imp
-                    dados_reais.append({
-                        "Atividade Listada": item.get('Atividade'),
-                        "Freq": f_real,
-                        "Tempo Bruto": f"{t_bruto}m",
-                        "Tempo Diário Convertido": f"{imp:.1f}m",
-                        "Peso na Jornada": f"{(imp/480)*100:.1f}%"
-                    })
-                
-                r1, r2, r3 = st.columns(3)
-                r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
-                r2.metric("Eficiência Diária Alvo", f"{(total_real_diario/480)*100:.1f}%")
-                r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
-                st.table(pd.DataFrame(dados_reais))
-
-                # --------------------------------------------------------------
-                # BLOCO 3: O CRUZAMENTO (CONFRONTO E NEXO CAUSAL)
-                # --------------------------------------------------------------
-                st.header("⚖️ [C] Cruzamento e Veredito Pericial")
-                confronto = []
-                mapeadas = set()
-
-                for ativ_ia, info_ia in pop_ia.items():
-                    f_ia = info_ia['freq'].upper()
-                    imp_ia = info_ia['tempo'] if "DIÁRIA" in f_ia else (info_ia['tempo']/5 if "SEMANAL" in f_ia else info_ia['tempo']/22)
-                    
-                    imp_real_vinculado = 0
-                    status = "❌ AUSENTE"
-                    chave = ativ_ia.split()[0].upper()
-                    
-                    for item in atividades_relatadas:
-                        desc = str(item.get('Atividade', '')).upper()
-                        if chave in desc:
-                            h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
-                            t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
-                            imp_v = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
-                            imp_real_vinculado += imp_v
-                            status = "✅ IDENTIFICADO"
-                            mapeadas.add(desc)
-
-                    confronto.append({
-                        "Atividade": ativ_ia,
-                        "Origem": "POP PADRÃO",
-                        "Impacto POP": f"{imp_ia:.1f}m",
-                        "Impacto Real": f"{imp_real_vinculado:.1f}m",
-                        "Divergência": f"{imp_real_vinculado - imp_ia:+.1f}m",
-                        "Status": status
-                    })
-
-                # Adiciona o que sobrou (Desvios)
-                for item in atividades_relatadas:
-                    desc = str(item.get('Atividade', '')).upper()
-                    if desc not in mapeadas:
-                        h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
-                        t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
-                        imp_extra = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
-                        confronto.append({
-                            "Atividade": desc,
-                            "Origem": "DESVIO",
-                            "Impacto POP": "0.0m",
-                            "Impacto Real": f"{imp_extra:.1f}m",
-                            "Divergência": f"+{imp_extra:.1f}m",
-                            "Status": "⚠️ FORA DO PADRÃO"
+                if pop_ia:
+                    # --------------------------------------------------------------
+                    # BLOCO 1: O DEVER (POP PADRÃO IA)
+                    # --------------------------------------------------------------
+                    st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
+                    dados_ia = []
+                    total_ia_diario = 0
+                    for ativ, info in pop_ia.items():
+                        t, f = info['tempo'], info['freq'].upper()
+                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                        total_ia_diario += imp
+                        dados_ia.append({
+                            "Atividade": ativ,
+                            "Freq": f,
+                            "Tempo Base": f"{t}m",
+                            "Impacto Diário Convertido": f"{imp:.1f}m",
+                            "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
+                            "Meta Auditável": info['meta']
                         })
-
-                f1, f2, f3 = st.columns(3)
-                f1.metric("Aderência ao Cargo", f"{(total_ia_diario/total_real_diario*100 if total_real_diario > 0 else 0):.1f}%")
-                f2.metric("Perda/Ganho Eficiência", f"{total_ia_diario - total_real_diario:+.1f} min")
-                f3.metric("Risco Operacional", "ALTO" if total_real_diario > 480 else "BAIXO")
-                st.table(pd.DataFrame(confronto))
-
-# --- INICIALIZAÇÃO ---
-if 'pagina' not in st.session_state:
-    st.session_state.pagina = "parecer"
-
-mostrar_pagina_parecer()
-
-
-
-import streamlit as st
-import pandas as pd
-import base64
-import json
-from openai import OpenAI
-
-# ==============================================================================
-# 1. CONFIGURAÇÕES INICIAIS E SEGURANÇA
-# ==============================================================================
-# Certifique-se de ter a chave nas configurações do Streamlit Cloud (Secrets)
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-# Inicializa as variáveis no estado da sessão para evitar NameError
-if 'resultado_parecer_gpt' not in st.session_state:
-    st.session_state['resultado_parecer_gpt'] = "Aguardando processamento da análise pericial..."
-
-if 'analise_concluida' not in st.session_state:
-    st.session_state['analise_concluida'] = False
-
-# ==============================================================================
-# 2. MOTOR DE INTELIGÊNCIA FORENSE (OPENAI)
-# ==============================================================================
-def realizar_pericia_ia(nome_colaborador, cargo, atividades_relatadas):
-    """
-    Chama o GPT-4o-mini para analisar o nexo causal e gerar o POP Universal.
-    """
-    prompt = f"""
-    Aja como um Auditor Forense de Processos Sênior. 
-    Analise o cargo '{cargo}' para o colaborador '{nome_colaborador}'.
-    O colaborador relatou as seguintes atividades: {atividades_relatadas}
-
-    SUA MISSÃO:
-    1. Reafirme o POP PADRÃO UNIVERSAL (480 min totais).
-    2. Escreva um PARECER TÉCNICO focado em:
-       - Inconsistência de carga horária (se houver).
-       - Desvios de função (operacional vs estratégico).
-       - Riscos de omissão de tarefas críticas (como conferência de folha).
-
-    RESPONDA EXCLUSIVAMENTE NO FORMATO JSON ABAIXO:
-    {{
-        "parecer_pericial": "Seu texto de parecer aqui detalhado.",
-        "pop_universal": [
-            {{"Atividade": "A", "Freq": "D", "Tempo": "Xm", "Impacto": "Ym", "Peso": "Z%"}}
-        ]
-    }}
-    """
-    
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Você é um auditor especializado em eficiência operacional e cronoanálise."},
-                {"role": "user", "content": prompt}
-            ],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        st.error(f"Erro na API da OpenAI: {e}")
-        return None
-
-
-# ==============================================================================
-# 3. GERADOR DE ARTEFATOS (HTMLS SEPARADOS)
-# ==============================================================================
-
-def gerar_html_laudo_puro(nome_colab, parecer_ia):
-    """Gera o HTML contendo APENAS o cabeçalho e o parecer técnico (sem a tabela)."""
-    html = f"""
-    <html>
-    <head><meta charset="utf-8"><style>
-        body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
-        .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
-        .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
-        .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
-        footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
-    </style></head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>🛡️ NetExame: Parecer Pericial</h1>
-                <p>Análise Forense de Processos | Colaborador: {nome_colab}</p>
-            </div>
-            <h3>🔍 Diagnóstico Técnico Pericial</h3>
-            <div class="parecer">{parecer_ia}</div>
-            <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
-        </div>
-    </body>
-    </html>
-    """
-    return html
-
-
-
-# ==============================================================================
-# 4. INTERFACE E EXECUÇÃO
-# ==============================================================================
-st.title("⚖️ NetExame: Perícia Forense de Processos")
-
-# Inputs (No seu caso, isso viria do JSON que você já carrega)
-nome_alvo = st.text_input("Nome do Colaborador", "ADSON")
-cargo_alvo = st.text_input("Cargo", "GESTOR DE DP")
-relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
-
-if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
-    with st.spinner("IA analisando nexo causal e eficiência..."):
-        resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
-        
-        if resultado:
-            # SALVA NO ESTADO DA SESSÃO
-            st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
-            st.session_state['pop_universal_ia'] = resultado['pop_universal']
-            st.session_state['analise_concluida'] = True
-            
-            st.success("Análise Concluída!")
-            st.markdown(f"**Parecer:** {resultado['parecer_pericial']}")
-
-# --- SEÇÃO DE DOWNLOAD DO LAUDO ---
-if st.session_state['analise_concluida']:
-    st.markdown("---")
-    st.subheader("🏁 Finalização e Entrega")
-    
-    col1, col2 = st.columns(2)
-
-    with col1:
-        if st.button("📥 BAIXAR LAUDO PERICIAL"):
-            # HTML SEM O POP (Apenas Parecer e Cabeçalho)
-            html_laudo = gerar_html_laudo_puro(
-                nome_alvo, 
-                st.session_state['resultado_parecer_gpt']
-            )
-            b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
-            href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
-            st.markdown(href, unsafe_allow_html=True)
-
-
-
-
-import streamlit as st
-import json
-import os
-import glob
-from openai import OpenAI
-
-# 1. SETUP E CONEXÃO
-st.set_page_config(page_title="IA Auditor Pro 360", layout="wide")
-
-# Inicializa o cliente OpenAI (Certifique-se de configurar a chave no Streamlit Secrets ou env)
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-def solicitar_pericia_360(dados):
-    """
-    O Cérebro do Sistema: Envia o JSON e recebe o laudo estratégico.
-    """
-    prompt = f"""
-    ESTRUTURA DE DADOS BRUTOS:
-    {json.dumps(dados, indent=2, ensure_ascii=False)}
-
-    SUA MISSÃO: Realizar uma perícia técnica 360° (Consultor Sênior).
-    
-    CRUZAMENTOS OBRIGATÓRIOS:
-    1. FORMAÇÃO vs. OPERAÇÃO: O colaborador tem cursos de Pós e Especializações (ver em 'cursos') mas gasta tempo em tarefas de 'baixa' complexidade?
-    2. ANÁLISE DE CARGA (MATEMÁTICA): Some os tempos e frequências. Se ultrapassar 480 min/dia e ele disse 'nenhuma dificuldade', identifique o risco de Burnout Mascarado.
-    3. HIBRIDISMO DISC: Analise se o perfil é híbrido (ex: A com D). Explique como isso gera conflito entre 'entrega rápida' e 'perfeccionismo exagerado'.
-    4. ALINHAMENTO ESTRATÉGICO: O 'Objetivo' dele condiz com as tarefas de 'Alta' ou ele é um gestor sequestrado pelo operacional?
-    5. VEREDITO: O que ele deve DELEGAR, PARAR e FOCO IMEDIATO.
-
-    SAÍDA: Use Markdown, seja direto, crítico e focado em ROI humano.
-    """
-
-    response = client.chat.completions.create(
-        model="gpt-4o", # Ou gpt-4-turbo
-        messages=[
-            {"role": "system", "content": "Você é um Auditor Forense de Performance Humana."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.2
-    )
-    return response.choices[0].message.content
-
-# 2. INTERFACE UNIVERSAL
-def main():
-    st.title("🛡️ Motor de Perícia e Auditoria IA 360°")
-    st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
-
-    # Busca arquivos JSON
-    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-    
-    if not arquivos:
-        st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
-        return
-
-    lista_colab = {os.path.basename(f): f for f in arquivos}
-    escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
-
-    if escolha:
-        with open(lista_colab[escolha], "r", encoding="utf-8") as f:
-            dados_lidos = json.load(f)
-            
-            # Layout de colunas para dados rápidos
-            c1, c2, c3 = st.columns(3)
-            c1.metric("Colaborador", dados_lidos.get('colaborador'))
-            c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
-            c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
-
-            if st.button("🚀 GERAR LAUDO FORENSE 360°"):
-                with st.spinner("IA processando cruzamento de dados..."):
-                    laudo = solicitar_pericia_360(dados_lidos)
-                    st.divider()
-                    st.markdown(laudo)
                     
-                    # 1. Botão Original (Markdown)
-                    st.download_button(
-                        "Exportar Laudo (.md)", 
-                        laudo, 
-                        file_name=f"pericia_{dados_lidos.get('colaborador')}.md"
-                    )
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Carga Alvo", "480 min")
+                    c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
+                    c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                    st.table(pd.DataFrame(dados_ia))
 
-                    # 2. SEU NOVO BOTÃO HTML (Agora protegido dentro do IF)
-                    html_template = f"""
-                    <!DOCTYPE html>
-                    <html lang="pt-BR">
-                    <head>
-                        <meta charset="UTF-8">
-                        <style>
-                            body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
-                            h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
-                            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                            th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
-                            th {{ background-color: #ecf0f1; font-weight: bold; }}
-                            .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
-                        </style>
-                    </head>
-                    <body>
-                        {laudo.replace('\n', '<br>')}
-                        <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
+                    # --- GERADOR DE HTML PARA DOWNLOAD ---
+                    html_content = f"""
+                    <html>
+                    <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
+                    <body style="font-family: sans-serif; padding: 20px;">
+                        <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
+                        <table border="1" style="border-collapse: collapse; width: 100%;">
+                            <tr style="background-color: #f2f2f2;">
+                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
+                            </tr>
+                    """
+                    for d in dados_ia:
+                        html_content += f"""
+                            <tr>
+                                <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
+                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td>
+                            </tr>"""
+
+                    html_content += f"""
+                        </table>
+                        <p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>
                     </body>
                     </html>
                     """
-                    
+
                     st.download_button(
-                        label="🌐 Exportar em HTML (Visual Profissional)",
-                        data=html_template,
-                        file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
-                        mime="text/html",
-                        use_container_width=True
+                        label="📥 Baixar POP em HTML",
+                        data=html_content,
+                        file_name="pop_ia_netexame.html",
+                        mime="text/html"
                     )
 
+                    # --------------------------------------------------------------
+                    # BLOCO 2: O SER (ATIVIDADES REALMENTE LISTADAS)
+                    # --------------------------------------------------------------
+                    st.header("📝 [B] Realidade Relatada (Análise de Esforço)")
+                    atividades_relatadas = colab['tabelas'].get('alta', []) + \
+                                        colab['tabelas'].get('normal', []) + \
+                                        colab['tabelas'].get('baixa', [])
+                    
+                    dados_reais = []
+                    total_real_diario = 0
+                    for item in atividades_relatadas:
+                        h = int(str(item.get('Horas', '0')).split()[0])
+                        m = int(str(item.get('Minutos', '0')).split()[0])
+                        t_bruto = (h * 60) + m
+                        f_real = item.get('Frequência', '').upper()
+                        
+                        # Normalização de frequência para cálculo
+                        if "D" in f_real: imp = t_bruto
+                        elif "S" in f_real: imp = t_bruto / 5
+                        elif "M" in f_real: imp = t_bruto / 22
+                        else: imp = 0
+                        
+                        total_real_diario += imp
+                        dados_reais.append({
+                            "Atividade Listada": item.get('Atividade'),
+                            "Freq": f_real,
+                            "Tempo Bruto": f"{t_bruto}m",
+                            "Tempo Diário Convertido": f"{imp:.1f}m",
+                            "Peso na Jornada": f"{(imp/480)*100:.1f}%"
+                        })
+                    
+                    r1, r2, r3 = st.columns(3)
+                    r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
+                    r2.metric("Eficiência Diária Alvo", f"{(total_real_diario/480)*100:.1f}%")
+                    r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
+                    st.table(pd.DataFrame(dados_reais))
 
-if __name__ == "__main__":
-    main()
+                    # --------------------------------------------------------------
+                    # BLOCO 3: O CRUZAMENTO (CONFRONTO E NEXO CAUSAL)
+                    # --------------------------------------------------------------
+                    st.header("⚖️ [C] Cruzamento e Veredito Pericial")
+                    confronto = []
+                    mapeadas = set()
 
+                    for ativ_ia, info_ia in pop_ia.items():
+                        f_ia = info_ia['freq'].upper()
+                        imp_ia = info_ia['tempo'] if "DIÁRIA" in f_ia else (info_ia['tempo']/5 if "SEMANAL" in f_ia else info_ia['tempo']/22)
+                        
+                        imp_real_vinculado = 0
+                        status = "❌ AUSENTE"
+                        chave = ativ_ia.split()[0].upper()
+                        
+                        for item in atividades_relatadas:
+                            desc = str(item.get('Atividade', '')).upper()
+                            if chave in desc:
+                                h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
+                                t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
+                                imp_v = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
+                                imp_real_vinculado += imp_v
+                                status = "✅ IDENTIFICADO"
+                                mapeadas.add(desc)
+
+                        confronto.append({
+                            "Atividade": ativ_ia,
+                            "Origem": "POP PADRÃO",
+                            "Impacto POP": f"{imp_ia:.1f}m",
+                            "Impacto Real": f"{imp_real_vinculado:.1f}m",
+                            "Divergência": f"{imp_real_vinculado - imp_ia:+.1f}m",
+                            "Status": status
+                        })
+
+                    # Adiciona o que sobrou (Desvios)
+                    for item in atividades_relatadas:
+                        desc = str(item.get('Atividade', '')).upper()
+                        if desc not in mapeadas:
+                            h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
+                            t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
+                            imp_extra = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
+                            confronto.append({
+                                "Atividade": desc,
+                                "Origem": "DESVIO",
+                                "Impacto POP": "0.0m",
+                                "Impacto Real": f"{imp_extra:.1f}m",
+                                "Divergência": f"+{imp_extra:.1f}m",
+                                "Status": "⚠️ FORA DO PADRÃO"
+                            })
+
+                    f1, f2, f3 = st.columns(3)
+                    f1.metric("Aderência ao Cargo", f"{(total_ia_diario/total_real_diario*100 if total_real_diario > 0 else 0):.1f}%")
+                    f2.metric("Perda/Ganho Eficiência", f"{total_ia_diario - total_real_diario:+.1f} min")
+                    f3.metric("Risco Operacional", "ALTO" if total_real_diario > 480 else "BAIXO")
+                    st.table(pd.DataFrame(confronto))
+
+    # --- INICIALIZAÇÃO ---
+    if 'pagina' not in st.session_state:
+        st.session_state.pagina = "parecer"
+
+    mostrar_pagina_parecer()
+
+
+
+    import streamlit as st
+    import pandas as pd
+    import base64
+    import json
+    from openai import OpenAI
+
+    # ==============================================================================
+    # 1. CONFIGURAÇÕES INICIAIS E SEGURANÇA
+    # ==============================================================================
+    # Certifique-se de ter a chave nas configurações do Streamlit Cloud (Secrets)
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+    # Inicializa as variáveis no estado da sessão para evitar NameError
+    if 'resultado_parecer_gpt' not in st.session_state:
+        st.session_state['resultado_parecer_gpt'] = "Aguardando processamento da análise pericial..."
+
+    if 'analise_concluida' not in st.session_state:
+        st.session_state['analise_concluida'] = False
+
+    # ==============================================================================
+    # 2. MOTOR DE INTELIGÊNCIA FORENSE (OPENAI)
+    # ==============================================================================
+    def realizar_pericia_ia(nome_colaborador, cargo, atividades_relatadas):
+        """
+        Chama o GPT-4o-mini para analisar o nexo causal e gerar o POP Universal.
+        """
+        prompt = f"""
+        Aja como um Auditor Forense de Processos Sênior. 
+        Analise o cargo '{cargo}' para o colaborador '{nome_colaborador}'.
+        O colaborador relatou as seguintes atividades: {atividades_relatadas}
+
+        SUA MISSÃO:
+        1. Reafirme o POP PADRÃO UNIVERSAL (480 min totais).
+        2. Escreva um PARECER TÉCNICO focado em:
+        - Inconsistência de carga horária (se houver).
+        - Desvios de função (operacional vs estratégico).
+        - Riscos de omissão de tarefas críticas (como conferência de folha).
+
+        RESPONDA EXCLUSIVAMENTE NO FORMATO JSON ABAIXO:
+        {{
+            "parecer_pericial": "Seu texto de parecer aqui detalhado.",
+            "pop_universal": [
+                {{"Atividade": "A", "Freq": "D", "Tempo": "Xm", "Impacto": "Ym", "Peso": "Z%"}}
+            ]
+        }}
+        """
+        
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Você é um auditor especializado em eficiência operacional e cronoanálise."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={ "type": "json_object" }
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"Erro na API da OpenAI: {e}")
+            return None
+
+
+    # ==============================================================================
+    # 3. GERADOR DE ARTEFATOS (HTMLS SEPARADOS)
+    # ==============================================================================
+
+    def gerar_html_laudo_puro(nome_colab, parecer_ia):
+        """Gera o HTML contendo APENAS o cabeçalho e o parecer técnico (sem a tabela)."""
+        html = f"""
+        <html>
+        <head><meta charset="utf-8"><style>
+            body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
+            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+            .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
+            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
+            footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
+        </style></head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🛡️ NetExame: Parecer Pericial</h1>
+                    <p>Análise Forense de Processos | Colaborador: {nome_colab}</p>
+                </div>
+                <h3>🔍 Diagnóstico Técnico Pericial</h3>
+                <div class="parecer">{parecer_ia}</div>
+                <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
+            </div>
+        </body>
+        </html>
+        """
+        return html
+
+
+
+    # ==============================================================================
+    # 4. INTERFACE E EXECUÇÃO
+    # ==============================================================================
+    st.title("⚖️ NetExame: Perícia Forense de Processos")
+
+    # Inputs (No seu caso, isso viria do JSON que você já carrega)
+    nome_alvo = st.text_input("Nome do Colaborador", "ADSON")
+    cargo_alvo = st.text_input("Cargo", "GESTOR DE DP")
+    relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
+
+    if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
+        with st.spinner("IA analisando nexo causal e eficiência..."):
+            resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
             
+            if resultado:
+                # SALVA NO ESTADO DA SESSÃO
+                st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
+                st.session_state['pop_universal_ia'] = resultado['pop_universal']
+                st.session_state['analise_concluida'] = True
+                
+                st.success("Análise Concluída!")
+                st.markdown(f"**Parecer:** {resultado['parecer_pericial']}")
 
-# ==============================================================================
-# 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
-# ==============================================================================
-@st.cache_data(show_spinner="Recuperando perícia do cache...")
-def realizar_super_pericia_ia(dados):
-    """
-    Realiza a auditoria cruzada: JSON + Benchmark + Nexo Causal + DISC.
-    """
-    # Preparação dos dados para o Prompt
-    contexto_dados = json.dumps(dados, indent=2, ensure_ascii=False)
-    
-    prompt = f"""
-    Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
-    Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
+    # --- SEÇÃO DE DOWNLOAD DO LAUDO ---
+    if st.session_state['analise_concluida']:
+        st.markdown("---")
+        st.subheader("🏁 Finalização e Entrega")
+        
+        col1, col2 = st.columns(2)
 
-    DADOS BRUTOS DO ALVO:
-    {contexto_dados}
+        with col1:
+            if st.button("📥 BAIXAR LAUDO PERICIAL"):
+                # HTML SEM O POP (Apenas Parecer e Cabeçalho)
+                html_laudo = gerar_html_laudo_puro(
+                    nome_alvo, 
+                    st.session_state['resultado_parecer_gpt']
+                )
+                b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
+                href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
+                st.markdown(href, unsafe_allow_html=True)
 
-    SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
-    1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas de 'Alta' complexidade relatadas? 
-    2. CAPACIDADE vs. ENTREGA: O colaborador possui cursos de Pós/Especialização (ver em 'cursos') que estão sendo desperdiçados em tarefas operacionais?
-    3. HIBRIDISMO COMPORTAMENTAL: Analise o DISC. Como o perfil (Ex: Dominante/Conformidade) impacta a velocidade e a precisão nestas tarefas?
-    4. CRONOANÁLISE CRÍTICA: Se a soma das tarefas (D/S/M) converter para mais de 480min/dia, aponte risco de Burnout Mascarado e Erro Forense.
-    5. VEREDITO ESTRATÉGICO: O que ele deve PARAR de fazer, o que deve DELEGAR e onde deve ser o FOCO IMEDIATO.
 
-    FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-    {{
-        "parecer_executivo": "Texto profundo, crítico e técnico (estilo consultoria sênior) detalhando os desvios e o nexo causal.",
-        "pop_benchmark": [
-            {{"Atividade": "Nome da Tarefa", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI de Sucesso"}}
-        ],
-        "veredito_final": "Resumo executivo do plano de ação."
-    }}
-    """
-    
-    try:
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+
+    import streamlit as st
+    import json
+    import os
+    import glob
+    from openai import OpenAI
+
+    # 1. SETUP E CONEXÃO
+    st.set_page_config(page_title="IA Auditor Pro 360", layout="wide")
+
+    # Inicializa o cliente OpenAI (Certifique-se de configurar a chave no Streamlit Secrets ou env)
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+    def solicitar_pericia_360(dados):
+        """
+        O Cérebro do Sistema: Envia o JSON e recebe o laudo estratégico.
+        """
+        prompt = f"""
+        ESTRUTURA DE DADOS BRUTOS:
+        {json.dumps(dados, indent=2, ensure_ascii=False)}
+
+        SUA MISSÃO: Realizar uma perícia técnica 360° (Consultor Sênior).
+        
+        CRUZAMENTOS OBRIGATÓRIOS:
+        1. FORMAÇÃO vs. OPERAÇÃO: O colaborador tem cursos de Pós e Especializações (ver em 'cursos') mas gasta tempo em tarefas de 'baixa' complexidade?
+        2. ANÁLISE DE CARGA (MATEMÁTICA): Some os tempos e frequências. Se ultrapassar 480 min/dia e ele disse 'nenhuma dificuldade', identifique o risco de Burnout Mascarado.
+        3. HIBRIDISMO DISC: Analise se o perfil é híbrido (ex: A com D). Explique como isso gera conflito entre 'entrega rápida' e 'perfeccionismo exagerado'.
+        4. ALINHAMENTO ESTRATÉGICO: O 'Objetivo' dele condiz com as tarefas de 'Alta' ou ele é um gestor sequestrado pelo operacional?
+        5. VEREDITO: O que ele deve DELEGAR, PARAR e FOCO IMEDIATO.
+
+        SAÍDA: Use Markdown, seja direto, crítico e focado em ROI humano.
+        """
+
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o", # Ou gpt-4-turbo
             messages=[
-                {"role": "system", "content": "Você é um auditor sênior especializado em eficiência operacional e capital humano."},
+                {"role": "system", "content": "Você é um Auditor Forense de Performance Humana."},
                 {"role": "user", "content": prompt}
             ],
-            response_format={ "type": "json_object" },
-            temperature=0.3
+            temperature=0.2
         )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        st.error(f"Erro na Perícia IA: {e}")
-        return None
+        return response.choices[0].message.content
 
+    # 2. INTERFACE UNIVERSAL
+    def main():
+        st.title("🛡️ Motor de Perícia e Auditoria IA 360°")
+        st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
 
+        # Busca arquivos JSON
+        arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+        
+        if not arquivos:
+            st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
+            return
 
-import streamlit as st
-import pandas as pd
-import json
-import os
-import glob
-import base64
-from openai import OpenAI
+        lista_colab = {os.path.basename(f): f for f in arquivos}
+        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
 
-# ==============================================================================
-# 1. SETUP E MOTOR DE INTELIGÊNCIA (NEXO CAUSAL 360°)
-# ==============================================================================
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-@st.cache_data(show_spinner="Consultando base de dados e IA...", ttl=86400)
-def realizar_super_pericia_ia(dados):
-    """
-    O Cérebro do Sistema: Cruza JSON, Benchmark e Gera Parecer Forense.
-    """
-    contexto_puro = json.dumps(dados, indent=2, ensure_ascii=False)
-    
-    prompt = f"""
-    Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
-    Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
-
-    DADOS BRUTOS DO ALVO:
-    {contexto_puro}
-
-    SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
-    1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas relatadas? 
-    2. CAPACIDADE vs. ENTREGA: Há desperdício de formação (cursos) em tarefas operacionais?
-    3. HIBRIDISMO COMPORTAMENTAL: Como o perfil DISC impacta a execução?
-    4. CRONOANÁLISE: Se > 480min/dia, aponte risco de Burnout Mascarado.
-    5. VEREDITO: O que PARAR, DELEGAR e FOCO IMEDIATO.
-
-    FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-    {{
-        "parecer_executivo": "Texto profundo e técnico sobre desvios e nexo causal.",
-        "pop_benchmark": [
-            {{"Atividade": "Nome", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI"}}
-        ],
-        "veredito_final": "Resumo executivo do plano de ação."
-    }}
-    """
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": "Você é um auditor sênior."},
-                      {"role": "user", "content": prompt}],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        st.error(f"Erro na IA: {e}")
-        return None
-
-
-
-import streamlit as st
-import json
-import glob
-import base64
-from openai import OpenAI
-
-# ==============================================================================
-# 1. MOTOR DE PERÍCIA (RESILIENTE)
-# ==============================================================================
-@st.cache_data(show_spinner=False)
-def realizar_pericia_direta(dados_json_str):
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-    
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "Você é um Perito Forense em RH. Gere um laudo técnico focado em PERFIL e NEXO CAUSAL."},
-                {"role": "user", "content": f"Una o Perfil DISC, as competências técnicas e os POPs necessários para este colaborador. Retorne APENAS um JSON com 'analise_perfil_nexo' (texto) e 'pop_estrategico' (texto): {dados_json_str}"}
-            ],
-            response_format={ "type": "json_object" }
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        return {"error": str(e)}
-
-# ==============================================================================
-# 2. GERADOR DE HTML (ESTRUTURA LIMPA)
-# ==============================================================================
-def construir_html_pericial(dados, analise_ia):
-    nome = dados.get('colaborador', 'N/A')
-    cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
-    
-    # Pegando os textos da IA com proteção contra None
-    corpo_laudo = analise_ia.get('analise_perfil_nexo', 'Dados de análise não disponíveis.')
-    pop_texto = analise_ia.get('pop_estrategico', 'POP não definido.')
-
-    return f"""
-    <html>
-    <head><meta charset="UTF-8">
-        <style>
-            body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #2b2d42; line-height: 1.6; }}
-            .container {{ background: white; padding: 35px; border-radius: 12px; border-left: 10px solid #d90429; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 800px; margin: auto; }}
-            h1 {{ border-bottom: 2px solid #eee; padding-bottom: 10px; color: #d90429; }}
-            .section-title {{ font-weight: bold; text-transform: uppercase; margin-top: 25px; color: #2b2d42; background: #f4f7f6; padding: 5px 10px; }}
-            .content {{ margin-top: 10px; text-align: justify; }}
-            .footer {{ margin-top: 40px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>LAUDO TÉCNICO: {nome}</h1>
-            <p><strong>CARGO:</strong> {cargo} | <strong>AUDITORIA DE PROCESSO</strong></p>
-            
-            <div class="section-title">I. ANÁLISE COMPORTAMENTAL E NEXO CAUSAL</div>
-            <div class="content">{corpo_laudo}</div>
-            
-            <div class="section-title">II. DIRETRIZES DE POP (PROCEDIMENTO OPERACIONAL PADRÃO)</div>
-            <div class="content">{pop_texto}</div>
-            
-            <div class="footer">Documento gerado para fins de auditoria interna e otimização de processos.</div>
-        </div>
-    </body>
-    </html>
-    """
-
-# ==============================================================================
-# 3. INTERFACE
-# ==============================================================================
-def main():
-    st.title("🛡️ NetExame: Perícia & POP")
-    
-    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-    escolha = st.selectbox("🎯 Selecionar Perfil:", arquivos)
-
-    if escolha:
-        with open(escolha, 'r', encoding='utf-8') as f:
-            dados_alvo = json.load(f)
-
-        if st.button("🚀 GERAR PERÍCIA TÉCNICA", use_container_width=True):
-            dados_str = json.dumps(dados_alvo, ensure_ascii=False)
-            
-            with st.spinner("Correlacionando Perfil e Processos..."):
-                resultado = realizar_pericia_direta(dados_str)
+        if escolha:
+            with open(lista_colab[escolha], "r", encoding="utf-8") as f:
+                dados_lidos = json.load(f)
                 
-                if "error" not in resultado:
-                    html_final = construir_html_pericial(dados_alvo, resultado)
-                    b64 = base64.b64encode(html_final.encode('utf-8')).decode()
-                    nome_colab = dados_alvo.get('colaborador')
-                    
-                    st.markdown(f'''
-                        <div style="text-align:center; margin-top:20px;">
-                            <a href="data:text/html;base64,{b64}" download="PERICIA_{nome_colab}.html">
-                                <button style="background:#d90429; color:white; padding:20px; border-radius:12px; cursor:pointer; width:100%; font-weight:bold; border:none; font-size:18px;">
-                                    📥 BAIXAR LAUDO TÉCNICO (HTML)
-                                </button>
-                            </a>
-                        </div>
-                    ''', unsafe_allow_html=True)
-                    st.success("Perícia concluída com foco em Nexo e POP!")
+                # Layout de colunas para dados rápidos
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Colaborador", dados_lidos.get('colaborador'))
+                c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
+                c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-if __name__ == "__main__":
-    main()
+                if st.button("🚀 GERAR LAUDO FORENSE 360°"):
+                    with st.spinner("IA processando cruzamento de dados..."):
+                        laudo = solicitar_pericia_360(dados_lidos)
+                        st.divider()
+                        st.markdown(laudo)
+                        
+                        # 1. Botão Original (Markdown)
+                        st.download_button(
+                            "Exportar Laudo (.md)", 
+                            laudo, 
+                            file_name=f"pericia_{dados_lidos.get('colaborador')}.md"
+                        )
+
+                        # 2. SEU NOVO BOTÃO HTML (Agora protegido dentro do IF)
+                        html_template = f"""
+                        <!DOCTYPE html>
+                        <html lang="pt-BR">
+                        <head>
+                            <meta charset="UTF-8">
+                            <style>
+                                body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
+                                h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
+                                table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                                th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
+                                th {{ background-color: #ecf0f1; font-weight: bold; }}
+                                .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
+                            </style>
+                        </head>
+                        <body>
+                            {laudo.replace('\n', '<br>')}
+                            <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
+                        </body>
+                        </html>
+                        """
+                        
+                        st.download_button(
+                            label="🌐 Exportar em HTML (Visual Profissional)",
+                            data=html_template,
+                            file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
+                            mime="text/html",
+                            use_container_width=True
+                        )
+
+
+    if __name__ == "__main__":
+        main()
+
+                
+
+    # ==============================================================================
+    # 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
+    # ==============================================================================
+    @st.cache_data(show_spinner="Recuperando perícia do cache...")
+    def realizar_super_pericia_ia(dados):
+        """
+        Realiza a auditoria cruzada: JSON + Benchmark + Nexo Causal + DISC.
+        """
+        # Preparação dos dados para o Prompt
+        contexto_dados = json.dumps(dados, indent=2, ensure_ascii=False)
+        
+        prompt = f"""
+        Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
+        Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
+
+        DADOS BRUTOS DO ALVO:
+        {contexto_dados}
+
+        SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
+        1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas de 'Alta' complexidade relatadas? 
+        2. CAPACIDADE vs. ENTREGA: O colaborador possui cursos de Pós/Especialização (ver em 'cursos') que estão sendo desperdiçados em tarefas operacionais?
+        3. HIBRIDISMO COMPORTAMENTAL: Analise o DISC. Como o perfil (Ex: Dominante/Conformidade) impacta a velocidade e a precisão nestas tarefas?
+        4. CRONOANÁLISE CRÍTICA: Se a soma das tarefas (D/S/M) converter para mais de 480min/dia, aponte risco de Burnout Mascarado e Erro Forense.
+        5. VEREDITO ESTRATÉGICO: O que ele deve PARAR de fazer, o que deve DELEGAR e onde deve ser o FOCO IMEDIATO.
+
+        FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+        {{
+            "parecer_executivo": "Texto profundo, crítico e técnico (estilo consultoria sênior) detalhando os desvios e o nexo causal.",
+            "pop_benchmark": [
+                {{"Atividade": "Nome da Tarefa", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI de Sucesso"}}
+            ],
+            "veredito_final": "Resumo executivo do plano de ação."
+        }}
+        """
+        
+        try:
+            client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "Você é um auditor sênior especializado em eficiência operacional e capital humano."},
+                    {"role": "user", "content": prompt}
+                ],
+                response_format={ "type": "json_object" },
+                temperature=0.3
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"Erro na Perícia IA: {e}")
+            return None
+
+
+
+    import streamlit as st
+    import pandas as pd
+    import json
+    import os
+    import glob
+    import base64
+    from openai import OpenAI
+
+    # ==============================================================================
+    # 1. SETUP E MOTOR DE INTELIGÊNCIA (NEXO CAUSAL 360°)
+    # ==============================================================================
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+    @st.cache_data(show_spinner="Consultando base de dados e IA...", ttl=86400)
+    def realizar_super_pericia_ia(dados):
+        """
+        O Cérebro do Sistema: Cruza JSON, Benchmark e Gera Parecer Forense.
+        """
+        contexto_puro = json.dumps(dados, indent=2, ensure_ascii=False)
+        
+        prompt = f"""
+        Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
+        Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
+
+        DADOS BRUTOS DO ALVO:
+        {contexto_puro}
+
+        SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
+        1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas relatadas? 
+        2. CAPACIDADE vs. ENTREGA: Há desperdício de formação (cursos) em tarefas operacionais?
+        3. HIBRIDISMO COMPORTAMENTAL: Como o perfil DISC impacta a execução?
+        4. CRONOANÁLISE: Se > 480min/dia, aponte risco de Burnout Mascarado.
+        5. VEREDITO: O que PARAR, DELEGAR e FOCO IMEDIATO.
+
+        FORMATO DE SAÍDA (ESTRITAMENTE JSON):
+        {{
+            "parecer_executivo": "Texto profundo e técnico sobre desvios e nexo causal.",
+            "pop_benchmark": [
+                {{"Atividade": "Nome", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI"}}
+            ],
+            "veredito_final": "Resumo executivo do plano de ação."
+        }}
+        """
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "system", "content": "Você é um auditor sênior."},
+                        {"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            st.error(f"Erro na IA: {e}")
+            return None
+
+
+
+    import streamlit as st
+    import json
+    import glob
+    import base64
+    from openai import OpenAI
+
+    # ==============================================================================
+    # 1. MOTOR DE PERÍCIA (RESILIENTE)
+    # ==============================================================================
+    @st.cache_data(show_spinner=False)
+    def realizar_pericia_direta(dados_json_str):
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Você é um Perito Forense em RH. Gere um laudo técnico focado em PERFIL e NEXO CAUSAL."},
+                    {"role": "user", "content": f"Una o Perfil DISC, as competências técnicas e os POPs necessários para este colaborador. Retorne APENAS um JSON com 'analise_perfil_nexo' (texto) e 'pop_estrategico' (texto): {dados_json_str}"}
+                ],
+                response_format={ "type": "json_object" }
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            return {"error": str(e)}
+
+    # ==============================================================================
+    # 2. GERADOR DE HTML (ESTRUTURA LIMPA)
+    # ==============================================================================
+    def construir_html_pericial(dados, analise_ia):
+        nome = dados.get('colaborador', 'N/A')
+        cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
+        
+        # Pegando os textos da IA com proteção contra None
+        corpo_laudo = analise_ia.get('analise_perfil_nexo', 'Dados de análise não disponíveis.')
+        pop_texto = analise_ia.get('pop_estrategico', 'POP não definido.')
+
+        return f"""
+        <html>
+        <head><meta charset="UTF-8">
+            <style>
+                body {{ font-family: 'Segoe UI', sans-serif; padding: 40px; color: #2b2d42; line-height: 1.6; }}
+                .container {{ background: white; padding: 35px; border-radius: 12px; border-left: 10px solid #d90429; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 800px; margin: auto; }}
+                h1 {{ border-bottom: 2px solid #eee; padding-bottom: 10px; color: #d90429; }}
+                .section-title {{ font-weight: bold; text-transform: uppercase; margin-top: 25px; color: #2b2d42; background: #f4f7f6; padding: 5px 10px; }}
+                .content {{ margin-top: 10px; text-align: justify; }}
+                .footer {{ margin-top: 40px; font-size: 12px; color: #777; border-top: 1px solid #eee; padding-top: 10px; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>LAUDO TÉCNICO: {nome}</h1>
+                <p><strong>CARGO:</strong> {cargo} | <strong>AUDITORIA DE PROCESSO</strong></p>
+                
+                <div class="section-title">I. ANÁLISE COMPORTAMENTAL E NEXO CAUSAL</div>
+                <div class="content">{corpo_laudo}</div>
+                
+                <div class="section-title">II. DIRETRIZES DE POP (PROCEDIMENTO OPERACIONAL PADRÃO)</div>
+                <div class="content">{pop_texto}</div>
+                
+                <div class="footer">Documento gerado para fins de auditoria interna e otimização de processos.</div>
+            </div>
+        </body>
+        </html>
+        """
+
+    # ==============================================================================
+    # 3. INTERFACE
+    # ==============================================================================
+    def main():
+        st.title("🛡️ NetExame: Perícia & POP")
+        
+        arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+        escolha = st.selectbox("🎯 Selecionar Perfil:", arquivos)
+
+        if escolha:
+            with open(escolha, 'r', encoding='utf-8') as f:
+                dados_alvo = json.load(f)
+
+            if st.button("🚀 GERAR PERÍCIA TÉCNICA", use_container_width=True):
+                dados_str = json.dumps(dados_alvo, ensure_ascii=False)
+                
+                with st.spinner("Correlacionando Perfil e Processos..."):
+                    resultado = realizar_pericia_direta(dados_str)
+                    
+                    if "error" not in resultado:
+                        html_final = construir_html_pericial(dados_alvo, resultado)
+                        b64 = base64.b64encode(html_final.encode('utf-8')).decode()
+                        nome_colab = dados_alvo.get('colaborador')
+                        
+                        st.markdown(f'''
+                            <div style="text-align:center; margin-top:20px;">
+                                <a href="data:text/html;base64,{b64}" download="PERICIA_{nome_colab}.html">
+                                    <button style="background:#d90429; color:white; padding:20px; border-radius:12px; cursor:pointer; width:100%; font-weight:bold; border:none; font-size:18px;">
+                                        📥 BAIXAR LAUDO TÉCNICO (HTML)
+                                    </button>
+                                </a>
+                            </div>
+                        ''', unsafe_allow_html=True)
+                        st.success("Perícia concluída com foco em Nexo e POP!")
+
+    if __name__ == "__main__":
+        main()
