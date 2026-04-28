@@ -4887,12 +4887,12 @@ if st.session_state.get("pagina") == "parecer":
 
         prompt = f"""
         FORMATO DE SAÍDA (JSON ESTRITO):
-        """
-        {
+        
+        {{
             "parecer_pericial": "Texto técnico, crítico e estratégico sobre o colaborador e sua operação.",
             
             "pop_universal": [
-                {
+                {{
                     "Atividade": "",
                     "Freq": "D/S/M",
                     "Tempo": "",
@@ -4906,9 +4906,9 @@ if st.session_state.get("pagina") == "parecer":
                     "ganho_automacao_min": 0,
                     "ganho_automacao_pct": 0,
                     "impacto_operacional": ""
-                }
+                }}
             ]
-        }
+        }}
 
         Pense como auditor forense + especialista em eficiência operacional + arquiteto de automação.
         """
