@@ -4655,7 +4655,13 @@ if st.session_state.get("pagina") == "parecer":
                             "Tempo Base": f"{t}m",
                             "Impacto Diário Convertido": f"{imp:.1f}m",
                             "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                            "Meta Auditável": info['meta']
+                            "Meta Auditável": info['meta'],
+   
+                            "Sistema": info.get("sistema", "NÃO IDENTIFICADO"),
+                            "Nome Sistema": info.get("nome_do_sistema", "N/A"),
+                            "Execução": info.get("nivel_de_execucao", "MANUAL"),
+                            "Automação Possível": info.get("automacao_possivel", "SIM/NÃO"),
+                            "Ganho Automação (min)": info.get("ganho_automacao_min", 0)
                         })
                     
                     c1, c2, c3 = st.columns(3)
