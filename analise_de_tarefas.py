@@ -4998,11 +4998,17 @@ def realizar_pericia(dados):
     except Exception as e:
         st.error(f"Erro ao processar perícia: {e}")
 
-# CHAMADA DA FUNÇÃO (Segura e Universal)
-if 'json_data' in locals(): 
-    realizar_pericia_ia(json_data)
-elif 'dados_json' in locals(): 
-    realizar_pericia_ia(dados_json)
+# =========================================================
+# CHAMADA FINAL CORRIGIDA (Substitua as últimas linhas por esta)
+# =========================================================
+
+# Usamos 'dados_json' que é o nome que você usou no erro anterior
+if 'dados_json' in locals(): 
+    realicia = realizar_pericia(dados_json)
+elif 'json_data' in locals(): 
+    realicia = realizar_pericia(json_data)
 elif 'dados' in locals(): 
-    realizar_pericia_ia(dados)
+    realicia = realizar_pericia(dados)
+else:
+    st.info("Aguardando carregamento do JSON para iniciar perícia...")
     
