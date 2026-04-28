@@ -4922,118 +4922,82 @@ if st.session_state['analise_concluida']:
 
 
 
+
 import streamlit as st
 import json
 import os
 import glob
+from openai import OpenAI
 
-# =========================================================
-# 1. CONFIGURAÇÕES TÉCNICAS E TRADUTOR DISC
-# =========================================================
-st.set_page_config(page_title="Auditoria IA Universal", layout="wide")
+# 1. SETUP E CONEXÃO
+st.set_page_config(page_title="IA Auditor Pro 360", layout="wide")
 
-TRADUTOR_DISC = {
-    "A": {"perfil": "Dominância", "cor": "red", "desc": "Resultados, Rapidez e Execução."},
-    "B": {"perfil": "Influência", "cor": "orange", "desc": "Comunicação, Pessoas e Entusiasmo."},
-    "C": {"perfil": "Estabilidade", "cor": "green", "desc": "Processos, Ritmo e Segurança."},
-    "D": {"perfil": "Conformidade", "cor": "blue", "desc": "Regras, Detalhes e Precisão."}
-}
+# Inicializa o cliente OpenAI (Certifique-se de configurar a chave no Streamlit Secrets ou env)
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# =========================================================
-# 2. MOTOR DE PERÍCIA AVANÇADA (A IA ANALISA AQUI)
-# =========================================================
-def realizar_pericia(dados):
-    nome = dados.get('colaborador', 'Colaborador')
-    campos = dados.get('campos', {})
-    cargo = campos.get('cargo', 'Não Informado').upper()
+def solicitar_pericia_360(dados):
+    """
+    O Cérebro do Sistema: Envia o JSON e recebe o laudo estratégico.
+    """
+    prompt = f"""
+    ESTRUTURA DE DADOS BRUTOS:
+    {json.dumps(dados, indent=2, ensure_ascii=False)}
+
+    SUA MISSÃO: Realizar uma perícia técnica 360° (Consultor Sênior).
     
-    st.divider()
-    st.header(f"🔍 Laudo de Perícia Operacional: {nome}")
-    st.subheader(f"💼 {cargo} | {campos.get('unidade', 'Unidade Geral')}")
+    CRUZAMENTOS OBRIGATÓRIOS:
+    1. FORMAÇÃO vs. OPERAÇÃO: O colaborador tem cursos de Pós e Especializações (ver em 'cursos') mas gasta tempo em tarefas de 'baixa' complexidade?
+    2. ANÁLISE DE CARGA (MATEMÁTICA): Some os tempos e frequências. Se ultrapassar 480 min/dia e ele disse 'nenhuma dificuldade', identifique o risco de Burnout Mascarado.
+    3. HIBRIDISMO DISC: Analise se o perfil é híbrido (ex: A com D). Explique como isso gera conflito entre 'entrega rápida' e 'perfeccionismo exagerado'.
+    4. ALINHAMENTO ESTRATÉGICO: O 'Objetivo' dele condiz com as tarefas de 'Alta' ou ele é um gestor sequestrado pelo operacional?
+    5. VEREDITO: O que ele deve DELEGAR, PARAR e FOCO IMEDIATO.
 
-    try:
-        # --- CÁLCULO DE CARGA HORÁRIA LÍQUIDA ---
-        minutos_diarios = 0
-        pesos = {"D": 1, "S": 0.2, "M": 0.05, "T": 0.33, "A": 0} 
-        tabelas = dados.get('tabelas', {})
-        
-        for nivel in ['alta', 'normal', 'baixa']:
-            for t in tabelas.get(nivel, []):
-                h = int(str(t.get('Horas', '0')).split()[0])
-                m = int(str(t.get('Minutos', '0')).split()[0])
-                f = t.get('Frequência', 'D')
-                minutos_diarios += ((h * 60) + m) * pesos.get(f, 1)
+    SAÍDA: Use Markdown, seja direto, crítico e focado em ROI humano.
+    """
 
-        # --- ANÁLISE COMPORTAMENTAL (DISC) ---
-        respostas = list(dados.get('disc', {}).values())
-        if respostas:
-            letra_principal = max(set(respostas), key=respostas.count)
-            p = TRADUTOR_DISC.get(letra_principal)
-        else:
-            letra_principal, p = "N/A", {"perfil": "Indefinido", "cor": "gray", "desc": "-"}
+    response = client.chat.completions.create(
+        model="gpt-4o", # Ou gpt-4-turbo
+        messages=[
+            {"role": "system", "content": "Você é um Auditor Forense de Performance Humana."},
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.2
+    )
+    return response.choices[0].message.content
 
-        # --- DASHBOARD DE MÉTRICAS ---
-        m1, m2, m3 = st.columns(3)
-        with m1:
-            st.metric("Carga Diária Estimada", f"{int(minutos_diarios)} min", 
-                      delta=f"{int(minutos_diarios - 480)} min" if minutos_diarios > 480 else "DENTRO DO LIMITE",
-                      delta_color="inverse" if minutos_diarios > 480 else "normal")
-        with m2:
-            st.markdown(f"**Perfil Comportamental:** :{p['cor']}[{p['perfil']}]")
-            st.caption(f"Tendência natural para {p['desc']}")
-        with m3:
-            dificuldades = len(tabelas.get('dificuldades', []))
-            st.metric("Gargalos Reportados", "Nenhum" if "nenhuma" in str(tabelas.get('dificuldades')).lower() else f"{dificuldades} Alertas")
-
-        # --- AUDITORIA DE IA: CRUZAMENTO DE DADOS ---
-        st.subheader("💡 Insights do Auditor de Performance")
-        with st.container(border=True):
-            col_a, col_b = st.columns(2)
-            
-            with col_a:
-                st.markdown("### 🚫 Bloqueios e Riscos")
-                # Alerta de Sobrecarga (Matemática vs Realidade)
-                if minutos_diarios > 540:
-                    st.error(f"**ALERTA DE SATURAÇÃO:** {nome} declarou uma carga de {int(minutos_diarios)} min/dia. É humanamente impossível manter a qualidade técnica com este volume.")
-                
-                # Alerta de Desvio de Função (Gestor fazendo Operacional)
-                if "GESTOR" in cargo or "CHEFE" in cargo:
-                    tarefas_baixas = len(tabelas.get('baixa', []))
-                    if tarefas_baixas > 5:
-                        st.warning(f"**DESVIO ESTRATÉGICO:** Identificamos {tarefas_baixas} tarefas de BAIXA complexidade para um cargo de gestão. {nome} está 'apagando incêndio' em vez de gerir.")
-
-            with col_b:
-                st.markdown("### 🎯 Oportunidades de Otimização")
-                # Dica baseada no perfil DISC
-                if letra_principal == "A":
-                    st.info(f"**FOCO EM DELEGAÇÃO:** Como perfil Dominante, {nome} tende a centralizar para garantir o prazo. Treinar a equipe para assumir o operacional liberaria 40% da sua agenda.")
-                elif letra_principal == "B":
-                    st.info(f"**FOCO EM TREINAMENTO:** {nome} tem alta Influência. Use-o para padronizar processos e engajar o time, saindo da conferência manual de documentos.")
-
-    except Exception as e:
-        st.error(f"Erro no processamento da perícia: {e}")
-
-# =========================================================
-# 3. INTERFACE UNIVERSAL (QUALQUER ARQUIVO)
-# =========================================================
+# 2. INTERFACE UNIVERSAL
 def main():
-    st.title("🛡️ Motor de Perícia e Auditoria IA")
-    
-    # Busca arquivos em qualquer lugar (Pasta 'dados' ou raiz)
+    st.title("🛡️ Motor de Perícia e Auditoria IA 360°")
+    st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
+
+    # Busca arquivos JSON
     arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
     
     if not arquivos:
-        st.warning("📂 Nenhum arquivo de colaborador (.json) encontrado. Salve os dados na pasta /dados.")
+        st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
         return
 
-    # Seletor Universal
     lista_colab = {os.path.basename(f): f for f in arquivos}
-    escolha = st.selectbox("🎯 Selecione o Colaborador para análise:", list(lista_colab.keys()))
+    escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
 
     if escolha:
         with open(lista_colab[escolha], "r", encoding="utf-8") as f:
             dados_lidos = json.load(f)
-            realizar_pericia(dados_lidos)
+            
+            # Layout de colunas para dados rápidos
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Colaborador", dados_lidos.get('colaborador'))
+            c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
+            c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
+
+            if st.button("🚀 GERAR LAUDO FORENSE 360°"):
+                with st.spinner("IA processando cruzamento de dados..."):
+                    laudo = solicitar_pericia_360(dados_lidos)
+                    st.divider()
+                    st.markdown(laudo)
+                    
+                    # Opção de exportar
+                    st.download_button("Exportar Laudo", laudo, file_name=f"pericia_{dados_lidos.get('colaborador')}.md")
 
 if __name__ == "__main__":
     main()
