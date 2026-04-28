@@ -4750,3 +4750,73 @@ if 'pagina' not in st.session_state:
     st.session_state.pagina = "parecer"
 
 mostrar_pagina_parecer()
+
+
+
+import streamlit as st
+import base64
+
+# --- FUNÇÃO PARA GERAR O CONTEÚDO HTML ---
+def gerar_html_laudo(colaborador_nome, parecer_ia, df_confronto):
+    # O POP Universal (Pode ser passado dinamicamente ou fixo conforme sua lógica)
+    pop_universal = [
+        {"Atividade": "Auditoria Contínua de Processos", "Freq": "DIÁRIA", "Tempo": "60m", "Impacto": "60.0m", "Peso": "12.5%"},
+        {"Atividade": "Revisão e Validação da Folha", "Freq": "DIÁRIA", "Tempo": "120m", "Impacto": "120.0m", "Peso": "25.0%"},
+        {"Atividade": "Gestão de EFD-Reinf/DCTFWeb", "Freq": "DIÁRIA", "Tempo": "60m", "Impacto": "60.0m", "Peso": "12.5%"},
+        {"Atividade": "Análise de Risco Trabalhista", "Freq": "SEMANAL", "Tempo": "60m", "Impacto": "12.0m", "Peso": "2.5%"}
+    ]
+    
+    rows_pop = "".join([
+        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Impacto']}</td><td>{x['Peso']}</td></tr>" 
+        for x in pop_universal
+    ])
+
+    html = f"""
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
+            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid #d90429; }}
+            .header {{ background: #0d1b2a; color: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; position: relative; }}
+            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0; font-style: italic; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+            th {{ background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; font-size: 13px; text-transform: uppercase; }}
+            td {{ padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 13px; }}
+            .universal-tag {{ position: absolute; top: 25px; right: 25px; background: gold; color: #0d1b2a; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; }}
+            footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🛡️ NetExame: Laudo Forense</h1>
+                <p>Análise de Eficiência Operacional | Colaborador: {colaborador_nome}</p>
+                <div class="universal-tag">PADRÃO UNIVERSAL 480m</div>
+            </div>
+            <h3>🔍 Parecer Técnico Pericial (Análise GPT)</h3>
+            <div class="parecer">{parecer_ia}</div>
+            <hr>
+            <h3>📚 Tabela [A] - POP Padrão (O Dever Ser)</h3>
+            <table>
+                <thead>
+                    <tr><th>Atividade</th><th>Frequência</th><th>Base</th><th>Impacto Diário</th><th>Peso</th></tr>
+                </thead>
+                <tbody>{rows_pop}</tbody>
+            </table>
+            <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
+# --- BOTÃO NO STREAMLIT ---
+if st.button("📥 GERAR E BAIXAR LAUDO FINAL"):
+    # Aqui você passa as variáveis que já tem no seu script
+    conteudo_html = gerar_html_laudo("ADSON", resultado_parecer_gpt, df_confronto)
+    
+    # Codificação para download
+    b64 = base64.b64encode(conteudo_html.encode('utf-8')).decode()
+    href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_PERICIAL_ADSON.html" style="text-decoration: none;"><button style="background-color: #d90429; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">CLIQUE AQUI PARA SALVAR O ARQUIVO</button></a>'
+    st.markdown(href, unsafe_allow_html=True)
