@@ -4892,30 +4892,29 @@ if st.session_state['analise_concluida']:
     st.markdown("---")
     st.subheader("🏁 Finalização e Entrega")
     
-    if st.button("📥 GERAR E BAIXAR LAUDO HTML FINAL"):
-        # Gera o HTML usando os dados salvos no estado
-        html_laudo = gerar_html_laudo(
-            nome_alvo, 
-            st.session_state['resultado_parecer_gpt'], 
-            st.session_state['pop_universal_ia']
-        )
-        
-        # Cria o link de download
-        b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
-        href = f"""
-            <div style="text-align: center;">
-                <a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration: none;">
-                    <button style="
-                        background-color: #d90429; color: white; padding: 18px 35px; 
-                        border: none; border-radius: 10px; cursor: pointer; 
-                        font-weight: bold; font-size: 16px; width: 100%;
-                        box-shadow: 0 4px 15px rgba(217, 4, 41, 0.3);
-                    ">
-                        ✅ LAUDO PRONTO! CLIQUE PARA SALVAR NO COMPUTADOR
-                    </button>
-                </a>
-            </div>
-        """
-        st.markdown(href, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("📥 BAIXAR LAUDO PERICIAL"):
+            # HTML SEM O POP (Apenas Parecer e Cabeçalho)
+            html_laudo = gerar_html_laudo_puro(
+                nome_alvo, 
+                st.session_state['resultado_parecer_gpt']
+            )
+            b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
+            href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
+            st.markdown(href, unsafe_allow_html=True)
+
+    with col2:
+        if st.button("📥 BAIXAR FONTE TÉCNICA (POP)"):
+            # HTML SÓ COM A TABELA POP
+            html_pop = gerar_html_apenas_pop(
+                nome_alvo, 
+                st.session_state['pop_universal_ia']
+            )
+            b64 = base64.b64encode(html_pop.encode('utf-8')).decode()
+            href = f'<a href="data:text/html;base64,{b64}" download="POP_REFERENCIA_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#0d1b2a;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📊 BAIXAR TABELA POP</button></a>'
+            st.markdown(href, unsafe_allow_html=True)
+
 else:
-    st.info("Clique em 'Iniciar Perícia' para habilitar a geração do laudo final.")
+    st.info("Clique em 'Iniciar Perícia' para habilitar a geração dos documentos.")
