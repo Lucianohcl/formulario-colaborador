@@ -4587,6 +4587,8 @@ if st.session_state.get("pagina") == "parecer":
 
             prompt = f"""
             FORMATO DE SAÍDA (JSON ESTRITO):
+            """
+
             {{
                 "NOME_DA_ATIVIDADE": {{
                     "tempo": 0,
@@ -4880,6 +4882,7 @@ if st.session_state.get("pagina") == "parecer":
 
         prompt = f"""
         FORMATO DE SAÍDA (JSON ESTRITO):
+        """
         {
             "parecer_pericial": "Texto técnico, crítico e estratégico sobre o colaborador e sua operação.",
             
