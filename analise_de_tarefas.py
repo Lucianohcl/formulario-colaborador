@@ -4549,8 +4549,7 @@ import json
 # ==============================================================================
 def buscar_benchmark_ia(cargo):
     """
-    Simula a busca na IA pelo 'Padrão Ouro' de mercado para o cargo específico.
-    Aqui o sistema define a régua de eficiência independente do que foi preenchido.
+    Define a régua de eficiência baseada no mercado (Benchmark).
     """
     benchmarks = {
         "GESTOR DE DP": {
@@ -4563,34 +4562,30 @@ def buscar_benchmark_ia(cargo):
             "Fluxo de Caixa": {"tempo": 20, "freq": "DIÁRIA", "meta": "Liquidez"}
         }
     }
-    # Caso o cargo não esteja no mapeamento, a IA gera um padrão de eficiência genérica
     return benchmarks.get(cargo.upper(), {
         "Processos Técnicos": {"tempo": 60, "freq": "DIÁRIA", "meta": "Eficiência Geral"}
     })
 
 # ==============================================================================
-# 🛡️ MOTOR DE CARGA E AUDITORIA (NETEXAME 2026)
+# 🛡️ MOTOR DE AUDITORIA FORENSE (NETEXAME 2026)
 # ==============================================================================
 
 if st.session_state.pagina == "parecer":
     st.title("🛡️ Sistema de Auditoria Forense - NetExame")
 
-    # --- 🟢 ETAPA 1: LOCALIZAÇÃO E SELEÇÃO ---
     caminho_dados = "dados" 
     
     if os.path.exists(caminho_dados):
-        # Lista arquivos ignorando pastas ou arquivos ocultos
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            # Interface de escolha única
+            # 🟢 ETAPA 1: SELEÇÃO ÚNICA
             colaborador_selecionado = st.selectbox(
                 "🎯 Selecione o Colaborador para Auditoria:",
                 options=arquivos,
                 format_func=lambda x: x.replace('.json', '').replace('_', ' ').upper()
             )
             
-            # Botão que dispara a carga e a perícia
             if st.button("🚀 Iniciar Processamento Pericial"):
                 caminho_arquivo = os.path.join(caminho_dados, colaborador_selecionado)
                 
@@ -4598,7 +4593,6 @@ if st.session_state.pagina == "parecer":
                     with open(caminho_arquivo, 'r', encoding='utf-8') as f:
                         colab = json.load(f)
                     
-                    # Extração segura de dados
                     nome = colab.get('colaborador', 'N/A').upper()
                     campos = colab.get('campos', {})
                     cargo = campos.get('cargo', 'N/A').upper() if isinstance(campos, dict) else "N/A"
@@ -4607,7 +4601,7 @@ if st.session_state.pagina == "parecer":
                     st.subheader(f"⚖️ Perícia Técnica: {nome}")
                     st.info(f"🔍 **Cargo Auditado:** {cargo}")
 
-                    # 1. Busca do Benchmark de Mercado via IA (A Régua Externa)
+                    # 🔵 ETAPA 2: CONFRONTO COM BENCHMARK
                     pop_mkt = buscar_benchmark_ia(cargo)
                     
                     col1, col2 = st.columns(2)
@@ -4620,19 +4614,16 @@ if st.session_state.pagina == "parecer":
                     with col2:
                         st.markdown("**⚖️ Confronto Real vs. Mercado**")
                         confronto = []
-                        # Acessa as tabelas de atividades do JSON
                         tabelas = colab.get('tabelas', {})
                         atividades_alta = tabelas.get('alta', []) if isinstance(tabelas, dict) else []
 
                         for tarefa_ia, meta in pop_mkt.items():
                             tempo_real = 0
-                            # Pega a primeira palavra da tarefa para buscar nexo
                             termo_chave = tarefa_ia.split()[0].upper()
                             
                             for item in atividades_alta:
                                 if termo_chave in str(item.get('Atividade', '')).upper():
                                     try:
-                                        # Limpeza de strings como "1 h" ou "30 min"
                                         h_val = str(item.get('Horas', '0')).split()[0]
                                         m_val = str(item.get('Minutos', '0')).split()[0]
                                         tempo_real = (int(h_val) * 60) + int(m_val)
@@ -4660,62 +4651,6 @@ if st.session_state.pagina == "parecer":
         else:
             st.error("❌ A pasta /dados está vazia.")
     else:
-        st.error("❌ Diretório /dados não encontrado no repositório.")
+        st.error("❌ Diretório /dados não encontrado.")
 
-    # --- 🔵 ETAPA 2: PROCESSAMENTO DE AUDITORIA (CONFRONTO COM BENCHMARK) ---
-    st.markdown("---")
-    st.subheader(f"⚖️ Processando Perícia para {len(base_colaboradores)} Colaboradores")
-
-    for colab in base_colaboradores:
-        nome = colab.get('colaborador', 'N/A').upper()
-        cargo = colab.get('campos', {}).get('cargo', 'N/A').upper()
-        
-        with st.expander(f"👤 ANÁLISE: {nome} | Cargo: {cargo}", expanded=False):
-            # 1. Busca do Benchmark de Mercado via IA
-            pop_mkt = buscar_benchmark_ia(cargo)
-            
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.markdown("**📚 POP Padrão de Mercado**")
-                df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index')
-                df_mkt.columns = ["Min Alvo", "Freq", "Meta Técnica"]
-                st.dataframe(df_mkt, use_container_width=True)
-
-            with col2:
-                st.markdown("**⚖️ Confronto Real vs. Mercado**")
-                confronto = []
-                atividades_alta = colab.get('tabelas', {}).get('alta', [])
-
-                for tarefa_ia, meta in pop_mkt.items():
-                    tempo_real = 0
-                    termo_chave = tarefa_ia.split()[0].upper()
-                    
-                    # Busca inteligência de nexo nas atividades relatadas
-                    for item in atividades_alta:
-                        if termo_chave in item.get('Atividade', '').upper():
-                            # Extração numérica segura
-                            try:
-                                h = int(str(item.get('Horas', '0')).split()[0])
-                                m = int(str(item.get('Minutos', '0')).split()[0])
-                                tempo_real = (h * 60) + m
-                            except:
-                                tempo_real = 0
-                    
-                    if tempo_real > 0:
-                        desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100
-                        confronto.append({
-                            "Tarefa Auditada": tarefa_ia,
-                            "Desvio Eficiência": f"{desvio:+.1f}%",
-                            "Status": "⚠️ GARGALO" if desvio > 15 else "✅ OK"
-                        })
-                
-                if confronto:
-                    st.table(pd.DataFrame(confronto))
-                else:
-                    st.warning("Nenhuma atividade coincidente com o benchmark de mercado.")
-
-            # Parecer de Engenharia de Processos
-            st.markdown("---")
-            st.markdown(f"**Veredito Técnico:** Identificado nexo operacional. O colaborador **{nome}** deve seguir o POP Customizado para alinhar os desvios ao padrão NetExame.")
-            st.button(f"📥 Gerar PDF Laudo Pericial: {nome}", key=f"btn_{nome}")
+# ⚠️ O código termina aqui. Não adicione nada que use 'base_colaboradores' abaixo.
