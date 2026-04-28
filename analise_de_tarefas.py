@@ -5000,39 +5000,41 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # 🚀 EXECUÇÃO DO LAUDO (ESTILO NATIVO E LIMPO)
+            # 🚀 EXECUÇÃO DO LAUDO (TOTALMENTE INDEPENDENTE)
             if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
-                with st.spinner("IA processando dados..."):
-                    # 1. Prevenção de erro: verifica se a função existe, se não, usa a padrão
-                    dados_string = json.dumps(dados_lidos, ensure_ascii=False)
-                    
+                with st.spinner("IA processando cruzamento de dados..."):
                     try:
-                        # Tenta usar o cache, se falhar, chama a função direta
-                        if 'processar_parecer_com_cache' in globals():
-                            laudo_html = processar_parecer_com_cache(dados_string)
-                        else:
-                            laudo_html = realizar_pericia_direta(dados_string)
-                    except Exception as e:
-                        st.error(f"Erro no processamento: {e}")
-                        laudo_html = "Erro ao gerar laudo."
+                        from openai import OpenAI
+                        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+                        
+                        # Converte dados para texto
+                        dados_txt = json.dumps(dados_lidos, ensure_ascii=False)
 
-                    st.divider()
-                    
-                    # 2. Exibição Minimalista em HTML (sem quebrar o app)
-                    st.components.v1.html(f"""
-                        <div style="font-family: sans-serif; border: 1px solid #ddd; padding: 20px; border-radius: 10px; background: #fff;">
-                            {laudo_html}
-                        </div>
-                    """, height=500, scrolling=True)
-                    
-                    # 3. Exportação Simples
-                    st.download_button(
-                        label="📥 BAIXAR LAUDO (HTML)", 
-                        data=laudo_html, 
-                        file_name=f"laudo_{dados_lidos.get('colaborador')}.html",
-                        mime="text/html",
-                        use_container_width=True
-                    )
+                        # Chamada direta para não ter erro de NameError
+                        response = client.chat.completions.create(
+                            model="gpt-4o-mini",
+                            messages=[
+                                {"role": "system", "content": "Você é um Perito Forense. Gere um laudo em HTML focado em Perfil DISC, Nexo Causal e POP."},
+                                {"role": "user", "content": f"Gere o laudo para: {dados_txt}"}
+                            ]
+                        )
+                        laudo_html = response.choices[0].message.content
+                        
+                        st.divider()
+                        
+                        # Exibição segura
+                        st.markdown(laudo_html, unsafe_allow_html=True)
+                        
+                        # Download
+                        st.download_button(
+                            label="📥 BAIXAR LAUDO (HTML)", 
+                            data=laudo_html, 
+                            file_name=f"laudo_{dados_lidos.get('colaborador')}.html",
+                            mime="text/html",
+                            use_container_width=True
+                        )
+                    except Exception as e:
+                        st.error(f"Erro Crítico: {e}. Verifique sua chave da OpenAI nos Secrets.")
 
 if __name__ == "__main__":
     main()
