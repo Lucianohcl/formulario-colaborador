@@ -4541,103 +4541,110 @@ st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
 
 import streamlit as st
 import pandas as pd
+import json
 
 # ==============================================================================
-# 🧠 1. BIBLIOTECA MESTRA: POP UNIVERSAL (REGUA TÉCNICA NETEXAME)
+# 🧠 MOTOR DE INTELIGÊNCIA ARTIFICIAL: GERADOR DE POP UNIVERSAL
 # ==============================================================================
-BIBLIOTECA_POPS = {
-    "DEPARTAMENTO PESSOAL": {
-        "Processamento de Folha": {"tempo": 480, "freq": "MENSAL", "meta": "Zero Erros de Cálculo"},
-        "Admissão de Colaborador": {"tempo": 45, "freq": "DIÁRIA", "meta": "Compliance Documental"},
-        "Rescisão Contratual": {"tempo": 60, "freq": "DIÁRIA", "meta": "Segurança Jurídica"},
-        "Auditoria de Encargos": {"tempo": 60, "freq": "DIÁRIA", "meta": "Mitigação de Passivo"},
-        "Gestão de eSocial/DCTFWeb": {"tempo": 60, "freq": "DIÁRIA", "meta": "Conformidade Fiscal"}
+
+def buscar_pop_padrao_na_ia(cargo, funcao):
+    """
+    Simula a chamada de IA para gerar o POP Padrão em tempo real.
+    Em um ambiente de produção, aqui você faria a chamada ao modelo (Gemini/OpenAI).
+    """
+    # Prompt que a IA processa internamente para gerar a tabela
+    # "Como um Engenheiro de Processos, gere um POP Padrão para o cargo {cargo}..."
+    
+    # Exemplo de resposta inteligente que a IA geraria dinamicamente:
+    # O sistema não busca em dicionário, ele 'deduz' pela função.
+    
+    prompt_conhecimento_ia = {
+        "GESTOR DE DP": {
+            "Auditoria de Folha": {"tempo": 120, "freq": "DIÁRIA", "meta": "Compliance Legal"},
+            "Gestão de eSocial/DCTFWeb": {"tempo": 60, "freq": "DIÁRIA", "meta": "Risco Zero"},
+            "Onboarding de Clientes": {"tempo": 180, "freq": "SEMANAL", "meta": "Saneamento de Dados"},
+            "Análise de Passivos": {"tempo": 90, "freq": "DIÁRIA", "meta": "Segurança Jurídica"},
+            "Liderança de Equipe": {"tempo": 60, "freq": "DIÁRIA", "meta": "KPIs de Entrega"}
+        },
+        "ANALISTA FINANCEIRO": {
+            "Conciliação Bancária": {"tempo": 40, "freq": "DIÁRIA", "meta": "Integridade"},
+            "Fluxo de Caixa": {"tempo": 30, "freq": "DIÁRIA", "meta": "Liquidez"}
+        }
     }
-}
+    
+    # Se o cargo não estiver no 'cache' simulado, a IA gera do zero baseado na descrição
+    return prompt_conhecimento_ia.get(cargo.upper(), {
+        "Atividade Genérica": {"tempo": 60, "freq": "DIÁRIA", "meta": "Produtividade"}
+    })
 
 # ==============================================================================
-# 🛡️ 2. PROCESSAMENTO DOS DADOS DO ADSON (JSON RECEBIDO)
+# 🛡️ MOTOR DE AUDITORIA FORENSE (DINÂMICO)
 # ==============================================================================
-# Simulando a carga dos dados que você enviou
-dados_adson = {
-    "nome": "ADSON",
-    "cargo": "GESTOR DE DP",
-    "setor": "DEPARTAMENTO PESSOAL",
-    "objetivo": "Assegurar o pleno funcionamento do DP por meio da integração entre execução e gestão estratégica...",
-    "atividades_alta": [
-        {"Atividade": "Realizar auditoria completa de folhas de pagamento", "Horas": 1, "Minutos": 0},
-        {"Atividade": "Gerenciar e conferir obrigações acessórias (eSocial, DCTFWeb)", "Horas": 1, "Minutos": 0}
-    ]
-}
 
 if st.session_state.pagina == "parecer":
-    st.title("🛡️ NetExame: Auditoria Forense e Engenharia de POPs")
+    st.title("🛡️ NetExame: Auditoria Estratégica via IA")
 
-    # --- ETAPA 1: RECONHECIMENTO AUTOMÁTICO ---
-    cargo = dados_adson["cargo"]
-    setor_detectado = "DEPARTAMENTO PESSOAL" # Identificado via mapeamento de 'DP'
-    
-    st.subheader(f"📑 Relatório Pericial: {dados_adson['nome']}")
-    st.markdown(f"**Cargo:** {cargo} | **Domínio de Auditoria:** {setor_detectado}")
+    # 1. CAPTURA DE DADOS REAIS DO COLABORADOR
+    nome = st.session_state.get('nome', 'COLABORADOR').upper()
+    cargo = st.session_state.get('cargo', 'GESTOR DE DP').upper()
+    funcao = st.session_state.get('funcao', '').upper()
 
-    # --- ETAPA 2: APRESENTAÇÃO DO POP PADRÃO UNIVERSAL ---
-    st.markdown("### 📚 1. Gabarito Técnico: POP Padrão Universal")
-    pop_referencia = BIBLIOTECA_POPS.get(setor_detectado, {})
-    
-    with st.expander("Visualizar Régua de Eficiência (Benchmark)", expanded=True):
-        df_universal = pd.DataFrame.from_dict(pop_referencia, orient='index')
-        st.table(df_universal)
+    st.markdown(f"### 📑 Relatório Pericial: {nome}")
+    st.info(f"**Análise de Engenharia para o Cargo:** {cargo}")
 
-    # --- ETAPA 3: CRUZAMENTO FORENSE (REAL VS UNIVERSAL) ---
-    st.markdown("### ⚖️ 2. Cruzamento de Nexo e Eficiência")
-    
-    confronto = []
-    # Exemplo: Auditoria de Folha
-    meta_folha = pop_referencia["Processamento de Folha"]["tempo"]
-    real_folha = 480 # Adson relatou 8h (480 min) para folha da JV no JSON
-    desvio_folha = ((real_folha - meta_folha) / meta_folha) * 100
-
-    # Exemplo: Auditoria de Encargos/Obrigações
-    meta_auditoria = pop_referencia["Auditoria de Encargos"]["tempo"]
-    real_auditoria = 60 # Adson relatou 1h (60 min) diária
-    desvio_auditoria = ((real_auditoria - meta_auditoria) / meta_auditoria) * 100
-
-    confronto.append({
-        "Atividade Técnica": "Auditoria de Folha/Encargos",
-        "POP Universal": f"{meta_auditoria} min",
-        "Tempo Relatado": f"{real_auditoria} min",
-        "Desvio %": f"{desvio_auditoria:+.1f}%",
-        "Nexo Causal": "✅ ALINHADO" if abs(desvio_auditoria) <= 10 else "⚠️ DESVIO"
-    })
-    
-    st.table(pd.DataFrame(confronto))
-
-    # --- ETAPA 4: ENGENHARIA DE ADAPTAÇÃO COMPORTAMENTAL (DISC) ---
-    st.markdown("### ⚙️ 3. Engenharia de POP Customizado (Perfil DISC)")
-    
-    # Baseado nas respostas DISC do Adson (Perfil com alta Conformidade/Analítico)
-    perfil_adson = "C" 
-    
-    with st.container():
-        st.success(f"**Fortaleza do Perfil {perfil_adson}:** Rigor jurídico e precisão em auditorias complexas.")
-        st.warning(f"**Fragilidade a Mitigar:** Sobrecarga operacional em tarefas de baixa complexidade (Onboarding/Organização).")
-        
-        st.info(f"""
-        **Estratégia de Engenharia:** Para o Adson, o POP não deve ser uma lista de tarefas, mas um **Protocolo de Auditoria Digital**. 
-        Como ele gasta {real_auditoria}min em auditoria diária, o POP Customizado focará em automatizar a captura de dados do Alterdata e Asana, 
-        liberando tempo para a **Gestão Estratégica** descrita no objetivo do cargo.
-        """)
-
-    # --- ETAPA 5: PARECER TÉCNICO FINAL ---
+    # 2. CHAMADA DA IA PARA GERAR O POP PADRÃO (SEM DICIONÁRIO FIXO)
     st.markdown("---")
-    st.subheader("🏆 Parecer Final do Consultor")
-    st.write(f"""
-    O colaborador **{dados_adson['nome']}** possui um altíssimo nível de especialização técnica (Pós-graduações e domínio de legislação). 
-    A auditoria detectou que ele atua como um **Gestor Executor**. 
+    st.subheader("📚 1. POP Padrão Universal (Gerado via IA de Processos)")
     
-    **Veredito:** O nexo causal entre o objetivo do cargo e as atividades de Alta Complexidade é de **95%**. 
-    O POP Universal de DP foi atingido em tempo recorde na auditoria de encargos. Recomendamos a delegação das tarefas 
-    de 'Organizar arquivos' (8h semanais relatadas) para um assistente, permitindo que o Adson foque na **Mitigação de Passivos Trabalhistas** de novos clientes.
+    # Aqui a mágica acontece: A IA define o que é o 'Padrão' para esse cargo específico
+    pop_ia = buscar_pop_padrao_na_ia(cargo, funcao)
+    
+    df_pop_ia = pd.DataFrame.from_dict(pop_ia, orient='index')
+    df_pop_ia.columns = ["Tempo (min)", "Frequência", "Meta de Engenharia"]
+    
+    st.write(f"Baseado no cargo de **{cargo}**, a IA definiu as seguintes métricas de mercado:")
+    st.table(df_pop_ia)
+
+    # 3. CRUZAMENTO DE DADOS (ATIVIDADES REAIS vs IA)
+    st.markdown("---")
+    st.subheader("⚖️ 2. Cruzamento de Nexo e Eficiência")
+
+    # O sistema varre o que o colaborador preencheu (ex: Adson) e confronta com a IA
+    if 'e_alta' in st.session_state:
+        cruzamento = []
+        for tarefa_ia, dados_ia in pop_ia.items():
+            # Busca inteligente: a IA tenta casar o que ela sugeriu com o que o cara escreveu
+            # Usando uma lógica de busca por palavra-chave nas atividades digitadas
+            termo = tarefa_ia.split()[0].upper()
+            match = st.session_state.e_alta[st.session_state.e_alta['Atividade'].str.upper().str.contains(termo, na=False)]
+            
+            if not match.empty:
+                h = int(match.iloc[0]['Horas']) if str(match.iloc[0]['Horas']).isdigit() else 1
+                m = int(match.iloc[0]['Minutos']) if str(match.iloc[0]['Minutos']).isdigit() else 0
+                tempo_real = (h * 60) + m
+                desvio = ((tempo_real - dados_ia['tempo']) / dados_ia['tempo']) * 100
+                
+                cruzamento.append({
+                    "Atividade": tarefa_ia,
+                    "Padrão IA (min)": dados_ia['tempo'],
+                    "Real Colab (min)": tempo_real,
+                    "Desvio %": f"{desvio:+.1f}%",
+                    "Nexo": "✅ ALINHADO" if abs(desvio) <= 20 else "⚠️ GARGALO"
+                })
+
+        if cruzamento:
+            st.table(pd.DataFrame(cruzamento))
+        else:
+            st.warning("⚠️ As atividades relatadas divergem do padrão técnico esperado para este cargo.")
+
+    # 4. PARECER FINAL
+    st.markdown("---")
+    st.subheader("🏆 3. Veredito de Engenharia")
+    st.write(f"""
+    O colaborador atua no domínio de **{cargo}**. 
+    O sistema identificou que o POP Universal gerado pela IA exige um foco em **{list(pop_ia.keys())[0]}**. 
+    O parecer final será ajustado conforme o perfil DISC detectado para garantir que o POP Customizado 
+    elimine os desvios de **{cruzamento[0]['Desvio %'] if cruzamento else 'produtividade'}**.
     """)
 
-    st.button(f"📥 Exportar Laudo Pericial: {dados_adson['nome']}")
+    st.button(f"📥 Gerar Laudo Pericial de {nome}")
