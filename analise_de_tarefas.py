@@ -4543,113 +4543,136 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-from openai import OpenAI  # pip install openai
+from openai import OpenAI
 
 # ==============================================================================
-# 🧠 CONEXÃO COM O CÉREBRO DA OPENAI
+# 🧠 CÉREBRO IA COM ECONOMIA ATIVADA (CACHE + GPT-4O-MINI)
 # ==============================================================================
-
-def buscar_benchmark_openai(cargo, funcao):
+@st.cache_data(show_spinner=True)
+def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
     """
-    Consulta o GPT para gerar o POP Padrão de Mercado em tempo real.
+    Consulta a OpenAI de forma inteligente. 
+    O cache garante que consultas repetidas custem R$ 0,00.
     """
-    # Recomendado: Colocar sua chave no arquivo .streamlit/secrets.toml
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-    prompt = f"""
-    Aja como um Engenheiro de Processos e Auditor Sênior. 
-    Analise o cargo '{cargo}' com a função '{funcao}'.
-    Gere um POP (Procedimento Operacional Padrão) de mercado com as 5 atividades mais críticas.
-    Para cada atividade, defina o tempo médio em minutos (inteiro) e a frequência.
-    
-    RETORNE APENAS UM JSON PURO NO FORMATO ABAIXO:
-    {{
-        "NOME_DA_ATIVIDADE": {{"tempo": minutos_inteiro, "freq": "DIÁRIA", "meta": "objetivo"}},
-        ...
-    }}
-    Não adicione explicações. Apenas o JSON.
-    """
-
     try:
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
+        
+        # Limitamos o contexto para 700 caracteres para economizar tokens (dinheiro)
+        contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
+        
+        prompt = f"""
+        Aja como um Auditor Forense e Engenheiro de Processos Sênior.
+        Analise o cargo '{cargo}' com a função '{funcao}'.
+        
+        CONTEXTO ESTRATÉGICO:
+        {contexto_resumido}
+        
+        Gere um POP (Procedimento Operacional Padrão) de mercado focado em ALTA PERFORMANCE.
+        O foco deve ser na rotina DIÁRIA e ESTRATÉGICA do gestor.
+        
+        RETORNE APENAS UM JSON NO FORMATO:
+        {{
+            "ATIVIDADE": {{"tempo": minutos_inteiro, "freq": "DIÁRIA", "meta": "objetivo técnico"}}
+        }}
+        """
+
         response = client.chat.completions.create(
-            model="gpt-4o", # Ou "gpt-3.5-turbo" para ser mais barato
-            messages=[{"role": "system", "content": "Você é um auditor de processos experiente."},
+            model="gpt-4o-mini", # 💰 20x mais barato que o GPT-4o
+            messages=[{"role": "system", "content": "Você é um auditor de processos de alta precisão."},
                       {"role": "user", "content": prompt}],
             response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        st.error(f"Erro na conexão com OpenAI: {e}")
+        st.error(f"Erro na conexão com a Inteligência: {e}")
         return None
 
 # ==============================================================================
-# 🛡️ MOTOR DE AUDITORIA FORENSE (NETEXAME + OPENAI)
+# 🛡️ MOTOR DE AUDITORIA NETEXAME
 # ==============================================================================
 
-if st.session_state.pagina == "parecer":
-    st.title("🛡️ NetExame: Auditoria Forense com IA (GPT-4)")
-
-    caminho_dados = "dados"
+def mostrar_pagina_parecer():
+    st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     
-    if os.path.exists(caminho_dados):
-        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+    caminho_dados = "dados"
+    if not os.path.exists(caminho_dados):
+        st.error("Pasta de dados não encontrada.")
+        return
+
+    arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+    
+    if arquivos:
+        colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
         
-        if arquivos:
-            colaborador_selecionado = st.selectbox(
-                "🎯 Selecionar Alvo da Auditoria:",
-                options=arquivos,
-                format_func=lambda x: x.replace('.json', '').upper()
-            )
+        if st.button("🚀 Iniciar Perícia com IA"):
+            # Carregar o JSON do colaborador
+            with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
+                colab = json.load(f)
             
-            if st.button("🚀 Disparar Perícia com OpenAI"):
-                # 1. Carrega dados do JSON local
-                with open(os.path.join(caminho_dados, colaborador_selecionado), 'r', encoding='utf-8') as f:
-                    colab = json.load(f)
+            # Dados do Adson/Colaborador
+            nome = colab.get('colaborador', 'N/A').upper()
+            cargo = colab['campos'].get('cargo', 'N/A').upper()
+            funcao = colab['campos'].get('funcao', 'Gestão Estratégica').upper()
+            objetivo = colab['campos'].get('objetivo', '')
+            cursos = colab['campos'].get('cursos', '')
+
+            # --- 1. CHAMADA À IA (COM ECONOMIA) ---
+            pop_ia = buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, cursos)
+
+            if pop_ia:
+                st.markdown(f"## 📑 Laudo Técnico: {nome}")
+                st.info(f"**Cargo:** {cargo} | **Domínio:** {funcao}")
+
+                # --- 2. TABELA A: O PADRÃO DA IA ---
+                st.subheader("📚 [A] POP Padrão IA (Referência de Mercado)")
+                df_ia = pd.DataFrame.from_dict(pop_ia, orient='index').reset_index()
+                df_ia.columns = ["Atividade IA", "Alvo (Min)", "Freq", "Meta"]
+                st.table(df_ia)
+
+                # --- 3. TABELA B: O QUE O COLABORADOR RELATOU ---
+                st.subheader("📝 [B] Atividades Relatadas (Realidade)")
+                # Consolidando todas as tabelas (alta, normal, baixa) para comparação
+                todas_atividades = colab['tabelas'].get('alta', []) + \
+                                  colab['tabelas'].get('normal', []) + \
+                                  colab['tabelas'].get('baixa', [])
                 
-                nome = colab.get('colaborador', 'N/A').upper()
-                cargo = colab.get('campos', {}).get('cargo', 'N/A').upper()
-                funcao = colab.get('campos', {}).get('funcao', 'N/A').upper()
+                df_real = pd.DataFrame(todas_atividades)
+                st.table(df_real[["Atividade", "Frequência", "Horas", "Minutos"]])
 
-                st.subheader(f"📑 Auditoria: {nome}")
+                # --- 4. TABELA C: O CONFRONTO (NEXO CAUSAL) ---
+                st.subheader("⚖️ [C] Cruzamento e Nexo Causal")
+                confronto = []
                 
-                # 2. Chamada à Inteligência Artificial
-                with st.spinner(f"🧠 GPT-4 analisando mercado para {cargo}..."):
-                    pop_mkt = buscar_benchmark_openai(cargo, funcao)
-
-                if pop_mkt:
-                    # --- EXIBIÇÃO DO BENCHMARK ---
-                    st.markdown(f"### 📚 POP Padrão de Mercado (Gerado via IA)")
-                    df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index').reset_index()
-                    df_mkt.columns = ["Atividade Essencial", "Tempo Alvo (m)", "Frequência", "Meta"]
-                    st.table(df_mkt)
-
-                    # --- CONFRONTO E NEXO CAUSAL ---
-                    st.markdown("### ⚖️ Confronto Real vs. IA")
-                    atividades_alta = colab.get('tabelas', {}).get('alta', [])
+                for tarefa_ia, meta_ia in pop_ia.items():
+                    tempo_real_total = 0
+                    nexo = "❌ AUSENTE"
                     
-                    confronto_final = []
-                    for tarefa_ia, meta in pop_mkt.items():
-                        tempo_real = 0
-                        nexo = "❌ AUSENTE"
-                        
-                        # Lógica de Nexo Causal por palavra-chave
-                        for item in atividades_alta:
-                            if tarefa_ia.split()[0].upper() in str(item.get('Atividade', '')).upper():
-                                try:
-                                    h = int(str(item.get('Horas', '0')).split()[0])
-                                    m = int(str(item.get('Minutos', '0')).split()[0])
-                                    tempo_real = (h * 60) + m
-                                    nexo = "✅ IDENTIFICADO"
-                                except: continue
+                    # Lógica de Nexo Causal: busca se a palavra-chave da IA está no relato do cara
+                    palavra_chave = tarefa_ia.split()[0].upper()
+                    
+                    for item in todas_atividades:
+                        desc_real = str(item.get('Atividade', '')).upper()
+                        if palavra_chave in desc_real:
+                            h = int(str(item.get('Horas', '0')).split()[0])
+                            m = int(str(item.get('Minutos', '0')).split()[0])
+                            tempo_real_total += (h * 60) + m
+                            nexo = "✅ IDENTIFICADO"
 
-                        desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100 if tempo_real > 0 else -100
-                        confronto_final.append({
-                            "Requisito IA": tarefa_ia,
-                            "Alvo": f"{meta['tempo']}m",
-                            "Real": f"{tempo_real}m",
-                            "Desvio": f"{desvio:+.1f}%",
-                            "Nexo": nexo
-                        })
+                    desvio = ((tempo_real_total - meta_ia['tempo']) / meta_ia['tempo']) * 100 if tempo_real_total > 0 else -100
+                    
+                    confronto.append({
+                        "Requisito IA": tarefa_ia,
+                        "Tempo Alvo": f"{meta_ia['tempo']}m",
+                        "Tempo Real": f"{tempo_real_total}m",
+                        "Desvio": f"{desvio:+.1f}%",
+                        "Nexo Causal": nexo
+                    })
 
-                    st.table(pd.DataFrame(confronto_final))
-                    st.success("Perícia Técnica finalizada com base em Inteligência Artificial Generativa.")
+                df_confronto = pd.DataFrame(confronto)
+                st.table(df_confronto)
+                
+                st.success("Perícia concluída com sucesso. O uso de IA foi otimizado para este laudo.")
+
+# Chamada da função (coloque isso na sua lógica de navegação)
+if st.session_state.pagina == "parecer":
+    mostrar_pagina_parecer()
