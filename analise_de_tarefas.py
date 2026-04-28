@@ -4541,116 +4541,115 @@ st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
 
 import streamlit as st
 import pandas as pd
-import os
 import json
+import os
+from openai import OpenAI  # pip install openai
 
 # ==============================================================================
-# 🧠 MOTOR DE INTELIGÊNCIA: BENCHMARK UNIVERSAL (IA DE MERCADO)
+# 🧠 CONEXÃO COM O CÉREBRO DA OPENAI
 # ==============================================================================
-def buscar_benchmark_ia(cargo):
+
+def buscar_benchmark_openai(cargo, funcao):
     """
-    Define a régua de eficiência baseada no mercado (Benchmark).
+    Consulta o GPT para gerar o POP Padrão de Mercado em tempo real.
     """
-    benchmarks = {
-        "GESTOR DE DP": {
-            "Auditoria de Folha": {"tempo": 60, "freq": "DIÁRIA", "meta": "Compliance"},
-            "Gestão eSocial": {"tempo": 30, "freq": "DIÁRIA", "meta": "Risco Zero"},
-            "Conferência de Encargos": {"tempo": 45, "freq": "DIÁRIA", "meta": "Exatidão"}
-        },
-        "ANALISTA FINANCEIRO": {
-            "Conciliação Bancária": {"tempo": 30, "freq": "DIÁRIA", "meta": "Integridade"},
-            "Fluxo de Caixa": {"tempo": 20, "freq": "DIÁRIA", "meta": "Liquidez"}
-        }
-    }
-    return benchmarks.get(cargo.upper(), {
-        "Processos Técnicos": {"tempo": 60, "freq": "DIÁRIA", "meta": "Eficiência Geral"}
-    })
+    # Recomendado: Colocar sua chave no arquivo .streamlit/secrets.toml
+    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+    prompt = f"""
+    Aja como um Engenheiro de Processos e Auditor Sênior. 
+    Analise o cargo '{cargo}' com a função '{funcao}'.
+    Gere um POP (Procedimento Operacional Padrão) de mercado com as 5 atividades mais críticas.
+    Para cada atividade, defina o tempo médio em minutos (inteiro) e a frequência.
+    
+    RETORNE APENAS UM JSON PURO NO FORMATO ABAIXO:
+    {{
+        "NOME_DA_ATIVIDADE": {{"tempo": minutos_inteiro, "freq": "DIÁRIA", "meta": "objetivo"}},
+        ...
+    }}
+    Não adicione explicações. Apenas o JSON.
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o", # Ou "gpt-3.5-turbo" para ser mais barato
+            messages=[{"role": "system", "content": "Você é um auditor de processos experiente."},
+                      {"role": "user", "content": prompt}],
+            response_format={ "type": "json_object" }
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        st.error(f"Erro na conexão com OpenAI: {e}")
+        return None
 
 # ==============================================================================
-# 🛡️ MOTOR DE AUDITORIA FORENSE (NETEXAME 2026)
+# 🛡️ MOTOR DE AUDITORIA FORENSE (NETEXAME + OPENAI)
 # ==============================================================================
 
 if st.session_state.pagina == "parecer":
-    st.title("🛡️ Sistema de Auditoria Forense - NetExame")
+    st.title("🛡️ NetExame: Auditoria Forense com IA (GPT-4)")
 
-    caminho_dados = "dados" 
+    caminho_dados = "dados"
     
     if os.path.exists(caminho_dados):
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            # 🟢 ETAPA 1: SELEÇÃO ÚNICA
             colaborador_selecionado = st.selectbox(
-                "🎯 Selecione o Colaborador para Auditoria:",
+                "🎯 Selecionar Alvo da Auditoria:",
                 options=arquivos,
-                format_func=lambda x: x.replace('.json', '').replace('_', ' ').upper()
+                format_func=lambda x: x.replace('.json', '').upper()
             )
             
-            if st.button("🚀 Iniciar Processamento Pericial"):
-                caminho_arquivo = os.path.join(caminho_dados, colaborador_selecionado)
+            if st.button("🚀 Disparar Perícia com OpenAI"):
+                # 1. Carrega dados do JSON local
+                with open(os.path.join(caminho_dados, colaborador_selecionado), 'r', encoding='utf-8') as f:
+                    colab = json.load(f)
                 
-                try:
-                    with open(caminho_arquivo, 'r', encoding='utf-8') as f:
-                        colab = json.load(f)
+                nome = colab.get('colaborador', 'N/A').upper()
+                cargo = colab.get('campos', {}).get('cargo', 'N/A').upper()
+                funcao = colab.get('campos', {}).get('funcao', 'N/A').upper()
+
+                st.subheader(f"📑 Auditoria: {nome}")
+                
+                # 2. Chamada à Inteligência Artificial
+                with st.spinner(f"🧠 GPT-4 analisando mercado para {cargo}..."):
+                    pop_mkt = buscar_benchmark_openai(cargo, funcao)
+
+                if pop_mkt:
+                    # --- EXIBIÇÃO DO BENCHMARK ---
+                    st.markdown(f"### 📚 POP Padrão de Mercado (Gerado via IA)")
+                    df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index').reset_index()
+                    df_mkt.columns = ["Atividade Essencial", "Tempo Alvo (m)", "Frequência", "Meta"]
+                    st.table(df_mkt)
+
+                    # --- CONFRONTO E NEXO CAUSAL ---
+                    st.markdown("### ⚖️ Confronto Real vs. IA")
+                    atividades_alta = colab.get('tabelas', {}).get('alta', [])
                     
-                    nome = colab.get('colaborador', 'N/A').upper()
-                    campos = colab.get('campos', {})
-                    cargo = campos.get('cargo', 'N/A').upper() if isinstance(campos, dict) else "N/A"
-
-                    st.markdown("---")
-                    st.subheader(f"⚖️ Perícia Técnica: {nome}")
-                    st.info(f"🔍 **Cargo Auditado:** {cargo}")
-
-                    # 🔵 ETAPA 2: CONFRONTO COM BENCHMARK
-                    pop_mkt = buscar_benchmark_ia(cargo)
-                    
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        st.markdown("**📚 POP Padrão de Mercado**")
-                        df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index')
-                        df_mkt.columns = ["Min Alvo", "Freq", "Meta"]
-                        st.table(df_mkt)
-
-                    with col2:
-                        st.markdown("**⚖️ Confronto Real vs. Mercado**")
-                        confronto = []
-                        tabelas = colab.get('tabelas', {})
-                        atividades_alta = tabelas.get('alta', []) if isinstance(tabelas, dict) else []
-
-                        for tarefa_ia, meta in pop_mkt.items():
-                            tempo_real = 0
-                            termo_chave = tarefa_ia.split()[0].upper()
-                            
-                            for item in atividades_alta:
-                                if termo_chave in str(item.get('Atividade', '')).upper():
-                                    try:
-                                        h_val = str(item.get('Horas', '0')).split()[0]
-                                        m_val = str(item.get('Minutos', '0')).split()[0]
-                                        tempo_real = (int(h_val) * 60) + int(m_val)
-                                    except: continue
-                            
-                            if tempo_real > 0:
-                                desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100
-                                confronto.append({
-                                    "Tarefa": tarefa_ia,
-                                    "Real": f"{tempo_real}m",
-                                    "Desvio": f"{desvio:+.1f}%",
-                                    "Status": "⚠️ GARGALO" if desvio > 15 else "✅ OK"
-                                })
+                    confronto_final = []
+                    for tarefa_ia, meta in pop_mkt.items():
+                        tempo_real = 0
+                        nexo = "❌ AUSENTE"
                         
-                        if confronto:
-                            st.table(pd.DataFrame(confronto))
-                        else:
-                            st.warning("Nenhum nexo causal encontrado entre o relato e o benchmark.")
+                        # Lógica de Nexo Causal por palavra-chave
+                        for item in atividades_alta:
+                            if tarefa_ia.split()[0].upper() in str(item.get('Atividade', '')).upper():
+                                try:
+                                    h = int(str(item.get('Horas', '0')).split()[0])
+                                    m = int(str(item.get('Minutos', '0')).split()[0])
+                                    tempo_real = (h * 60) + m
+                                    nexo = "✅ IDENTIFICADO"
+                                except: continue
 
-                    st.success(f"Análise de {nome} finalizada.")
-                    st.button(f"📥 Gerar Laudo de {nome}")
+                        desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100 if tempo_real > 0 else -100
+                        confronto_final.append({
+                            "Requisito IA": tarefa_ia,
+                            "Alvo": f"{meta['tempo']}m",
+                            "Real": f"{tempo_real}m",
+                            "Desvio": f"{desvio:+.1f}%",
+                            "Nexo": nexo
+                        })
 
-                except Exception as e:
-                    st.error(f"Erro ao ler o arquivo: {e}")
-        else:
-            st.error("❌ A pasta /dados está vazia.")
-    else:
-        st.error("❌ Diretório /dados não encontrado.")
-
-# ⚠️ O código termina aqui. Não adicione nada que use 'base_colaboradores' abaixo.
+                    st.table(pd.DataFrame(confronto_final))
+                    st.success("Perícia Técnica finalizada com base em Inteligência Artificial Generativa.")
