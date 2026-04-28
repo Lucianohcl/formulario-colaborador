@@ -4574,18 +4574,27 @@ if st.session_state.get("pagina") == "parecer":
             4. CRITÉRIO DE VALOR: Priorize atividades de ALTO VALOR AGREGADO (Gestão, Auditoria, Estratégia, Compliance). Elimine tarefas braçais.
             5. OBJETIVOS TÉCNICOS: Cada 'meta' deve ser um KPI ou um marco de controle auditável.
 
-            FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-            {{
-                "NOME_DA_ATIVIDADE": {{
+            FORMATO DE SAÍDA (POP IA + AUTOMAÇÃO OBRIGATÓRIA):
+
+            {
+                "NOME_DA_ATIVIDADE": {
                     "tempo": minutos_inteiros,
                     "freq": "DIÁRIA/SEMANAL/MENSAL",
-                    "meta": "Descrição técnica do objetivo e métrica de sucesso",
-                    "complexidade": "ALTA/MÉDIA/BAIXA"
-                }}
-            }}
+                    "meta": "KPI técnico mensurável",
 
-            Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
-            """
+                    "sistema": "SIM / NÃO / SISTEMA_PRÓPRIO",
+                    "nome_sistema": "Excel / SAP / TOTVS / Manual / CRM / Outro",
+                    "execucao": "MANUAL / SEMI_AUTOMÁTICO / AUTOMÁTICO",
+
+                    "automacao_possivel": "SIM / NÃO",
+                    "ganho_automacao_min": numero_inteiro,
+
+                    "complexidade": "ALTA / MÉDIA / BAIXA"
+                }
+            }
+
+            Gere apenas JSON válido com total de 480 minutos diários, sem texto adicional.
+           
 
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -4674,14 +4683,15 @@ if st.session_state.get("pagina") == "parecer":
                         <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
                         <table border="1" style="border-collapse: collapse; width: 100%;">
                             <tr style="background-color: #f2f2f2;">
-                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
+                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th><th>Sistema</th><th>Execução</th><th>Automação</th><th>Ganho (min)</th>
                             </tr>
                     """
                     for d in dados_ia:
                         html_content += f"""
                             <tr>
                                 <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
-                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td>
+                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td><td>{d.get('Sistema', '')}</td><td>{d.get('Execução', '')}</td><td>{d.get('Automação Possível', '')}</td><td>{d.get('Ganho Automação Min', 0)}</td>
+
                             </tr>"""
 
                     html_content += f"""
@@ -5266,4 +5276,3 @@ if st.session_state.get("pagina") == "parecer":
 
     if __name__ == "__main__":
         main()
-
