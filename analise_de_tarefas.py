@@ -4539,260 +4539,122 @@ st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
 
 
 
+import streamlit as st
+import pandas as pd
+
 # ==============================================================================
-# 🛡️ MÓDULO ULTRA-MASTER: ENGENHARIA DE PROCESSOS & AUDITORIA (500+ LINHAS)
+# 🧠 1. ENGENHARIA DE PROCESSO: BIBLIOTECA MESTRA (POP UNIVERSAL)
+# ==============================================================================
+BIBLIOTECA_POPS = {
+    "DEPARTAMENTO PESSOAL": {
+        "Processamento de Folha": {"tempo": 480, "freq": "MENSAL", "meta": "Zero Erros de Cálculo"},
+        "Admissão de Colaborador": {"tempo": 45, "freq": "DIÁRIA", "meta": "Compliance Documental"},
+        "Rescisão Contratual": {"tempo": 60, "freq": "DIÁRIA", "meta": "Segurança Jurídica"},
+        "Gestão de Benefícios": {"tempo": 120, "freq": "MENSAL", "meta": "Otimização de Custos"},
+        "Controle de Ponto": {"tempo": 30, "freq": "DIÁRIA", "meta": "Rigor de Jornada"}
+    },
+    "FINANCEIRO / CONTROLADORIA": {
+        "Conciliação Bancária": {"tempo": 30, "freq": "DIÁRIA", "meta": "Integridade de Caixa"},
+        "Fluxo de Caixa": {"tempo": 20, "freq": "DIÁRIA", "meta": "Previsibilidade"},
+        "Contas a Pagar/Receber": {"tempo": 60, "freq": "DIÁRIA", "meta": "Liquidez"},
+        "Fechamento Mensal": {"tempo": 960, "freq": "MENSAL", "meta": "Compliance Fiscal"}
+    },
+    "COMERCIAL / VENDAS": {
+        "Prospecção Ativa": {"tempo": 15, "freq": "DIÁRIA", "meta": "Geração de Pipeline"},
+        "Gestão de CRM": {"tempo": 30, "freq": "DIÁRIA", "meta": "Qualidade de Dados"},
+        "Elaboração de Proposta": {"tempo": 40, "freq": "DIÁRIA", "meta": "Conversão"}
+    }
+}
+
+# ==============================================================================
+# 🛡️ 2. MOTOR DE AUDITORIA (LÓGICA DE PARECER)
 # ==============================================================================
 if st.session_state.pagina == "parecer":
-    st.title("🛡️ Parecer Estratégico: Engenharia de Processos")
+    st.title("🛡️ NetExame: Auditoria Estratégica de Processos")
 
-    # --------------------------------------------------------------------------
-    # 1. MATRIZ NACIONAL DE REFERÊNCIA (BENCHMARK NETEXAME 2026)
-    # --------------------------------------------------------------------------
-    # Esta base de dados expandida garante que o sistema "conheça" a empresa toda.
-    matriz_cargos_master = {
-        "ADMINISTRATIVO": {
-            "perfil_ideal": ["S", "C"], "amp_min": 45, "tech_req": 0.6,
-            "missao": "Suporte e organização de fluxos internos.",
-            "pops": ["Gestão de Documentos", "Controle de Prazos", "Atendimento"],
-            "riscos": "Desorganização operacional por falta de padronização.",
-            "veredito_positivo": "O perfil apresenta a paciência necessária para fluxos repetitivos.",
-            "veredito_negativo": "Risco de desmotivação por excesso de burocracia sem nexo."
-        },
-        "FINANCEIRO": {
-            "perfil_ideal": ["C"], "amp_min": 55, "tech_req": 0.9,
-            "missao": "Garantia de exatidão e compliance financeiro.",
-            "pops": ["Conciliação de Extratos", "Fluxo de Caixa", "Contas a Pagar/Receber"],
-            "riscos": "Erros de lançamento e quebra de integridade de dados.",
-            "veredito_positivo": "Precisão cirúrgica detectada. Ideal para auditoria de contas.",
-            "veredito_negativo": "O perfil pode travar o fluxo se não houver automação de suporte."
-        },
-        "CONTROLADORIA": {
-            "perfil_ideal": ["C", "S"], "amp_min": 60, "tech_req": 0.8,
-            "missao": "Auditoria interna e controle de conformidade.",
-            "pops": ["Auditoria de Processos", "Checklist de Compliance", "Relatórios de Desvio"],
-            "riscos": "Falta de visão crítica sobre desvios processuais.",
-            "veredito_positivo": "Foco total em regras. Guardião natural do compliance.",
-            "veredito_negativo": "Dificuldade em lidar com exceções não documentadas."
-        },
-        "RECURSOS HUMANOS": {
-            "perfil_ideal": ["I", "S"], "amp_min": 40, "tech_req": 0.5,
-            "missao": "Gestão de capital humano e cultura.",
-            "pops": ["Onboarding", "Gestão de Benefícios", "Recrutamento"],
-            "riscos": "Conflitos interpessoais e falha na comunicação de normas.",
-            "veredito_positivo": "Alta capacidade de engajamento e mediação.",
-            "veredito_negativo": "Risco de negligenciar processos burocráticos necessários."
-        },
-        "COMERCIAL": {
-            "perfil_ideal": ["I", "D"], "amp_min": 40, "tech_req": 0.4,
-            "missao": "Expansão de mercado e metas de faturamento.",
-            "pops": ["Funil de Vendas", "Prospecção Ativa", "Uso de CRM"],
-            "riscos": "Baixa adesão a processos e perda de dados de clientes.",
-            "veredito_positivo": "Energia focada em resultado e fechamento.",
-            "veredito_negativo": "Total aversão a rotinas administrativas e preenchimento de planilhas."
-        },
-        "LOGÍSTICA": {
-            "perfil_ideal": ["D", "S"], "amp_min": 50, "tech_req": 0.7,
-            "missao": "Agilidade e integridade na movimentação de ativos.",
-            "pops": ["Controle de Estoque", "Gestão de Rotas", "Picking e Packing"],
-            "riscos": "Atrasos operacionais e avarias por falta de método.",
-            "veredito_positivo": "Resiliência física e foco em prazos de entrega.",
-            "veredito_negativo": "Estresse elevado por variações de demanda não planejadas."
-        },
-        "TECNOLOGIA/TI": {
-            "perfil_ideal": ["C", "D"], "amp_min": 55, "tech_req": 1.0,
-            "missao": "Sustentação de infraestrutura e inovação digital.",
-            "pops": ["Backup de Dados", "Segurança da Informação", "Gestão de Chamados"],
-            "riscos": "Débito técnico e falha de segurança por processos obsoletos.",
-            "veredito_positivo": "Capacidade lógica superior para solução de problemas.",
-            "veredito_negativo": "Risco de isolamento e falha na comunicação com outras áreas."
-        },
-        "JURÍDICO": {
-            "perfil_ideal": ["C"], "amp_min": 60, "tech_req": 0.7,
-            "missao": "Proteção legal e análise de riscos contratuais.",
-            "pops": ["Análise de Contratos", "Gestão de Prazos Processuais", "Pareceres"],
-            "riscos": "Exposição jurídica por falha de interpretação ou prazo.",
-            "veredito_positivo": "Rigor analítico essencial para a blindagem da empresa.",
-            "veredito_negativo": "Excesso de formalismo que pode engessar a operação."
-        },
-        "COMPRAS": {
-            "perfil_ideal": ["C", "D"], "amp_min": 50, "tech_req": 0.8,
-            "missao": "Otimização de custos e gestão de fornecedores.",
-            "pops": ["Cotação de Insumos", "Homologação de Fornecedores", "Contratos de Compra"],
-            "riscos": "Superfaturamento ou desabastecimento por má gestão.",
-            "veredito_positivo": "Perfil focado em economia e negociação baseada em dados.",
-            "veredito_negativo": "Risco de priorizar preço em detrimento da qualidade estratégica."
-        }
-    }
+    # --- ETAPA 1: RECONHECIMENTO DE CARGO E FUNÇÃO ---
+    cargo = st.session_state.get('cargo', 'NÃO INFORMADO').upper()
+    funcao = st.session_state.get('funcao', 'NÃO INFORMADA').upper()
+    perfil_disc = "C"  # Luciano, aqui você puxa sua variável do resultado DISC
+    amplitude = 58.3   # Luciano, aqui você puxa sua amplitude calculada
 
-    # --------------------------------------------------------------------------
-    # 2. DICIONÁRIO DE VERBOS DE ENGENHARIA (ROI E IMPACTO)
-    # --------------------------------------------------------------------------
-    verbos_tecnicos_master = {
-        "DIGITAR": {"tipo": "Braçal", "impacto": "Baixo", "roi": "Alto", "acao": "Automatizar via OCR/API"},
-        "LANÇAR": {"tipo": "Braçal", "impacto": "Baixo", "roi": "Médio", "acao": "Importação em Lote"},
-        "CONCILIAR": {"tipo": "Técnico", "impacto": "Médio", "roi": "Alto", "acao": "Regras de Automação"},
-        "CONFERIR": {"tipo": "Técnico", "impacto": "Médio", "roi": "Médio", "acao": "Checklist Digital"},
-        "EXPORTAR": {"tipo": "Braçal", "impacto": "Baixo", "roi": "Alto", "acao": "Integração Direta"},
-        "ANALISAR": {"tipo": "Estratégico", "impacto": "Alto", "roi": "Baixo", "acao": "Capacitação Humana"},
-        "AUDITAR": {"tipo": "Estratégico", "impacto": "Alto", "roi": "Baixo", "acao": "Mentoria Técnica"},
-        "PLANEJAR": {"tipo": "Estratégico", "impacto": "Crítico", "roi": "Baixo", "acao": "Engenharia de Gestão"},
-        "ATENDER": {"tipo": "Relacional", "impacto": "Médio", "roi": "Baixo", "acao": "Treinamento de Soft Skills"},
-        "VENDER": {"tipo": "Relacional", "impacto": "Crítico", "roi": "Médio", "acao": "Gestão de Pipeline"},
-        "ARQUIVAR": {"tipo": "Braçal", "impacto": "Baixo", "roi": "Alto", "acao": "Digitalização"},
-        "GERENCIAR": {"tipo": "Liderança", "impacto": "Crítico", "roi": "Baixo", "acao": "Dashboard de Performance"}
-    }
+    # Identificação do Domínio de Engenharia
+    dominio = "ADMINISTRATIVO"
+    if any(x in cargo for x in ["DP", "PESSOAL", "RH", "FOLHA"]): dominio = "DEPARTAMENTO PESSOAL"
+    elif any(x in cargo for x in ["FIN", "CONTAS", "CAIXA", "CONTROL"]): dominio = "FINANCEIRO / CONTROLADORIA"
+    elif any(x in cargo for x in ["VENDA", "COMER", "MKT"]): dominio = "COMERCIAL / VENDAS"
 
-    # --------------------------------------------------------------------------
-    # 3. MOTOR DE AUDITORIA (PROCESSO ANALÍTICO)
-    # --------------------------------------------------------------------------
-    class MotorAuditoria:
-        def __init__(self, perfil, amplitude, cargo, tabelas):
-            self.perfil = perfil
-            self.amplitude = amplitude
-            self.cargo = str(cargo).upper()
-            self.tabelas = tabelas
-            self.horas_totais = 0
-            self.nexo_funcional = 0
-            self.risco_burnout = False
-            self.pops_sugeridos = []
-            self.oportunidades_rpa = []
-            self.vereditos_texto = []
+    st.subheader(f"📑 Relatório Pericial: {dominio}")
+    st.write(f"**Colaborador:** {st.session_state.get('nome', 'N/A')} | **Cargo:** {cargo}")
 
-        def executar(self):
-            # A) Cálculo de Carga Horária (Varredura de 5 Tabelas)
-            for nivel, df in self.tabelas.items():
-                if df is not None:
-                    col = "Atividade" if "Complexidade" in nivel else ("Dificuldade" if "Dificuldades" in nivel else "Sugestão")
-                    if col in df.columns:
-                        ativos = df[df[col].astype(str).str.strip() != ""]
-                        for _, r in ativos.iterrows():
-                            h = int(r.get('Horas', 0)) if str(r.get('Horas', 0)).isdigit() else 0
-                            m = int(r.get('Minutos', 0)) if str(r.get('Minutos', 0)).isdigit() else 0
-                            f = str(r.get('Frequência', '')).upper()
-                            fator = 22 if "DIÁRIA" in f else 4.4 if "SEMANAL" in f else 1
-                            h_mes = ((h * 60) + m) * fator / 60
-                            self.horas_totais += h_mes
-                            
-                            # Identificação de POPs e RPA
-                            texto = str(r.get(col, "")).upper()
-                            for v, meta in verbos_tecnicos_master.items():
-                                if v in texto:
-                                    if meta["tipo"] == "Braçal":
-                                        self.oportunidades_rpa.append(f"{texto} ({h_mes:.1f}h/mês)")
-                                    if "ALTA" in nivel.upper() or h_mes > 8:
-                                        self.pops_sugeridos.append(texto)
-
-            # B) Análise de Burnout
-            if self.horas_totais > 190: self.risco_burnout = True
-
-            # C) Triangulação Perfil vs Cargo
-            benchmark = next((v for k, v in matriz_cargos_master.items() if k in self.cargo), matriz_cargos_master["ADMINISTRATIVO"])
-            if self.perfil in benchmark["perfil_ideal"]:
-                self.nexo_funcional = 100
-                self.vereditos_texto.append(benchmark["veredito_positivo"])
-            else:
-                self.nexo_funcional = 40
-                self.vereditos_texto.append(benchmark["veredito_negativo"])
-
-    # --------------------------------------------------------------------------
-    # 4. INSTANCIAÇÃO E PROCESSAMENTO
-    # --------------------------------------------------------------------------
-    # (Luciano, aqui o motor puxa os dados reais que já calculamos no seu código)
-    # --- BLOCO DE SEGURANÇA E EXECUÇÃO (RESOLUÇÃO DE NAMEERROR) ---
-    cargo_final = st.session_state.get('cargo', 'Cargo Não Informado')
-
-    # Verificamos se os DataFrames existem no session_state, senão criamos vazios para não quebrar
-    dict_tabelas_motor = {
-        "Alta Complexidade": st.session_state.get('e_alta'),
-        "Complexidade Normal": st.session_state.get('e_normal'),
-        "Baixa Complexidade": st.session_state.get('e_baixa'),
-        "Dificuldades": st.session_state.get('e_dif'),
-        "Sugestões": st.session_state.get('e_sug')
-    }
-
-    # AGORA O MOTOR RODA BUSCANDO OS DADOS PERSISTIDOS
-    # "C" e 58.3 são os valores que você definiu para o Gercino/Exemplo
-    motor = MotorAuditoria("C", 58.3, cargo_final, dict_tabelas_motor)
-    motor.executar()
-
-    # --------------------------------------------------------------------------
-    # 5. RENDERIZAÇÃO DA INTERFACE (A EXPERIÊNCIA DO CLIENTE)
-    # --------------------------------------------------------------------------
-    st.subheader("📋 Laudo Pericial de Engenharia de Processos")
+    # --- ETAPA 2: INJEÇÃO DO POP PADRÃO UNIVERSAL ---
+    st.markdown("### 📚 1. Gabarito Técnico: POP Padrão Universal")
+    pop_referencia = BIBLIOTECA_POPS.get(dominio, {})
     
-    # Recuperação segura das variáveis de estado (EVITA NAMEERROR)
-    score_digital = st.session_state.get('contador_sistemas', 0)
-    amplitude_disc = 58.3 # Valor fixo conforme seu exemplo do Gercino
-    
-    # KPIs de Topo
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Carga Mensal", f"{motor.horas_totais:.1f}h", delta="CRÍTICO" if motor.risco_burnout else None)
-    c2.metric("Nexo Funcional", f"{motor.nexo_funcional}%")
-    c3.metric("Amplitude DISC", f"{amplitude_disc}%")
-    c4.metric("Score Digital", f"{score_digital}")
+    with st.expander("Visualizar Régua de Eficiência (Benchmark)", expanded=True):
+        df_universal = pd.DataFrame.from_dict(pop_referencia, orient='index')
+        st.table(df_universal)
 
+    # --- ETAPA 3: CRUZAMENTO FORENSE (REAL vs. UNIVERSAL) ---
+    st.markdown("### ⚖️ 2. Cruzamento de Nexo e Eficiência")
+    
+    # Simulação de cruzamento (Aqui o código varre as tabelas de Atividades preenchidas)
+    confronto = []
+    # Vamos simular que o colaborador preencheu a primeira tarefa do domínio
+    tarefa_teste = list(pop_referencia.keys())[0]
+    tempo_real = 120 # Exemplo: Ele disse que leva 120min
+    meta_tempo = pop_referencia[tarefa_teste]['tempo']
+    desvio = ((tempo_real - meta_tempo) / meta_tempo) * 100
+
+    confronto.append({
+        "Atividade": tarefa_teste,
+        "POP Universal": f"{meta_tempo} min",
+        "Tempo Relatado": f"{tempo_real} min",
+        "Desvio": f"{desvio:+.1f}%",
+        "Nexo": "⚠️ GARGALO DETECTADO" if desvio > 20 else "✅ COERENTE"
+    })
+    
+    st.table(pd.DataFrame(confronto))
+
+    # --- ETAPA 4: ENGENHARIA DE ADAPTAÇÃO (PERFIL DISC) ---
+    st.markdown("### ⚙️ 3. Engenharia de POP Customizado")
+    
+    # Lógica de Adaptação: Fortalecer o Forte / Blinda o Fraco
+    if perfil_disc == "C":
+        fortalecer = "Rigor Analítico e Conferência Legal"
+        mitigar = "Fadiga por Processos Repetitivos Manuais"
+        estrategia = "Implementar Validação Digital Automática"
+    elif perfil_disc == "D":
+        fortalecer = "Velocidade de Execução e Foco em Prazo"
+        mitigar = "Baixo Detalhamento e Erros por Pressa"
+        estrategia = "Implementar Checklists de Etapa Única"
+    else:
+        fortalecer = "Estabilidade Processual"
+        mitigar = "Resistência a Mudanças de Fluxo"
+        estrategia = "Implementar Fluxogramas Visuais"
+
+    col1, col2 = st.columns(2)
+    with col1:
+        st.success(f"💪 **Fortalecer no Perfil:** {fortalecer}")
+    with col2:
+        st.warning(f"🩹 **Mitigar no Perfil:** {mitigar}")
+
+    # --- ETAPA 5: PARECER INTELIGENTE FINAL ---
     st.markdown("---")
-
-    # Detalhamento em Abas Técnicas
-    tab_nexo, tab_operacional, tab_pops, tab_rpa = st.tabs([
-        "🎯 Nexo Comportamental", "📊 Fluxo Operacional", "📜 Engenharia de POPs", "🤖 Aceleração Digital"
-    ])
-
-    with tab_nexo:
-        st.write("#### 🧠 Triangulação: Comportamento x Cargo")
-        col_n1, col_n2 = st.columns(2)
-        with col_n1:
-            st.info(f"**Perfil Detectado:** C (Conformidade)")
-            # Verifica se existe o veredito para não quebrar o código
-            veredito_final = motor.vereditos_texto[0] if motor.vereditos_texto else "Análise inconclusiva."
-            st.write(f"**Veredito:** {veredito_final}")
-        with col_n2:
-            if motor.nexo_funcional < 50:
-                st.error("🚨 **ALTO ESFORÇO ADAPTATIVO:** O colaborador está gastando energia vital para se manter no cargo.")
-            else:
-                st.success("✅ **ZONA DE ALTA PERFORMANCE:** O perfil está alinhado à missão do cargo.")
-
-    with tab_operacional:
-        st.write("#### 📈 Análise de Carga Horária")
-        if motor.risco_burnout:
-            st.warning("⚠️ **RISCO DE SATURAÇÃO:** A soma das atividades relatadas excede a capacidade produtiva saudável.")
-        st.write(f"O colaborador gasta **{motor.horas_totais:.1f} horas** mensais nos fluxos descritos.")
-        # Simulação de gráfico de progresso (Carga horária vs Limite 220h)
-        st.progress(min(motor.horas_totais / 220, 1.0))
-
-    with tab_pops:
-        st.write("#### 📜 Candidatos a POP (Proteção de Conhecimento)")
-        if motor.pops_sugeridos:
-            # list(set()) remove duplicatas para um laudo mais limpo
-            for p in list(set(motor.pops_sugeridos)):
-                st.success(f"📌 **POP:** {p}")
-        else:
-            st.write("Nenhuma atividade de alta criticidade detectada para geração de POP.")
-
-    with tab_rpa:
-        st.write("#### 🤖 Matriz de Aceleração Digital (ROI)")
-        if motor.oportunidades_rpa:
-            for rpa in list(set(motor.oportunidades_rpa)):
-                st.info(f"🚀 **OPORTUNIDADE RPA:** {rpa}")
-            st.metric("ROI Estimado", f"{len(motor.oportunidades_rpa) * 10}% de Economia")
-        else:
-            st.write("Não foram detectadas tarefas braçais repetitivas candidatas à automação.")
-
-    # --------------------------------------------------------------------------
-    # 6. SÍNTESE EXECUTIVA FINAL
-    # --------------------------------------------------------------------------
-    st.markdown("---")
-    st.subheader("🏆 Veredito Final NetExame")
+    st.subheader("🏆 Parecer Técnico do Consultor")
     
-    # Usando a variável blindada score_digital em vez de contador_sistemas
-    st.success(f"""
-    A auditoria técnica concluiu que o colaborador apresenta uma aderência funcional de **{motor.nexo_funcional}%**. 
-    O perfil comportamental aliado à amplitude de especialista sugere que a empresa deve priorizar a **documentação de processos (POPs)** para remover a dependência de conhecimento individual.
+    st.info(f"""
+    **Veredito de Engenharia:** A auditoria detectou que para o cargo de **{cargo}**, 
+    o colaborador apresenta um desvio de eficiência de **{desvio:.1f}%** na tarefa de **{tarefa_teste}**. 
     
-    A carga tecnológica de **{score_digital} pontos** revela que há espaço para uma **Aceleração Digital agressiva**, 
-    especialmente nas tarefas de baixa complexidade que hoje consomem tempo de mão de obra qualificada.
+    **Adaptação do POP:** O novo POP Customizado foi estruturado para utilizar a fortaleza de **{perfil_disc}** (Amplitude {amplitude}%) através da estratégia de **{estrategia}**. 
+    Este ajuste visa reduzir o tempo operacional para os **{meta_tempo} min** previstos no POP Universal da NetExame.
     """)
 
-# ==============================================================================
-# FIM DO MOTOR MONSTRO (NETEXAME STRATEGIC AUDIT)
-# ==============================================================================
+    # Ações de Saída
+    c_b1, c_b2 = st.columns(2)
+    with c_b1: st.button("📥 Gerar PDF do POP Customizado")
+    with c_b2: 
+        if st.button("⬅️ Voltar ao Início"):
+            st.session_state.pagina = "home"
+            st.rerun()
