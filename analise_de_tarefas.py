@@ -4557,8 +4557,7 @@ if st.session_state.get("pagina") == "parecer":
             
             contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
             
-            # PROMPT DE OURO: ENGENHARIA DE PROCESSOS E CRONOANÁLISE FORENSE
-            prompt = f"""
+                        prompt = f"""
             Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
             Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
 
@@ -4566,25 +4565,45 @@ if st.session_state.get("pagina") == "parecer":
             {contexto_resumido}
 
             REGRAS RÍGIDAS DE ARQUITETURA DE DADOS:
-            1. JORNADA TOTAL: Você deve preencher exatamente 480 minutos de impacto diário.
-            2. MULTIFREQUÊNCIA: Distribua as atividades em DIÁRIA, SEMANAL e MENSAL.
-            3. CONVERSÃO DE IMPACTO (CÁLCULO): 
-            - Atividade Semanal: (Tempo Total / 5 dias).
-            - Atividade Mensal: (Tempo Total / 22 dias).
-            4. CRITÉRIO DE VALOR: Priorize atividades de ALTO VALOR AGREGADO (Gestão, Auditoria, Estratégia, Compliance). Elimine tarefas braçais.
-            5. OBJETIVOS TÉCNICOS: Cada 'meta' deve ser um KPI ou um marco de controle auditável.
+            1. JORNADA TOTAL: 480 minutos de impacto diário.
+            2. MULTIFREQUÊNCIA: DIÁRIA, SEMANAL e MENSAL.
+            3. CONVERSÃO:
+               - Semanal = tempo/5 dias
+               - Mensal = tempo/22 dias
+            4. CRITÉRIO DE VALOR: priorizar alto valor agregado (gestão, auditoria, estratégia, compliance). Eliminar tarefas braçais.
+            5. KPI: toda atividade deve ser auditável.
 
-            FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-            {{
-                "NOME_DA_ATIVIDADE": {{
-                    "tempo": minutos_inteiros,
+            🔥 NOVA CAMADA OBRIGATÓRIA (SISTEMAS + AUTOMAÇÃO):
+
+            Para cada atividade, identificar obrigatoriamente:
+
+            - sistema: "SIM / NÃO / SISTEMA_PRÓPRIO"
+            - nome_do_sistema: se existir (ex: SAP, TOTVS, planilha, CRM)
+            - modo_execucao: descrição do fluxo (manual ou automatizado via sistema)
+            - nível_de_automação: MANUAL / SEMI_AUTOMÁTICO / AUTOMÁTICO
+            - ganho_automacao_min: minutos economizados por dia
+            - ganho_automacao_pct: ganho percentual de eficiência
+            - dependencia_sistema: ALTA / MÉDIA / BAIXA
+
+            FORMATO DE SAÍDA (JSON ESTRITO):
+            {
+                "NOME_DA_ATIVIDADE": {
+                    "tempo": 0,
                     "freq": "DIÁRIA/SEMANAL/MENSAL",
-                    "meta": "Descrição técnica do objetivo e métrica de sucesso",
-                    "complexidade": "ALTA/MÉDIA/BAIXA"
-                }}
-            }}
+                    "meta": "KPI ou controle auditável",
+                    "complexidade": "ALTA/MÉDIA/BAIXA",
 
-            Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
+                    "sistema": "",
+                    "nome_do_sistema": "",
+                    "modo_execucao": "",
+                    "nivel_de_automacao": "",
+                    "ganho_automacao_min": 0,
+                    "ganho_automacao_pct": 0,
+                    "dependencia_sistema": ""
+                }
+            }
+
+            Pense como auditor forense + arquiteto de automação + analista de eficiência operacional.
             """
 
             response = client.chat.completions.create(
@@ -4824,24 +4843,64 @@ if st.session_state.get("pagina") == "parecer":
         Chama o GPT-4o-mini para analisar o nexo causal e gerar o POP Universal.
         """
         prompt = f"""
-        Aja como um Auditor Forense de Processos Sênior. 
+        Aja como um Auditor Forense de Processos Sênior e Engenheiro de Automação Operacional.
+
         Analise o cargo '{cargo}' para o colaborador '{nome_colaborador}'.
-        O colaborador relatou as seguintes atividades: {atividades_relatadas}
+
+        ATIVIDADES RELATADAS:
+        {atividades_relatadas}
 
         SUA MISSÃO:
-        1. Reafirme o POP PADRÃO UNIVERSAL (480 min totais).
-        2. Escreva um PARECER TÉCNICO focado em:
-        - Inconsistência de carga horária (se houver).
-        - Desvios de função (operacional vs estratégico).
-        - Riscos de omissão de tarefas críticas (como conferência de folha).
+        1. Reafirmar o POP padrão de 480 minutos/dia.
+        2. Produzir um PARECER TÉCNICO sobre:
+           - desvios de função
+           - inconsistência de carga horária
+           - riscos operacionais
+           - subutilização de sistemas
+           - excesso de trabalho manual onde poderia haver automação
 
-        RESPONDA EXCLUSIVAMENTE NO FORMATO JSON ABAIXO:
-        {{
-            "parecer_pericial": "Seu texto de parecer aqui detalhado.",
+        🔥 NOVA CAMADA OBRIGATÓRIA (AUTOMAÇÃO E SISTEMAS):
+
+        Para cada atividade do POP, identificar:
+
+        - sistema: SIM / NÃO / SISTEMA_PRÓPRIO
+        - nome_do_sistema (ex: SAP, TOTVS, Excel, CRM)
+        - nível_de_execução: MANUAL / SEMI_AUTOMÁTICO / AUTOMÁTICO
+        - modo_execucao: descrição prática do fluxo
+        - ganho_automacao_min: economia de tempo por dia
+        - ganho_automacao_pct: eficiência gerada
+        - impacto_operacional: BAIXO / MÉDIO / ALTO
+
+        ⚠️ IMPORTANTE:
+        Sempre apontar quando uma atividade:
+        - poderia ser automatizada
+        - já é redundante
+        - ou já é sistema mas está sendo usada manualmente
+
+        FORMATO DE SAÍDA (JSON ESTRITO):
+        {
+            "parecer_pericial": "Texto técnico, crítico e estratégico sobre o colaborador e sua operação.",
+            
             "pop_universal": [
-                {{"Atividade": "A", "Freq": "D", "Tempo": "Xm", "Impacto": "Ym", "Peso": "Z%"}}
+                {
+                    "Atividade": "",
+                    "Freq": "D/S/M",
+                    "Tempo": "",
+                    "Impacto": "",
+                    "Peso": "",
+
+                    "sistema": "",
+                    "nome_do_sistema": "",
+                    "nivel_de_execucao": "",
+                    "modo_execucao": "",
+                    "ganho_automacao_min": 0,
+                    "ganho_automacao_pct": 0,
+                    "impacto_operacional": ""
+                }
             ]
-        }}
+        }
+
+        Pense como auditor forense + especialista em eficiência operacional + arquiteto de automação.
         """
         
         try:
@@ -5071,19 +5130,52 @@ if st.session_state.get("pagina") == "parecer":
 
         SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
         1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas de 'Alta' complexidade relatadas? 
-        2. CAPACIDADE vs. ENTREGA: O colaborador possui cursos de Pós/Especialização (ver em 'cursos') que estão sendo desperdiçados em tarefas operacionais?
-        3. HIBRIDISMO COMPORTAMENTAL: Analise o DISC. Como o perfil (Ex: Dominante/Conformidade) impacta a velocidade e a precisão nestas tarefas?
-        4. CRONOANÁLISE CRÍTICA: Se a soma das tarefas (D/S/M) converter para mais de 480min/dia, aponte risco de Burnout Mascarado e Erro Forense.
-        5. VEREDITO ESTRATÉGICO: O que ele deve PARAR de fazer, o que deve DELEGAR e onde deve ser o FOCO IMEDIATO.
+        2. CAPACIDADE vs. ENTREGA: Há desperdício de formação (cursos) em tarefas operacionais?
+        3. HIBRIDISMO COMPORTAMENTAL: Como o perfil DISC impacta a execução?
+        4. CRONOANÁLISE: Se > 480min/dia, risco de Burnout Mascarado.
+        5. VEREDITO: O que PARAR, DELEGAR e FOCO IMEDIATO.
+
+        🔥 NOVA CAMADA OBRIGATÓRIA (SISTEMAS + AUTOMAÇÃO):
+
+        Para cada atividade identificada no cruzamento:
+
+        - sistema: SIM / NÃO / SISTEMA_PRÓPRIO
+        - nome_do_sistema: SAP, TOTVS, Excel, CRM ou similar
+        - nivel_de_execucao: MANUAL / SEMI_AUTOMÁTICO / AUTOMÁTICO
+        - modo_execucao: descrição operacional real do fluxo
+        - ganho_automacao_min: economia de minutos por dia
+        - ganho_automacao_pct: ganho percentual de eficiência
+        - impacto_operacional: BAIXO / MÉDIO / ALTO
+
+        ⚠️ REGRA CRÍTICA:
+        Sempre identificar:
+        - tarefas automatizáveis
+        - tarefas redundantes
+        - uso manual de sistema que deveria ser automatizado
 
         FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-        {{
-            "parecer_executivo": "Texto profundo, crítico e técnico (estilo consultoria sênior) detalhando os desvios e o nexo causal.",
+        {
+            "parecer_executivo": "Texto técnico, crítico e estratégico com nexo causal e eficiência operacional.",
+            
             "pop_benchmark": [
-                {{"Atividade": "Nome da Tarefa", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI de Sucesso"}}
+                {
+                    "Atividade": "",
+                    "Freq": "D/S/M",
+                    "Tempo": "",
+                    "Meta": "KPI",
+
+                    "sistema": "",
+                    "nome_do_sistema": "",
+                    "nivel_de_execucao": "",
+                    "modo_execucao": "",
+                    "ganho_automacao_min": 0,
+                    "ganho_automacao_pct": 0,
+                    "impacto_operacional": ""
+                }
             ],
-            "veredito_final": "Resumo executivo do plano de ação."
-        }}
+            
+            "veredito_final": "Resumo executivo com plano de ação."
+        }
         """
         
         try:
