@@ -4548,16 +4548,51 @@ from openai import OpenAI
 # ==============================================================================
 # 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO AVANÇADÍSSIMO
 # ==============================================================================
+import streamlit as st
 
-# 1. INICIALIZAÇÃO (O "Gatilho" de abertura)
+# 1. GATILHO DE ABERTURA (SÓ RODA NA PRIMEIRA VEZ)
 if 'pagina' not in st.session_state:
-    st.session_state.pagina = "parecer" # Força o app a começar aqui
+    st.session_state.pagina = "parecer"
 
+# 2. DEFINIÇÕES GLOBAIS
 def buscar_benchmark_ia_estrategico(*args, **kwargs):
-    return {} 
+    return {}  # Blindagem
 
+# 3. PÁGINAS (ENCAPSULADAS)
 def mostrar_pagina_parecer():
     st.title("📑 Parecer Técnico")
+    st.markdown("---")
+    
+    if st.button("Voltar para Home", key="botao_voltar_exclusivo_topo"):
+        st.session_state.pagina = "home"
+        st.rerun()
+
+def mostrar_home():
+    st.title("🏠 Home")
+    st.markdown("---")
+    
+    if st.button("Ir para Parecer", key="botao_ir_parecer"):
+        st.session_state.pagina = "parecer"
+        st.rerun()
+
+# 4. ROTEADOR (O CORAÇÃO DE VERDADE)
+def router():
+    pagina = st.session_state.pagina
+
+    if pagina == "parecer":
+        mostrar_pagina_parecer()
+
+    elif pagina == "home":
+        mostrar_home()
+
+    else:
+        # fallback de segurança
+        st.session_state.pagina = "parecer"
+        mostrar_pagina_parecer()
+
+# 5. EXECUÇÃO
+router()
+
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
