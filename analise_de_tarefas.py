@@ -4720,12 +4720,16 @@ if st.session_state.pagina == "parecer":
     # --------------------------------------------------------------------------
     st.subheader("📋 Laudo Pericial de Engenharia de Processos")
     
+    # Recuperação segura das variáveis de estado (EVITA NAMEERROR)
+    score_digital = st.session_state.get('contador_sistemas', 0)
+    amplitude_disc = 58.3 # Valor fixo conforme seu exemplo do Gercino
+    
     # KPIs de Topo
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Carga Mensal", f"{motor.horas_totais:.1f}h", delta="CRÍTICO" if motor.risco_burnout else None)
     c2.metric("Nexo Funcional", f"{motor.nexo_funcional}%")
-    c3.metric("Amplitude DISC", f"58.3%")
-    c4.metric("Score Digital", f"{contador_sistemas}")
+    c3.metric("Amplitude DISC", f"{amplitude_disc}%")
+    c4.metric("Score Digital", f"{score_digital}")
 
     st.markdown("---")
 
@@ -4739,7 +4743,9 @@ if st.session_state.pagina == "parecer":
         col_n1, col_n2 = st.columns(2)
         with col_n1:
             st.info(f"**Perfil Detectado:** C (Conformidade)")
-            st.write(f"**Veredito:** {motor.vereditos_texto[0]}")
+            # Verifica se existe o veredito para não quebrar o código
+            veredito_final = motor.vereditos_texto[0] if motor.vereditos_texto else "Análise inconclusiva."
+            st.write(f"**Veredito:** {veredito_final}")
         with col_n2:
             if motor.nexo_funcional < 50:
                 st.error("🚨 **ALTO ESFORÇO ADAPTATIVO:** O colaborador está gastando energia vital para se manter no cargo.")
@@ -4751,12 +4757,13 @@ if st.session_state.pagina == "parecer":
         if motor.risco_burnout:
             st.warning("⚠️ **RISCO DE SATURAÇÃO:** A soma das atividades relatadas excede a capacidade produtiva saudável.")
         st.write(f"O colaborador gasta **{motor.horas_totais:.1f} horas** mensais nos fluxos descritos.")
-        # Simulação de gráfico de pizza ou barras
+        # Simulação de gráfico de progresso (Carga horária vs Limite 220h)
         st.progress(min(motor.horas_totais / 220, 1.0))
 
     with tab_pops:
         st.write("#### 📜 Candidatos a POP (Proteção de Conhecimento)")
         if motor.pops_sugeridos:
+            # list(set()) remove duplicatas para um laudo mais limpo
             for p in list(set(motor.pops_sugeridos)):
                 st.success(f"📌 **POP:** {p}")
         else:
