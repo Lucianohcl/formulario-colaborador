@@ -4934,20 +4934,23 @@ tradutor_disc = {
 }
 
 def realizar_pericia(dados):
+    """
+    Processa os dados do formulário e exibe o laudo de perícia.
+    """
     st.divider()
     st.header("🔍 Laudo de Perícia Operacional (IA)")
 
     try:
         # --- CÁLCULO DE TEMPO UNIVERSAL ---
         minutos_diarios = 0
-        
-        # Mapeamento de Frequência para peso diário
         pesos = {"D": 1, "S": 0.2, "M": 0.05, "T": 0.33, "A": 0} 
 
+        tabelas = dados.get('tabelas', {})
         for nivel in ['alta', 'normal', 'baixa']:
-            for tarefa in dados['tabelas'].get(nivel, []):
-                h = int(tarefa.get('Horas', '0').split()[0])
-                m = int(tarefa.get('Minutos', '0').split()[0])
+            for tarefa in tabelas.get(nivel, []):
+                # Extração segura de horas e minutos (trata strings como '1 h' ou '30 min')
+                h = int(str(tarefa.get('Horas', '0')).split()[0])
+                m = int(str(tarefa.get('Minutos', '0')).split()[0])
                 freq = tarefa.get('Frequência', 'D')
                 
                 tempo_total_min = (h * 60) + m
@@ -4957,11 +4960,12 @@ def realizar_pericia(dados):
         respostas = list(dados.get('disc', {}).values())
         if respostas:
             letra_principal = max(set(respostas), key=respostas.count)
-            perfil_info = tradutor_disc.get(letra_principal)
+            perfil_info = tradutor_disc.get(letra_principal, {"perfil": "Misto", "cor": "gray", "desc": "-"})
         else:
+            letra_principal = "N/A"
             perfil_info = {"perfil": "Não Informado", "cor": "gray", "desc": "-"}
 
-        # --- INTERFACE DE RESULTADOS ---
+        # --- INTERFACE DE RESULTADOS (MÉTRICAS) ---
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -4971,44 +4975,64 @@ def realizar_pericia(dados):
                       delta_color=status_cor)
 
         with col2:
-            st.subheader(f":{perfil_info['cor']}[{perfil_info['perfil']}]")
+            st.markdown(f"**Perfil:** :{perfil_info['cor']}[{perfil_info['perfil']}]")
             st.caption(perfil_info['desc'])
 
         with col3:
-            dificuldade = dados['tabelas'].get('dificuldades', [{}])[0].get('Dificuldade', '').lower()
-            st.metric("Dificuldades Reportadas", "Nenhuma" if "nenhuma" in dificuldade else "Ver Alerta")
+            dificuldade_lista = tabelas.get('dificuldades', [{}])
+            texto_dificuldade = dificuldade_lista[0].get('Dificuldade', '').lower() if dificuldade_lista else ""
+            st.metric("Gargalos", "Nenhum" if "nenhuma" in texto_dificuldade else "Ver Alerta")
 
-        # --- INSIGHTS AUTOMÁTICOS (A "Mente" do Auditor) ---
-        st.subheader("📝 Insights do Auditor")
+        # --- INSIGHTS AUTOMÁTICOS ---
+        st.subheader("💡 Insights do Auditor")
         
-        # Alerta 1: Sobrecarga vs Negação
-        if minutos_diarios > 550 and "nenhuma" in dificuldade:
-            st.error(f"⚠️ **ALERTA DE CEGUEIRA OPERACIONAL:** O colaborador (Perfil {perfil_info['perfil']}) possui uma carga de {int(minutos_diarios)} min/dia, mas relata não ter dificuldades. Há alto risco de centralização e esgotamento oculto.")
-        
-        # Alerta 2: Gestor no Operacional
-        if "GESTOR" in dados['campos'].get('cargo', '').upper():
-            tempo_baixa = len(dados['tabelas'].get('baixa', []))
-            if tempo_baixa > 5:
-                st.warning(f"🚩 **DESVIO DE FUNÇÃO:** Identificamos {tempo_baixa} tarefas de BAIXA prioridade para um cargo de Gestão. Oportunidade imediata de delegação para liberar foco estratégico.")
-
-        # Alerta 3: Perfil Dominante (Caso do Adson)
-        if letra_principal == "A" and minutos_diarios > 480:
-            st.info("💡 **DICA DE LIDERANÇA:** Colaboradores com alta Dominância tendem a 'puxar' o trabalho para garantir o prazo. Monitore a qualidade das entregas da equipe dele, pois ele pode estar refazendo o trabalho dos outros.")
+        with st.container(border=True):
+            # Alerta 1: Sobrecarga vs Negação
+            if minutos_diarios > 540 and "nenhuma" in texto_dificuldade:
+                st.error(f"⚠️ **ALERTA DE CEGUEIRA OPERACIONAL:** O colaborador possui uma carga crítica de {int(minutos_diarios)} min/dia, mas relata não ter dificuldades. Alto risco de esgotamento ou omissão de gargalos.")
+            
+            # Alerta 2: Gestor no Operacional
+            cargo = dados.get('campos', {}).get('cargo', '').upper()
+            if any(x in cargo for x in ["GESTOR", "COORD", "DIRETOR", "CHEFE"]):
+                tarefas_baixa = len(tabelas.get('baixa', []))
+                if tarefas_baixa > 3:
+                    st.warning(f"🚩 **DESVIO DE FUNÇÃO:** Identificamos {tarefas_baixa} tarefas de BAIXA prioridade para um cargo de liderança. Risco de microgerenciamento e falta de foco estratégico.")
+            
+            # Alerta 3: Perfil Dominante
+            if letra_principal == "A" and minutos_diarios > 480:
+                st.info("🎯 **DICA DE LIDERANÇA:** Perfil Dominante detectado com alta carga. Cuidado com a tendência de centralizar tarefas para garantir o prazo. Estimule a delegação.")
 
     except Exception as e:
-        st.error(f"Erro ao processar perícia: {e}")
+        st.error(f"Erro no processamento dos dados: {e}")
 
 # =========================================================
-# CHAMADA FINAL CORRIGIDA (Substitua as últimas linhas por esta)
+# RASTREADOR UNIVERSAL DE DADOS (VARREDURA DE MEMÓRIA)
 # =========================================================
 
-# Usamos 'dados_json' que é o nome que você usou no erro anterior
-if 'dados_json' in locals(): 
-    realicia = realizar_pericia(dados_json)
-elif 'json_data' in locals(): 
-    realicia = realizar_pericia(json_data)
-elif 'dados' in locals(): 
-    realicia = realizar_pericia(dados)
-else:
-    st.info("Aguardando carregamento do JSON para iniciar perícia...")
+def disparar_pericia_automatica():
+    """
+    Varre as variáveis locais e globais buscando o dicionário do formulário.
+    """
+    # 1. Nomes conhecidos para agilizar
+    nomes_alvos = ['dados_json', 'json_data', 'dados', 'data', 'formulario']
+    
+    # 2. Busca nos escopos Global e Local
+    contexto = {**globals(), **locals()}
+    
+    for nome in nomes_alvos:
+        if nome in contexto and isinstance(contexto[nome], dict) and 'tabelas' in contexto[nome]:
+            realizar_pericia(contexto[nome])
+            return
+
+    # 3. Varredura por estrutura (Se os nomes falharem)
+    for var_name, var_value in contexto.items():
+        if isinstance(var_value, dict) and 'tabelas' in var_value and 'campos' in var_value:
+            realizar_pericia(var_value)
+            return
+
+    # 4. Caso não encontre nada
+    st.info("🔍 Aguardando dados do colaborador para gerar perícia...")
+
+# Executa a busca
+disparar_pericia_automatica()
     
