@@ -4886,7 +4886,7 @@ if st.session_state.get("pagina") == "parecer":
         - já é redundante
         - ou já é sistema mas está sendo usada manualmente
 
-        prompt = f"""
+        
         FORMATO DE SAÍDA (JSON ESTRITO):
         
         {{
