@@ -4552,44 +4552,41 @@ from openai import OpenAI
 def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
     """
     Consulta a OpenAI para gerar um POP baseado em 480min/dia.
-    O cache garante que você não pague duas vezes pela mesma consulta.
+    O cache garante custo zero em consultas repetidas.
     """
     try:
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
-        
-        # Resumo para economia de tokens
         contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
         
         prompt = f"""
         Aja como um Auditor Forense e Engenheiro de Processos Sênior.
         Analise o cargo '{cargo}' com a função '{funcao}'.
+        CONTEXTO: {contexto_resumido}
         
-        CONTEXTO ESTRATÉGICO: {contexto_resumido}
-        
-        REGRAS RÍGIDAS PARA O JSON (FOCO EM 480 MINUTOS DIÁRIOS):
-        1. Gere atividades distribuídas em: DIÁRIA, SEMANAL e MENSAL.
+        REGRAS RÍGIDAS PARA O JSON:
+        1. Gere atividades em frequências: DIÁRIA, SEMANAL e MENSAL.
         2. A soma do impacto diário deve totalizar aproximadamente 480 minutos.
-        3. Foco em GESTÃO, AUDITORIA, COMPLIANCE e LIDERANÇA.
+        3. Retorne APENAS o objeto JSON abaixo.
         
-        RETORNE APENAS JSON NO FORMATO:
+        FORMATO:
         {{
             "ATIVIDADE": {{"tempo": minutos_inteiro, "freq": "DIÁRIA/SEMANAL/MENSAL", "meta": "objetivo técnico"}}
         }}
         """
 
         response = client.chat.completions.create(
-            model="gpt-4o-mini", # 💰 Modelo ultra econômico
-            messages=[{"role": "system", "content": "Você é um auditor de processos sênior."},
+            model="gpt-4o-mini",
+            messages=[{"role": "system", "content": "Você é um auditor de alta precisão."},
                       {"role": "user", "content": prompt}],
             response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        st.error(f"Erro na conexão com a Inteligência: {e}")
+        st.error(f"Erro na Inteligência: {e}")
         return None
 
 # ==============================================================================
-# 🛡️ MOTOR DE AUDITORIA NETEXAME
+# 🛡️ MOTOR DE AUDITORIA NETEXAME: PÁGINA DE PARECER
 # ==============================================================================
 
 def mostrar_pagina_parecer():
@@ -4607,106 +4604,120 @@ def mostrar_pagina_parecer():
         colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
         
         if st.button("🚀 Iniciar Perícia com IA"):
-            # Carregar o JSON do colaborador
             with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                 colab = json.load(f)
             
+            # Dados do Alvo
             nome = colab.get('colaborador', 'N/A').upper()
             cargo = colab['campos'].get('cargo', 'N/A').upper()
             funcao = colab['campos'].get('funcao', 'Gestão Estratégica').upper()
             objetivo = colab['campos'].get('objetivo', '')
             cursos = colab['campos'].get('cursos', '')
 
-            # --- 1. CHAMADA À IA (COM CACHE E ECONOMIA) ---
+            # 1. Chamada à IA
             pop_ia = buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, cursos)
 
             if pop_ia:
                 st.markdown(f"## 📑 Laudo Técnico: {nome}")
-                st.info(f"**Cargo:** {cargo} | **Domínio:** {funcao}")
+                st.info(f"**Cargo Analisado:** {cargo} | **Domínio:** {funcao}")
 
-                # --- 2. TABELA A: O PADRÃO DA IA (COM CÁLCULO DE IMPACTO) ---
+                # --- TABELA [A]: O PADRÃO IA (CRONOANÁLISE) ---
                 st.subheader("📚 [A] POP Padrão IA (Referência de Mercado)")
                 
                 dados_ia = []
-                total_impacto_diario = 0
-                
+                total_ia_diario = 0
                 for ativ, info in pop_ia.items():
                     t = info['tempo']
                     f = info['freq'].upper()
                     
-                    # Cálculo da carga diária proporcional
+                    # Cálculo de impacto diário (proporcional)
                     if f == "DIÁRIA": impacto = t
                     elif f == "SEMANAL": impacto = t / 5
                     elif f == "MENSAL": impacto = t / 22
-                    else: impacto = t
+                    else: impacto = impacto = t
                     
-                    total_impacto_diario += impacto
-                    
+                    total_ia_diario += impacto
                     dados_ia.append({
                         "Atividade IA": ativ,
                         "Tempo Base": f"{t}m",
                         "Freq": f,
-                        "Impacto Diário (Média)": f"{impacto:.1f} min",
+                        "Impacto Diário": f"{impacto:.1f} min",
                         "Meta": info['meta']
                     })
-
                 st.table(pd.DataFrame(dados_ia))
-                
-                # Exibição de Totais de Carga Horária
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Jornada Padrão", "480 min")
-                c2.metric("Total IA Projetado", f"{total_impacto_diario:.1f} min")
-                c3.metric("Gap de Eficiência", f"{total_impacto_diario - 480:.1f} min", delta_color="inverse")
 
-                # --- 3. TABELA B: REALIDADE DO COLABORADOR ---
-                st.subheader("📝 [B] Atividades Relatadas (Realidade)")
+                # --- TABELA [B]: REALIDADE RELATADA ---
+                st.subheader("📝 [B] Atividades Relatadas (O que o Alvo listou)")
                 todas_atividades = colab['tabelas'].get('alta', []) + \
                                   colab['tabelas'].get('normal', []) + \
                                   colab['tabelas'].get('baixa', [])
                 
                 if todas_atividades:
-                    df_real = pd.DataFrame(todas_atividades)
-                    st.table(df_real[["Atividade", "Frequência", "Horas", "Minutos"]])
-                else:
-                    st.warning("Nenhuma atividade encontrada no arquivo do colaborador.")
-
-                # --- 4. TABELA C: CONFRONTO (NEXO CAUSAL E TEMPO) ---
-                st.subheader("⚖️ [C] Cruzamento e Nexo Causal")
-                confronto = []
+                    df_real_base = pd.DataFrame(todas_atividades)
+                    st.table(df_real_base[["Atividade", "Frequência", "Horas", "Minutos"]])
                 
-                for tarefa_ia, meta_ia in pop_ia.items():
-                    tempo_real_total = 0
-                    nexo = "❌ AUSENTE"
+                # --- TABELA [C]: CONFRONTO E DISCREPÂNCIAS ---
+                st.subheader("⚖️ [C] Confronto Pericial e Discrepâncias")
+                
+                confronto_dados = []
+                total_real_diario = 0
+                
+                for tarefa_ia, info_ia in pop_ia.items():
+                    # Cálculo impacto alvo IA (para comparar com impacto real)
+                    f_ia = info_ia['freq'].upper()
+                    if f_ia == "DIÁRIA": imp_alvo = info_ia['tempo']
+                    elif f_ia == "SEMANAL": imp_alvo = info_ia['tempo'] / 5
+                    else: imp_alvo = info_ia['tempo'] / 22
+
+                    tempo_bruto_real = 0
+                    freq_real = "AUSENTE"
+                    nexo = "❌ NÃO MAPEADO"
                     
-                    # Chave de busca simplificada (primeira palavra)
+                    # Busca de Nexo Causal
                     chave = tarefa_ia.split()[0].upper()
-                    
                     for item in todas_atividades:
-                        desc_real = str(item.get('Atividade', '')).upper()
-                        if chave in desc_real:
-                            # Tratamento de horas e minutos do JSON
-                            h_val = str(item.get('Horas', '0')).split()[0]
-                            m_val = str(item.get('Minutos', '0')).split()[0]
-                            h = int(h_val) if h_val.isdigit() else 0
-                            m = int(m_val) if m_val.isdigit() else 0
-                            tempo_real_total += (h * 60) + m
+                        if chave in str(item.get('Atividade', '')).upper():
+                            h = int(str(item.get('Horas', '0')).split()[0])
+                            m = int(str(item.get('Minutos', '0')).split()[0])
+                            tempo_bruto_real += (h * 60) + m
+                            freq_real = item.get('Frequência', '').upper()
                             nexo = "✅ IDENTIFICADO"
 
-                    # Cálculo do desvio baseado no tempo base da tarefa
-                    desvio = ((tempo_real_total - meta_ia['tempo']) / meta_ia['tempo']) * 100 if tempo_real_total > 0 else -100
+                    # Impacto Diário Real
+                    if freq_real == "DIÁRIA": imp_real = tempo_bruto_real
+                    elif freq_real == "SEMANAL": imp_real = tempo_bruto_real / 5
+                    elif freq_real == "MENSAL": imp_real = tempo_bruto_real / 22
+                    else: imp_real = 0
                     
-                    confronto.append({
-                        "Requisito IA": tarefa_ia,
-                        "Tempo Alvo": f"{meta_ia['tempo']}m",
-                        "Tempo Real": f"{tempo_real_total}m",
-                        "Desvio": f"{desvio:+.1f}%",
-                        "Nexo Causal": nexo
+                    total_real_diario += imp_real
+                    confronto_dados.append({
+                        "Requisito POP": tarefa_ia,
+                        "Status": nexo,
+                        "Impacto Alvo (IA)": f"{imp_alvo:.1f}m",
+                        "Impacto Real (Alvo)": f"{imp_real:.1f}m",
+                        "Discrepância": f"{imp_real - imp_alvo:+.1f}m"
                     })
 
-                st.table(pd.DataFrame(confronto))
-                st.success("Perícia concluída. Relatório gerado com base em cronoanálise estratégica.")
+                st.table(pd.DataFrame(confronto_dados))
 
-# --- Lógica de Inicialização ---
+                # --- TOTAIS E VEREDITO ---
+                st.markdown("---")
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Jornada Contratada", "480 min")
+                c2.metric("Carga Real Relatada", f"{total_real_diario:.1f} min")
+                
+                disp_estrategica = 480 - total_ia_diario
+                c3.metric("Potencial Estratégico", f"{disp_estrategica:.1f} min", delta="DISPONÍVEL")
+
+                # Parecer Automático
+                st.markdown("### 📊 Veredito da Auditoria")
+                if total_real_diario > 480:
+                    st.error(f"**ALERTA DE INCONSISTÊNCIA:** Carga de {total_real_diario:.1f} min excede o limite legal. Indícios de inflação de dados ou ineficiência operacional severa.")
+                else:
+                    eficiencia = (total_ia_diario / total_real_diario * 100) if total_real_diario > 0 else 0
+                    st.success(f"**ANÁLISE DE EFICIÊNCIA:** O colaborador opera com {eficiencia:.1f}% de aderência ao padrão estratégico. Há {480 - total_real_diario:.1f} min de ociosidade/janela estratégica.")
+
+# --- INICIALIZAÇÃO ---
 if 'pagina' not in st.session_state:
     st.session_state.pagina = "parecer"
 
