@@ -4783,22 +4783,15 @@ if st.session_state.pagina == "parecer":
     # --------------------------------------------------------------------------
     st.markdown("---")
     st.subheader("🏆 Veredito Final NetExame")
+    
+    # Usando a variável blindada score_digital em vez de contador_sistemas
     st.success(f"""
     A auditoria técnica concluiu que o colaborador apresenta uma aderência funcional de **{motor.nexo_funcional}%**. 
     O perfil comportamental aliado à amplitude de especialista sugere que a empresa deve priorizar a **documentação de processos (POPs)** para remover a dependência de conhecimento individual.
     
-    A carga tecnológica de **{contador_sistemas} pontos** revela que há espaço para uma **Aceleração Digital agressiva**, 
+    A carga tecnológica de **{score_digital} pontos** revela que há espaço para uma **Aceleração Digital agressiva**, 
     especialmente nas tarefas de baixa complexidade que hoje consomem tempo de mão de obra qualificada.
     """)
-
-    # Botões de Saída
-    col_f1, col_f2, col_f3 = st.columns(3)
-    with col_f1: st.button("📥 Baixar Laudo PDF")
-    with col_f2: st.button("📧 Enviar para Diretoria")
-    with col_f3:
-        if st.button("⬅️ Voltar"):
-            st.session_state.pagina = "home"
-            st.rerun()
 
 # ==============================================================================
 # FIM DO MOTOR MONSTRO (NETEXAME STRATEGIC AUDIT)
