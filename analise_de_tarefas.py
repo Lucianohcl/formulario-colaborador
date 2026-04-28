@@ -4920,16 +4920,4 @@ if st.session_state['analise_concluida']:
             href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
             st.markdown(href, unsafe_allow_html=True)
 
-    with col2:
-        if st.button("📥 BAIXAR FONTE TÉCNICA (POP)"):
-            # HTML SÓ COM A TABELA POP
-            html_pop = gerar_html_apenas_pop(
-                nome_alvo, 
-                st.session_state['pop_universal_ia']
-            )
-            b64 = base64.b64encode(html_pop.encode('utf-8')).decode()
-            href = f'<a href="data:text/html;base64,{b64}" download="POP_REFERENCIA_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#0d1b2a;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📊 BAIXAR TABELA POP</button></a>'
-            st.markdown(href, unsafe_allow_html=True)
-
-else:
-    st.info("Clique em 'Iniciar Perícia' para habilitar a geração dos documentos.")
+    
