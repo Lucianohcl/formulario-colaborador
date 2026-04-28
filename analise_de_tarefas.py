@@ -5000,14 +5000,44 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            if st.button("🚀 GERAR LAUDO FORENSE 360°"):
+            # Injeção de CSS para o botão ficar bonitão
+            st.markdown("""
+                <style>
+                div.stButton > button:first-child {
+                    background: linear-gradient(45deg, #d90429, #ef233c);
+                    color: white;
+                    border-radius: 10px;
+                    border: none;
+                    padding: 20px;
+                    font-size: 18px;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4);
+                }
+                div.stButton > button:first-child:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 6px 20px rgba(217, 4, 41, 0.6);
+                    color: white;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
+            if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
                 with st.spinner("IA processando cruzamento de dados..."):
-                    laudo = solicitar_pericia_360(dados_lidos)
+                    # Chamando sua função de cache para economizar saldo
+                    dados_string = json.dumps(dados_lidos, ensure_ascii=False)
+                    laudo = processar_parecer_com_cache(dados_string)
+                    
                     st.divider()
                     st.markdown(laudo)
                     
-                    # Opção de exportar
-                    st.download_button("Exportar Laudo", laudo, file_name=f"pericia_{dados_lidos.get('colaborador')}.md")
+                    # Botão de exportar também largo para manter o padrão
+                    st.download_button(
+                        label="📥 EXPORTAR LAUDO FINAL", 
+                        data=laudo, 
+                        file_name=f"pericia_{dados_lidos.get('colaborador')}.md",
+                        use_container_width=True
+                    )
 
 if __name__ == "__main__":
     main()
