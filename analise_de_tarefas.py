@@ -5052,6 +5052,7 @@ if __name__ == "__main__":
 # ==============================================================================
 # 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
 # ==============================================================================
+@st.cache_data(show_spinner="Recuperando perícia do cache...")
 def realizar_super_pericia_ia(dados):
     """
     Realiza a auditoria cruzada: JSON + Benchmark + Nexo Causal + DISC.
@@ -5114,6 +5115,7 @@ from openai import OpenAI
 # ==============================================================================
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+@st.cache_data(show_spinner="Consultando base de dados e IA...", ttl=86400)
 def realizar_super_pericia_ia(dados):
     """
     O Cérebro do Sistema: Cruza JSON, Benchmark e Gera Parecer Forense.
