@@ -4687,7 +4687,7 @@ if st.session_state.get("pagina") == "parecer":
                     <html>
                     <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
                     <body style="font-family: sans-serif; padding: 20px;">
-                        <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
+                        <h2>[A] POP Padrão IA (Carga Diária 480m)</h2>
                         <table border="1" style="border-collapse: collapse; width: 100%;">
                             <tr style="background-color: #f2f2f2;">
                                 <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
