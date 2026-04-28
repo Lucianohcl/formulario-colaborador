@@ -4548,8 +4548,17 @@ from openai import OpenAI
 import streamlit as st
 
 
-if st.button("TESTE"):
-    st.write("FUNCIONOU")
+# controle de página
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "parecer"
+
+# botão na sidebar
+if st.sidebar.button("📑 Parecer"):
+    st.session_state.pagina = "parecer"
+
+# 👇 FUNÇÃO (CAIXA)
+def mostrar_parecer():
+    st.title("📑 Parecer Técnico")
 
 
     @st.cache_data(show_spinner=True)
@@ -5266,3 +5275,7 @@ if st.button("TESTE"):
 
     if __name__ == "__main__":
         main()
+
+# 👇 FORA (EXECUTA)
+if st.session_state.pagina == "parecer":
+    mostrar_parecer()
