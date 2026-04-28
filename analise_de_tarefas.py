@@ -5009,8 +5009,7 @@ def main():
                     # Opção de exportar
                     st.download_button("Exportar Laudo", laudo, file_name=f"pericia_{dados_lidos.get('colaborador')}.md")
 
-if __name__ == "__main__":
-    main()
+
 
             # --- BOTÃO ADICIONAL PARA EXPORTAR HTML ---
             html_template = f"""
@@ -5041,6 +5040,12 @@ if __name__ == "__main__":
                 mime="text/html",
                 use_container_width=True
             )
+
+
+if __name__ == "__main__":
+    main()
+
+            
 
 # ==============================================================================
 # 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
