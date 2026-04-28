@@ -4541,110 +4541,116 @@ st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
 
 import streamlit as st
 import pandas as pd
+import os
 import json
 
 # ==============================================================================
-# 🧠 MOTOR DE INTELIGÊNCIA ARTIFICIAL: GERADOR DE POP UNIVERSAL
+# 🧠 MOTOR DE INTELIGÊNCIA: BENCHMARK UNIVERSAL (IA DE MERCADO)
 # ==============================================================================
-
-def buscar_pop_padrao_na_ia(cargo, funcao):
+def buscar_benchmark_ia(cargo):
     """
-    Simula a chamada de IA para gerar o POP Padrão em tempo real.
-    Em um ambiente de produção, aqui você faria a chamada ao modelo (Gemini/OpenAI).
+    Simula a busca na IA pelo 'Padrão Ouro' de mercado para o cargo específico.
+    Aqui o sistema define a régua de eficiência independente do que foi preenchido.
     """
-    # Prompt que a IA processa internamente para gerar a tabela
-    # "Como um Engenheiro de Processos, gere um POP Padrão para o cargo {cargo}..."
-    
-    # Exemplo de resposta inteligente que a IA geraria dinamicamente:
-    # O sistema não busca em dicionário, ele 'deduz' pela função.
-    
-    prompt_conhecimento_ia = {
+    benchmarks = {
         "GESTOR DE DP": {
-            "Auditoria de Folha": {"tempo": 120, "freq": "DIÁRIA", "meta": "Compliance Legal"},
-            "Gestão de eSocial/DCTFWeb": {"tempo": 60, "freq": "DIÁRIA", "meta": "Risco Zero"},
-            "Onboarding de Clientes": {"tempo": 180, "freq": "SEMANAL", "meta": "Saneamento de Dados"},
-            "Análise de Passivos": {"tempo": 90, "freq": "DIÁRIA", "meta": "Segurança Jurídica"},
-            "Liderança de Equipe": {"tempo": 60, "freq": "DIÁRIA", "meta": "KPIs de Entrega"}
+            "Auditoria de Folha": {"tempo": 60, "freq": "DIÁRIA", "meta": "Compliance"},
+            "Gestão eSocial": {"tempo": 30, "freq": "DIÁRIA", "meta": "Risco Zero"},
+            "Conferência de Encargos": {"tempo": 45, "freq": "DIÁRIA", "meta": "Exatidão"}
         },
         "ANALISTA FINANCEIRO": {
-            "Conciliação Bancária": {"tempo": 40, "freq": "DIÁRIA", "meta": "Integridade"},
-            "Fluxo de Caixa": {"tempo": 30, "freq": "DIÁRIA", "meta": "Liquidez"}
+            "Conciliação Bancária": {"tempo": 30, "freq": "DIÁRIA", "meta": "Integridade"},
+            "Fluxo de Caixa": {"tempo": 20, "freq": "DIÁRIA", "meta": "Liquidez"}
         }
     }
-    
-    # Se o cargo não estiver no 'cache' simulado, a IA gera do zero baseado na descrição
-    return prompt_conhecimento_ia.get(cargo.upper(), {
-        "Atividade Genérica": {"tempo": 60, "freq": "DIÁRIA", "meta": "Produtividade"}
+    # Caso o cargo não esteja no mapeamento, a IA gera um padrão de eficiência genérica
+    return benchmarks.get(cargo.upper(), {
+        "Processos Técnicos": {"tempo": 60, "freq": "DIÁRIA", "meta": "Eficiência Geral"}
     })
 
 # ==============================================================================
-# 🛡️ MOTOR DE AUDITORIA FORENSE (DINÂMICO)
+# 🛡️ MOTOR DE CARGA E AUDITORIA (NETEXAME 2026)
 # ==============================================================================
 
 if st.session_state.pagina == "parecer":
-    st.title("🛡️ NetExame: Auditoria Estratégica via IA")
+    st.title("🛡️ Sistema de Auditoria Forense - NetExame")
 
-    # 1. CAPTURA DE DADOS REAIS DO COLABORADOR
-    nome = st.session_state.get('nome', 'COLABORADOR').upper()
-    cargo = st.session_state.get('cargo', 'GESTOR DE DP').upper()
-    funcao = st.session_state.get('funcao', '').upper()
+    # --- 🟢 ETAPA 1: CARREGAMENTO SEQUENCIAL (COLABORADOR POR COLABORADOR) ---
+    caminho_dados = "dados" 
+    base_colaboradores = []
 
-    st.markdown(f"### 📑 Relatório Pericial: {nome}")
-    st.info(f"**Análise de Engenharia para o Cargo:** {cargo}")
-
-    # 2. CHAMADA DA IA PARA GERAR O POP PADRÃO (SEM DICIONÁRIO FIXO)
-    st.markdown("---")
-    st.subheader("📚 1. POP Padrão Universal (Gerado via IA de Processos)")
-    
-    # Aqui a mágica acontece: A IA define o que é o 'Padrão' para esse cargo específico
-    pop_ia = buscar_pop_padrao_na_ia(cargo, funcao)
-    
-    df_pop_ia = pd.DataFrame.from_dict(pop_ia, orient='index')
-    df_pop_ia.columns = ["Tempo (min)", "Frequência", "Meta de Engenharia"]
-    
-    st.write(f"Baseado no cargo de **{cargo}**, a IA definiu as seguintes métricas de mercado:")
-    st.table(df_pop_ia)
-
-    # 3. CRUZAMENTO DE DADOS (ATIVIDADES REAIS vs IA)
-    st.markdown("---")
-    st.subheader("⚖️ 2. Cruzamento de Nexo e Eficiência")
-
-    # O sistema varre o que o colaborador preencheu (ex: Adson) e confronta com a IA
-    if 'e_alta' in st.session_state:
-        cruzamento = []
-        for tarefa_ia, dados_ia in pop_ia.items():
-            # Busca inteligente: a IA tenta casar o que ela sugeriu com o que o cara escreveu
-            # Usando uma lógica de busca por palavra-chave nas atividades digitadas
-            termo = tarefa_ia.split()[0].upper()
-            match = st.session_state.e_alta[st.session_state.e_alta['Atividade'].str.upper().str.contains(termo, na=False)]
-            
-            if not match.empty:
-                h = int(match.iloc[0]['Horas']) if str(match.iloc[0]['Horas']).isdigit() else 1
-                m = int(match.iloc[0]['Minutos']) if str(match.iloc[0]['Minutos']).isdigit() else 0
-                tempo_real = (h * 60) + m
-                desvio = ((tempo_real - dados_ia['tempo']) / dados_ia['tempo']) * 100
-                
-                cruzamento.append({
-                    "Atividade": tarefa_ia,
-                    "Padrão IA (min)": dados_ia['tempo'],
-                    "Real Colab (min)": tempo_real,
-                    "Desvio %": f"{desvio:+.1f}%",
-                    "Nexo": "✅ ALINHADO" if abs(desvio) <= 20 else "⚠️ GARGALO"
-                })
-
-        if cruzamento:
-            st.table(pd.DataFrame(cruzamento))
+    if os.path.exists(caminho_dados):
+        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+        
+        if arquivos:
+            with st.status("📥 Carregando base de dados...", expanded=True) as status:
+                for arquivo in arquivos:
+                    with open(os.path.join(caminho_dados, arquivo), 'r', encoding='utf-8') as f:
+                        dados_brutos = json.load(f)
+                        base_colaboradores.append(dados_brutos)
+                        st.write(f"✅ Arquivo Processado: {dados_brutos.get('colaborador', 'N/A')}")
+                status.update(label="Carga de Dados Concluída!", state="complete", expanded=False)
         else:
-            st.warning("⚠️ As atividades relatadas divergem do padrão técnico esperado para este cargo.")
+            st.error("❌ Nenhum arquivo de colaborador encontrado na pasta /dados.")
+            st.stop()
+    else:
+        st.error(f"❌ Diretório '{caminho_dados}' não localizado no servidor.")
+        st.stop()
 
-    # 4. PARECER FINAL
+    # --- 🔵 ETAPA 2: PROCESSAMENTO DE AUDITORIA (CONFRONTO COM BENCHMARK) ---
     st.markdown("---")
-    st.subheader("🏆 3. Veredito de Engenharia")
-    st.write(f"""
-    O colaborador atua no domínio de **{cargo}**. 
-    O sistema identificou que o POP Universal gerado pela IA exige um foco em **{list(pop_ia.keys())[0]}**. 
-    O parecer final será ajustado conforme o perfil DISC detectado para garantir que o POP Customizado 
-    elimine os desvios de **{cruzamento[0]['Desvio %'] if cruzamento else 'produtividade'}**.
-    """)
+    st.subheader(f"⚖️ Processando Perícia para {len(base_colaboradores)} Colaboradores")
 
-    st.button(f"📥 Gerar Laudo Pericial de {nome}")
+    for colab in base_colaboradores:
+        nome = colab.get('colaborador', 'N/A').upper()
+        cargo = colab.get('campos', {}).get('cargo', 'N/A').upper()
+        
+        with st.expander(f"👤 ANÁLISE: {nome} | Cargo: {cargo}", expanded=False):
+            # 1. Busca do Benchmark de Mercado via IA
+            pop_mkt = buscar_benchmark_ia(cargo)
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.markdown("**📚 POP Padrão de Mercado**")
+                df_mkt = pd.DataFrame.from_dict(pop_mkt, orient='index')
+                df_mkt.columns = ["Min Alvo", "Freq", "Meta Técnica"]
+                st.dataframe(df_mkt, use_container_width=True)
+
+            with col2:
+                st.markdown("**⚖️ Confronto Real vs. Mercado**")
+                confronto = []
+                atividades_alta = colab.get('tabelas', {}).get('alta', [])
+
+                for tarefa_ia, meta in pop_mkt.items():
+                    tempo_real = 0
+                    termo_chave = tarefa_ia.split()[0].upper()
+                    
+                    # Busca inteligência de nexo nas atividades relatadas
+                    for item in atividades_alta:
+                        if termo_chave in item.get('Atividade', '').upper():
+                            # Extração numérica segura
+                            try:
+                                h = int(str(item.get('Horas', '0')).split()[0])
+                                m = int(str(item.get('Minutos', '0')).split()[0])
+                                tempo_real = (h * 60) + m
+                            except:
+                                tempo_real = 0
+                    
+                    if tempo_real > 0:
+                        desvio = ((tempo_real - meta['tempo']) / meta['tempo']) * 100
+                        confronto.append({
+                            "Tarefa Auditada": tarefa_ia,
+                            "Desvio Eficiência": f"{desvio:+.1f}%",
+                            "Status": "⚠️ GARGALO" if desvio > 15 else "✅ OK"
+                        })
+                
+                if confronto:
+                    st.table(pd.DataFrame(confronto))
+                else:
+                    st.warning("Nenhuma atividade coincidente com o benchmark de mercado.")
+
+            # Parecer de Engenharia de Processos
+            st.markdown("---")
+            st.markdown(f"**Veredito Técnico:** Identificado nexo operacional. O colaborador **{nome}** deve seguir o POP Customizado para alinhar os desvios ao padrão NetExame.")
+            st.button(f"📥 Gerar PDF Laudo Pericial: {nome}", key=f"btn_{nome}")
