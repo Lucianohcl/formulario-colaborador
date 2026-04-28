@@ -5196,7 +5196,7 @@ def main():
                     
                     st.markdown(f'''
                         <div style="text-align:center; margin-top:20px;">
-                            <a href="data:text/html;base64,{b64}" download="LAUDO_{nome}.html">
+                            <a href="data:text/html;base64,{b64}" download="LAUDO_{dados_alvo.get('colaborador')}.html">
                                 <button style="background:#d90429; color:white; padding:20px; border-radius:10px; cursor:pointer; width:100%; font-weight:bold;">
                                     📥 BAIXAR LAUDO FINAL
                                 </button>
