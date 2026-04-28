@@ -5000,40 +5000,43 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # Injeção de CSS para o botão ficar bonitão
+            # 🎨 ESTILO ISOLADO (Não quebra o restante do app)
             st.markdown("""
                 <style>
-                div.stButton > button:first-child {
-                    background: linear-gradient(45deg, #d90429, #ef233c);
-                    color: white;
-                    border-radius: 10px;
-                    border: none;
-                    padding: 20px;
-                    font-size: 18px;
-                    font-weight: bold;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 4px 15px rgba(217, 4, 41, 0.4);
+                /* Estiliza apenas o botão dentro desta área específica */
+                .stButton > button {
+                    background: linear-gradient(45deg, #d90429, #ef233c) !important;
+                    color: white !important;
+                    border-radius: 12px !important;
+                    border: none !important;
+                    padding: 18px 24px !important;
+                    font-size: 1.1rem !important;
+                    font-weight: 700 !important;
+                    transition: all 0.3s ease-in-out !important;
+                    box-shadow: 0 4px 15px rgba(217, 4, 41, 0.3) !important;
+                    margin-bottom: 1rem !important;
                 }
-                div.stButton > button:first-child:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 6px 20px rgba(217, 4, 41, 0.6);
-                    color: white;
+                .stButton > button:hover {
+                    transform: translateY(-2px) !important;
+                    box-shadow: 0 6px 22px rgba(217, 4, 41, 0.5) !important;
+                    background: linear-gradient(45deg, #ef233c, #d90429) !important;
                 }
                 </style>
             """, unsafe_allow_html=True)
 
+            # 🚀 EXECUÇÃO DO LAUDO
             if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
                 with st.spinner("IA processando cruzamento de dados..."):
-                    # Chamando sua função de cache para economizar saldo
+                    # Uso do cache para proteger seu saldo de $4.89
                     dados_string = json.dumps(dados_lidos, ensure_ascii=False)
                     laudo = processar_parecer_com_cache(dados_string)
                     
                     st.divider()
                     st.markdown(laudo)
                     
-                    # Botão de exportar também largo para manter o padrão
+                    # Botão de exportar (padrão, para não gerar conflito visual)
                     st.download_button(
-                        label="📥 EXPORTAR LAUDO FINAL", 
+                        label="📥 EXPORTAR LAUDO FINAL (.MD)", 
                         data=laudo, 
                         file_name=f"pericia_{dados_lidos.get('colaborador')}.md",
                         use_container_width=True
