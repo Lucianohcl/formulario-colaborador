@@ -4535,7 +4535,7 @@ if st.session_state.pagina == "disc":
 
 # --- Rodapé Final ---
 st.markdown("---")
-st.caption(f"NetExame 2026 | Operador: Luciano | Auditoria Comportamental")
+
 
 
 
