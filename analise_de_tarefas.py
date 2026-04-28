@@ -4579,17 +4579,18 @@ if st.session_state.pagina == "parecer":
     caminho_dados = "dados" 
     
     if os.path.exists(caminho_dados):
+        # Lista arquivos ignorando pastas ou arquivos ocultos
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            # Interface de escolha
+            # Interface de escolha única
             colaborador_selecionado = st.selectbox(
                 "🎯 Selecione o Colaborador para Auditoria:",
                 options=arquivos,
                 format_func=lambda x: x.replace('.json', '').replace('_', ' ').upper()
             )
             
-            # O processamento só inicia ao clicar
+            # Botão que dispara a carga e a perícia
             if st.button("🚀 Iniciar Processamento Pericial"):
                 caminho_arquivo = os.path.join(caminho_dados, colaborador_selecionado)
                 
@@ -4597,16 +4598,16 @@ if st.session_state.pagina == "parecer":
                     with open(caminho_arquivo, 'r', encoding='utf-8') as f:
                         colab = json.load(f)
                     
-                    # Definição das variáveis locais para evitar NameError
+                    # Extração segura de dados
                     nome = colab.get('colaborador', 'N/A').upper()
                     campos = colab.get('campos', {})
                     cargo = campos.get('cargo', 'N/A').upper() if isinstance(campos, dict) else "N/A"
 
                     st.markdown("---")
-                    st.subheader(f"⚖️ Processando Perícia: {nome}")
+                    st.subheader(f"⚖️ Perícia Técnica: {nome}")
                     st.info(f"🔍 **Cargo Auditado:** {cargo}")
 
-                    # 1. Busca do Benchmark de Mercado via IA (Régua Externa)
+                    # 1. Busca do Benchmark de Mercado via IA (A Régua Externa)
                     pop_mkt = buscar_benchmark_ia(cargo)
                     
                     col1, col2 = st.columns(2)
@@ -4619,19 +4620,22 @@ if st.session_state.pagina == "parecer":
                     with col2:
                         st.markdown("**⚖️ Confronto Real vs. Mercado**")
                         confronto = []
+                        # Acessa as tabelas de atividades do JSON
                         tabelas = colab.get('tabelas', {})
                         atividades_alta = tabelas.get('alta', []) if isinstance(tabelas, dict) else []
 
                         for tarefa_ia, meta in pop_mkt.items():
                             tempo_real = 0
+                            # Pega a primeira palavra da tarefa para buscar nexo
                             termo_chave = tarefa_ia.split()[0].upper()
                             
                             for item in atividades_alta:
-                                if termo_chave in item.get('Atividade', '').upper():
+                                if termo_chave in str(item.get('Atividade', '')).upper():
                                     try:
-                                        h_str = str(item.get('Horas', '0')).split()[0]
-                                        m_str = str(item.get('Minutos', '0')).split()[0]
-                                        tempo_real = (int(h_str) * 60) + int(m_str)
+                                        # Limpeza de strings como "1 h" ou "30 min"
+                                        h_val = str(item.get('Horas', '0')).split()[0]
+                                        m_val = str(item.get('Minutos', '0')).split()[0]
+                                        tempo_real = (int(h_val) * 60) + int(m_val)
                                     except: continue
                             
                             if tempo_real > 0:
@@ -4646,16 +4650,17 @@ if st.session_state.pagina == "parecer":
                         if confronto:
                             st.table(pd.DataFrame(confronto))
                         else:
-                            st.warning("Nenhum nexo causal encontrado com o benchmark.")
+                            st.warning("Nenhum nexo causal encontrado entre o relato e o benchmark.")
 
-                    st.success(f"Perícia de {nome} concluída com sucesso.")
+                    st.success(f"Análise de {nome} finalizada.")
+                    st.button(f"📥 Gerar Laudo de {nome}")
 
                 except Exception as e:
-                    st.error(f"Erro ao carregar os dados: {e}")
+                    st.error(f"Erro ao ler o arquivo: {e}")
         else:
-            st.error("❌ Nenhum JSON encontrado na pasta /dados.")
+            st.error("❌ A pasta /dados está vazia.")
     else:
-        st.error("❌ Pasta /dados não encontrada.")
+        st.error("❌ Diretório /dados não encontrado no repositório.")
 
     # --- 🔵 ETAPA 2: PROCESSAMENTO DE AUDITORIA (CONFRONTO COM BENCHMARK) ---
     st.markdown("---")
