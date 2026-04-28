@@ -5111,6 +5111,7 @@ def realizar_super_pericia_ia(dados):
         return None
 
 
+
 import streamlit as st
 import json
 import glob
@@ -5118,27 +5119,31 @@ import base64
 from openai import OpenAI
 
 # ==============================================================================
-# 1. MOTOR DE PERÍCIA (SILENCIOSO)
+# 1. MOTOR DE PERÍCIA COM CACHE (ECONOMIZA CRÉDITOS)
 # ==============================================================================
-def realizar_pericia_minimalista(dados):
+@st.cache_data(show_spinner=False)
+def realizar_pericia_cached(dados_json_str):
+    """
+    Usa o cache do Streamlit para não chamar a API se os dados forem os mesmos.
+    Transformamos em string porque o cache não aceita dicionários mutáveis direto.
+    """
+    dados = json.loads(dados_json_str)
     client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
     
     prompt = f"""
-    Cruze os dados abaixo e gere um Laudo Pericial focado em NEXO CAUSAL e PERFIL COMPORTAMENTAL.
-    
-    DADOS: {json.dumps(dados, ensure_ascii=False)}
-
+    Cruze os dados abaixo e gere um Laudo Pericial focado em NEXO CAUSAL e PERFIL COMPORTAMENTAL DISC.
+    DADOS: {dados_json_str}
     SAÍDA (JSON):
     {{
-        "parecer_executivo": "Correlação técnica entre formação, cargo e perfil DISC.",
+        "parecer_executivo": "Texto técnico sobre nexo causal e perfil.",
         "pop_benchmark": [{{"Atividade": "X", "Freq": "D", "Tempo": "X min", "Meta": "KPI"}}],
-        "veredito_final": "Veredito estratégico direto."
+        "veredito_final": "Estratégia direta."
     }}
     """
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "system", "content": "Você é um perito em RH e processos."}],
+            messages=[{"role": "system", "content": "Você é um perito em RH."}],
             response_format={ "type": "json_object" }
         )
         return json.loads(response.choices[0].message.content)
@@ -5146,54 +5151,85 @@ def realizar_pericia_minimalista(dados):
         return None
 
 # ==============================================================================
-# 2. GERADOR DE HTML LUXO (MANTIDO PARA EXPORTAÇÃO)
+# 2. GERADOR DE HTML LUXO (COMPLETO AGORA)
 # ==============================================================================
 def gerar_html_laudo_luxo(dados, analise_ia):
     nome = dados.get('colaborador', 'N/A')
-    # ... (O código CSS e HTML que você já tem permanece aqui dentro) ...
-    # [Mantendo sua estrutura de HTML final para o arquivo gerado]
-    return f"<html>...</html>" # (Retorna o HTML completo que você já validou)
+    cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
+    
+    linhas_pop = "".join([
+        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Meta']}</td></tr>" 
+        for x in analise_ia['pop_benchmark']
+    ])
+
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            body {{ font-family: sans-serif; background: #f4f7f6; padding: 40px; }}
+            .doc {{ background: white; max-width: 800px; margin: auto; padding: 40px; border-top: 15px solid #d90429; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }}
+            h2 {{ color: #d90429; border-bottom: 1px solid #eee; padding-bottom: 10px; }}
+            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+            th, td {{ padding: 10px; border: 1px solid #eee; text-align: left; font-size: 13px; }}
+            th {{ background: #2b2d42; color: white; }}
+            .veredito {{ background: #2b2d42; color: white; padding: 20px; margin-top: 30px; border-radius: 5px; font-weight: bold; }}
+        </style>
+    </head>
+    <body>
+        <div class="doc">
+            <h1>LAUDO PERICIAL: {nome}</h1>
+            <p><strong>CARGO:</strong> {cargo} | <strong>DATA:</strong> 28/04/2026</p>
+            <h2>I. PARECER TÉCNICO</h2>
+            <div style="line-height:1.6; text-align:justify;">{analise_ia['parecer_executivo']}</div>
+            <h2>II. BENCHMARK OPERACIONAL</h2>
+            <table>
+                <tr><th>ATIVIDADE</th><th>FREQ</th><th>TEMPO</th><th>META</th></tr>
+                {linhas_pop}
+            </table>
+            <div class="veredito">VEREDITO: {analise_ia['veredito_final']}</div>
+        </div>
+    </body>
+    </html>
+    """
+    return html
 
 # ==============================================================================
 # 3. INTERFACE MINIMALISTA
 # ==============================================================================
 def main():
-    st.set_page_config(page_title="NetExame Pro", layout="centered")
+    st.set_page_config(page_title="NetExame Pro")
     st.title("🛡️ NetExame: Perícia & Exportação")
     
     arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-    colab_file = st.selectbox("🎯 Selecione o Perfil para Auditoria:", arquivos)
+    colab_file = st.selectbox("🎯 Selecione o Perfil:", arquivos)
     
     if colab_file:
         with open(colab_file, 'r', encoding='utf-8') as f:
             dados_alvo = json.load(f)
 
-        # BOTÃO ÚNICO: PROCESSA E JÁ DISPONIBILIZA O DOWNLOAD
-        if st.button("🚀 GERAR LAUDO PERICIAL (NEXO CAUSAL)", use_container_width=True):
-            with st.spinner("Correlacionando Perfil..."):
-                resultado = realizar_pericia_minimalista(dados_alvo)
+        if st.button("🚀 GERAR LAUDO (NEXO CAUSAL)", use_container_width=True):
+            # Convertemos para string para o cache funcionar
+            dados_str = json.dumps(dados_alvo, ensure_ascii=False)
+            
+            with st.spinner("Correlacionando Perfil (Usando Cache Inteligente)..."):
+                resultado = realizar_pericia_cached(dados_str)
                 
                 if resultado:
                     html_final = gerar_html_laudo_luxo(dados_alvo, resultado)
                     b64 = base64.b64encode(html_final.encode('utf-8')).decode()
                     
-                    # Botão de Download que aparece após o processamento
-                    download_btn = f'''
+                    st.markdown(f'''
                         <div style="text-align:center; margin-top:20px;">
-                            <a href="data:text/html;base64,{b64}" download="LAUDO_{dados_alvo.get('colaborador')}.html" style="text-decoration:none;">
-                                <button style="
-                                    background-color: #d90429; color: white; padding: 25px 40px; 
-                                    border: none; border-radius: 12px; cursor: pointer; 
-                                    font-weight: bold; width: 100%; font-size: 20px;
-                                    box-shadow: 0 10px 20px rgba(217,4,41,0.3);
-                                ">
-                                    📥 BAIXAR LAUDO TÉCNICO (PDF/HTML)
+                            <a href="data:text/html;base64,{b64}" download="LAUDO_{dados_alvo.get('colaborador')}.html">
+                                <button style="background-color:#d90429; color:white; padding:25px; border:none; border-radius:12px; cursor:pointer; width:100%; font-size:20px; font-weight:bold;">
+                                    📥 BAIXAR LAUDO TÉCNICO COMPLETO
                                 </button>
                             </a>
                         </div>
-                    '''
-                    st.markdown(download_btn, unsafe_allow_html=True)
-                    st.success("Perícia concluída com sucesso!")
+                    ''', unsafe_allow_html=True)
+                    st.success("Perícia processada! Se você clicar de novo, o cache evitará novo gasto de créditos.")
 
 if __name__ == "__main__":
     main()
