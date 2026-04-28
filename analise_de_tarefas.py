@@ -4814,50 +4814,65 @@ def realizar_pericia_ia(nome_colaborador, cargo, atividades_relatadas):
         st.error(f"Erro na API da OpenAI: {e}")
         return None
 
-# ==============================================================================
-# 3. GERADOR DE ARTEFATO (HTML DO LAUDO)
-# ==============================================================================
-def gerar_html_laudo(nome_colab, parecer, pop_data):
-    # Gera as linhas da tabela dinamicamente com base no que a IA sugeriu
-    rows_pop = "".join([
-        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Impacto']}</td><td>{x['Peso']}</td></tr>" 
-        for x in pop_data
-    ])
 
+# ==============================================================================
+# 3. GERADOR DE ARTEFATOS (HTMLS SEPARADOS)
+# ==============================================================================
+
+def gerar_html_laudo_puro(nome_colab, parecer_ia):
+    """Gera o HTML contendo APENAS o cabeçalho e o parecer técnico (sem a tabela)."""
     html = f"""
     <html>
-    <head>
-        <meta charset="utf-8">
-        <style>
-            body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
-            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 12px solid #d90429; }}
-            .header {{ background: #0d1b2a; color: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; position: relative; }}
-            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; margin-bottom: 30px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
-            table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-            th {{ background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; font-size: 13px; text-transform: uppercase; }}
-            td {{ padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 13px; }}
-            .universal-tag {{ position: absolute; top: 25px; right: 25px; background: gold; color: #0d1b2a; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 11px; }}
-            footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
-        </style>
-    </head>
+    <head><meta charset="utf-8"><style>
+        body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
+        .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+        .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
+        .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
+        footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
+    </style></head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>🛡️ NetExame: Laudo Pericial</h1>
-                <p>Análise de Eficiência e Conformidade | Colaborador: {nome_colab}</p>
-                <div class="universal-tag">PADRÃO UNIVERSAL 480m</div>
+                <h1>🛡️ NetExame: Parecer Pericial</h1>
+                <p>Análise Forense de Processos | Colaborador: {nome_colab}</p>
             </div>
-            <h3>🔍 Parecer Técnico Pericial (Veredito IA)</h3>
-            <div class="parecer">{parecer}</div>
-            <hr>
-            <h3>📚 Tabela [A] - O POP Padrão Universal (Dever Ser)</h3>
+            <h3>🔍 Diagnóstico Técnico Pericial</h3>
+            <div class="parecer">{parecer_ia}</div>
+            <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
+        </div>
+    </body>
+    </html>
+    """
+    return html
+
+def gerar_html_apenas_pop(nome_colab, pop_data):
+    """Gera o HTML contendo APENAS a Tabela [A] (Fonte Técnica)."""
+    rows = "".join([
+        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Impacto']}</td><td>{x['Peso']}</td><td>{x.get('Meta', 'N/A')}</td></tr>" 
+        for x in pop_data
+    ])
+    
+    html = f"""
+    <html>
+    <head><meta charset="utf-8"><style>
+        body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; }}
+        .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; border-top: 10px solid #0d1b2a; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+        table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+        th {{ background: #0d1b2a; color: white; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; font-size: 13px; }}
+        td {{ padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 13px; }}
+        .badge {{ background: gold; color: #0d1b2a; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; }}
+    </style></head>
+    <body>
+        <div class="container">
+            <h2>📋 Fonte Técnica de Referência <span class="badge">PADRÃO 480m</span></h2>
+            <p>Padrão Universal de Eficiência vs Metas Auditáveis.</p>
             <table>
                 <thead>
-                    <tr><th>Atividade</th><th>Frequência</th><th>Base</th><th>Impacto Diário</th><th>Peso</th></tr>
+                    <tr><th>Atividade</th><th>Frequência</th><th>Tempo Base</th><th>Impacto Diário</th><th>Peso</th><th>Meta Auditável</th></tr>
                 </thead>
-                <tbody>{rows_pop}</tbody>
+                <tbody>{rows}</tbody>
             </table>
-            <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
+            <p style="font-size: 11px; color: #666; margin-top: 20px;">* Cálculos baseados na metodologia NetExame para conformidade e nexo causal.</p>
         </div>
     </body>
     </html>
