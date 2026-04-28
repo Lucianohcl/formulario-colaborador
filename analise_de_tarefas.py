@@ -4754,21 +4754,74 @@ mostrar_pagina_parecer()
 
 
 import streamlit as st
+import pandas as pd
 import base64
+import json
+from openai import OpenAI
 
-# --- FUNÇÃO PARA GERAR O CONTEÚDO HTML ---
-def gerar_html_laudo(colaborador_nome, parecer_ia, df_confronto):
-    # O POP Universal (Pode ser passado dinamicamente ou fixo conforme sua lógica)
-    pop_universal = [
-        {"Atividade": "Auditoria Contínua de Processos", "Freq": "DIÁRIA", "Tempo": "60m", "Impacto": "60.0m", "Peso": "12.5%"},
-        {"Atividade": "Revisão e Validação da Folha", "Freq": "DIÁRIA", "Tempo": "120m", "Impacto": "120.0m", "Peso": "25.0%"},
-        {"Atividade": "Gestão de EFD-Reinf/DCTFWeb", "Freq": "DIÁRIA", "Tempo": "60m", "Impacto": "60.0m", "Peso": "12.5%"},
-        {"Atividade": "Análise de Risco Trabalhista", "Freq": "SEMANAL", "Tempo": "60m", "Impacto": "12.0m", "Peso": "2.5%"}
-    ]
+# ==============================================================================
+# 1. CONFIGURAÇÕES INICIAIS E SEGURANÇA
+# ==============================================================================
+# Certifique-se de ter a chave nas configurações do Streamlit Cloud (Secrets)
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+# Inicializa as variáveis no estado da sessão para evitar NameError
+if 'resultado_parecer_gpt' not in st.session_state:
+    st.session_state['resultado_parecer_gpt'] = "Aguardando processamento da análise pericial..."
+
+if 'analise_concluida' not in st.session_state:
+    st.session_state['analise_concluida'] = False
+
+# ==============================================================================
+# 2. MOTOR DE INTELIGÊNCIA FORENSE (OPENAI)
+# ==============================================================================
+def realizar_pericia_ia(nome_colaborador, cargo, atividades_relatadas):
+    """
+    Chama o GPT-4o-mini para analisar o nexo causal e gerar o POP Universal.
+    """
+    prompt = f"""
+    Aja como um Auditor Forense de Processos Sênior. 
+    Analise o cargo '{cargo}' para o colaborador '{nome_colaborador}'.
+    O colaborador relatou as seguintes atividades: {atividades_relatadas}
+
+    SUA MISSÃO:
+    1. Reafirme o POP PADRÃO UNIVERSAL (480 min totais).
+    2. Escreva um PARECER TÉCNICO focado em:
+       - Inconsistência de carga horária (se houver).
+       - Desvios de função (operacional vs estratégico).
+       - Riscos de omissão de tarefas críticas (como conferência de folha).
+
+    RESPONDA EXCLUSIVAMENTE NO FORMATO JSON ABAIXO:
+    {{
+        "parecer_pericial": "Seu texto de parecer aqui detalhado.",
+        "pop_universal": [
+            {{"Atividade": "A", "Freq": "D", "Tempo": "Xm", "Impacto": "Ym", "Peso": "Z%"}}
+        ]
+    }}
+    """
     
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "Você é um auditor especializado em eficiência operacional e cronoanálise."},
+                {"role": "user", "content": prompt}
+            ],
+            response_format={ "type": "json_object" }
+        )
+        return json.loads(response.choices[0].message.content)
+    except Exception as e:
+        st.error(f"Erro na API da OpenAI: {e}")
+        return None
+
+# ==============================================================================
+# 3. GERADOR DE ARTEFATO (HTML DO LAUDO)
+# ==============================================================================
+def gerar_html_laudo(nome_colab, parecer, pop_data):
+    # Gera as linhas da tabela dinamicamente com base no que a IA sugeriu
     rows_pop = "".join([
         f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Impacto']}</td><td>{x['Peso']}</td></tr>" 
-        for x in pop_universal
+        for x in pop_data
     ])
 
     html = f"""
@@ -4777,27 +4830,27 @@ def gerar_html_laudo(colaborador_nome, parecer_ia, df_confronto):
         <meta charset="utf-8">
         <style>
             body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
-            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 10px solid #d90429; }}
+            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border-top: 12px solid #d90429; }}
             .header {{ background: #0d1b2a; color: white; padding: 25px; border-radius: 8px; margin-bottom: 30px; position: relative; }}
-            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 20px; margin-bottom: 30px; border-radius: 0 8px 8px 0; font-style: italic; }}
+            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; margin-bottom: 30px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
             table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
             th {{ background: #f8f9fa; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; font-size: 13px; text-transform: uppercase; }}
             td {{ padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 13px; }}
-            .universal-tag {{ position: absolute; top: 25px; right: 25px; background: gold; color: #0d1b2a; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; }}
+            .universal-tag {{ position: absolute; top: 25px; right: 25px; background: gold; color: #0d1b2a; padding: 6px 15px; border-radius: 20px; font-weight: bold; font-size: 11px; }}
             footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <h1>🛡️ NetExame: Laudo Forense</h1>
-                <p>Análise de Eficiência Operacional | Colaborador: {colaborador_nome}</p>
+                <h1>🛡️ NetExame: Laudo Pericial</h1>
+                <p>Análise de Eficiência e Conformidade | Colaborador: {nome_colab}</p>
                 <div class="universal-tag">PADRÃO UNIVERSAL 480m</div>
             </div>
-            <h3>🔍 Parecer Técnico Pericial (Análise GPT)</h3>
-            <div class="parecer">{parecer_ia}</div>
+            <h3>🔍 Parecer Técnico Pericial (Veredito IA)</h3>
+            <div class="parecer">{parecer}</div>
             <hr>
-            <h3>📚 Tabela [A] - POP Padrão (O Dever Ser)</h3>
+            <h3>📚 Tabela [A] - O POP Padrão Universal (Dever Ser)</h3>
             <table>
                 <thead>
                     <tr><th>Atividade</th><th>Frequência</th><th>Base</th><th>Impacto Diário</th><th>Peso</th></tr>
@@ -4811,12 +4864,58 @@ def gerar_html_laudo(colaborador_nome, parecer_ia, df_confronto):
     """
     return html
 
-# --- BOTÃO NO STREAMLIT ---
-if st.button("📥 GERAR E BAIXAR LAUDO FINAL"):
-    # Aqui você passa as variáveis que já tem no seu script
-    conteudo_html = gerar_html_laudo("ADSON", resultado_parecer_gpt, df_confronto)
+# ==============================================================================
+# 4. INTERFACE E EXECUÇÃO
+# ==============================================================================
+st.title("⚖️ NetExame: Perícia Forense de Processos")
+
+# Inputs (No seu caso, isso viria do JSON que você já carrega)
+nome_alvo = st.text_input("Nome do Colaborador", "ADSON")
+cargo_alvo = st.text_input("Cargo", "GESTOR DE DP")
+relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
+
+if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
+    with st.spinner("IA analisando nexo causal e eficiência..."):
+        resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
+        
+        if resultado:
+            # SALVA NO ESTADO DA SESSÃO
+            st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
+            st.session_state['pop_universal_ia'] = resultado['pop_universal']
+            st.session_state['analise_concluida'] = True
+            
+            st.success("Análise Concluída!")
+            st.markdown(f"**Parecer:** {resultado['parecer_pericial']}")
+
+# --- SEÇÃO DE DOWNLOAD DO LAUDO ---
+if st.session_state['analise_concluida']:
+    st.markdown("---")
+    st.subheader("🏁 Finalização e Entrega")
     
-    # Codificação para download
-    b64 = base64.b64encode(conteudo_html.encode('utf-8')).decode()
-    href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_PERICIAL_ADSON.html" style="text-decoration: none;"><button style="background-color: #d90429; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%;">CLIQUE AQUI PARA SALVAR O ARQUIVO</button></a>'
-    st.markdown(href, unsafe_allow_html=True)
+    if st.button("📥 GERAR E BAIXAR LAUDO HTML FINAL"):
+        # Gera o HTML usando os dados salvos no estado
+        html_laudo = gerar_html_laudo(
+            nome_alvo, 
+            st.session_state['resultado_parecer_gpt'], 
+            st.session_state['pop_universal_ia']
+        )
+        
+        # Cria o link de download
+        b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
+        href = f"""
+            <div style="text-align: center;">
+                <a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration: none;">
+                    <button style="
+                        background-color: #d90429; color: white; padding: 18px 35px; 
+                        border: none; border-radius: 10px; cursor: pointer; 
+                        font-weight: bold; font-size: 16px; width: 100%;
+                        box-shadow: 0 4px 15px rgba(217, 4, 41, 0.3);
+                    ">
+                        ✅ LAUDO PRONTO! CLIQUE PARA SALVAR NO COMPUTADOR
+                    </button>
+                </a>
+            </div>
+        """
+        st.markdown(href, unsafe_allow_html=True)
+else:
+    st.info("Clique em 'Iniciar Perícia' para habilitar a geração do laudo final.")
