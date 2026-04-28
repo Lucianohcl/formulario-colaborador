@@ -4676,30 +4676,16 @@ if st.session_state.get("pagina") == "parecer":
                     st.table(pd.DataFrame(dados_ia))
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
-                    html_content = f"""
-                    <html>
-                    <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
-                    <body style="font-family: sans-serif; padding: 20px;">
-                        <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
-                        <table border="1" style="border-collapse: collapse; width: 100%;">
-                            <tr style="background-color: #f2f2f2;">
-                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th><th>Sistema</th><th>Execução</th><th>Automação</th><th>Ganho (min)</th>
-                            </tr>
-                    """
+                    html_content = "<html><head><meta charset='UTF-8'><title>POP IA</title></head><body>"
+                    html_content += "<h2>📚 POP Padrão IA</h2>"
+                    html_content += "<table border='1'>"
+                    html_content += "<tr><th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th><th>Sistema</th><th>Execução</th><th>Automação</th><th>Ganho (min)</th></tr>"
+
                     for d in dados_ia:
-                        html_content += f"""
-                            <tr>
-                                <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
-                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td><td>{d.get('Sistema', '')}</td><td>{d.get('Execução', '')}</td><td>{d.get('Automação Possível', '')}</td><td>{d.get('Ganho Automação Min', 0)}</td>
+                        html_content += f"<tr><td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td><td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td><td>{d.get('Sistema','')}</td><td>{d.get('Execução','')}</td><td>{d.get('Automação Possível','')}</td><td>{d.get('Ganho Automação Min',0)}</td></tr>"
 
-                            </tr>"""
-
-                    html_content += f"""
-                        </table>
-                        <p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>
-                    </body>
-                    </html>
-                    """
+                    html_content += f"<p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>"
+                    html_content += "</body></html>"
 
                     st.download_button(
                         label="📥 Baixar POP em HTML",
