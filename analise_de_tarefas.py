@@ -5000,45 +5000,14 @@ def main():
             c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
             c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
 
-            # 💉 VACINA ANTI-ERRO: Import e leitura imediata
-            import json
-            import streamlit as st
-
-            try:
-                with open('dados_projeto.json', 'r', encoding='utf-8') as f:
-                    dados_lidos = json.load(f)
-            except Exception as e:
-                st.error(f"Erro ao carregar o arquivo: {e}")
-                st.stop()
-
-            # 🚀 EXECUÇÃO DO LAUDO (ESTILO NATIVO)
-            if st.button("🚀 GERAR LAUDO FORENSE 360°", use_container_width=True):
+            if st.button("🚀 GERAR LAUDO FORENSE 360°"):
                 with st.spinner("IA processando cruzamento de dados..."):
-                    from openai import OpenAI
-                    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-                    
-                    # Converte para string para a IA processar
-                    dados_string = json.dumps(dados_lidos, ensure_ascii=False)
-                    
-                    response = client.chat.completions.create(
-                        model="gpt-4o-mini",
-                        messages=[
-                            {"role": "system", "content": "Você é um Perito Forense. Gere o laudo em HTML."},
-                            {"role": "user", "content": f"Dados: {dados_string}"}
-                        ]
-                    )
-                    laudo = response.choices[0].message.content
-                    
+                    laudo = solicitar_pericia_360(dados_lidos)
                     st.divider()
-                    st.markdown(laudo, unsafe_allow_html=True)
+                    st.markdown(laudo)
                     
-                    st.download_button(
-                        label="📥 EXPORTAR LAUDO FINAL", 
-                        data=laudo, 
-                        file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
-                        mime="text/html",
-                        use_container_width=True
-                    )
+                    # Opção de exportar
+                    st.download_button("Exportar Laudo", laudo, file_name=f"pericia_{dados_lidos.get('colaborador')}.md")
 
 if __name__ == "__main__":
     main()
