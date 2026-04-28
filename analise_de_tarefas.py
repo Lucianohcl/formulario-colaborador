@@ -4546,14 +4546,10 @@ import os
 from openai import OpenAI
 
 # ==============================================================================
-# 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO (ECONOMIA + MULTIFREQUÊNCIA)
+# 🧠 CÉREBRO IA: MOTOR DE BENCHMARK ESTRATÉGICO
 # ==============================================================================
 @st.cache_data(show_spinner=True)
 def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
-    """
-    Consulta a OpenAI para gerar um POP baseado em 480min/dia.
-    O cache garante custo zero em consultas repetidas.
-    """
     try:
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
         contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
@@ -4561,12 +4557,12 @@ def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
         prompt = f"""
         Aja como um Auditor Forense e Engenheiro de Processos Sênior.
         Analise o cargo '{cargo}' com a função '{funcao}'.
-        CONTEXTO: {contexto_resumido}
+        CONTRAPARTIDA: {contexto_resumido}
         
         REGRAS RÍGIDAS PARA O JSON:
         1. Gere atividades em frequências: DIÁRIA, SEMANAL e MENSAL.
         2. A soma do impacto diário deve totalizar aproximadamente 480 minutos.
-        3. Retorne APENAS o objeto JSON abaixo.
+        3. Retorne APENAS o objeto JSON.
         
         FORMATO:
         {{
@@ -4607,115 +4603,109 @@ def mostrar_pagina_parecer():
             with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                 colab = json.load(f)
             
-            # Dados do Alvo
             nome = colab.get('colaborador', 'N/A').upper()
             cargo = colab['campos'].get('cargo', 'N/A').upper()
             funcao = colab['campos'].get('funcao', 'Gestão Estratégica').upper()
             objetivo = colab['campos'].get('objetivo', '')
             cursos = colab['campos'].get('cursos', '')
 
-            # 1. Chamada à IA
             pop_ia = buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, cursos)
 
             if pop_ia:
                 st.markdown(f"## 📑 Laudo Técnico: {nome}")
                 st.info(f"**Cargo Analisado:** {cargo} | **Domínio:** {funcao}")
 
-                # --- TABELA [A]: O PADRÃO IA (CRONOANÁLISE) ---
-                st.subheader("📚 [A] POP Padrão IA (Referência de Mercado)")
+                # --- 1. PROCESSAMENTO DE TODAS AS ATIVIDADES (IA + RELATADAS) ---
+                todas_atividades_relatadas = colab['tabelas'].get('alta', []) + \
+                                            colab['tabelas'].get('normal', []) + \
+                                            colab['tabelas'].get('baixa', [])
                 
-                dados_ia = []
-                total_ia_diario = 0
-                for ativ, info in pop_ia.items():
-                    t = info['tempo']
-                    f = info['freq'].upper()
-                    
-                    # Cálculo de impacto diário (proporcional)
-                    if f == "DIÁRIA": impacto = t
-                    elif f == "SEMANAL": impacto = t / 5
-                    elif f == "MENSAL": impacto = t / 22
-                    else: impacto = impacto = t
-                    
-                    total_ia_diario += impacto
-                    dados_ia.append({
-                        "Atividade IA": ativ,
-                        "Tempo Base": f"{t}m",
-                        "Freq": f,
-                        "Impacto Diário": f"{impacto:.1f} min",
-                        "Meta": info['meta']
-                    })
-                st.table(pd.DataFrame(dados_ia))
+                confronto_geral = []
+                total_min_pop = 0
+                total_min_relatado = 0
+                atividades_vistas = set()
 
-                # --- TABELA [B]: REALIDADE RELATADA ---
-                st.subheader("📝 [B] Atividades Relatadas (O que o Alvo listou)")
-                todas_atividades = colab['tabelas'].get('alta', []) + \
-                                  colab['tabelas'].get('normal', []) + \
-                                  colab['tabelas'].get('baixa', [])
-                
-                if todas_atividades:
-                    df_real_base = pd.DataFrame(todas_atividades)
-                    st.table(df_real_base[["Atividade", "Frequência", "Horas", "Minutos"]])
-                
-                # --- TABELA [C]: CONFRONTO E DISCREPÂNCIAS ---
-                st.subheader("⚖️ [C] Confronto Pericial e Discrepâncias")
-                
-                confronto_dados = []
-                total_real_diario = 0
-                
+                # A. CRUZA O QUE A IA PEDIU COM O QUE ELE FAZ
                 for tarefa_ia, info_ia in pop_ia.items():
-                    # Cálculo impacto alvo IA (para comparar com impacto real)
-                    f_ia = info_ia['freq'].upper()
-                    if f_ia == "DIÁRIA": imp_alvo = info_ia['tempo']
-                    elif f_ia == "SEMANAL": imp_alvo = info_ia['tempo'] / 5
-                    else: imp_alvo = info_ia['tempo'] / 22
+                    t_pop = info_ia['tempo']
+                    f_pop = info_ia['freq'].upper()
+                    imp_pop = t_pop if f_pop == "DIÁRIA" else (t_pop / 5 if f_pop == "SEMANAL" else t_pop / 22)
+                    total_min_pop += imp_pop
 
                     tempo_bruto_real = 0
-                    freq_real = "AUSENTE"
-                    nexo = "❌ NÃO MAPEADO"
+                    freq_real = "N/A"
+                    status = "❌ NÃO MAPEADO"
                     
-                    # Busca de Nexo Causal
                     chave = tarefa_ia.split()[0].upper()
-                    for item in todas_atividades:
-                        if chave in str(item.get('Atividade', '')).upper():
+                    for item in todas_atividades_relatadas:
+                        desc = str(item.get('Atividade', '')).upper()
+                        if chave in desc:
                             h = int(str(item.get('Horas', '0')).split()[0])
                             m = int(str(item.get('Minutos', '0')).split()[0])
                             tempo_bruto_real += (h * 60) + m
                             freq_real = item.get('Frequência', '').upper()
-                            nexo = "✅ IDENTIFICADO"
+                            status = "✅ IDENTIFICADA"
+                            atividades_vistas.add(desc)
 
-                    # Impacto Diário Real
-                    if freq_real == "DIÁRIA": imp_real = tempo_bruto_real
-                    elif freq_real == "SEMANAL": imp_real = tempo_bruto_real / 5
-                    elif freq_real == "MENSAL": imp_real = tempo_bruto_real / 22
-                    else: imp_real = 0
-                    
-                    total_real_diario += imp_real
-                    confronto_dados.append({
-                        "Requisito POP": tarefa_ia,
-                        "Status": nexo,
-                        "Impacto Alvo (IA)": f"{imp_alvo:.1f}m",
-                        "Impacto Real (Alvo)": f"{imp_real:.1f}m",
-                        "Discrepância": f"{imp_real - imp_alvo:+.1f}m"
+                    imp_real = tempo_bruto_real if freq_real == "DIÁRIA" else (tempo_bruto_real / 5 if freq_real == "SEMANAL" else (tempo_bruto_real / 22 if freq_real == "MENSAL" else 0))
+                    total_min_relatado += imp_real
+
+                    confronto_geral.append({
+                        "Atividade": tarefa_ia,
+                        "Tipo": "POP PADRÃO",
+                        "Freq": freq_real if freq_real != "N/A" else f_pop,
+                        "Status": status,
+                        "Impacto POP (Dia)": f"{imp_pop:.1f}m",
+                        "Impacto Real (Dia)": f"{imp_real:.1f}m",
+                        "Divergência": f"{imp_real - imp_pop:+.1f}m"
                     })
 
-                st.table(pd.DataFrame(confronto_dados))
+                # B. PEGA O QUE ELE RELATOU QUE NÃO ESTAVA NO POP (LIXO OU DESVIO)
+                for item in todas_atividades_relatadas:
+                    desc = str(item.get('Atividade', '')).upper()
+                    if desc not in atividades_vistas:
+                        h = int(str(item.get('Horas', '0')).split()[0])
+                        m = int(str(item.get('Minutos', '0')).split()[0])
+                        t_bruto = (h * 60) + m
+                        f_real = item.get('Frequência', '').upper()
+                        imp_extra = t_bruto if f_real == "DIÁRIA" else (t_bruto / 5 if f_real == "SEMANAL" else t_bruto / 22)
+                        
+                        total_min_relatado += imp_extra
+                        confronto_geral.append({
+                            "Atividade": desc,
+                            "Tipo": "⚠️ NÃO PADRÃO",
+                            "Freq": f_real,
+                            "Status": "DESVIO OPERACIONAL",
+                            "Impacto POP (Dia)": "0.0m",
+                            "Impacto Real (Dia)": f"{imp_extra:.1f}m",
+                            "Divergência": f"+{imp_extra:.1f}m"
+                        })
 
-                # --- TOTAIS E VEREDITO ---
+                # --- EXIBIÇÃO DA TABELA MESTRA ---
+                st.subheader("⚖️ Confronto Geral de Atividades")
+                st.table(pd.DataFrame(confronto_geral))
+
+                # --- CARDS DE RESULTADOS ---
                 st.markdown("---")
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Jornada Contratada", "480 min")
-                c2.metric("Carga Real Relatada", f"{total_real_diario:.1f} min")
+                c1, c2, c3, c4 = st.columns(4)
                 
-                disp_estrategica = 480 - total_ia_diario
-                c3.metric("Potencial Estratégico", f"{disp_estrategica:.1f} min", delta="DISPONÍVEL")
+                c1.metric("Jornada Legal", "480 min")
+                c2.metric("Total POP (IA)", f"{total_min_pop:.1f} min")
+                c3.metric("Total Relatado", f"{total_min_relatado:.1f} min")
+                
+                produtividade = (total_min_pop / total_min_relatado * 100) if total_min_relatado > 0 else 0
+                delta_prod = total_min_pop - total_min_relatado
+                
+                c4.metric("Índice Produtividade", f"{produtividade:.1f}%", delta=f"{delta_prod:.1f}m")
 
-                # Parecer Automático
-                st.markdown("### 📊 Veredito da Auditoria")
-                if total_real_diario > 480:
-                    st.error(f"**ALERTA DE INCONSISTÊNCIA:** Carga de {total_real_diario:.1f} min excede o limite legal. Indícios de inflação de dados ou ineficiência operacional severa.")
+                # --- VEREDITO FINAL ---
+                st.markdown("### 📊 Veredito do Auditor")
+                
+                if total_min_relatado > 480:
+                    st.error(f"**INCONSISTÊNCIA DETECTADA:** O colaborador relata uma carga diária de **{total_min_relatado:.1f} min**, superando a jornada de 8h. Isso indica inflação de horas ou descontrole de processos.")
                 else:
-                    eficiencia = (total_ia_diario / total_real_diario * 100) if total_real_diario > 0 else 0
-                    st.success(f"**ANÁLISE DE EFICIÊNCIA:** O colaborador opera com {eficiencia:.1f}% de aderência ao padrão estratégico. Há {480 - total_real_diario:.1f} min de ociosidade/janela estratégica.")
+                    ganho = 480 - total_min_relatado
+                    st.success(f"**POTENCIAL DE GANHO:** O colaborador utiliza apenas **{total_min_relatado:.1f} min** da jornada. Há uma janela de **{ganho:.1f} min** para expansão estratégica.")
 
 # --- INICIALIZAÇÃO ---
 if 'pagina' not in st.session_state:
