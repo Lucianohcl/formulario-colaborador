@@ -4846,38 +4846,70 @@ def gerar_html_laudo_puro(nome_colab, parecer_ia):
     return html
 
 def gerar_html_apenas_pop(nome_colab, pop_data):
-    """Gera o HTML contendo APENAS a Tabela [A] (Fonte Técnica)."""
-    rows = "".join([
-        f"<tr><td>{x['Atividade']}</td><td>{x['Freq']}</td><td>{x['Tempo']}</td><td>{x['Impacto']}</td><td>{x['Peso']}</td><td>{x.get('Meta', 'N/A')}</td></tr>" 
-        for x in pop_data
-    ])
-    
+    """
+    ESTA FUNÇÃO É O ESPELHO FIEL. 
+    Ela pega qualquer dado gerado pela IA e transforma em HTML.
+    """
+    # Se não houver dados, exibe um aviso no HTML para não quebrar
+    if not pop_data:
+        return "<html><body><h1>Erro: Nenhum dado de POP encontrado.</h1></body></html>"
+
+    # Criando as linhas da tabela DINAMICAMENTE
+    # Ela vai ler as chaves do dicionário que a IA criou
+    rows = ""
+    for item in pop_data:
+        rows += f"""
+        <tr>
+            <td>{item.get('Atividade', 'N/A')}</td>
+            <td>{item.get('Freq', 'N/A')}</td>
+            <td>{item.get('Tempo', 'N/A')}</td>
+            <td>{item.get('Impacto', 'N/A')}</td>
+            <td>{item.get('Peso', 'N/A')}</td>
+            <td>{item.get('Meta', 'N/A')}</td>
+        </tr>
+        """
+
     html = f"""
     <html>
-    <head><meta charset="utf-8"><style>
-        body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; }}
-        .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 1000px; margin: auto; border-top: 10px solid #0d1b2a; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
-        table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
-        th {{ background: #0d1b2a; color: white; padding: 12px; border-bottom: 2px solid #dee2e6; text-align: left; font-size: 13px; }}
-        td {{ padding: 12px; border-bottom: 1px solid #dee2e6; font-size: 13px; }}
-        .badge {{ background: gold; color: #0d1b2a; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 12px; }}
-    </style></head>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; }}
+            .card {{ border: 2px solid #0d1b2a; padding: 20px; border-radius: 10px; }}
+            .header {{ background-color: #0d1b2a; color: white; padding: 15px; margin-bottom: 20px; }}
+            table {{ width: 100%; border-collapse: collapse; }}
+            th {{ background-color: #f1f3f5; padding: 12px; border: 1px solid #ccc; text-align: left; font-size: 12px; }}
+            td {{ padding: 10px; border: 1px solid #eee; font-size: 12px; }}
+        </style>
+    </head>
     <body>
-        <div class="container">
-            <h2>📋 Fonte Técnica de Referência <span class="badge">PADRÃO 480m</span></h2>
-            <p>Padrão Universal de Eficiência vs Metas Auditáveis.</p>
+        <div class="card">
+            <div class="header">
+                <h2>📋 Fonte Técnica de Referência - PADRÃO 480m</h2>
+                <p>Métricas de Eficiência para: {nome_colab}</p>
+            </div>
             <table>
                 <thead>
-                    <tr><th>Atividade</th><th>Frequência</th><th>Tempo Base</th><th>Impacto Diário</th><th>Peso</th><th>Meta Auditável</th></tr>
+                    <tr>
+                        <th>Atividade</th>
+                        <th>Freq</th>
+                        <th>Tempo Base</th>
+                        <th>Impacto Diário Convertido</th>
+                        <th>Eficiência vs 480m</th>
+                        <th>Meta Auditável</th>
+                    </tr>
                 </thead>
-                <tbody>{rows}</tbody>
+                <tbody>
+                    {rows}
+                </tbody>
             </table>
-            <p style="font-size: 11px; color: #666; margin-top: 20px;">* Cálculos baseados na metodologia NetExame para conformidade e nexo causal.</p>
+            <p style="font-size: 10px; margin-top: 20px;">Gerado automaticamente por NetExame Auditoria.</p>
         </div>
     </body>
     </html>
     """
     return html
+
 
 # ==============================================================================
 # 4. INTERFACE E EXECUÇÃO
