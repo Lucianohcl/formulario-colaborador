@@ -4547,23 +4547,21 @@ from openai import OpenAI
 
 import streamlit as st
 
-# estado mínimo (persistência)
 if "mostrar" not in st.session_state:
     st.session_state.mostrar = False
 
 st.title("📑 Parecer Técnico")
 
-# gatilho
 if st.button("Mostrar"):
     st.session_state.mostrar = True
+    st.rerun()  # 🔥 ESSA LINHA resolve
 
-# conteúdo persistente
 if st.session_state.mostrar:
     st.write("Conteúdo exibido ✔️")
 
-# reset (opcional)
 if st.button("Limpar"):
     st.session_state.mostrar = False
+    st.rerun()
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
