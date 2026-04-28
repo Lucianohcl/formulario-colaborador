@@ -4998,8 +4998,11 @@ def realizar_pericia(dados):
     except Exception as e:
         st.error(f"Erro ao processar perícia: {e}")
 
-# CHAMADA DA FUNÇÃO (Coloque isso após o carregamento do seu JSON)
-if 'colaborador' in dados_json or 'campos' in dados_json:
-    realizar_pericia(dados_json)
-
+# CHAMADA DA FUNÇÃO (Segura e Universal)
+if 'json_data' in locals(): 
+    realizar_pericia_ia(json_data)
+elif 'dados_json' in locals(): 
+    realizar_pericia_ia(dados_json)
+elif 'dados' in locals(): 
+    realizar_pericia_ia(dados)
     
