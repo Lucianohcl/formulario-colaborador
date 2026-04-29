@@ -5320,10 +5320,6 @@ def auditar_performance_ia(kpi, relato, arquivos_nomes):
     )
     return json.loads(response.choices[0].message.content)
 
-def aba_produtividade_inteligente():
-    # ... todo o código que você mandou da interface vem aqui ...
-    # Agora quando ele ler 'buscar_benchmark_ia_estrategico', ele já saberá o que é.
-
 
 
 # ==============================================================================
