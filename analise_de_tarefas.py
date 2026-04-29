@@ -5516,6 +5516,10 @@ def aba_produtividade_inteligente():
                 pop_ia = st.session_state['pop_ia_atual']
                 dados_ia = []
                 total_ia_diario = 0
+
+                # ZERE AQUI PARA NÃO SOMAR COM O QUE JÁ ESTAVA NA MEMÓRIA
+                total_ia_diario = 0 
+                dados_ia = []
                 
                 for ativ, info in pop_ia.items():
                     # FILTRO CRÍTICO: Só processa se for um dicionário e não for a linha de TOTAL
