@@ -117,7 +117,6 @@ if "objetivo" not in locals(): objetivo = ""
 nome_digitado = st.session_state.get("usuario_atual", "")
 # ============================================================
 
-
 def gerar_word(form):
     from docx import Document
     import io
@@ -953,8 +952,6 @@ elif btn_parecer:
     st.session_state.pagina = "parecer"
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
-elif btn_produtividade: 
-    st.session_state.pagina = "produtividade"
 # O elif abaixo verifica a URL sem precisar de botão
 elif st.session_state.pagina == "formulario":
     pass # Este comando é obrigatório para não dar erro de sintaxe
@@ -4649,10 +4646,7 @@ if st.session_state.get("pagina") == "parecer":
                     dados_ia = []
                     total_ia_diario = 0
                     for ativ, info in pop_ia.items():
-                        t = info.get('tempo', info.get('tempo_estimado', 0))
-                        f = str(info.get('freq', 'DIÁRIA')).upper()
-                        impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
-                        total_ia_diario += impacto
+                        t, f = info['tempo'], info['freq'].upper()
                         imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
                         total_ia_diario += imp
                         dados_ia.append({
@@ -5272,9 +5266,3 @@ if st.session_state.get("pagina") == "parecer":
 
     if __name__ == "__main__":
         main()
-
-
-
-
-
-
