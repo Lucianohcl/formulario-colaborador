@@ -5491,6 +5491,7 @@ def aba_produtividade_inteligente():
                 del st.session_state.kpis_sessao
             st.session_state.ultimo_pop = arquivo_pop.name
 
+    # Defina as abas ANTES de qualquer verificação de arquivo
     t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
     with t1:
