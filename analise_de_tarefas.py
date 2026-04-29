@@ -5547,10 +5547,10 @@ def aba_produtividade_inteligente():
                             st.warning("⚠️ O relato e os arquivos PDF são obrigatórios.")
 
     with t2:
-        st.header("📊 Dashboard Executivo de Auditoria")
+        st.header("📊 Inteligência de Processos (KPIs)")
         
-        # Botão para forçar a atualização (importante para ler novos arquivos do Git)
-        if st.button("🔄 Sincronizar com Banco de Dados"):
+        # Botão para forçar a atualização
+        if st.button("🔄 Sincronizar Banco de Dados"):
             st.rerun()
 
         try:
@@ -5558,7 +5558,7 @@ def aba_produtividade_inteligente():
             repo = g.get_repo(REPO_NAME)
             
             # 1. BUSCA DOS DADOS NO GITHUB
-            with st.spinner("Extraindo inteligência do GitHub..."):
+            with st.spinner("Analisando indicadores..."):
                 contents = repo.get_contents("auditorias")
                 all_data = []
                 for content_file in contents:
@@ -5566,77 +5566,127 @@ def aba_produtividade_inteligente():
                         subdir_files = repo.get_contents(content_file.path)
                         for file in subdir_files:
                             if file.name.endswith(".json"):
-                                file_data = json.loads(file.decoded_content)
-                                all_data.append(file_data)
+                                all_data.append(json.loads(file.decoded_content))
 
             if all_data:
-                # Criamos o DataFrame bruto
-                df_raw = pd.DataFrame(all_data)
+                df_dash = pd.DataFrame(all_data)
                 
-                # --- AJUSTE ANTI-DUPLICIDADE ---
-                # Removemos duplicados do mesmo KPI, mantendo apenas o último enviado
-                df_global = df_raw.drop_duplicates(subset=['kpi_nome'], keep='last')
+                # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
+                # Isso permite ver o dashboard da empresa toda ou de alguém específico
+                lista_colabs = ["Todos"] + sorted(list(df_dash['colaborador'].unique()))
+                filtro_colab = st.selectbox("Filtrar análise por:", lista_colabs)
                 
-                # --- MÉTRICAS DE TOPO ---
+                if filtro_colab != "Todos":
+                    df_dash = df_dash[df_dash['colaborador'] == filtro_colab]
+
+                # --- MÉTRICAS DE DESEMPENHO ---
                 m1, m2, m3 = st.columns(3)
-                media_geral = df_global['percentual_alcance'].mean()
                 
-                m1.metric("Média de Conformidade", f"{media_geral:.1f}%")
-                m2.metric("Total de KPIs Únicos", len(df_global))
+                # Média Geral (Considerando apenas o último relato de cada KPI para o filtro atual)
+                df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
+                media_alcance = df_ultimos['percentual_alcance'].mean()
                 
-                # Métrica 3 mostra o total de arquivos e quantos foram filtrados
-                duplicados = len(df_raw) - len(df_global)
-                m3.metric("Relatos Processados", len(df_raw), delta=f"-{duplicados} duplicados" if duplicados > 0 else None, delta_color="inverse")
+                m1.metric("Eficiência Média", f"{media_alcance:.1f}%")
+                m2.metric("KPIs Auditados", len(df_ultimos))
+                
+                # Identifica qual KPI precisa de mais atenção (menor média)
+                pior_kpi_serie = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean()
+                pior_kpi_nome = pior_kpi_serie.idxmin()
+                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")
 
                 st.divider()
 
-                # --- GRÁFICOS LADO A LADO ---
+                # --- GRÁFICOS ---
                 col_esq, col_dir = st.columns(2)
 
                 with col_esq:
-                    st.subheader("Performance por KPI")
+                    st.subheader("Média por Indicador")
+                    # Agrupa por KPI para mostrar a saúde de cada processo
+                    df_kpi = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean().reset_index()
                     fig_bar = go.Figure(go.Bar(
-                        x=df_global['kpi_nome'], 
-                        y=df_global['percentual_alcance'],
-                        text=df_global['percentual_alcance'].apply(lambda x: f"{x}%"),
-                        textposition='auto',
-                        marker=dict(color=df_global['percentual_alcance'], colorscale='Blues')
+                        x=df_kpi['percentual_alcance'],
+                        y=df_kpi['kpi_nome'],
+                        orientation='h',
+                        text=df_kpi['percentual_alcance'].apply(lambda x: f"{x:.1f}%"),
+                        marker=dict(color='#1e3a8a')
                     ))
-                    fig_bar.update_layout(height=400, margin=dict(l=20, r=20, t=20, b=20))
+                    fig_bar.update_layout(height=400, margin=dict(l=20, r=20, t=30, b=20))
                     st.plotly_chart(fig_bar, use_container_width=True)
 
                 with col_dir:
-                    st.subheader("Distribuição de Resultados")
-                    fig_pie = go.Figure(go.Pie(
-                        labels=df_global['kpi_nome'], 
-                        values=df_global['percentual_alcance'],
-                        hole=.4
-                    ))
-                    fig_pie.update_layout(height=400, margin=dict(l=20, r=20, t=20, b=20))
+                    st.subheader("Volume de Auditorias")
+                    # Mostra quem mais está sendo auditado
+                    df_vol = df_dash['colaborador'].value_counts().reset_index()
+                    fig_pie = go.Figure(go.Pie(labels=df_vol['index'], values=df_vol['colaborador'], hole=.4))
+                    fig_pie.update_layout(height=400, margin=dict(l=20, r=20, t=30, b=20))
                     st.plotly_chart(fig_pie, use_container_width=True)
 
-                # --- TABELA DETALHADA ---
-                st.subheader("📋 Histórico de Auditoria (Dados Únicos)")
-                st.dataframe(
-                    df_global[['kpi_nome', 'relato_do_auditor', 'percentual_alcance']],
-                    use_container_width=True,
-                    column_config={
-                        "percentual_alcance": st.column_config.ProgressColumn(
-                            "Alcance %", format="%d%%", min_value=0, max_value=100
-                        ),
-                        "kpi_nome": "Indicador (KPI)",
-                        "relato_do_auditor": "Relato da Conformidade"
-                    }
-                )
+                # --- LISTA DE RELATOS RECENTES ---
+                st.subheader("🔍 Últimos Relatos do Campo")
+                st.table(df_dash[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
+
             else:
-                st.warning("⚠️ Nenhum dado encontrado no GitHub. Realize e salve uma auditoria primeiro.")
+                st.info("Sincronize os dados para carregar o dashboard.")
 
         except Exception as e:
-            st.error(f"Erro ao carregar Dashboard: {e}")
+            st.error(f"Erro no Dashboard T2: {e}")
 
     with t3:
-        st.header("🏆 Ranking")
-        st.table(pd.DataFrame([{"Nome": nome_colab, "Eficiência": f"{(total_m/480)*100:.1f}%" if arquivo_pop else "0%"}]))
+        st.header("🏆 Ranking Global de Produtividade")
+        
+        try:
+            g = Github(DB_TOKEN)
+            repo = g.get_repo(REPO_NAME)
+            contents = repo.get_contents("auditorias")
+            all_data = []
+
+            # 1. BUSCA TODOS OS ARQUIVOS
+            with st.spinner("Calculando posições..."):
+                for content_file in contents:
+                    if content_file.type == "dir":
+                        subdir_files = repo.get_contents(content_file.path)
+                        for file in subdir_files:
+                            if file.name.endswith(".json"):
+                                data = json.loads(file.decoded_content)
+                                all_data.append(data)
+
+            if all_data:
+                df_ranking = pd.DataFrame(all_data)
+
+                # --- CORREÇÃO DA CHAVE AQUI ---
+                # Usando 'colaborador' (como sai no seu JSON) e 'percentual_alcance'
+                # Se o campo de nota no seu JSON tiver outro nome, mude 'percentual_alcance' abaixo
+                ranking = df_ranking.groupby("colaborador")["percentual_alcance"].mean().reset_index()
+                
+                # Ordena do melhor para o pior
+                ranking = ranking.sort_values(by="percentual_alcance", ascending=False).reset_index(drop=True)
+                
+                # Ajuste de exibição
+                ranking.index = ranking.index + 1
+                ranking.columns = ["Colaborador", "Média de Eficiência"]
+
+                # --- EXIBIÇÃO DO PÓDIO ---
+                c1, c2, c3 = st.columns(3)
+                if len(ranking) >= 1:
+                    c1.metric("🥇 1º", ranking.iloc[0]["Colaborador"], f"{ranking.iloc[0]['Média de Eficiência']:.1f}%")
+                if len(ranking) >= 2:
+                    c2.metric("🥈 2º", ranking.iloc[1]["Colaborador"], f"{ranking.iloc[1]['Média de Eficiência']:.1f}%")
+                if len(ranking) >= 3:
+                    c3.metric("🥉 3º", ranking.iloc[2]["Colaborador"], f"{ranking.iloc[2]['Média de Eficiência']:.1f}%")
+
+                st.divider()
+
+                # Tabela estilizada
+                st.subheader("Tabela de Classificação")
+                st.dataframe(
+                    ranking.style.format({"Média de Eficiência": "{:.1f}%"}),
+                    use_container_width=True
+                )
+            else:
+                st.info("Nenhuma auditoria encontrada para gerar o ranking.")
+
+        except Exception as e:
+            st.error(f"Erro ao processar ranking: {e}")
 
 if __name__ == "__main__":
     aba_produtividade_inteligente()
