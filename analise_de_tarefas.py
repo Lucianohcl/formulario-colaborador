@@ -5279,167 +5279,163 @@ import plotly.graph_objects as go
 import json
 import os
 from openai import OpenAI
+from PyPDF2 import PdfReader
 
-# 1. CONFIGURAÇÃO INICIAL E CLIENTE
+# 1. CONFIGURAÇÃO INICIAL
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # ==============================================================================
-# MOTOR DE INTELIGÊNCIA (KPIs & AUDITORIA FORENSE)
+# MOTOR DE INTELIGÊNCIA (LEITURA DE PDF E AUDITORIA)
 # ==============================================================================
 
-@st.cache_data(show_spinner="Definindo KPIs Estratégicos...")
-def definir_kpis_inteligentes_pop(pop_dict):
-    """Gera KPIs baseados no POP estático carregado do JSON"""
-    prompt = f"Com base neste POP: {json.dumps(pop_dict)}, defina 5 KPIs críticos em JSON: nome, benchmark (int), legenda, evidencia."
+def extrair_texto_pdf(arquivo_pdf):
+    """Extrai o texto bruto do PDF enviado"""
+    try:
+        reader = PdfReader(arquivo_pdf)
+        texto = ""
+        for page in reader.pages:
+            content = page.extract_text()
+            if content: texto += content
+        return texto
+    except Exception as e:
+        st.error(f"Erro ao ler PDF: {e}")
+        return None
+
+@st.cache_data(show_spinner="IA extraindo estrutura do POP...")
+def estruturar_pop_via_ia(texto_pdf):
+    """A IA lê o texto do PDF e transforma em uma tabela de atividades funcional"""
+    prompt = f"""
+    Analise o texto deste POP e extraia as atividades principais em formato JSON.
+    Para cada atividade, determine: nome, tempo (em minutos, apenas número), freq (DIÁRIA, SEMANAL ou MENSAL) e meta.
+    Texto: {texto_pdf[:5000]} 
+    Retorne no formato: {{"atividades": [{{"nome": "...", "tempo": 30, "freq": "DIÁRIA", "meta": "..."}}]}}
+    """
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "system", "content": "CPO - Chief Productivity Officer técnico e analítico."},
+        messages=[{"role": "system", "content": "Especialista em Gestão de Processos. Responda apenas com JSON."},
                  {"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
 
-def auditar_performance_ia(kpi, relato, arquivos_nomes):
-    """Auditoria pericial de um relato contra um KPI específico"""
-    prompt = f"Audite: KPI {kpi['nome']}, Relato: {relato}, Provas: {arquivos_nomes}. Retorne JSON: realizado (0-100), parecer, status."
+def auditar_performance_ia(kpi_nome, meta, relato, contexto_pop):
+    """Auditoria forense comparando relato humano com a regra do PDF"""
+    prompt = f"""
+    Contexto do POP: {contexto_pop[:2000]}
+    KPI sendo auditado: {kpi_nome} (Meta: {meta})
+    Relato de execução do colaborador: {relato}
+    
+    Retorne um JSON com: 'realizado' (0-100), 'parecer' (justificativa técnica) e 'status'.
+    """
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "user", "content": "Auditor Forense de Processos."},
+        messages=[{"role": "system", "content": "Auditor Forense de Operações. Responda apenas com JSON."},
                  {"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
 
 # ==============================================================================
-# CONSTRUTORES DE INTERFACE (HTML/RELATÓRIOS)
-# ==============================================================================
-
-def gerar_html_executivo(colaborador, df_kpi, parecer_geral):
-    style = "<style>body { font-family: sans-serif; padding: 20px; } .card { border: 1px solid #ccc; padding: 20px; border-radius: 10px; } .header { background: #1e3a8a; color: white; padding: 10px; }</style>"
-    html = f"{style}<div class='card'><div class='header'><h1>Laudo: {colaborador}</h1></div>"
-    for _, row in df_kpi.iterrows():
-        html += f"<p><b>{row['KPI']}</b>: {row['Real']}% (Meta: {row['Meta']}%)</p>"
-    html += f"<div style='margin-top:20px; border-top: 2px solid #1e3a8a;'><h3>Parecer Pericial</h3>{parecer_geral}</div></div>"
-    return html
-
-# ==============================================================================
-# INTERFACE PRINCIPAL - ABA AUDITORIA E PRODUTIVIDADE
+# INTERFACE PRINCIPAL (TABS)
 # ==============================================================================
 
 def aba_produtividade_inteligente():
-    st.title("🛡️ NetExame: Auditoria Forense Estratégica")
+    st.title("🛡️ NetExame: Auditoria Forense via POP (PDF)")
     st.markdown("---")
     
-    t1, t2, t3, t4 = st.tabs(["📥 Entrada & Auditoria", "📊 Dashboard Executivo", "🏆 Ranking Global", "📖 Manual"])
+    # 1. BARRA LATERAL: FONTE DA VERDADE (O PDF)
+    st.sidebar.header("📑 Documento Mestre")
+    arquivo_pop = st.sidebar.file_uploader("Upload do POP Oficial (PDF)", type=["pdf"], key="upload_pop_pericial")
+
+    if not arquivo_pop:
+        st.info("💡 Aguardando upload do documento POP em PDF na barra lateral para iniciar a análise.")
+        return
+
+    # Extração de dados do PDF
+    texto_bruto_pop = extrair_texto_pdf(arquivo_pop)
+    pop_estruturado = estruturar_pop_via_ia(texto_bruto_pop)
+
+    t1, t2, t3, t4 = st.tabs(["📥 Auditoria", "📊 Dashboard", "🏆 Ranking", "📖 Manual"])
 
     with t1:
+        # Seleção do Colaborador (Para vincular a auditoria ao nome)
         caminho_dados = "dados"
-        if not os.path.exists(caminho_dados):
-            st.error("Pasta 'dados' não encontrada.")
-            return
+        if os.path.exists(caminho_dados):
+            arquivos_json = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+            colab_file = st.selectbox("🎯 Vincular Auditoria ao Colaborador:", arquivos_json, key="sel_colab_pericia")
+            
+            with open(os.path.join(caminho_dados, colab_file), 'r', encoding='utf-8') as f:
+                colab_data = json.load(f)
+            nome_colab = colab_data['campos'].get('nome', 'Alvo')
+        else:
+            nome_colab = "Colaborador Genérico"
 
-        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+        st.subheader(f"📋 POP Extraído: {arquivo_pop.name}")
         
-        if arquivos:
-            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
+        # Exibição do POP extraído da IA
+        df_pop = pd.DataFrame(pop_estruturado['atividades'])
+        
+        # Cálculo de Carga Horária (Baseado no PDF)
+        total_min = 0
+        for _, row in df_pop.iterrows():
+            t = row['tempo']
+            f = row['freq'].upper()
+            total_min += t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
             
-            with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
-                colab = json.load(f)
-            
-            nome_colab = colab['campos'].get('nome_colaborador', colab['campos'].get('nome', 'Alvo'))
-            
-            # --------------------------------------------------------------
-            # CARGA AUTOMÁTICA DO POP (SEM IA NA GERAÇÃO)
-            # --------------------------------------------------------------
-            pop_ia = colab.get('pop_ia')
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Carga Alvo", "480 min")
+        c2.metric("Carga POP (PDF)", f"{total_min:.1f} min")
+        c3.metric("Eficiência Teórica", f"{(total_min/480)*100:.1f}%")
+        
+        st.table(df_pop)
 
-            if pop_ia:
-                st.header(f"📚 POP Padrão: {nome_colab} (Carga Alvo 480m)")
-                dados_ia = []
-                total_ia_diario = 0
-                
-                for ativ, info in pop_ia.items():
-                    # Suporta 'tempo' ou 'tempo_estimado'
-                    t = info.get('tempo', info.get('tempo_estimado', 0))
-                    f = str(info.get('freq', 'DIÁRIA')).upper()
-                    
-                    # Cálculo de Impacto Diário (Lógica Única - Sem Duplicação)
-                    imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                    total_ia_diario += imp
-                    
-                    dados_ia.append({
-                        "Atividade": ativ,
-                        "Freq": f,
-                        "Tempo Base": f"{t}m",
-                        "Impacto Diário": f"{imp:.1f}m",
-                        "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                        "Meta Auditável": info.get('meta', 'N/A')
-                    })
-                
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Carga Alvo", "480 min")
-                c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                
-                st.table(pd.DataFrame(dados_ia))
-
-                # --------------------------------------------------------------
-                # START DA INTELIGÊNCIA: GERAÇÃO DE KPIs E AUDITORIA
-                # --------------------------------------------------------------
-                st.markdown("---")
-                if st.button("🚀 Gerar KPIs Estratégicos e Iniciar Auditoria"):
-                    res_kpis = definir_kpis_inteligentes_pop(pop_ia)
-                    st.session_state['kpis_pop'] = res_kpis['kpis']
-                    st.rerun()
-
-                if 'kpis_pop' in st.session_state:
-                    st.subheader("🔍 Auditoria de Performance (Cérebro Ativado)")
-                    for i, kpi in enumerate(st.session_state['kpis_pop']):
-                        with st.expander(f"KPI: {kpi['nome']}"):
-                            col_a, col_b = st.columns([2, 1])
-                            relato = col_a.text_area("Relato de Execução/Provas", key=f"rel_{i}")
-                            col_b.info(f"**Benchmark:** {kpi['benchmark']}%")
-                            
-                            if st.button("Auditar", key=f"btn_{i}"):
-                                res = auditar_performance_ia(kpi, relato, "Arquivo_Pericial")
-                                st.session_state[f"res_{i}"] = {
-                                    "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
-                                    "Real": res['realizado'], "Parecer": res['parecer']
-                                }
-                                st.success(f"Nota Pericial: {res['realizado']}%")
-            else:
-                st.warning("Aguardando inserção de 'pop_ia' no arquivo JSON para auditoria.")
+        st.markdown("---")
+        st.subheader("🕵️ Iniciar Auditoria Pericial")
+        
+        for i, row in df_pop.iterrows():
+            with st.expander(f"KPI: {row['nome']} (Meta: {row['meta']})"):
+                relato = st.text_area("Descreva a execução ou cole evidências:", key=f"relato_{i}")
+                if st.button("Auditar Atividade", key=f"btn_aud_{i}"):
+                    res = auditar_performance_ia(row['nome'], row['meta'], relato, texto_bruto_pop)
+                    st.session_state[f"auditoria_{i}"] = {
+                        "Atividade": row['nome'], 
+                        "Meta": 100, 
+                        "Real": res['realizado'], 
+                        "Parecer": res['parecer']
+                    }
+                    st.success(f"Nota: {res['realizado']}%")
+                    st.info(f"**Parecer:** {res['parecer']}")
 
     with t2:
-        if 'res_0' in st.session_state:
-            st.header(f"📊 Dashboard Executivo: {nome_colab}")
-            resumos = [st.session_state[f"res_{i}"] for i in range(10) if f"res_{i}" in st.session_state]
-            if resumos:
-                df_res = pd.DataFrame(resumos)
-                fig = go.Figure([
-                    go.Bar(x=df_res['KPI'], y=df_res['Meta'], name='Meta', marker_color='#1e3a8a'),
-                    go.Bar(x=df_res['KPI'], y=df_res['Real'], name='Realizado', marker_color='#ef4444')
-                ])
-                st.plotly_chart(fig)
-                
-                html_laudo = gerar_html_executivo(nome_colab, df_res, "Auditoria técnica concluída com base em evidências.")
-                st.download_button("📥 Baixar Laudo de Eficiência", html_laudo, file_name=f"Laudo_{nome_colab}.html", mime="text/html")
+        if any(key.startswith("auditoria_") for key in st.session_state):
+            st.header(f"📊 Performance de {nome_colab}")
+            resultados = [st.session_state[k] for k in st.session_state if k.startswith("auditoria_")]
+            df_res = pd.DataFrame(resultados)
+            
+            fig = go.Figure([
+                go.Bar(x=df_res['Atividade'], y=df_res['Real'], name='Realizado', marker_color='#ef4444'),
+                go.Scatter(x=df_res['Atividade'], y=[100]*len(df_res), name='Meta', mode='lines', line=dict(color='blue', dash='dash'))
+            ])
+            st.plotly_chart(fig)
+            
+            st.table(df_res[['Atividade', 'Real', 'Parecer']])
+        else:
+            st.warning("Realize a auditoria na Aba 1 para visualizar o Dashboard.")
 
     with t3:
-        st.header("🏆 Ranking Global de Performance")
-        st.info("O ranking consolida os resultados auditados nesta sessão.")
-        # Simulação de ranking - pode ser conectado a um DB real
-        st.table(pd.DataFrame([{"Nome": nome_colab, "Eficiência": 88}, {"Nome": "Pedro", "Eficiência": 92}]))
+        st.header("🏆 Ranking Global")
+        st.info("Ranking baseado na média das auditorias realizadas.")
+        # Simulação
+        st.table(pd.DataFrame([{"Nome": nome_colab, "Score": "Auditado"}]))
 
     with t4:
         st.header("📖 Manual de Governança")
         st.markdown("""
-        1. **POP:** Carregado estaticamente do JSON para economia de recursos.
-        2. **KPIs:** Gerados via GPT-4o analisando a complexidade do POP.
-        3. **Auditoria:** Confronto de relatos humanos contra métricas técnicas.
+        1. **Fonte de Dados:** 100% via Upload de PDF.
+        2. **Inteligência:** O GPT-4o lê o PDF, cria as regras e audita os relatos.
+        3. **Processo:** Selecione o colaborador, audite as tarefas extraídas do PDF e gere o laudo.
         """)
 
-# Execução
 if __name__ == "__main__":
     aba_produtividade_inteligente()
 
