@@ -5521,14 +5521,14 @@ def aba_produtividade_inteligente():
                         t = info.get('tempo', info.get('tempo_estimado', 0))
                         f = str(info.get('freq', 'DIÁRIA')).upper()
                         impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
-                        total_ia_diario += impacto
                         
+                        total_ia_diario += impacto
                         dados_ia.append({
                             "Atividade": ativ,
                             "Freq": f,
                             "Tempo Base": f"{t}m",
                             "Impacto Diário": f"{impacto:.1f}m",
-                            "Meta": info.get('meta', '100%')
+                            "Meta": info.get('meta', 'Meta não definida')
                         })
                 
                 c1, c2 = st.columns(2)
