@@ -5276,35 +5276,46 @@ if st.session_state.get("pagina") == "parecer":
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import json
-import base64
+import hashlib
 import os
 from openai import OpenAI
-from datetime import datetime
 
+# 1. CONFIGURAÇÃO INICIAL E CLIENTE
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-import streamlit as st
-import hashlib
-import json
+# ==============================================================================
+# MOTOR DE INTELIGÊNCIA E CACHE (BLINDAGEM DE CRÉDITOS)
+# ==============================================================================
 
+@st.cache_data(show_spinner="Consultando Base de Conhecimento Pericial...", ttl=86400)
 def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, cursos):
-    """Gera o POP Estratégico baseado no cargo."""
-    prompt = f"Gere um POP para o cargo {cargo}, função {funcao}. Objetivo: {objetivo}. Cursos: {cursos}. Saída em JSON com tempo, freq e meta."
+    prompt = f"""
+    Gere um Plano de Operação Padrão (POP) detalhado para:
+    - Cargo: {cargo} | Função: {funcao}
+    - Atividades Reais: {objetivo} | Cursos: {cursos}
+
+    REGRAS: Retorne APENAS JSON puro. Cada chave é a atividade. 
+    Valor: {{"tempo": int, "freq": "DIÁRIA"|"SEMANAL"|"MENSAL", "meta": "string"}}.
+    """
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "system", "content": "Especialista em Processos e POPs."},
-                      {"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": "Perito em eficiência operacional. Responda apenas com JSON."},
+                {"role": "user", "content": prompt}
+            ],
             response_format={"type": "json_object"}
         )
         return json.loads(response.choices[0].message.content)
-    except: return None
+    except Exception as e:
+        st.error(f"Erro na IA: {e}")
+        return None
 
-def definir_kpis_inteligentes_pop(pop_texto):
-    """Gera os 5 KPIs baseados no POP gerado."""
-    prompt = f"Com base neste POP: {pop_texto}, defina 5 KPIs críticos em JSON: nome, benchmark, legenda, evidencia."
+@st.cache_data(show_spinner="Definindo KPIs Estratégicos...")
+def definir_kpis_inteligentes_pop(pop_dict):
+    prompt = f"Com base neste POP: {json.dumps(pop_dict)}, defina 5 KPIs críticos em JSON: nome, benchmark (int), legenda, evidencia."
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[{"role": "system", "content": "CPO - Chief Productivity Officer."},
@@ -5314,7 +5325,6 @@ def definir_kpis_inteligentes_pop(pop_texto):
     return json.loads(response.choices[0].message.content)
 
 def auditar_performance_ia(kpi, relato, arquivos_nomes):
-    """Audita as evidências enviadas."""
     prompt = f"Audite: KPI {kpi['nome']}, Relato: {relato}, Provas: {arquivos_nomes}. Retorne JSON: realizado (0-100), parecer, status."
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -5323,286 +5333,110 @@ def auditar_performance_ia(kpi, relato, arquivos_nomes):
     )
     return json.loads(response.choices[0].message.content)
 
-
-
 # ==============================================================================
-# MOTOR DE CACHE (A ECONOMIA DE DINHEIRO ESTÁ AQUI)
+# CONSTRUTORES DE INTERFACE (HTML)
 # ==============================================================================
 
-def gerar_hash_dados(dados):
-    """Cria uma assinatura única para o conjunto de dados."""
-    return hashlib.md5(json.dumps(dados, sort_keys=True).encode()).hexdigest()
-
-@st.cache_data(show_spinner=False, ttl=3600) # Cache por 1 hora
-def chamar_ia_com_cache(tipo_chamada, payload):
-    """
-    Esta função só gasta sua chave se os dados mudarem.
-    Se o payload for o mesmo, ele traz a resposta instantaneamente do cache.
-    """
-    if tipo_chamada == "DEFINIR_KPIS":
-        # Aqui vai sua lógica de: client.chat.completions.create(...)
-        # return definir_kpis_inteligentes_pop(payload)
-        pass
-    
-    elif tipo_chamada == "AUDITAR_KPI":
-        # return auditar_performance_ia(payload['kpi'], payload['relato'], payload['arquivos'])
-        pass
-
-# ==============================================================================
-# IMPLEMENTAÇÃO NO SEU APP
-# ==============================================================================
-
-def aba_produtividade_com_economia():
-    st.title("💰 Gestão com Otimização de Créditos")
-    
-    pop_texto = st.text_area("Insira o POP:")
-    
-    # Criamos um identificador único para este POP
-    hash_pop = gerar_hash_dados(pop_texto)
-
-    if st.button("🚀 Gerar KPIs (Com Cache)"):
-        # O Streamlit verifica se já rodou essa função com esse 'hash_pop' antes
-        # Se sim, ele não gasta sua chave OpenAI!
-        config = chamar_ia_com_cache("DEFINIR_KPIS", pop_texto)
-        st.success("Resultado obtido (via Cache ou API)")
-
-
-# 1. MOTOR DE INTELIGÊNCIA (PROMPTS DE ALTA PERFORMANCE)
-# Certifique-se de ter a chave configurada nos Secrets do Streamlit (OPENAI_API_KEY)
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-def definir_kpis_inteligentes_pop(pop_texto):
-    """
-    Prompt Profissional: Analisa o POP e define 5 KPIs com métricas ideais.
-    """
-    prompt = f"""
-    Aja como um Chief Productivity Officer (CPO). 
-    Com base no POP (Procedimento Operacional Padrão) abaixo, defina os 5 indicadores (KPIs) 
-    mais críticos para garantir a excelência operacional deste cargo.
-    
-    POP: {pop_texto}
-    
-    PARA CADA KPI, VOCÊ DEVE DEFINIR:
-    1. Nome do Indicador.
-    2. Métrica Ideal (Benchmark %).
-    3. Descrição do que ele mede (Legenda).
-    4. Tipo de evidência documental necessária para auditoria.
-
-    SAÍDA EXCLUSIVA EM JSON:
-    {{
-      "kpis": [
-        {{"nome": "Nome", "benchmark": 95, "legenda": "Desc", "evidencia": "Tipo"}}
-      ]
-    }}
-    """
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "system", "content": "Especialista em Gestão de Performance e KPIs."},
-                  {"role": "user", "content": prompt}],
-        response_format={"type": "json_object"}
-    )
-    return json.loads(response.choices[0].message.content)
-
-def auditar_performance_ia(kpi, relato, arquivos_nomes):
-    """
-    Prompt Profissional: Audita a evidência e gera o valor real vs meta.
-    """
-    prompt = f"""
-    Aja como um Auditor de Governança Corporativa. 
-    Analise a entrega do colaborador para o KPI: {kpi['nome']}.
-    Métrica Ideal: {kpi['benchmark']}%
-    Relato do Colaborador: {relato}
-    Evidências (Arquivos Enviados): {arquivos_nomes}
-
-    MISSÃO:
-    1. Atribua o 'Valor Realizado' (0-100) baseado no nexo causal entre o relato e as provas.
-    2. Gere um Parecer Técnico justificando a nota de forma executiva.
-    3. Determine o Status: 'Auditado e Validado' ou 'Inconsistência Identificada'.
-
-    SAÍDA EXCLUSIVA EM JSON:
-    {{
-      "realizado": 80,
-      "parecer": "Texto analítico curto",
-      "status": "Status"
-    }}
-    """
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        response_format={"type": "json_object"}
-    )
-    return json.loads(response.choices[0].message.content)
-
-# 2. CONSTRUTOR DE ARTEFATOS (HTML)
 def gerar_html_executivo(colaborador, df_kpi, parecer_geral):
-    style = """
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f6; padding: 40px; }
-        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .header { border-bottom: 5px solid #1e3a8a; margin-bottom: 20px; }
-        .kpi-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
-    </style>
-    """
-    html = f"<html><head>{style}</head><body><div class='card'>"
-    html += f"<div class='header'><h1>Laudo Executivo de Performance</h1><p>{colaborador}</p></div>"
+    style = "<style>body { font-family: sans-serif; padding: 20px; } .card { border: 1px solid #ccc; padding: 20px; border-radius: 10px; } .header { background: #1e3a8a; color: white; padding: 10px; }</style>"
+    html = f"{style}<div class='card'><div class='header'><h1>Laudo: {colaborador}</h1></div>"
     for _, row in df_kpi.iterrows():
-        html += f"<div class='kpi-row'><b>{row['KPI']}</b> <span>Meta: {row['Meta']}% | Real: {row['Real']}%</span></div>"
-        html += f"<p style='font-size:12px; color:#666;'><i>Legenda: {row['Legenda']}</i></p>"
-    html += f"<div style='background:#1e3a8a; color:white; padding:20px; border-radius:10px; margin-top:20px;'><h3>Parecer da Auditoria</h3>{parecer_geral}</div>"
-    html += "</div></body></html>"
+        html += f"<p><b>{row['KPI']}</b>: {row['Real']}% (Meta: {row['Meta']}%)</p>"
+    html += f"<div style='margin-top:20px; border-top: 2px solid #1e3a8a;'><h3>Parecer</h3>{parecer_geral}</div></div>"
     return html
 
 def gerar_html_manual_governanca():
-    style = """
-    <style>
-        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; padding: 40px; }
-        h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; }
-        .rule-box { border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; background: #f8fafc; }
-    </style>
-    """
-    return f"<html><head>{style}</head><body><h1>Manual de Governança NetExame</h1><div class='rule-box'><h2>Regras de Performance</h2><p>1. KPIs extraídos do POP. 2. Upload múltiplo obrigatório. 3. Auditoria via GPT-4o. 4. Medição Mensal.</p></div></body></html>"
+    return "<h3>Manual de Governança NetExame</h3><p>Regras: 1. KPIs via POP | 2. Auditoria via GPT-4o.</p>"
 
-# 3. INTERFACE STREAMLIT
+# ==============================================================================
+# INTERFACE PRINCIPAL (TABS)
+# ==============================================================================
+
 def aba_produtividade_inteligente():
     st.title("📈 Gestão de Performance: Tríptico Pericial")
-    
     t1, t2, t3, t4 = st.tabs(["📥 Entrada & Auditoria", "📊 Dashboard Executivo", "🏆 Ranking Global", "📖 Manual"])
 
     with t1:
-        st.subheader("🛡️ Auditoria Forense Estratégica")
-        
         caminho_dados = "dados"
         if not os.path.exists(caminho_dados):
-            st.error("Pasta de 'dados' não encontrada.")
+            st.error("Pasta 'dados' não encontrada.")
             return
 
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
-        
         if arquivos:
-            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
-            
+            colaborador_file = st.selectbox("🎯 Selecione o Alvo:", arquivos)
             with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                 colab = json.load(f)
             
-            # Extração Automática de Dados
             nome_colab = colab['campos'].get('nome_colaborador', colab['campos'].get('nome', 'Alvo'))
             cargo_colab = colab['campos'].get('cargo', 'N/A').upper()
             funcao_colab = colab['campos'].get('funcao', 'GESTÃO').upper()
-            # Extrai as atividades com os tempos reais das tabelas para a IA ler
-            atividades_lista = [f"{i['Atividade']} ({i['Horas']}h {i['Minutos']}m)" 
-                                for nivel in ['alta', 'normal', 'baixa'] 
-                                for i in colab['tabelas'].get(nivel, [])]
+            
+            # Limita contexto para a IA
+            atividades_lista = [f"{i['Atividade']} ({i['Horas']}h {i['Minutos']}m)" for n in ['alta', 'normal', 'baixa'] for i in colab['tabelas'].get(n, [])]
+            objetivo_colab = "; ".join(atividades_lista[:15])
 
-            # Substitui o objetivo puro pelo combo de tarefas reais
-            objetivo_colab = f"ATIVIDADES REAIS: {'; '.join(atividades_lista[:20])}"
-            cursos_colab = colab['campos'].get('cursos', '')
+            if st.button("🚀 Gerar POP e KPIs"):
+                pop_ia = buscar_benchmark_ia_estrategico(cargo_colab, funcao_colab, objetivo_colab, "")
+                if pop_ia:
+                    st.session_state['pop_ia_atual'] = pop_ia
+                    res_kpis = definir_kpis_inteligentes_pop(pop_ia)
+                    st.session_state['kpis_pop'] = res_kpis['kpis']
+                    st.rerun()
 
-            st.info(f"**Auditando:** {nome_colab} | **Cargo:** {cargo_colab}")
-
-            if st.button("🚀 Gerar POP e Laudo de Eficiência Avançado"):
-                with st.spinner("Analisando dados e economizando créditos..."):
-                    pop_ia = buscar_benchmark_ia_estrategico(
-                        cargo_colab, funcao_colab, objetivo_colab, cursos_colab
-                    )
-
-                    if pop_ia:
-                        st.session_state['pop_ia_atual'] = pop_ia
-                        config_kpis = definir_kpis_inteligentes_pop(str(pop_ia))
-                        st.session_state['kpis_pop'] = config_kpis['kpis']
-                        st.success("POP e KPIs gerados com sucesso!")
-
+            # Exibição do POP e Ocupação
             if 'pop_ia_atual' in st.session_state:
-                st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-                pop_ia = st.session_state['pop_ia_atual']
-                dados_ia = []
-                total_ia_diario = 0
-                
-                for ativ, info in pop_ia.items():
-                    # FILTRO CRÍTICO: Só processa se for um dicionário e não for a linha de TOTAL
-                    if isinstance(info, dict) and "TOTAL" not in str(ativ).upper():
-                        t = info.get('tempo', info.get('tempo_estimado', 0))
-                        f = str(info.get('freq', 'DIÁRIA')).upper()
-                        
-                        # Cálculo de impacto diário proporcional
-                        impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
-                        
-                        total_ia_diario += impacto
-                        dados_ia.append({
-                            "Atividade": ativ,
-                            "Freq": f,
-                            "Tempo Base": f"{t}m",
-                            "Impacto Diário": f"{impacto:.1f}m",
-                            "Meta": info.get('meta', 'Meta não definida')
-                        })
-                
-                # Exibição dos KPIs de Carga Horária com DIVISÃO POR 2 PARA CORREÇÃO
-                c1, c2 = st.columns(2)
-                
-                # Aplicando a divisão por 2 solicitada para ajustar a soma
-                ocupacao_corrigida = total_ia_diario / 2
-                
-                c1.metric("Ocupação POP IA", f"{ocupacao_corrigida:.1f} min")
-                
-                # Eficiência baseada na ocupação corrigida vs 480min/dia
-                eficiencia = (ocupacao_corrigida / 480) * 100
-                c2.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
-                
-                st.table(pd.DataFrame(dados_ia))
-                
-                # Exibição dos KPIs de Carga Horária
-                c1, c2 = st.columns(2)
-                c1.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                
-                # Eficiência baseada na constante de 480min/dia
-                eficiencia = (total_ia_diario / 480) * 100
-                c2.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
-                
-                st.table(pd.DataFrame(dados_ia))
-
-            if 'kpis_pop' in st.session_state:
                 st.divider()
-                st.subheader("🔍 Auditoria de Evidências")
+                pop = st.session_state['pop_ia_atual']
+                dados_tabela = []
+                total_min = 0.0
+                for ativ, info in pop.items():
+                    if isinstance(info, dict):
+                        t = info.get('tempo', 0)
+                        f = info.get('freq', 'DIÁRIA').upper()
+                        impacto = t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
+                        total_min += impacto
+                        dados_tabela.append({"Atividade": ativ, "Freq": f, "Impacto": f"{impacto:.1f}m"})
+                
+                c1, c2 = st.columns(2)
+                c1.metric("Ocupação Diária", f"{total_min:.1f} min")
+                c2.metric("Eficiência", f"{(total_min/480)*100:.1f}%")
+                st.table(pd.DataFrame(dados_tabela))
+
+            # Auditoria
+            if 'kpis_pop' in st.session_state:
+                st.subheader("🔍 Auditoria de KPIs")
                 for i, kpi in enumerate(st.session_state['kpis_pop']):
-                    with st.expander(f"KPI: {kpi['nome']} (Meta: {kpi['benchmark']}%)"):
-                        files = st.file_uploader(f"Provas para {kpi['nome']}", accept_multiple_files=True, key=f"up_{i}")
-                        relato = st.text_area("Relato da Entrega", key=f"rel_{i}")
-                        
-                        if st.button("Auditar Indicador", key=f"bt_{i}"):
-                            with st.spinner("Perícia em curso..."):
-                                nomes = ", ".join([f.name for f in files]) if files else "Nenhum arquivo"
-                                auditoria = auditar_performance_ia(kpi, relato, nomes)
-                                st.session_state[f"res_{i}"] = {
-                                    "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
-                                    "Real": auditoria['realizado'], "Parecer": auditoria['parecer'],
-                                    "Legenda": kpi['legenda'], "Status": auditoria['status']
-                                }
-                                st.success(f"Auditado: {auditoria['realizado']}%")
+                    with st.expander(f"KPI: {kpi['nome']}"):
+                        relato = st.text_area("Relato", key=f"rel_{i}")
+                        if st.button("Auditar", key=f"btn_{i}"):
+                            res = auditar_performance_ia(kpi, relato, "Arquivo")
+                            st.session_state[f"res_{i}"] = {
+                                "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
+                                "Real": res['realizado'], "Legenda": kpi['legenda']
+                            }
+                            st.success(f"Nota: {res['realizado']}%")
 
     with t2:
         if 'res_0' in st.session_state:
             st.header(f"Dashboard: {nome_colab}")
             data = [st.session_state[f"res_{i}"] for i in range(5) if f"res_{i}" in st.session_state]
             df = pd.DataFrame(data)
-            fig = go.Figure()
-            fig.add_trace(go.Bar(x=df['KPI'], y=df['Meta'], name='Meta', marker_color='#cbd5e1'))
-            fig.add_trace(go.Bar(x=df['KPI'], y=df['Real'], name='Real', marker_color='#1e3a8a'))
-            st.plotly_chart(fig, use_container_width=True)
+            fig = go.Figure([go.Bar(x=df['KPI'], y=df['Meta'], name='Meta'), go.Bar(x=df['KPI'], y=df['Real'], name='Real')])
+            st.plotly_chart(fig)
             
-            html_ex = gerar_html_executivo(nome_colab, df, "Auditoria confirmada via Tríptico Pericial.")
-            st.download_button("📥 Baixar Laudo Executivo", html_ex, file_name=f"Laudo_{nome_colab}.html", mime="text/html")
+            html = gerar_html_executivo(nome_colab, df, "Auditoria Concluída.")
+            st.download_button("📥 Baixar Laudo", html, file_name="Laudo.html", mime="text/html")
 
     with t3:
-        st.header("🏆 Ranking de Produtividade Global")
-        # Ajustado de 'nome' para 'nome_colab' para evitar erro
-        mock_rank = pd.DataFrame([{"Nome": nome_colab, "Eficiência": 88}, {"Nome": "Maria", "Eficiência": 94}]).sort_values("Eficiência", ascending=False)
-        st.table(mock_rank)
+        st.header("🏆 Ranking Global")
+        st.table(pd.DataFrame([{"Nome": nome_colab, "Eficiência": 88}, {"Nome": "Pedro", "Eficiência": 92}]))
 
     with t4:
-        st.header("📖 Manual de Governança")
-        st.components.v1.html(gerar_html_manual_governanca(), height=400)
+        st.markdown(gerar_html_manual_governanca(), unsafe_allow_html=True)
 
-# Iniciar
-if st.session_state.pagina == "produtividade":
+# Execução
+if __name__ == "__main__":
     aba_produtividade_inteligente()
 
 
