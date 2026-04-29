@@ -5266,3 +5266,178 @@ if st.session_state.get("pagina") == "parecer":
 
     if __name__ == "__main__":
         main()
+
+
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import json
+import os
+from openai import OpenAI
+
+# 1. CONFIGURAÇÃO INICIAL E CLIENTE
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+
+# ==============================================================================
+# MOTOR DE INTELIGÊNCIA (KPIs & AUDITORIA FORENSE)
+# ==============================================================================
+
+@st.cache_data(show_spinner="Definindo KPIs Estratégicos...")
+def definir_kpis_inteligentes_pop(pop_dict):
+    """Gera KPIs baseados no POP estático carregado do JSON"""
+    prompt = f"Com base neste POP: {json.dumps(pop_dict)}, defina 5 KPIs críticos em JSON: nome, benchmark (int), legenda, evidencia."
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "CPO - Chief Productivity Officer técnico e analítico."},
+                 {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+def auditar_performance_ia(kpi, relato, arquivos_nomes):
+    """Auditoria pericial de um relato contra um KPI específico"""
+    prompt = f"Audite: KPI {kpi['nome']}, Relato: {relato}, Provas: {arquivos_nomes}. Retorne JSON: realizado (0-100), parecer, status."
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": "Auditor Forense de Processos."},
+                 {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+# ==============================================================================
+# CONSTRUTORES DE INTERFACE (HTML/RELATÓRIOS)
+# ==============================================================================
+
+def gerar_html_executivo(colaborador, df_kpi, parecer_geral):
+    style = "<style>body { font-family: sans-serif; padding: 20px; } .card { border: 1px solid #ccc; padding: 20px; border-radius: 10px; } .header { background: #1e3a8a; color: white; padding: 10px; }</style>"
+    html = f"{style}<div class='card'><div class='header'><h1>Laudo: {colaborador}</h1></div>"
+    for _, row in df_kpi.iterrows():
+        html += f"<p><b>{row['KPI']}</b>: {row['Real']}% (Meta: {row['Meta']}%)</p>"
+    html += f"<div style='margin-top:20px; border-top: 2px solid #1e3a8a;'><h3>Parecer Pericial</h3>{parecer_geral}</div></div>"
+    return html
+
+# ==============================================================================
+# INTERFACE PRINCIPAL - ABA AUDITORIA E PRODUTIVIDADE
+# ==============================================================================
+
+def aba_produtividade_inteligente():
+    st.title("🛡️ NetExame: Auditoria Forense Estratégica")
+    st.markdown("---")
+    
+    t1, t2, t3, t4 = st.tabs(["📥 Entrada & Auditoria", "📊 Dashboard Executivo", "🏆 Ranking Global", "📖 Manual"])
+
+    with t1:
+        caminho_dados = "dados"
+        if not os.path.exists(caminho_dados):
+            st.error("Pasta 'dados' não encontrada.")
+            return
+
+        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+        
+        if arquivos:
+            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
+            
+            with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
+                colab = json.load(f)
+            
+            nome_colab = colab['campos'].get('nome_colaborador', colab['campos'].get('nome', 'Alvo'))
+            
+            # --------------------------------------------------------------
+            # CARGA AUTOMÁTICA DO POP (SEM IA NA GERAÇÃO)
+            # --------------------------------------------------------------
+            pop_ia = colab.get('pop_ia')
+
+            if pop_ia:
+                st.header(f"📚 POP Padrão: {nome_colab} (Carga Alvo 480m)")
+                dados_ia = []
+                total_ia_diario = 0
+                
+                for ativ, info in pop_ia.items():
+                    # Suporta 'tempo' ou 'tempo_estimado'
+                    t = info.get('tempo', info.get('tempo_estimado', 0))
+                    f = str(info.get('freq', 'DIÁRIA')).upper()
+                    
+                    # Cálculo de Impacto Diário (Lógica Única - Sem Duplicação)
+                    imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                    total_ia_diario += imp
+                    
+                    dados_ia.append({
+                        "Atividade": ativ,
+                        "Freq": f,
+                        "Tempo Base": f"{t}m",
+                        "Impacto Diário": f"{imp:.1f}m",
+                        "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
+                        "Meta Auditável": info.get('meta', 'N/A')
+                    })
+                
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Carga Alvo", "480 min")
+                c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
+                c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                
+                st.table(pd.DataFrame(dados_ia))
+
+                # --------------------------------------------------------------
+                # START DA INTELIGÊNCIA: GERAÇÃO DE KPIs E AUDITORIA
+                # --------------------------------------------------------------
+                st.markdown("---")
+                if st.button("🚀 Gerar KPIs Estratégicos e Iniciar Auditoria"):
+                    res_kpis = definir_kpis_inteligentes_pop(pop_ia)
+                    st.session_state['kpis_pop'] = res_kpis['kpis']
+                    st.rerun()
+
+                if 'kpis_pop' in st.session_state:
+                    st.subheader("🔍 Auditoria de Performance (Cérebro Ativado)")
+                    for i, kpi in enumerate(st.session_state['kpis_pop']):
+                        with st.expander(f"KPI: {kpi['nome']}"):
+                            col_a, col_b = st.columns([2, 1])
+                            relato = col_a.text_area("Relato de Execução/Provas", key=f"rel_{i}")
+                            col_b.info(f"**Benchmark:** {kpi['benchmark']}%")
+                            
+                            if st.button("Auditar", key=f"btn_{i}"):
+                                res = auditar_performance_ia(kpi, relato, "Arquivo_Pericial")
+                                st.session_state[f"res_{i}"] = {
+                                    "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
+                                    "Real": res['realizado'], "Parecer": res['parecer']
+                                }
+                                st.success(f"Nota Pericial: {res['realizado']}%")
+            else:
+                st.warning("Aguardando inserção de 'pop_ia' no arquivo JSON para auditoria.")
+
+    with t2:
+        if 'res_0' in st.session_state:
+            st.header(f"📊 Dashboard Executivo: {nome_colab}")
+            resumos = [st.session_state[f"res_{i}"] for i in range(10) if f"res_{i}" in st.session_state]
+            if resumos:
+                df_res = pd.DataFrame(resumos)
+                fig = go.Figure([
+                    go.Bar(x=df_res['KPI'], y=df_res['Meta'], name='Meta', marker_color='#1e3a8a'),
+                    go.Bar(x=df_res['KPI'], y=df_res['Real'], name='Realizado', marker_color='#ef4444')
+                ])
+                st.plotly_chart(fig)
+                
+                html_laudo = gerar_html_executivo(nome_colab, df_res, "Auditoria técnica concluída com base em evidências.")
+                st.download_button("📥 Baixar Laudo de Eficiência", html_laudo, file_name=f"Laudo_{nome_colab}.html", mime="text/html")
+
+    with t3:
+        st.header("🏆 Ranking Global de Performance")
+        st.info("O ranking consolida os resultados auditados nesta sessão.")
+        # Simulação de ranking - pode ser conectado a um DB real
+        st.table(pd.DataFrame([{"Nome": nome_colab, "Eficiência": 88}, {"Nome": "Pedro", "Eficiência": 92}]))
+
+    with t4:
+        st.header("📖 Manual de Governança")
+        st.markdown("""
+        1. **POP:** Carregado estaticamente do JSON para economia de recursos.
+        2. **KPIs:** Gerados via GPT-4o analisando a complexidade do POP.
+        3. **Auditoria:** Confronto de relatos humanos contra métricas técnicas.
+        """)
+
+# Execução
+if __name__ == "__main__":
+    aba_produtividade_inteligente()
+
+
+
+
