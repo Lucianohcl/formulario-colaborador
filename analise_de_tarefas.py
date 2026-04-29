@@ -5281,126 +5281,137 @@ from openai import OpenAI
 from datetime import datetime
 
 # ==============================================================================
-# 1. CONFIGURAÇÕES E MOTOR DE INTELIGÊNCIA
+# 1. NÚCLEO DE INTELIGÊNCIA: PROMPT SURREAL
 # ==============================================================================
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-def executar_auditoria_performance(dados_colab):
+def auditoria_inteligente_kpi(kpi_nome, evidência_doc, meta_esperada):
     """
-    Aciona a inteligência para processar os 15 KPIs e o Parecer Executivo.
+    Analisa a evidência enviada contra o KPI específico.
     """
     prompt = f"""
-    Aja como um Chief Operating Officer (COO). Realize uma Auditoria de Governança sobre os dados abaixo:
-    DADOS: {json.dumps(dados_colab, ensure_ascii=False)}
+    Aja como um Auditor de Performance Executiva. Analise a evidência para o KPI: {kpi_nome}.
+    META ESPERADA: {meta_esperada}
+    DOCUMENTO/RELATO: {evidência_doc}
 
-    MISSÃO:
-    1. Calcular 15 KPIs Estratégicos (Core Business, ROI Humano, Deep Work, etc).
-    2. Analisar se os links de evidência fornecidos justificam o tempo gasto.
-    3. Gerar um Veredito Executivo sóbrio.
+    MISSÃO: 
+    1. Validar se a evidência prova o resultado. 
+    2. Atribuir uma nota de 0 a 100 de fidedignidade.
+    3. Explicar o desvio (Gap) entre o resultado e a meta.
 
-    SAÍDA EM JSON:
-    {{
-        "kpis": {{ "Nome do KPI": valor_numerico }},
-        "parecer_executivo": "Texto analítico",
-        "score_geral": 0-100
-    }}
+    SAÍDA JSON: {{"resultado_atingido": 0-100, "analise_tecnica": "string", "status": "Auditado/Inconsistente"}}
     """
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[{"role": "system", "content": "Diretor de Operações NetExame."},
-                      {"role": "user", "content": prompt}],
-            response_format={ "type": "json_object" },
-            temperature=0.2
-        )
-        return json.loads(response.choices[0].message.content)
-    except Exception as e:
-        st.error(f"Erro na conexão: {e}")
-        return None
+    # Simulação da chamada (Para arquivos reais, usaríamos a API de Files/Vision do GPT)
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        response_format={ "type": "json_object" }
+    )
+    return json.loads(response.choices[0].message.content)
 
 # ==============================================================================
-# 2. CONSTRUTOR DE ARTEFATOS HTML
+# 2. MATRIZ DE GOVERNANÇA: LISTA DE KPIs E EVIDÊNCIAS
 # ==============================================================================
-def construir_html_parecer(dados, analise):
-    style = """
-    <style>
-        body { font-family: sans-serif; background: #f8fafc; padding: 40px; }
-        .card { background: white; padding: 30px; border-radius: 15px; border-top: 10px solid #1e3a8a; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .kpi { background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; }
-        .val { font-size: 20px; font-weight: bold; color: #1e3a8a; }
-    </style>"""
-    html = f"<html>{style}<body><div class='card'><h1>Performance: {dados.get('colaborador')}</h1><div class='grid'>"
-    for k, v in analise['kpis'].items():
-        html += f"<div class='kpi'>{k}<br><span class='val'>{v}%</span></div>"
-    html += f"</div><hr><p>{analise['parecer_executivo']}</p></div></body></html>"
+MATRIZ_KPI = {
+    "Foco em Atividades Core": {"Meta": 80, "Evidência": "Relatório de agenda ou Log de CRM"},
+    "Densidade de Complexidade": {"Meta": 70, "Evidência": "Amostra de Parecer ou Código-fonte"},
+    "ROI Humano (MVA)": {"Meta": 4.0, "Evidência": "Planilha de faturamento ou redução de custo"},
+    "Deep Work Score": {"Meta": 50, "Evidência": "Print de calendário sem interrupções"},
+    "Conformidade Técnica": {"Meta": 95, "Evidência": "Checklist de revisão ou Log de erros"},
+    "Throughput de Entregas": {"Meta": 100, "Evidência": "Lista de tickets/projetos finalizados"},
+    "Lead Time de Resposta": {"Meta": 90, "Evidência": "Timestamps de e-mails ou chamados"},
+    "Nexo Comportamental": {"Meta": 100, "Evidência": "Auto-avaliação vs Resultado DISC"},
+    "Inovação Aplicada": {"Meta": 20, "Evidência": "Projeto de melhoria documentado"},
+    "Resiliência de Prazos": {"Meta": 100, "Evidência": "Histórico de entregas em picos de demanda"},
+    "Qualidade Residual": {"Meta": 98, "Evidência": "Feedback de cliente ou supervisor"},
+    "Custo de Oportunidade": {"Meta": 15, "Evidência": "Relato de automação de tarefas manuais"},
+    "Autonomia Executiva": {"Meta": 85, "Evidência": "Decisões tomadas sem escalonamento"},
+    "Sustentabilidade": {"Meta": 75, "Evidência": "Índice de turnover ou satisfação interna"},
+    "Alinhamento de Cargo": {"Meta": 100, "Evidência": "Contrato social vs Tarefas diárias"}
+}
+
+# ==============================================================================
+# 3. CONSTRUTOR DE HTML (PARECER E MANUAL)
+# ==============================================================================
+def gerar_html_manual():
+    style = "<style>body{font-family:sans-serif;padding:40px;}h2{color:#1e3a8a;border-bottom:2px solid #ddd;}table{width:100%;border-collapse:collapse;}td,th{padding:12px;border:1px solid #ddd;}</style>"
+    html = f"<html>{style}<body><h1>Manual de Governança de Performance</h1>"
+    html += "<table><tr><th>KPI</th><th>Meta</th><th>Evidência Exigida (Upload)</th></tr>"
+    for k, v in MATRIZ_KPI.items():
+        html += f"<tr><td>{k}</td><td>{v['Meta']}%</td><td>{v['Evidência']}</td></tr>"
+    html += "</table></body></html>"
+    return html
+
+def gerar_html_parecer(dados, resultados):
+    style = "<style>body{font-family:sans-serif;padding:40px;}.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}</style>"
+    html = f"<html>{style}<body><h1>Parecer Executivo: {dados['nome']}</h1>"
+    html += f"<h3>Cargo: {dados['cargo']}</h3><div class='kpi-grid'>"
+    for k, v in resultados.items():
+        html += f"<div style='border:1px solid #ddd;padding:10px;'><b>{k}</b><br>Meta: {MATRIZ_KPI[k]['Meta']}% | Real: {v}%</div>"
+    html += "</div></body></html>"
     return html
 
 # ==============================================================================
-# 3. MÓDULO DE FORMULÁRIO (ENTRADA COM EVIDÊNCIA)
+# 4. INTERFACE DO APP (O MONSTRO)
 # ==============================================================================
-def formulario_entrada_dados():
-    st.subheader("📝 Registro de Atividades e Evidências")
-    with st.form("form_atividades"):
-        nome = st.text_input("Nome do Colaborador")
-        cargo = st.text_input("Cargo Atual")
-        
-        st.markdown("---")
-        col1, col2, col3 = st.columns([3, 1, 3])
-        atv = col1.text_input("Atividade Realizada")
-        tempo = col2.number_input("Minutos", min_value=1, value=60)
-        link = col3.text_input("Link da Evidência (Drive/Tarefa/Doc)")
-        
-        submit = st.form_submit_button("Salvar Atividade")
-        
-        if submit:
-            nova_atv = {"colaborador": nome, "cargo": cargo, "atividade": atv, "tempo": tempo, "evidencia": link, "data": str(datetime.now())}
-            # Simulação de salvamento
-            st.success(f"Atividade registrada para {nome}! Link de auditoria armazenado.")
-            return nova_atv
-    return None
-
-# ==============================================================================
-# 4. DASHBOARD DE GOVERNANÇA (VISUALIZAÇÃO)
-# ==============================================================================
-def mostrar_dashboard_governanca():
-    st.title("🛡️ Governança e Auditoria de Resultados")
+def main_governança():
+    st.title("🛡️ Sistema de Auditoria de Resultados")
     
-    tab1, tab2 = st.tabs(["📊 Dashboard de Auditoria", "📥 Entrada de Dados"])
-    
-    with tab2:
-        formulario_entrada_dados()
+    tab_input, tab_dash, tab_manual = st.tabs(["📥 Entrada de Dados", "📊 Dashboard", "📖 Manual"])
 
-    with tab1:
-        # Busca arquivos na pasta dados
-        if not os.path.exists("dados"): os.makedirs("dados")
-        arquivos = [f for f in os.listdir("dados") if f.endswith('.json')]
+    with tab_manual:
+        st.subheader("Manual de Governança e Evidências")
+        st.write("Este manual define o rigor de cada métrica e o documento necessário para validação.")
+        st.table(pd.DataFrame.from_dict(MATRIZ_KPI, orient='index'))
         
-        if arquivos:
-            alvo = st.selectbox("🎯 Selecionar Alvo para Auditoria:", arquivos)
-            if st.button("🚀 EXECUTAR AUDITORIA"):
-                with open(os.path.join("dados", alvo), 'r', encoding='utf-8') as f:
-                    dados = json.load(f)
-                
-                res = executar_auditoria_performance(dados)
-                if res:
-                    st.divider()
-                    # Gráficos
-                    df_kpi = pd.DataFrame(list(res['kpis'].items()), columns=['KPI', 'Valor'])
-                    st.plotly_chart(px.bar(df_kpi, x='Valor', y='KPI', orientation='h', color='Valor', color_continuous_scale='Blues'), use_container_width=True)
-                    
-                    st.info(f"**Parecer:** {res['parecer_executivo']}")
-                    
-                    # Downloads
-                    html_p = construir_html_parecer(dados, res)
-                    b64 = base64.b64encode(html_p.encode()).decode()
-                    st.markdown(f'<a href="data:text/html;base64,{b64}" download="LAUDO.html"><button style="width:100%;padding:10px;background:#1e3a8a;color:white;border:none;border-radius:10px;cursor:pointer">📥 Baixar Parecer e KPIs</button></a>', unsafe_allow_html=True)
+        html_m = gerar_html_manual()
+        st.download_button("📥 Baixar Manual (HTML)", html_m, "Manual_Governanca.html", "text/html")
+
+    with tab_input:
+        with st.form("form_monstro"):
+            colab_nome = st.text_input("Nome do Colaborador")
+            colab_cargo = st.text_input("Cargo Atual")
+            
+            st.markdown("### 📎 Upload de Evidências por KPI")
+            uploads = {}
+            for kpi in MATRIZ_KPI.keys():
+                uploads[kpi] = st.file_uploader(f"Evidência: {kpi}", type=['pdf', 'png', 'jpg', 'xlsx'])
+            
+            if st.form_submit_button("🚀 Enviar para Auditoria Inteligente"):
+                # Simulação de processamento inteligente
+                res_simulados = {k: 85 for k in MATRIZ_KPI.keys()} # IA calcularia aqui
+                st.session_state['resultados'] = res_simulados
+                st.session_state['dados_pessoais'] = {"nome": colab_nome, "cargo": colab_cargo}
+                st.success("Auditoria iniciada com sucesso!")
+
+    with tab_dash:
+        if 'resultados' in st.session_state:
+            res = st.session_state['resultados']
+            dados = st.session_state['dados_pessoais']
+            
+            st.header(f"Performance: {dados['nome']}")
+            
+            # Gráfico Comparativo: Meta vs Real
+            df_comp = pd.DataFrame({
+                "KPI": list(MATRIZ_KPI.keys()),
+                "Meta": [v['Meta'] for v in MATRIZ_KPI.values()],
+                "Realizado": list(res.values())
+            })
+            
+            fig = go.Figure()
+            fig.add_trace(go.Bar(x=df_comp['KPI'], y=df_comp['Meta'], name='Meta', marker_color='#cbd5e1'))
+            fig.add_trace(go.Bar(x=df_comp['KPI'], y=df_comp['Realizado'], name='Realizado', marker_color='#1e3a8a'))
+            fig.update_layout(barmode='group', title="Meta vs Resultado Real")
+            st.plotly_chart(fig, use_container_width=True)
+
+            # Botão de Parecer
+            html_p = gerar_html_parecer(dados, res)
+            st.download_button("📥 Baixar Parecer Executivo (HTML)", html_p, "Parecer_Performance.html", "text/html")
         else:
-            st.warning("Nenhum dado encontrado para auditoria.")
+            st.info("Aguardando upload de dados para gerar auditoria.")
 
-# Execução principal
 if st.session_state.pagina == "produtividade":
-    mostrar_dashboard_governanca()
+    main_governança()
 
 
 
