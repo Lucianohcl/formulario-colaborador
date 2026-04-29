@@ -5485,17 +5485,13 @@ def aba_produtividade_inteligente():
     st.subheader("📁 POP de Referência (PDF)")
     arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
 
-    # 1. ESTADO DE PERSISTÊNCIA (SEMPRE NO TOPO)
     if arquivo_pop:
-        if st.session_state.get("ultimo_pop") != arquivo_pop.name:
+        if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
             if 'kpis_sessao' in st.session_state:
                 del st.session_state.kpis_sessao
             st.session_state.ultimo_pop = arquivo_pop.name
 
-    # 2. DEFINIÇÃO DAS ABAS (FORA DE QUALQUER IF)
-    abas = ["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"]
-    t1, t2, t3 = st.tabs(abas)
-
+    
     with t1:
         if arquivo_pop:
             # 1. Processamento do POP
@@ -5571,6 +5567,9 @@ def aba_produtividade_inteligente():
                                     st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
                         else:
                             st.warning("⚠️ O relato e os arquivos PDF são obrigatórios para a perícia.")
+
+    # Defina as abas ANTES de qualquer verificação de arquivo
+    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
     with t2:
         st.header("📊 Dashboard Executivo")
