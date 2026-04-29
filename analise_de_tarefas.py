@@ -5411,7 +5411,7 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
 def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
     # Adiciona o relato do usuário ao dicionário de resultados
     resultado['relato_do_auditor'] = relato_usuario
-    resultado['kpi_nome'] = kpi['nome']
+    resultado['kpi_nome'] = kpi['nome']  # <--- AGORA O PYTHON ENTENDE
 
 
     try:
