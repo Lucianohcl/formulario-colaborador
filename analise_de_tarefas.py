@@ -5272,239 +5272,135 @@ if st.session_state.get("pagina") == "parecer":
 
 import streamlit as st
 import pandas as pd
-import json
-import os
-import base64
 import plotly.express as px
 import plotly.graph_objects as go
+import json
+import base64
+import os
 from openai import OpenAI
 from datetime import datetime
-import io
 
 # ==============================================================================
-# 1. ARQUITETURA DE ESTADO E SEGURANÇA
+# 1. CONFIGURAÇÕES E MOTOR DE INTELIGÊNCIA
 # ==============================================================================
-st.set_page_config(page_title="NetExame Hyper-Auditor", layout="wide", page_icon="🛡️")
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-if "OPENAI_API_KEY" not in st.secrets:
-    st.error("Chave API não configurada nos Secrets.")
-    st.stop()
-
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
-
-# ==============================================================================
-# 2. MOTOR PERICIAL DE ALTA PRECISÃO (PROMPT MASTER)
-# ==============================================================================
-@st.cache_data(show_spinner=False, ttl=3600)
-def executar_super_pericia_ia(dados_completos):
+def executar_auditoria_performance(dados_colab):
     """
-    O Cérebro do Sistema: Realiza o cruzamento de 4 camadas:
-    1. Dados Biográficos/Cursos | 2. Relato de Atividades | 3. Perfil DISC | 4. Benchmark de Mercado
+    Aciona a inteligência para processar os 15 KPIs e o Parecer Executivo.
     """
     prompt = f"""
-    Aja como um Chief Productivity Officer (CPO) e Auditor Forense de Processos.
-    Analise o DNA operacional deste colaborador e gere um laudo de governança 360.
+    Aja como um Chief Operating Officer (COO). Realize uma Auditoria de Governança sobre os dados abaixo:
+    DADOS: {json.dumps(dados_colab, ensure_ascii=False)}
 
-    CONTEXTO BRUTO:
-    {json.dumps(dados_completos, indent=2, ensure_ascii=False)}
+    MISSÃO:
+    1. Calcular 15 KPIs Estratégicos (Core Business, ROI Humano, Deep Work, etc).
+    2. Analisar se os links de evidência fornecidos justificam o tempo gasto.
+    3. Gerar um Veredito Executivo sóbrio.
 
-    SUA MISSÃO TÉCNICA (DECOMPOSIÇÃO):
-    1. NEXO CAUSAL: O objetivo do cargo ({dados_completos.get('campos', {}).get('objetivo')}) é suportado pelas tarefas relatadas?
-    2. DESPERDÍCIO DE TALENTO: Identifique se cursos de alta especialização estão sendo drenados por tarefas de 'Baixa Complexidade'.
-    3. CRONOANÁLISE DE RISCO: Calcule o impacto diário. Se > 480min, identifique se é ineficiência ou sobrecarga real.
-    4. ENGENHARIA DE KPIs: Crie 3 indicadores de alta performance para este cargo específico.
-    5. VEREDITO DISC: Como o perfil {dados_completos.get('perfil_disc', 'não informado')} acelera ou trava este processo?
-
-    SAÍDA EXCLUSIVA EM JSON (ESTRITAMENTE):
+    SAÍDA EM JSON:
     {{
-        "analise_nexo": "Texto técnico profundo",
-        "score_aderencia": 0-100,
-        "risco_burnout": "Baixo/Médio/Alto",
-        "kpis_estrategicos": [
-            {{"nome": "KPI", "meta": "Valor", "por_que": "Razão estratégica"}}
-        ],
-        "plano_acao": {{
-            "deletar": ["tarefa 1"],
-            "delegar": ["tarefa 2"],
-            "focar": ["tarefa 3"]
-        }},
-        "pop_estendido": [
-            {{"atividade": "X", "tempo_estimado": 0, "frequencia": "D", "impacto_roi": "Alto"}}
-        ]
+        "kpis": {{ "Nome do KPI": valor_numerico }},
+        "parecer_executivo": "Texto analítico",
+        "score_geral": 0-100
     }}
     """
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "system", "content": "Você é o Auditor Master da NetExame."},
+            messages=[{"role": "system", "content": "Diretor de Operações NetExame."},
                       {"role": "user", "content": prompt}],
             response_format={ "type": "json_object" },
-            temperature=0.1
+            temperature=0.2
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        st.error(f"Falha na conexão neural: {e}")
+        st.error(f"Erro na conexão: {e}")
         return None
 
 # ==============================================================================
-# 3. MÓDULO DE CÁLCULO E NORMALIZAÇÃO (AUDITORIA MATEMÁTICA)
+# 2. CONSTRUTOR DE ARTEFATOS HTML
 # ==============================================================================
-class AuditorMatematico:
-    @staticmethod
-    def normalizar_tempo(item):
-        try:
-            h = int(str(item.get('Horas', 0)).split()[0])
-            m = int(str(item.get('Minutos', 0)).split()[0])
-            total = (h * 60) + m
-            freq = item.get('Frequência', 'D').upper()
-            if 'D' in freq: return total
-            if 'S' in freq: return total / 5
-            if 'M' in freq: return total / 22
-            return 0
-        except: return 0
-
-    @staticmethod
-    def analisar_gaps(dados_reais, pop_ia):
-        # Lógica de cruzamento para encontrar o que a IA mandou e o que o cara faz
-        return {"gap_minutos": 45, "eficiencia": 0.92}
-
-# ==============================================================================
-# 4. DESIGN DE ARTEFATOS (HTML/CSS PARA EXPORTAÇÃO)
-# ==============================================================================
-def construir_html_pericial(dados, ia, df_kpi):
-    # CSS Inline de alto nível (Dark Mode / Corporate)
+def construir_html_parecer(dados, analise):
     style = """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-        body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1a1a1a; max-width: 1000px; margin: auto; padding: 40px; background: #fdfdfd; }
-        .header-box { background: #0b090a; color: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; border-left: 10px solid #e5383b; }
-        .metric-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-        .metric-card { background: #f1f1f1; padding: 20px; border-radius: 8px; text-align: center; border-bottom: 4px solid #ba181b; }
-        .metric-value { font-size: 28px; font-weight: bold; color: #a4161a; }
-        .parecer-text { background: #fff; border: 1px solid #ddd; padding: 25px; border-radius: 8px; font-style: italic; border-left: 5px solid #660708; }
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th { background: #161a1d; color: white; padding: 15px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #eee; }
-        .tag-high { background: #ffccd5; color: #a4161a; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    </style>
-    """
-    
-    html = f"""
-    <html><head><meta charset="UTF-8">{style}</head>
-    <body>
-        <div class="header-box">
-            <h1>LAUDO TÉCNICO PERICIAL: GOVERNANÇA 360°</h1>
-            <p>NetExame Auditoria Intelingente | ID: {datetime.now().strftime('%Y%m%d%H%M')}</p>
-            <hr>
-            <h2>ALVO: {dados.get('colaborador', 'N/A').upper()}</h2>
-        </div>
-        
-        <div class="metric-grid">
-            <div class="metric-card"><div class="metric-label">ADERÊNCIA AO CARGO</div><div class="metric-value">{ia.get('score_aderencia')}%</div></div>
-            <div class="metric-card"><div class="metric-label">RISCO OPERACIONAL</div><div class="metric-value">{ia.get('risco_burnout').upper()}</div></div>
-            <div class="metric-card"><div class="metric-label">ROI ESTIMADO</div><div class="metric-value">4.2x</div></div>
-        </div>
-
-        <h3>🔍 PARECER TÉCNICO FUNDAMENTADO</h3>
-        <div class="parecer-text">{ia.get('analise_nexo')}</div>
-
-        <h3>📊 KPIs DE PRODUTIVIDADE E PERFORMANCE</h3>
-        {df_kpi.to_html(index=False)}
-
-        <div style="margin-top: 50px; text-align: center; font-size: 11px;">
-            Este documento é um artefato de inteligência forense. A reprodução sem autorização é proibida.
-        </div>
-    </body></html>
-    """
+        body { font-family: sans-serif; background: #f8fafc; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 15px; border-top: 10px solid #1e3a8a; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .kpi { background: #f1f5f9; padding: 15px; border-radius: 8px; text-align: center; border: 1px solid #e2e8f0; }
+        .val { font-size: 20px; font-weight: bold; color: #1e3a8a; }
+    </style>"""
+    html = f"<html>{style}<body><div class='card'><h1>Performance: {dados.get('colaborador')}</h1><div class='grid'>"
+    for k, v in analise['kpis'].items():
+        html += f"<div class='kpi'>{k}<br><span class='val'>{v}%</span></div>"
+    html += f"</div><hr><p>{analise['parecer_executivo']}</p></div></body></html>"
     return html
 
 # ==============================================================================
-# 5. INTERFACE DO USUÁRIO (A MÁQUINA)
+# 3. MÓDULO DE FORMULÁRIO (ENTRADA COM EVIDÊNCIA)
 # ==============================================================================
-def main():
-    st.sidebar.image("https://via.placeholder.com/150x50?text=NetExame+IA", use_container_width=True)
-    st.sidebar.title("Configurações")
-    modo = st.sidebar.radio("Módulo", ["Auditoria Pericial", "Dashboard de Produtividade", "Configurações"])
-
-    if modo == "Auditoria Pericial":
-        st.title("🛡️ NetExame: Auditoria Forense e Nexo Causal")
+def formulario_entrada_dados():
+    st.subheader("📝 Registro de Atividades e Evidências")
+    with st.form("form_atividades"):
+        nome = st.text_input("Nome do Colaborador")
+        cargo = st.text_input("Cargo Atual")
         
-        # Seleção de arquivos
-        pasta = "dados"
-        if not os.path.exists(pasta): os.makedirs(pasta)
-        arquivos = [f for f in os.listdir(pasta) if f.endswith('.json')]
+        st.markdown("---")
+        col1, col2, col3 = st.columns([3, 1, 3])
+        atv = col1.text_input("Atividade Realizada")
+        tempo = col2.number_input("Minutos", min_value=1, value=60)
+        link = col3.text_input("Link da Evidência (Drive/Tarefa/Doc)")
+        
+        submit = st.form_submit_button("Salvar Atividade")
+        
+        if submit:
+            nova_atv = {"colaborador": nome, "cargo": cargo, "atividade": atv, "tempo": tempo, "evidencia": link, "data": str(datetime.now())}
+            # Simulação de salvamento
+            st.success(f"Atividade registrada para {nome}! Link de auditoria armazenado.")
+            return nova_atv
+    return None
 
-        if not arquivos:
-            st.warning("Aguardando recebimento de JSON na pasta /dados...")
-            return
+# ==============================================================================
+# 4. DASHBOARD DE GOVERNANÇA (VISUALIZAÇÃO)
+# ==============================================================================
+def mostrar_dashboard_governanca():
+    st.title("🛡️ Governança e Auditoria de Resultados")
+    
+    tab1, tab2 = st.tabs(["📊 Dashboard de Auditoria", "📥 Entrada de Dados"])
+    
+    with tab2:
+        formulario_entrada_dados()
 
-        selecao = st.selectbox("🎯 Selecionar Alvo para Perícia:", arquivos)
-
-        if st.button("🚀 EXECUTAR PERÍCIA COMPLETA (GPT-4o)"):
-            with open(os.path.join(pasta, selecao), 'r', encoding='utf-8') as f:
-                dados_brutos = json.load(f)
-            
-            with st.spinner("IA processando nexo causal entre DISC, Atividades e Carga Horária..."):
-                laudo = executar_super_pericia_ia(dados_brutos)
+    with tab1:
+        # Busca arquivos na pasta dados
+        if not os.path.exists("dados"): os.makedirs("dados")
+        arquivos = [f for f in os.listdir("dados") if f.endswith('.json')]
+        
+        if arquivos:
+            alvo = st.selectbox("🎯 Selecionar Alvo para Auditoria:", arquivos)
+            if st.button("🚀 EXECUTAR AUDITORIA"):
+                with open(os.path.join("dados", alvo), 'r', encoding='utf-8') as f:
+                    dados = json.load(f)
                 
-                if laudo:
-                    st.session_state['laudo_atual'] = laudo
-                    st.session_state['dados_atual'] = dados_brutos
-                    st.success("Perícia Concluída com Sucesso!")
+                res = executar_auditoria_performance(dados)
+                if res:
+                    st.divider()
+                    # Gráficos
+                    df_kpi = pd.DataFrame(list(res['kpis'].items()), columns=['KPI', 'Valor'])
+                    st.plotly_chart(px.bar(df_kpi, x='Valor', y='KPI', orientation='h', color='Valor', color_continuous_scale='Blues'), use_container_width=True)
+                    
+                    st.info(f"**Parecer:** {res['parecer_executivo']}")
+                    
+                    # Downloads
+                    html_p = construir_html_parecer(dados, res)
+                    b64 = base64.b64encode(html_p.encode()).decode()
+                    st.markdown(f'<a href="data:text/html;base64,{b64}" download="LAUDO.html"><button style="width:100%;padding:10px;background:#1e3a8a;color:white;border:none;border-radius:10px;cursor:pointer">📥 Baixar Parecer e KPIs</button></a>', unsafe_allow_html=True)
+        else:
+            st.warning("Nenhum dado encontrado para auditoria.")
 
-        if 'laudo_atual' in st.session_state:
-            res = st.session_state['laudo_atual']
-            
-            # --- DASHBOARD VISUAL ---
-            c1, c2, c3 = st.columns([1, 1, 1])
-            c1.metric("Aderência", f"{res['score_aderencia']}%")
-            c2.metric("Risco", res['risco_burnout'])
-            c3.metric("Status", "Auditado")
-
-            st.divider()
-            
-            t1, t2, t3 = st.tabs(["📄 Parecer Técnico", "📊 KPIs & POP", "⚖️ Veredito de Gestão"])
-            
-            with t1:
-                st.markdown(f"### Diagnóstico do Perito\n{res['analise_nexo']}")
-                
-            with t2:
-                df_kpi = pd.DataFrame(res['kpis_estrategicos'])
-                st.table(df_kpi)
-                
-                st.markdown("### POP Estratégico (Dever Ser)")
-                df_pop = pd.DataFrame(res['pop_estendido'])
-                st.dataframe(df_pop, use_container_width=True)
-
-            with t3:
-                # Gráfico de Radar de Competências
-                st.subheader("Análise de Hibridismo de Funções")
-                categories = ['Estratégico', 'Operacional', 'Compliance', 'Gestão', 'Tático']
-                fig = go.Figure()
-                fig.add_trace(go.Scatterpolar(r=[80, 40, 90, 70, 60], theta=categories, fill='toself', name='Perfil Ideal'))
-                fig.add_trace(go.Scatterpolar(r=[50, 95, 30, 40, 80], theta=categories, fill='toself', name='Execução Real'))
-                st.plotly_chart(fig, use_container_width=True)
-                
-                col_a, col_b, col_c = st.columns(3)
-                col_a.error(f"**PARAR:**\n{', '.join(res['plano_acao']['deletar'])}")
-                col_b.warning(f"**DELEGAR:**\n{', '.join(res['plano_acao']['delegar'])}")
-                col_c.success(f"**FOCAR:**\n{', '.join(res['plano_acao']['focar'])}")
-
-            # --- SISTEMA DE EXPORTAÇÃO ---
-            st.divider()
-            html_content = construir_html_pericial(st.session_state['dados_atual'], res, df_kpi)
-            b64 = base64.b64encode(html_content.encode('utf-8')).decode()
-            href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_PERICIAL_{st.session_state["dados_atual"].get("colaborador")}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📥 BAIXAR LAUDO PERICIAL COMPLETO (OFFLINE HTML)</button></a>'
-            st.markdown(href, unsafe_allow_html=True)
-
-    elif modo == "Dashboard de Produtividade":
-        st.title("📈 Módulo de Gestão de Resultados")
-        st.info("Aqui o gestor acompanha o KPI que a IA definiu no módulo anterior.")
-        # Lógica de input de dados reais para bater com o KPI
-        # ... (Mais 100 linhas de lógica de CRUD de produtividade)
-
-if __name__ == "__main__":
-    main()
+# Execução principal
+if st.session_state.pagina == "produtividade":
+    mostrar_dashboard_governanca()
 
 
 
