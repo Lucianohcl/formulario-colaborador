@@ -5404,7 +5404,9 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
         ],
         response_format={"type": "json_object"}
     )
-    return json.loads(response.choices[0].message.content)
+    resultado = json.loads(response.choices[0].message.content)
+    resultado["kpi_nome"] = kpi_nome  # Identificador universal para o Dashboard
+    return resultado
 
 def salvar_pericia_no_github(nome_colab, kpi_info, dados_finais):
     try:
@@ -5451,6 +5453,33 @@ def aba_produtividade_inteligente():
     
     nome_colab = colab['campos'].get('nome', colab['campos'].get('nome_colaborador', 'Alvo'))
     st.info(f"👤 Monitorando: **{nome_colab}**")
+
+    pasta_colab = f"auditorias/{nome_colab}".replace(" ", "_")
+
+    def carregar_resultados_salvos(pasta):
+        resultados = []
+        if os.path.exists(pasta):
+            for arquivo in os.listdir(pasta):
+                if arquivo.endswith(".json"):
+                    with open(os.path.join(pasta, arquivo), 'r', encoding='utf-8') as f:
+                        resultados.append(json.load(f))
+        return resultados
+
+    with t2:
+        st.header("📊 Dashboard Executivo")
+        dados_salvos = carregar_resultados_salvos(pasta_colab)
+        
+        if dados_salvos:
+            df_score = pd.DataFrame([
+                {"KPI": d.get("kpi_nome", "KPI"), "Nota": d.get("percentual_alcance", 0)} 
+                for d in dados_salvos
+            ])
+            fig = go.Figure(go.Bar(x=df_score['KPI'], y=df_score['Nota'], marker_color='#1e3a8a'))
+            st.plotly_chart(fig)
+        else:
+            st.info("Nenhuma perícia salva encontrada para este colaborador.")
+
+    
 
     # --- UPLOAD DO POP (FONTE DA VERDADE) ---
     st.subheader("📁 POP de Referência (PDF)")
