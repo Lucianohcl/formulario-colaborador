@@ -1,0 +1,22 @@
+{
+    "percentual_alcance": 60,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A evidência apresentada consiste em uma Certidão Negativa de Débitos Trabalhistas (CNDT), que é um documento relevante para demonstrar a inexistência de débitos trabalhistas pendentes. No entanto, o relato de execução menciona a conferência da Malha Fiscal Trabalhista, cruzamentos de dados com eSocial, validação de rubricas e controle de eventos de afastamento e desligamento, além da conciliação com DCTFWeb e FGTS Digital, que não estão cobertos pela CNDT. Portanto, a prova não abrange todas as verificações descritas.",
+    "gap_de_conformidade": [
+        "Relatórios de conformidade regulatória diária",
+        "Documentação de conferência da Malha Fiscal Trabalhista",
+        "Registros de cruzamentos de dados com o eSocial",
+        "Validação de rubricas",
+        "Relatórios de eventos de afastamento (S-2230) e desligamento (S-2299)",
+        "Conciliação das obrigações acessórias (DCTFWeb e FGTS Digital)"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 15,
+        "integridade": 10,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Regulatória do Departamento Pessoal",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validamos o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
