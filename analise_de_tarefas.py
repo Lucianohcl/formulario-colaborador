@@ -5285,28 +5285,46 @@ from PyPDF2 import PdfReader
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
 # ==============================================================================
-# MOTOR DE INTELIGÊNCIA (PDF + AUDITORIA)
+# MOTOR DE INTELIGÊNCIA (EXTRAÇÃO E KPIs)
 # ==============================================================================
 
 def extrair_texto_pdf(arquivo_pdf):
     try:
         reader = PdfReader(arquivo_pdf)
-        texto = "".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        texto = ""
+        for page in reader.pages:
+            content = page.extract_text()
+            if content: texto += content
         return texto
     except Exception as e:
         st.error(f"Erro ao ler PDF: {e}")
         return None
 
-@st.cache_data(show_spinner="IA analisando estrutura do POP...")
-def estruturar_pop_via_ia(texto_pdf):
+@st.cache_data(show_spinner="IA Gerando POP Detalhado...")
+def estruturar_pop_completo_ia(texto_pdf):
+    """Extrai todas as atividades sem resumir as metas"""
     prompt = f"""
-    Analise o POP e extraia as atividades em JSON.
-    Retorne no formato: {{"atividades": [{{"nome": "...", "tempo": 30, "freq": "DIÁRIA", "meta": "..."}}]}}
-    Texto: {texto_pdf[:4000]}
+    Analise o PDF e extraia TODAS as atividades para um POP. 
+    Não resuma as metas. Capture a 'Meta Auditável' completa.
+    Retorne APENAS JSON:
+    {{"atividades": [{{"nome": "...", "tempo": 60, "freq": "DIÁRIA", "meta": "..."}}]}}
+    Texto: {texto_pdf[:6000]}
     """
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "system", "content": "Analista de Processos Sênior. Responda apenas com JSON."},
+        messages=[{"role": "system", "content": "Analista de Processos. Você é detalhista e não resume textos."},
+                 {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+@st.cache_data(show_spinner="IA definindo 5 KPIs estratégicos...")
+def gerar_5_kpis_periciais(atividades_pop):
+    """Gera 5 KPIs baseados no POP extraído"""
+    prompt = f"Com base nestas atividades de trabalho: {json.dumps(atividades_pop)}, defina 5 KPIs periciais para auditoria. Retorne JSON: {{'kpis': [{{'nome': '...', 'objetivo': '...', 'evidencia_sugerida': '...'}}]}}"
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "Auditor Forense Sênior. Responda apenas com JSON."},
                  {"role": "user", "content": prompt}],
         response_format={"type": "json_object"}
     )
@@ -5320,16 +5338,14 @@ def aba_produtividade_inteligente():
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
     
-    # --- BUSCA DE DADOS DO COLABORADOR (JSON) ---
+    # --- CARGA DO COLABORADOR ---
     caminho_dados = "dados"
     if not os.path.exists(caminho_dados):
         st.error("Pasta 'dados' não encontrada.")
         return
 
     arquivos_json = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
-    
-    # 1. SELEÇÃO DO ALVO (Sempre visível)
-    colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos_json, key="sel_alvo_fixo")
+    colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos_json, key="sel_alvo")
     
     with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
         colab = json.load(f)
@@ -5337,54 +5353,82 @@ def aba_produtividade_inteligente():
     nome_colab = colab['campos'].get('nome', colab['campos'].get('nome_colaborador', 'Alvo'))
     st.info(f"👤 Monitorando: **{nome_colab}**")
 
-    # 2. UPLOAD DO POP (Aqui no corpo principal para não quebrar o fluxo)
-    st.subheader("📁 Documento de Referência")
-    arquivo_pop = st.file_uploader("Faça o upload do POP em PDF para este cargo:", type=["pdf"], key="upload_corpo")
+    # --- UPLOAD DO POP (FONTE DA VERDADE) ---
+    st.subheader("📁 POP de Referência (PDF)")
+    arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
 
-    t1, t2, t3 = st.tabs(["📥 Auditoria e Confronto", "📊 Dashboard", "🏆 Ranking"])
+    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
     with t1:
         if arquivo_pop:
+            # 1. Processamento do POP
             texto_pdf = extrair_texto_pdf(arquivo_pop)
-            pop_estruturado = estruturar_pop_via_ia(texto_pdf)
-            df_pop = pd.DataFrame(pop_estruturado['atividades'])
-
-            # Métricas Rápidas
+            pop_data = estruturar_pop_completo_ia(texto_pdf)
+            
+            # 2. Exibição da Tabela de Eficiência
+            st.subheader("📚 Quadro de Eficiência (Baseado no PDF)")
+            lista_tabela = []
             total_m = 0
-            for _, row in df_pop.iterrows():
-                t, f = row['tempo'], row['freq'].upper()
-                total_m += t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
-
+            for item in pop_data['atividades']:
+                t, f = item['tempo'], item['freq'].upper()
+                imp = t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
+                total_m += imp
+                lista_tabela.append({
+                    "Atividade": item['nome'], "Freq": f, "Tempo": f"{t}m", 
+                    "Impacto": f"{imp:.1f}m", "Meta": item['meta']
+                })
+            
             c1, c2, c3 = st.columns(3)
             c1.metric("Carga Alvo", "480 min")
             c2.metric("Ocupação POP", f"{total_m:.1f} min")
-            c3.metric("Eficiência Teórica", f"{(total_m/480)*100:.1f}%")
+            c3.metric("Eficiência", f"{(total_m/480)*100:.1f}%")
+            
+            st.dataframe(pd.DataFrame(lista_tabela), use_container_width=True, hide_index=True)
 
-            st.table(df_pop)
-
+            # 3. Geração de KPIs para Auditoria
             st.markdown("---")
-            st.subheader("🔍 Iniciar Perícia por Atividade")
-            for i, row in df_pop.iterrows():
-                with st.expander(f"Auditar: {row['nome']}"):
-                    relato = st.text_area("Insira o relato de execução:", key=f"rel_{i}")
-                    if st.button("Analisar Evidência", key=f"btn_{i}"):
-                        # Chamada simples de auditoria
-                        st.session_state[f"res_{i}"] = {"Atividade": row['nome'], "Nota": 85, "Parecer": "Análise IA concluída."}
-                        st.success("Auditoria realizada para esta tarefa.")
+            st.subheader("🕵️ Iniciar Perícia por KPI")
+            
+            if 'kpis_sessao' not in st.session_state:
+                st.session_state.kpis_sessao = gerar_5_kpis_periciais(pop_data['atividades'])['kpis']
+
+            for i, kpi in enumerate(st.session_state.kpis_sessao):
+                with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
+                    st.write(f"**Objetivo:** {kpi['objetivo']}")
+                    st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
+                    
+                    # Relato e Múltiplos Uploads
+                    relato = st.text_area("Relato da conformidade:", key=f"rel_{i}")
+                    evidencias = st.file_uploader(
+                        "Anexar Provas (PDFs)", 
+                        type=["pdf"], 
+                        accept_multiple_files=True, 
+                        key=f"files_{i}"
+                    )
+                    
+                    if st.button("🚀 Auditar KPI", key=f"btn_{i}"):
+                        if evidencias:
+                            st.success(f"KPI '{kpi['nome']}' enviado com {len(evidencias)} evidência(s).")
+                            # Salva resultado fictício para o dashboard
+                            st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": 90}
+                        else:
+                            st.warning("Anexe ao menos uma evidência em PDF para validar a perícia.")
         else:
-            st.warning("⚠️ Aguardando upload do POP (PDF) para processar o benchmark do colaborador.")
+            st.warning("⚠️ Aguardando upload do POP para iniciar a perícia.")
 
     with t2:
-        st.header("📊 Dashboard de Performance")
-        # Lógica de gráficos aqui...
-        st.info("Os dados aparecerão após a auditoria das tarefas na Aba 1.")
+        st.header("📊 Dashboard Executivo")
+        scores = [st.session_state[k] for k in st.session_state if k.startswith("score_")]
+        if scores:
+            df_score = pd.DataFrame(scores)
+            fig = go.Figure(go.Bar(x=df_score['KPI'], y=df_score['Nota'], marker_color='#1e3a8a'))
+            st.plotly_chart(fig)
+        else:
+            st.info("Realize a auditoria dos KPIs para gerar o gráfico.")
 
     with t3:
-        st.header("🏆 Ranking de Eficiência")
-        st.table(pd.DataFrame([{"Colaborador": nome_colab, "Status": "Em Auditoria"}]))
+        st.header("🏆 Ranking")
+        st.table(pd.DataFrame([{"Nome": nome_colab, "Eficiência": f"{(total_m/480)*100:.1f}%" if arquivo_pop else "0%"}]))
 
 if __name__ == "__main__":
     aba_produtividade_inteligente()
-
-
-
