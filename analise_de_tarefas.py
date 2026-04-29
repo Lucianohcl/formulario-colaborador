@@ -5408,7 +5408,12 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     resultado["kpi_nome"] = kpi_nome  # Identificador universal para o Dashboard
     return resultado
 
-def salvar_pericia_no_github(nome_colab, kpi_info, dados_finais):
+def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
+    # Adiciona o relato do usuário ao dicionário de resultados
+    resultado['relato_do_auditor'] = relato_usuario
+    resultado['kpi_nome'] = kpi['nome']
+
+
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
@@ -5529,7 +5534,7 @@ def aba_produtividade_inteligente():
                                 st.subheader(f"⚖️ Resultado: {resultado['percentual_alcance']}%")
                                 st.info(f"**Análise Forense:** {resultado['analise_critica']}")
                                 
-                                url_git = salvar_pericia_no_github(nome_colab, kpi, resultado)
+                                url_git = salvar_pericia_no_github(nome_colab, kpi, resultado, relato)
                                 if url_git:
                                     st.success("✅ Registro imortalizado no GitHub!")
                                     st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
