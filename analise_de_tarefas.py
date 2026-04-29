@@ -5618,8 +5618,15 @@ def aba_produtividade_inteligente():
                 with col_dir:
                     st.subheader("Volume de Auditorias")
                     # Mostra quem mais está sendo auditado
+                    # O segredo é renomear as colunas logo após o reset_index
                     df_vol = df_dash['colaborador'].value_counts().reset_index()
-                    fig_pie = go.Figure(go.Pie(labels=df_vol['index'], values=df_vol['colaborador'], hole=.4))
+                    df_vol.columns = ['colaborador', 'quantidade'] 
+
+                    fig_pie = go.Figure(go.Pie(
+                        labels=df_vol['colaborador'], 
+                        values=df_vol['quantidade'], 
+                        hole=.4
+                    ))
                     fig_pie.update_layout(height=400, margin=dict(l=20, r=20, t=30, b=20))
                     st.plotly_chart(fig_pie, use_container_width=True)
 
