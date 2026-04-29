@@ -5508,12 +5508,20 @@ def aba_produtividade_inteligente():
                 dados_ia = []
                 total_ia_diario = 0
                 for ativ, info in pop_ia.items():
-                    t, f = info['tempo'], info['freq'].upper()
-                    imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                    total_ia_diario += imp
+                    # Tenta ler 'tempo', se não achar tenta 'tempo_estimado', se não achar usa 0
+                    t = info.get('tempo', info.get('tempo_estimado', 0))
+                    # Garante que frequencia seja string antes do .upper()
+                    f = str(info.get('freq', info.get('frequencia', 'DIÁRIA'))).upper()
+                    
+                    # Cálculo de impacto (Base 480min/dia)
+                    impacto = t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
+                    
                     dados_ia.append({
-                        "Atividade": ativ, "Freq": f, "Tempo Base": f"{t}m",
-                        "Impacto Diário": f"{imp:.1f}m", "Meta": info['meta']
+                        "Atividade": ativ, 
+                        "Freq": f, 
+                        "Tempo Base": f"{t}m",
+                        "Impacto Diário": f"{impacto:.1f}m", 
+                        "Meta": info.get('meta', '100%')
                     })
                 
                 c1, c2 = st.columns(2)
