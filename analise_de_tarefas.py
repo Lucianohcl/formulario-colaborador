@@ -5456,11 +5456,11 @@ def aba_produtividade_inteligente():
     st.subheader("📁 POP de Referência (PDF)")
     arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
 
-if arquivo_pop:
-    if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
-        if 'kpis_sessao' in st.session_state:
-            del st.session_state.kpis_sessao
-        st.session_state.ultimo_pop = arquivo_pop.name
+    if arquivo_pop:
+        if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
+            if 'kpis_sessao' in st.session_state:
+                del st.session_state.kpis_sessao
+            st.session_state.ultimo_pop = arquivo_pop.name
 
     t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
