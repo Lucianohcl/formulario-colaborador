@@ -4649,7 +4649,10 @@ if st.session_state.get("pagina") == "parecer":
                     dados_ia = []
                     total_ia_diario = 0
                     for ativ, info in pop_ia.items():
-                        t, f = info['tempo'], info['freq'].upper()
+                        t = info.get('tempo', info.get('tempo_estimado', 0))
+                        f = str(info.get('freq', 'DIÁRIA')).upper()
+                        impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
+                        total_ia_diario += impacto
                         imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
                         total_ia_diario += imp
                         dados_ia.append({
@@ -5485,7 +5488,13 @@ def aba_produtividade_inteligente():
             nome_colab = colab['campos'].get('nome_colaborador', colab['campos'].get('nome', 'Alvo'))
             cargo_colab = colab['campos'].get('cargo', 'N/A').upper()
             funcao_colab = colab['campos'].get('funcao', 'GESTÃO').upper()
-            objetivo_colab = colab['campos'].get('objetivo', '')
+            # Extrai as atividades com os tempos reais das tabelas para a IA ler
+            atividades_lista = [f"{i['Atividade']} ({i['Horas']}h {i['Minutos']}m)" 
+                                for nivel in ['alta', 'normal', 'baixa'] 
+                                for i in colab['tabelas'].get(nivel, [])]
+
+            # Substitui o objetivo puro pelo combo de tarefas reais
+            objetivo_colab = f"ATIVIDADES REAIS: {'; '.join(atividades_lista[:20])}"
             cursos_colab = colab['campos'].get('cursos', '')
 
             st.info(f"**Auditando:** {nome_colab} | **Cargo:** {cargo_colab}")
