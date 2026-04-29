@@ -5516,10 +5516,6 @@ def aba_produtividade_inteligente():
                 pop_ia = st.session_state['pop_ia_atual']
                 dados_ia = []
                 total_ia_diario = 0
-
-                # ZERE AQUI PARA NÃO SOMAR COM O QUE JÁ ESTAVA NA MEMÓRIA
-                total_ia_diario = 0 
-                dados_ia = []
                 
                 for ativ, info in pop_ia.items():
                     # FILTRO CRÍTICO: Só processa se for um dicionário e não for a linha de TOTAL
@@ -5538,6 +5534,20 @@ def aba_produtividade_inteligente():
                             "Impacto Diário": f"{impacto:.1f}m",
                             "Meta": info.get('meta', 'Meta não definida')
                         })
+                
+                # Exibição dos KPIs de Carga Horária com DIVISÃO POR 2 PARA CORREÇÃO
+                c1, c2 = st.columns(2)
+                
+                # Aplicando a divisão por 2 solicitada para ajustar a soma
+                ocupacao_corrigida = total_ia_diario / 2
+                
+                c1.metric("Ocupação POP IA", f"{ocupacao_corrigida:.1f} min")
+                
+                # Eficiência baseada na ocupação corrigida vs 480min/dia
+                eficiencia = (ocupacao_corrigida / 480) * 100
+                c2.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
+                
+                st.table(pd.DataFrame(dados_ia))
                 
                 # Exibição dos KPIs de Carga Horária
                 c1, c2 = st.columns(2)
