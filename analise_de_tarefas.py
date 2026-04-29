@@ -5570,14 +5570,23 @@ def aba_produtividade_inteligente():
                                 all_data.append(file_data)
 
             if all_data:
-                df_global = pd.DataFrame(all_data)
+                # Criamos o DataFrame bruto
+                df_raw = pd.DataFrame(all_data)
+                
+                # --- AJUSTE ANTI-DUPLICIDADE ---
+                # Removemos duplicados do mesmo KPI, mantendo apenas o último enviado
+                df_global = df_raw.drop_duplicates(subset=['kpi_nome'], keep='last')
                 
                 # --- MÉTRICAS DE TOPO ---
                 m1, m2, m3 = st.columns(3)
                 media_geral = df_global['percentual_alcance'].mean()
+                
                 m1.metric("Média de Conformidade", f"{media_geral:.1f}%")
-                m2.metric("Total de KPIs Auditados", len(df_global))
-                m3.metric("Colaboradores Únicos", len(df_global['kpi_nome'].unique())) # Ajuste conforme sua chave de nome
+                m2.metric("Total de KPIs Únicos", len(df_global))
+                
+                # Métrica 3 mostra o total de arquivos e quantos foram filtrados
+                duplicados = len(df_raw) - len(df_global)
+                m3.metric("Relatos Processados", len(df_raw), delta=f"-{duplicados} duplicados" if duplicados > 0 else None, delta_color="inverse")
 
                 st.divider()
 
@@ -5589,7 +5598,7 @@ def aba_produtividade_inteligente():
                     fig_bar = go.Figure(go.Bar(
                         x=df_global['kpi_nome'], 
                         y=df_global['percentual_alcance'],
-                        text=df_global['percentual_alcance'],
+                        text=df_global['percentual_alcance'].apply(lambda x: f"{x}%"),
                         textposition='auto',
                         marker=dict(color=df_global['percentual_alcance'], colorscale='Blues')
                     ))
@@ -5607,14 +5616,16 @@ def aba_produtividade_inteligente():
                     st.plotly_chart(fig_pie, use_container_width=True)
 
                 # --- TABELA DETALHADA ---
-                st.subheader("📋 Histórico Detalhado")
+                st.subheader("📋 Histórico de Auditoria (Dados Únicos)")
                 st.dataframe(
                     df_global[['kpi_nome', 'relato_do_auditor', 'percentual_alcance']],
                     use_container_width=True,
                     column_config={
                         "percentual_alcance": st.column_config.ProgressColumn(
                             "Alcance %", format="%d%%", min_value=0, max_value=100
-                        )
+                        ),
+                        "kpi_nome": "Indicador (KPI)",
+                        "relato_do_auditor": "Relato da Conformidade"
                     }
                 )
             else:
