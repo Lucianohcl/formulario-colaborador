@@ -5634,7 +5634,7 @@ def aba_produtividade_inteligente():
                 st.subheader("🔍 Últimos Relatos do Campo")
                 st.table(df_dash[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
 
-                # --- DETALHAMENTO ISOLADO (COLE EXATAMENTE AQUI) ---
+                # --- DETALHAMENTO ISOLADO ---
                 st.markdown("---")
                 st.subheader("🎯 Diagnóstico por Indicador")
                 
@@ -5656,6 +5656,12 @@ def aba_produtividade_inteligente():
                                 st.warning("**O que faltou para 100%:**")
                                 for item in dados_kpi['gap_de_conformidade']:
                                     st.write(f"• {item}")
+
+            else:
+                st.info("Sincronize os dados para carregar o dashboard.")
+
+        except Exception as e:
+            st.error(f"Erro no Dashboard T2: {e}")
 
                 
     with t3:
