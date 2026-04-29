@@ -5437,12 +5437,39 @@ def aba_produtividade_inteligente():
 
     with t1:
         st.subheader("Vínculo POP e Upload de Evidências")
-        # O POP viria automaticamente da sua outra funcionalidade
-        pop_texto = st.text_area("POP Estratégico (Regra do Cargo):", "Cole aqui o POP para que a IA gere os KPIs...")
         
-        c1, c2 = st.columns(2)
-        nome = c1.text_input("Nome do Colaborador")
-        cargo = c2.text_input("Cargo")
+        # --- NOVO BLOCO DE CARREGAMENTO AUTOMÁTICO ---
+        caminho_dados = "dados"
+        if not os.path.exists(caminho_dados):
+            st.error("Pasta de 'dados' não encontrada.")
+            return
+
+        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+        
+        if arquivos:
+            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
+            
+            # Carrega os dados do arquivo selecionado para preencher os campos automaticamente
+            with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
+                colab_data = json.load(f)
+            
+            # Recupera os dados do JSON (Ajustado para a estrutura do seu arquivo)
+            nome_sugerido = colab_data['campos'].get('nome_colaborador', colab_data['campos'].get('nome', ''))
+            cargo_sugerido = colab_data['campos'].get('cargo', '')
+            # O POP vem do dicionário processado ou da string de saída do módulo anterior
+            pop_texto_automatico = str(colab_data.get('pop_ia', '')) 
+
+            c1, c2 = st.columns(2)
+            nome = c1.text_input("Nome do Colaborador", value=nome_sugerido)
+            cargo = c2.text_input("Cargo", value=cargo_sugerido)
+            
+            pop_texto = st.text_area("POP Estratégico (Regra do Cargo):", value=pop_texto_automatico, height=200)
+        else:
+            st.warning("Nenhum arquivo de dados encontrado para carregar.")
+            nome = st.text_input("Nome do Colaborador")
+            cargo = st.text_input("Cargo")
+            pop_texto = st.text_area("POP Estratégico (Regra do Cargo):")
+        # --- FIM DO BLOCO AUTOMÁTICO ---
 
         if st.button("🚀 Gerar 5 KPIs Dinâmicos via IA"):
             with st.spinner("IA Analisando POP..."):
@@ -5455,7 +5482,6 @@ def aba_produtividade_inteligente():
             for i, kpi in enumerate(st.session_state['kpis_pop']):
                 with st.expander(f"KPI {i+1}: {kpi['nome']} (Meta: {kpi['benchmark']}%)"):
                     st.info(f"**Legenda:** {kpi['legenda']}")
-                    # Upload Múltiplo para cada KPI
                     files = st.file_uploader(f"Upload de Provas para {kpi['nome']}", accept_multiple_files=True, key=f"up_{i}")
                     relato = st.text_area("Relato da Entrega", key=f"rel_{i}")
                     
@@ -5476,7 +5502,6 @@ def aba_produtividade_inteligente():
             data = [st.session_state[f"res_{i}"] for i in range(5) if f"res_{i}" in st.session_state]
             df = pd.DataFrame(data)
             
-            # Gráfico de Barras Meta vs Realizado
             fig = go.Figure()
             fig.add_trace(go.Bar(x=df['KPI'], y=df['Meta'], name='Meta (Ideal)', marker_color='#cbd5e1'))
             fig.add_trace(go.Bar(x=df['KPI'], y=df['Real'], name='Auditado (Real)', marker_color='#1e3a8a'))
@@ -5486,7 +5511,6 @@ def aba_produtividade_inteligente():
             parecer_consolidado = "Análise auditada via GPT-4o confirma nexo causal sólido entre o POP e as evidências."
             st.info(f"**Parecer Consolidado:** {parecer_consolidado}")
             
-            # Botão de Download Laudo HTML
             html_ex = gerar_html_executivo(nome, df, parecer_consolidado)
             b64_ex = base64.b64encode(html_ex.encode()).decode()
             st.markdown(f'<a href="data:text/html;base64,{b64_ex}" download="Laudo_{nome}.html"><button style="width:100%; height:50px; background:#1e3a8a; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📥 Baixar Laudo Executivo HTML</button></a>', unsafe_allow_html=True)
@@ -5495,7 +5519,6 @@ def aba_produtividade_inteligente():
         st.header("🏆 Ranking de Produtividade Global")
         mock_rank = pd.DataFrame([{"Nome": nome, "Eficiência": 88}, {"Nome": "Maria", "Eficiência": 94}]).sort_values("Eficiência", ascending=False)
         st.table(mock_rank)
-
 # Iniciar
 if st.session_state.pagina == "produtividade":
     aba_produtividade_inteligente()
