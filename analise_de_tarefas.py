@@ -5424,21 +5424,13 @@ def gerar_html_manual_governanca():
 
 # 3. INTERFACE STREAMLIT
 def aba_produtividade_inteligente():
-    st.title("📈 Gestão de Performance baseada em POP")
+    st.title("📈 Gestão de Performance: Tríptico Pericial")
     
     t1, t2, t3, t4 = st.tabs(["📥 Entrada & Auditoria", "📊 Dashboard Executivo", "🏆 Ranking Global", "📖 Manual"])
 
-    with t4:
-        st.header("📖 Manual de Governança")
-        manual_html = gerar_html_manual_governanca()
-        st.components.v1.html(manual_html, height=400)
-        b64_m = base64.b64encode(manual_html.encode()).decode()
-        st.markdown(f'<a href="data:text/html;base64,{b64_m}" download="Manual_Governanca.html">📥 Baixar Manual em HTML</a>', unsafe_allow_html=True)
-
     with t1:
-        st.subheader("Vínculo POP e Upload de Evidências")
+        st.subheader("🛡️ Auditoria Forense Estratégica")
         
-        # --- NOVO BLOCO DE CARREGAMENTO AUTOMÁTICO ---
         caminho_dados = "dados"
         if not os.path.exists(caminho_dados):
             st.error("Pasta de 'dados' não encontrada.")
@@ -5449,76 +5441,91 @@ def aba_produtividade_inteligente():
         if arquivos:
             colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
             
-            # Carrega os dados do arquivo selecionado para preencher os campos automaticamente
             with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
-                colab_data = json.load(f)
+                colab = json.load(f)
             
-            # Recupera os dados do JSON (Ajustado para a estrutura do seu arquivo)
-            nome_sugerido = colab_data['campos'].get('nome_colaborador', colab_data['campos'].get('nome', ''))
-            cargo_sugerido = colab_data['campos'].get('cargo', '')
-            # O POP vem do dicionário processado ou da string de saída do módulo anterior
-            pop_texto_automatico = str(colab_data.get('pop_ia', '')) 
+            # Extração Automática de Dados
+            nome_colab = colab['campos'].get('nome_colaborador', colab['campos'].get('nome', 'Alvo'))
+            cargo_colab = colab['campos'].get('cargo', 'N/A').upper()
+            funcao_colab = colab['campos'].get('funcao', 'GESTÃO').upper()
+            objetivo_colab = colab['campos'].get('objetivo', '')
+            cursos_colab = colab['campos'].get('cursos', '')
 
-            c1, c2 = st.columns(2)
-            nome = c1.text_input("Nome do Colaborador", value=nome_sugerido)
-            cargo = c2.text_input("Cargo", value=cargo_sugerido)
-            
-            pop_texto = st.text_area("POP Estratégico (Regra do Cargo):", value=pop_texto_automatico, height=200)
-        else:
-            st.warning("Nenhum arquivo de dados encontrado para carregar.")
-            nome = st.text_input("Nome do Colaborador")
-            cargo = st.text_input("Cargo")
-            pop_texto = st.text_area("POP Estratégico (Regra do Cargo):")
-        # --- FIM DO BLOCO AUTOMÁTICO ---
+            st.info(f"**Auditando:** {nome_colab} | **Cargo:** {cargo_colab}")
 
-        if st.button("🚀 Gerar 5 KPIs Dinâmicos via IA"):
-            with st.spinner("IA Analisando POP..."):
-                config = definir_kpis_inteligentes_pop(pop_texto)
-                st.session_state['kpis_pop'] = config['kpis']
-                st.success("5 KPIs definidos com base no POP!")
+            if st.button("🚀 Gerar POP e Laudo de Eficiência Avançado"):
+                with st.spinner("Analisando dados e economizando créditos..."):
+                    pop_ia = buscar_benchmark_ia_estrategico(
+                        cargo_colab, funcao_colab, objetivo_colab, cursos_colab
+                    )
 
-        if 'kpis_pop' in st.session_state:
-            st.divider()
-            for i, kpi in enumerate(st.session_state['kpis_pop']):
-                with st.expander(f"KPI {i+1}: {kpi['nome']} (Meta: {kpi['benchmark']}%)"):
-                    st.info(f"**Legenda:** {kpi['legenda']}")
-                    files = st.file_uploader(f"Upload de Provas para {kpi['nome']}", accept_multiple_files=True, key=f"up_{i}")
-                    relato = st.text_area("Relato da Entrega", key=f"rel_{i}")
-                    
-                    if st.button("Auditar este Indicador", key=f"bt_{i}"):
-                        with st.spinner("Auditoria em curso..."):
-                            nomes = ", ".join([f.name for f in files]) if files else "Nenhum arquivo"
-                            auditoria = auditar_performance_ia(kpi, relato, nomes)
-                            st.session_state[f"res_{i}"] = {
-                                "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
-                                "Real": auditoria['realizado'], "Parecer": auditoria['parecer'],
-                                "Legenda": kpi['legenda'], "Status": auditoria['status']
-                            }
-                            st.success(f"Auditado: {auditoria['realizado']}%")
+                    if pop_ia:
+                        st.session_state['pop_ia_atual'] = pop_ia
+                        config_kpis = definir_kpis_inteligentes_pop(str(pop_ia))
+                        st.session_state['kpis_pop'] = config_kpis['kpis']
+                        st.success("POP e KPIs gerados com sucesso!")
+
+            if 'pop_ia_atual' in st.session_state:
+                st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
+                pop_ia = st.session_state['pop_ia_atual']
+                dados_ia = []
+                total_ia_diario = 0
+                for ativ, info in pop_ia.items():
+                    t, f = info['tempo'], info['freq'].upper()
+                    imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                    total_ia_diario += imp
+                    dados_ia.append({
+                        "Atividade": ativ, "Freq": f, "Tempo Base": f"{t}m",
+                        "Impacto Diário": f"{imp:.1f}m", "Meta": info['meta']
+                    })
+                
+                c1, c2 = st.columns(2)
+                c1.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
+                c2.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                st.table(pd.DataFrame(dados_ia))
+
+            if 'kpis_pop' in st.session_state:
+                st.divider()
+                st.subheader("🔍 Auditoria de Evidências")
+                for i, kpi in enumerate(st.session_state['kpis_pop']):
+                    with st.expander(f"KPI: {kpi['nome']} (Meta: {kpi['benchmark']}%)"):
+                        files = st.file_uploader(f"Provas para {kpi['nome']}", accept_multiple_files=True, key=f"up_{i}")
+                        relato = st.text_area("Relato da Entrega", key=f"rel_{i}")
+                        
+                        if st.button("Auditar Indicador", key=f"bt_{i}"):
+                            with st.spinner("Perícia em curso..."):
+                                nomes = ", ".join([f.name for f in files]) if files else "Nenhum arquivo"
+                                auditoria = auditar_performance_ia(kpi, relato, nomes)
+                                st.session_state[f"res_{i}"] = {
+                                    "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
+                                    "Real": auditoria['realizado'], "Parecer": auditoria['parecer'],
+                                    "Legenda": kpi['legenda'], "Status": auditoria['status']
+                                }
+                                st.success(f"Auditado: {auditoria['realizado']}%")
 
     with t2:
         if 'res_0' in st.session_state:
-            st.header(f"Dashboard: {nome}")
+            st.header(f"Dashboard: {nome_colab}")
             data = [st.session_state[f"res_{i}"] for i in range(5) if f"res_{i}" in st.session_state]
             df = pd.DataFrame(data)
-            
             fig = go.Figure()
-            fig.add_trace(go.Bar(x=df['KPI'], y=df['Meta'], name='Meta (Ideal)', marker_color='#cbd5e1'))
-            fig.add_trace(go.Bar(x=df['KPI'], y=df['Real'], name='Auditado (Real)', marker_color='#1e3a8a'))
-            fig.update_layout(barmode='group', title="Performance por Indicador")
+            fig.add_trace(go.Bar(x=df['KPI'], y=df['Meta'], name='Meta', marker_color='#cbd5e1'))
+            fig.add_trace(go.Bar(x=df['KPI'], y=df['Real'], name='Real', marker_color='#1e3a8a'))
             st.plotly_chart(fig, use_container_width=True)
             
-            parecer_consolidado = "Análise auditada via GPT-4o confirma nexo causal sólido entre o POP e as evidências."
-            st.info(f"**Parecer Consolidado:** {parecer_consolidado}")
-            
-            html_ex = gerar_html_executivo(nome, df, parecer_consolidado)
-            b64_ex = base64.b64encode(html_ex.encode()).decode()
-            st.markdown(f'<a href="data:text/html;base64,{b64_ex}" download="Laudo_{nome}.html"><button style="width:100%; height:50px; background:#1e3a8a; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📥 Baixar Laudo Executivo HTML</button></a>', unsafe_allow_html=True)
+            html_ex = gerar_html_executivo(nome_colab, df, "Auditoria confirmada via Tríptico Pericial.")
+            st.download_button("📥 Baixar Laudo Executivo", html_ex, file_name=f"Laudo_{nome_colab}.html", mime="text/html")
 
     with t3:
         st.header("🏆 Ranking de Produtividade Global")
-        mock_rank = pd.DataFrame([{"Nome": nome, "Eficiência": 88}, {"Nome": "Maria", "Eficiência": 94}]).sort_values("Eficiência", ascending=False)
+        # Ajustado de 'nome' para 'nome_colab' para evitar erro
+        mock_rank = pd.DataFrame([{"Nome": nome_colab, "Eficiência": 88}, {"Nome": "Maria", "Eficiência": 94}]).sort_values("Eficiência", ascending=False)
         st.table(mock_rank)
+
+    with t4:
+        st.header("📖 Manual de Governança")
+        st.components.v1.html(gerar_html_manual_governanca(), height=400)
+
 # Iniciar
 if st.session_state.pagina == "produtividade":
     aba_produtividade_inteligente()
