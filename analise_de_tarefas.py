@@ -5462,7 +5462,8 @@ def aba_produtividade_inteligente():
     with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
         colab = json.load(f)
     
-    nome_colab = colab['campos'].get('nome', colab['campos'].get('nome_colaborador', 'Alvo'))
+    # Busca o nome direto na raiz do JSON conforme o seu arquivo de dados
+    nome_colab = colab.get('colaborador', 'Alvo')
     st.info(f"👤 Monitorando: **{nome_colab}**")
 
     # 2. DEFINIÇÃO DAS ABAS (PRECISA ESTAR AQUI PARA t1, t2 EXISTIREM)
