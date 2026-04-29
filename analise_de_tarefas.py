@@ -5438,6 +5438,9 @@ def aba_produtividade_inteligente():
     total_m = 0  # Inicialização de segurança
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
+
+    # Defina as abas ANTES de qualquer verificação de arquivo
+    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
     
     # --- CARGA DO COLABORADOR ---
     caminho_dados = "dados"
@@ -5568,9 +5571,7 @@ def aba_produtividade_inteligente():
                         else:
                             st.warning("⚠️ O relato e os arquivos PDF são obrigatórios para a perícia.")
 
-    # Defina as abas ANTES de qualquer verificação de arquivo
-    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
-
+    
     with t2:
         st.header("📊 Dashboard Executivo")
         scores = [st.session_state[k] for k in st.session_state if k.startswith("score_")]
