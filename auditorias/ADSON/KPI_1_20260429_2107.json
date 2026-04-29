@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "Os documentos apresentados indicam conformidade nos registros de débito trabalhista e tributário, o que é um ponto positivo e relevante. A CNDT certifica que não há débitos trabalhistas, atendendo a um aspecto importante da conformidade. O recibo da DCTFWeb também confirma a entrega correta e tempestiva das obrigações acessórias fiscais para o período analisado. No entanto, não há menção ou documento que comprove diretamente a verificação dos dados de proventos da folha com o eSocial, nem a checagem de rubricas e possíveis inconsistências nos eventos de afastamento e desligamento.",
+    "gap_de_conformidade": [
+        "Falta de evidências diretas sobre a conferência da Malha Fiscal Trabalhista.",
+        "Ausência de documentação que comprove o cruzamento de dados com o eSocial.",
+        "Não há comprovação ou relatório específico sobre a validação dos eventos de afastamento (S-2230) e desligamento (S-2299)."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Regulatória do Departamento Pessoal",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validamos o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
