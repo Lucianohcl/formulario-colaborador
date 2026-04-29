@@ -117,6 +117,46 @@ if "objetivo" not in locals(): objetivo = ""
 nome_digitado = st.session_state.get("usuario_atual", "")
 # ============================================================
 
+
+def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, cursos):
+    """Gera o POP Estratégico baseado no cargo."""
+    prompt = f"Gere um POP para o cargo {cargo}, função {funcao}. Objetivo: {objetivo}. Cursos: {cursos}. Saída em JSON com tempo, freq e meta."
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[{"role": "system", "content": "Especialista em Processos e POPs."},
+                      {"role": "user", "content": prompt}],
+            response_format={"type": "json_object"}
+        )
+        return json.loads(response.choices[0].message.content)
+    except: return None
+
+def definir_kpis_inteligentes_pop(pop_texto):
+    """Gera os 5 KPIs baseados no POP gerado."""
+    prompt = f"Com base neste POP: {pop_texto}, defina 5 KPIs críticos em JSON: nome, benchmark, legenda, evidencia."
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "CPO - Chief Productivity Officer."},
+                  {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+def auditar_performance_ia(kpi, relato, arquivos_nomes):
+    """Audita as evidências enviadas."""
+    prompt = f"Audite: KPI {kpi['nome']}, Relato: {relato}, Provas: {arquivos_nomes}. Retorne JSON: realizado (0-100), parecer, status."
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+def aba_produtividade_inteligente():
+    # ... todo o código que você mandou da interface vem aqui ...
+    # Agora quando ele ler 'buscar_benchmark_ia_estrategico', ele já saberá o que é.
+
+
 def gerar_word(form):
     from docx import Document
     import io
