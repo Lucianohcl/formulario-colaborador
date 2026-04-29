@@ -5634,39 +5634,30 @@ def aba_produtividade_inteligente():
                 st.subheader("🔍 Últimos Relatos do Campo")
                 st.table(df_dash[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
 
-            else:
-                st.info("Sincronize os dados para carregar o dashboard.")
-
-        except Exception as e:
-            st.error(f"Erro no Dashboard T2: {e}")
-
-                # --- DETALHAMENTO ISOLADO (O QUE PUXA PRA BAIXO/CIMA) ---
+                # --- DETALHAMENTO ISOLADO (COLE EXATAMENTE AQUI) ---
                 st.markdown("---")
                 st.subheader("🎯 Diagnóstico por Indicador")
                 
-                # Criamos um expander para cada KPI encontrado nos dados filtrados
                 for kpi in df_ultimos['kpi_nome'].unique():
-                    dados_kpi = df_ultimos[df_ultimos['kpi_nome'] == kpi].iloc[-1] # Pega a última perícia desse KPI
+                    dados_kpi = df_ultimos[df_ultimos['kpi_nome'] == kpi].iloc[-1]
                     
                     nota = dados_kpi['percentual_alcance']
                     cor = "green" if nota >= 80 else "orange" if nota >= 50 else "red"
                     
                     with st.expander(f"🔍 Detalhes: {kpi} - :{cor}[{nota:.1f}%]"):
                         c1, c2 = st.columns([1, 2])
-                        
                         with c1:
                             st.write("**Veredito Técnico:**")
                             st.write(f"Status: `{dados_kpi['status_pericial']}`")
-                            
                         with c2:
                             st.write("**Análise do Auditor (IA):**")
                             st.info(dados_kpi['analise_critica'])
-                            
                             if dados_kpi.get('gap_de_conformidade'):
                                 st.warning("**O que faltou para 100%:**")
                                 for item in dados_kpi['gap_de_conformidade']:
                                     st.write(f"• {item}")
 
+                
     with t3:
         st.header("🏆 Ranking Global de Produtividade")
         
