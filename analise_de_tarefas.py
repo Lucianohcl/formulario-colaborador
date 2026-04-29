@@ -5282,9 +5282,11 @@ from openai import OpenAI
 from PyPDF2 import PdfReader
 from github import Github
 
-# 1. CONFIGURAÇÃO INICIAL
+# ==============================================================================
+# 1. CONFIGURAÇÕES DE ACESSO (SECRETS)
+# ==============================================================================
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+DB_TOKEN = st.secrets["DB_TOKEN"]  # Conforme sua instrução
 REPO_NAME = "lucianohcl/formulario-colaborador"
 
 # ==============================================================================
@@ -5323,54 +5325,115 @@ def estruturar_pop_completo_ia(texto_pdf):
 
 @st.cache_data(show_spinner="IA definindo 5 KPIs estratégicos...")
 def gerar_5_kpis_periciais(atividades_pop):
-    """Gera 5 KPIs baseados no POP extraído"""
-    prompt = f"Com base nestas atividades de trabalho: {json.dumps(atividades_pop)}, defina 5 KPIs periciais para auditoria. Retorne JSON: {{'kpis': [{{'nome': '...', 'objetivo': '...', 'evidencia_sugerida': '...'}}]}}"
+    """Gera 5 KPIs baseados no POP extraído com ID garantido"""
+    prompt = f"""
+    Com base nestas atividades de trabalho: {json.dumps(atividades_pop)}
+    
+    Defina 5 KPIs periciais estratégicos para auditoria. 
+    É OBRIGATÓRIO que cada KPI tenha um ID numérico (1 a 5).
+    
+    Retorne ESTRITAMENTE um JSON no seguinte formato:
+    {{
+      "kpis": [
+        {{
+          "id": 1,
+          "nome": "Nome do KPI",
+          "objetivo": "Objetivo detalhado",
+          "evidencia_sugerida": "O que auditar"
+        }}
+      ]
+    }}
+    """
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "system", "content": "Auditor Forense Sênior. Responda apenas com JSON."},
-                 {"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": "Auditor Forense Sênior. Você sempre entrega IDs numéricos sequenciais para os KPIs."},
+            {"role": "user", "content": prompt}
+        ],
         response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
 
-def salvar_pericia_no_github(nome_colab, kpi_info, relato, arquivos):
-    """Persistência Forense no Repositório GitHub"""
+@st.cache_data(show_spinner="IA realizando análise pericial...")
+def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
+    """
+    Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
+    """
+    # O PROMPT DA IA (A LOGICA DE CRITICA)
+    prompt_auditoria = f"""
+    Você é um Auditor Forense de Departamento Pessoal e Processos. 
+    Sua missão é dar um veredito técnico sobre a execução de um KPI.
+
+    DADOS DA PERÍCIA:
+    - KPI Analisado: {kpi_nome}
+    - Objetivo Esperado: {objetivo}
+    - Provas Sugeridas no POP: {evidencias_sugeridas}
+    - Relato de Execução do Funcionário: {relato_usuario}
+    - Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
+
+    SUA TAREFA:
+    Avalie a completude da evidência em relação ao objetivo. 
+    Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
+
+    CRITÉRIOS DE PONDERAÇÃO (Cada um vale 25%):
+    1. ADERÊNCIA: O documento enviado é o solicitado? (0-25)
+    2. INTEGRIDADE: Os dados do PDF confirmam o que foi escrito no relato? (0-25)
+    3. TEMPESTIVIDADE: As datas dos documentos são atuais/corretas? (0-25)
+    4. COMPLETUDE: O conjunto de provas é suficiente para dar o objetivo como alcançado? (0-25)
+
+    RETORNE ESTRITAMENTE UM JSON:
+    {{
+        "percentual_alcance": 0-100,
+        "status_pericial": "CONFORME / PARCIAL / NÃO CONFORME",
+        "analise_critica": "Descreva tecnicamente os acertos e falhas da prova.",
+        "gap_de_conformidade": ["Lista de itens que faltaram para chegar a 100%"],
+        "ponderacao_detalhada": {{
+            "aderencia": 0-25,
+            "integridade": 0-25,
+            "tempestividade": 0-25,
+            "completude": 0-25
+        }}
+    }}
+    """
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "Você é um auditor..."},
+            {"role": "user", "content": prompt_auditoria}
+        ],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+def salvar_pericia_no_github(nome_colab, kpi_info, dados_finais):
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
         
         data_slug = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
-        # Pasta: auditorias/Nome_Colaborador/KPI_X_Data.json
-        file_path = f"auditorias/{nome_colab}/KPI_{kpi_info['id']}_{data_slug}.json".replace(" ", "_")
+        folder_path = f"auditorias/{nome_colab}".replace(" ", "_")
+        file_path = f"{folder_path}/KPI_{kpi_info['id']}_{data_slug}.json"
         
-        pacote_dados = {
-            "auditoria_id": data_slug,
-            "colaborador": nome_colab,
-            "kpi_nome": kpi_info['nome'],
-            "objetivo": kpi_info['objetivo'],
-            "relato_conformidade": relato,
-            "evidencias_arquivos": [f.name for f in arquivos],
-            "data_registro": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M:%S")
-        }
-        
-        conteudo_json = json.dumps(pacote_dados, ensure_ascii=False, indent=4)
+        conteudo_json = json.dumps(dados_finais, ensure_ascii=False, indent=4)
         
         repo.create_file(
             path=file_path,
-            message=f"pericia: {kpi_info['nome']} - {nome_colab}",
+            message=f"pericia: KPI {kpi_info['id']} ({dados_finais['percentual_alcance']}%) - {nome_colab}",
             content=conteudo_json,
             branch="main"
         )
-        return True
+        return f"https://github.com/{REPO_NAME}/blob/main/{file_path}"
     except Exception as e:
         st.error(f"Erro ao salvar no GitHub: {e}")
-        return False
+        return None
 
 # ==============================================================================
 # INTERFACE PRINCIPAL
 # ==============================================================================
 
 def aba_produtividade_inteligente():
+    total_m = 0  # Inicialização de segurança
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
     
@@ -5392,6 +5455,12 @@ def aba_produtividade_inteligente():
     # --- UPLOAD DO POP (FONTE DA VERDADE) ---
     st.subheader("📁 POP de Referência (PDF)")
     arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
+
+if arquivo_pop:
+    if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
+        if 'kpis_sessao' in st.session_state:
+            del st.session_state.kpis_sessao
+        st.session_state.ultimo_pop = arquivo_pop.name
 
     t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
@@ -5443,14 +5512,33 @@ def aba_produtividade_inteligente():
                     )
                     
                     if st.button("🚀 Auditar KPI", key=f"btn_{i}"):
-                        if evidencias:
-                            st.success(f"KPI '{kpi['nome']}' enviado com {len(evidencias)} evidência(s).")
-                            # Salva resultado fictício para o dashboard
-                            st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": 90}
+                        if evidencias and relato:
+                            with st.spinner(f"IA periciando {kpi['nome']}..."):
+                                # 1. Extração real do conteúdo dos PDFs anexados
+                                texto_das_provas = "".join([extrair_texto_pdf(e) for e in evidencias])
+                                
+                                # 2. Chamada ao Motor de Crítica (IA)
+                                resultado = realizar_critica_universal(
+                                    kpi['nome'], 
+                                    kpi['objetivo'], 
+                                    kpi['evidencia_sugerida'], 
+                                    relato, 
+                                    texto_das_provas
+                                )
+                                
+                                # 3. Exibição Instantânea do Veredito
+                                st.markdown("---")
+                                st.subheader(f"⚖️ Resultado: {resultado['percentual_alcance']}%")
+                                st.info(f"**Análise Forense:** {resultado['analise_critica']}")
+                                
+                                # 4. Persistência no GitHub (Banco de Dados)
+                                url_git = salvar_pericia_no_github(nome_colab, kpi, resultado)
+                                
+                                if url_git:
+                                    st.success("✅ Registro imortalizado no GitHub!")
+                                    st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
                         else:
-                            st.warning("Anexe ao menos uma evidência em PDF para validar a perícia.")
-        else:
-            st.warning("⚠️ Aguardando upload do POP para iniciar a perícia.")
+                            st.warning("⚠️ O relato e os arquivos PDF são obrigatórios para a perícia.")
 
     with t2:
         st.header("📊 Dashboard Executivo")
