@@ -5517,7 +5517,7 @@ def aba_produtividade_inteligente():
                 dados_ia = []
                 total_ia_diario = 0
                 for ativ, info in pop_ia.items():
-                    if isinstance(info, dict):
+                    if isinstance(info, dict) and "TOTAL" not in ativ.upper():
                         t = info.get('tempo', info.get('tempo_estimado', 0))
                         f = str(info.get('freq', 'DIÁRIA')).upper()
                         impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
