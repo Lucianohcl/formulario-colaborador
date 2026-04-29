@@ -5409,10 +5409,9 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     return resultado
 
 def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
-    # Adiciona o relato do usuário ao dicionário de resultados
+    # 1. Adiciona o relato e o nome do KPI ao dicionário de resultados
     resultado['relato_do_auditor'] = relato_usuario
-    resultado['kpi_nome'] = kpi['nome']  # <--- AGORA O PYTHON ENTENDE
-
+    resultado['kpi_nome'] = kpi['nome']
 
     try:
         g = Github(DB_TOKEN)
@@ -5420,21 +5419,27 @@ def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
         
         data_slug = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
         folder_path = f"auditorias/{nome_colab}".replace(" ", "_")
-        file_path = f"{folder_path}/KPI_{kpi_info['id']}_{data_slug}.json"
         
-        conteudo_json = json.dumps(dados_finais, ensure_ascii=False, indent=4)
+        # 2. AJUSTADO: Mudamos kpi_info['id'] para kpi.get('id', 'inf')
+        # Usamos .get() para que o código não quebre caso o KPI não tenha a chave 'id'
+        kpi_id = kpi.get('id', 'id_nao_definido')
+        file_path = f"{folder_path}/KPI_{kpi_id}_{data_slug}.json".replace(" ", "_")
+        
+        # 3. AJUSTADO: Certifique-se de que 'dados_finais' seja o seu dicionário 'resultado'
+        conteudo_json = json.dumps(resultado, ensure_ascii=False, indent=4)
         
         repo.create_file(
             path=file_path,
-            message=f"pericia: KPI {kpi_info['id']} ({dados_finais['percentual_alcance']}%) - {nome_colab}",
+            # AJUSTADO: Mudamos kpi_info para kpi
+            message=f"pericia: KPI {kpi_id} ({resultado.get('percentual_alcance', 0)}%) - {nome_colab}",
             content=conteudo_json,
             branch="main"
         )
         return f"https://github.com/{REPO_NAME}/blob/main/{file_path}"
+        
     except Exception as e:
         st.error(f"Erro ao salvar no GitHub: {e}")
         return None
-
 # ==============================================================================
 # INTERFACE PRINCIPAL
 # ==============================================================================
