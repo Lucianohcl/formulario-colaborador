@@ -5439,9 +5439,7 @@ def aba_produtividade_inteligente():
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
 
-    # Defina as abas ANTES de qualquer verificação de arquivo
-    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
-    
+        
     # --- CARGA DO COLABORADOR ---
     caminho_dados = "dados"
     if not os.path.exists(caminho_dados):
@@ -5456,6 +5454,9 @@ def aba_produtividade_inteligente():
     
     nome_colab = colab['campos'].get('nome', colab['campos'].get('nome_colaborador', 'Alvo'))
     st.info(f"👤 Monitorando: **{nome_colab}**")
+
+    # Defina as abas ANTES de qualquer verificação de arquivo
+    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
 
     pasta_colab = f"auditorias/{nome_colab}".replace(" ", "_")
 
