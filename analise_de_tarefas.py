@@ -5516,10 +5516,14 @@ def aba_produtividade_inteligente():
                 pop_ia = st.session_state['pop_ia_atual']
                 dados_ia = []
                 total_ia_diario = 0
+                
                 for ativ, info in pop_ia.items():
+                    # FILTRO CRÍTICO: Só processa se for um dicionário e não for a linha de TOTAL
                     if isinstance(info, dict) and "TOTAL" not in str(ativ).upper():
                         t = info.get('tempo', info.get('tempo_estimado', 0))
                         f = str(info.get('freq', 'DIÁRIA')).upper()
+                        
+                        # Cálculo de impacto diário proporcional
                         impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
                         
                         total_ia_diario += impacto
@@ -5531,9 +5535,14 @@ def aba_produtividade_inteligente():
                             "Meta": info.get('meta', 'Meta não definida')
                         })
                 
+                # Exibição dos KPIs de Carga Horária
                 c1, c2 = st.columns(2)
                 c1.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                c2.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                
+                # Eficiência baseada na constante de 480min/dia
+                eficiencia = (total_ia_diario / 480) * 100
+                c2.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
+                
                 st.table(pd.DataFrame(dados_ia))
 
             if 'kpis_pop' in st.session_state:
