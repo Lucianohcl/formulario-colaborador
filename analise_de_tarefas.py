@@ -5280,9 +5280,12 @@ import json
 import os
 from openai import OpenAI
 from PyPDF2 import PdfReader
+from github import Github
 
 # 1. CONFIGURAÇÃO INICIAL
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO_NAME = "lucianohcl/formulario-colaborador"
 
 # ==============================================================================
 # MOTOR DE INTELIGÊNCIA (EXTRAÇÃO E KPIs)
@@ -5329,6 +5332,39 @@ def gerar_5_kpis_periciais(atividades_pop):
         response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
+
+def salvar_pericia_no_github(nome_colab, kpi_info, relato, arquivos):
+    """Persistência Forense no Repositório GitHub"""
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+        
+        data_slug = pd.Timestamp.now().strftime("%Y%m%d_%H%M")
+        # Pasta: auditorias/Nome_Colaborador/KPI_X_Data.json
+        file_path = f"auditorias/{nome_colab}/KPI_{kpi_info['id']}_{data_slug}.json".replace(" ", "_")
+        
+        pacote_dados = {
+            "auditoria_id": data_slug,
+            "colaborador": nome_colab,
+            "kpi_nome": kpi_info['nome'],
+            "objetivo": kpi_info['objetivo'],
+            "relato_conformidade": relato,
+            "evidencias_arquivos": [f.name for f in arquivos],
+            "data_registro": pd.Timestamp.now().strftime("%d/%m/%Y %H:%M:%S")
+        }
+        
+        conteudo_json = json.dumps(pacote_dados, ensure_ascii=False, indent=4)
+        
+        repo.create_file(
+            path=file_path,
+            message=f"pericia: {kpi_info['nome']} - {nome_colab}",
+            content=conteudo_json,
+            branch="main"
+        )
+        return True
+    except Exception as e:
+        st.error(f"Erro ao salvar no GitHub: {e}")
+        return False
 
 # ==============================================================================
 # INTERFACE PRINCIPAL
