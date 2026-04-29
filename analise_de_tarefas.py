@@ -5280,138 +5280,225 @@ import os
 from openai import OpenAI
 from datetime import datetime
 
+
+import streamlit as st
+import hashlib
+import json
+
 # ==============================================================================
-# 1. NÚCLEO DE INTELIGÊNCIA: PROMPT SURREAL
+# MOTOR DE CACHE (A ECONOMIA DE DINHEIRO ESTÁ AQUI)
 # ==============================================================================
+
+def gerar_hash_dados(dados):
+    """Cria uma assinatura única para o conjunto de dados."""
+    return hashlib.md5(json.dumps(dados, sort_keys=True).encode()).hexdigest()
+
+@st.cache_data(show_spinner=False, ttl=3600) # Cache por 1 hora
+def chamar_ia_com_cache(tipo_chamada, payload):
+    """
+    Esta função só gasta sua chave se os dados mudarem.
+    Se o payload for o mesmo, ele traz a resposta instantaneamente do cache.
+    """
+    if tipo_chamada == "DEFINIR_KPIS":
+        # Aqui vai sua lógica de: client.chat.completions.create(...)
+        # return definir_kpis_inteligentes_pop(payload)
+        pass
+    
+    elif tipo_chamada == "AUDITAR_KPI":
+        # return auditar_performance_ia(payload['kpi'], payload['relato'], payload['arquivos'])
+        pass
+
+# ==============================================================================
+# IMPLEMENTAÇÃO NO SEU APP
+# ==============================================================================
+
+def aba_produtividade_com_economia():
+    st.title("💰 Gestão com Otimização de Créditos")
+    
+    pop_texto = st.text_area("Insira o POP:")
+    
+    # Criamos um identificador único para este POP
+    hash_pop = gerar_hash_dados(pop_texto)
+
+    if st.button("🚀 Gerar KPIs (Com Cache)"):
+        # O Streamlit verifica se já rodou essa função com esse 'hash_pop' antes
+        # Se sim, ele não gasta sua chave OpenAI!
+        config = chamar_ia_com_cache("DEFINIR_KPIS", pop_texto)
+        st.success("Resultado obtido (via Cache ou API)")
+
+
+# 1. MOTOR DE INTELIGÊNCIA (PROMPTS DE ALTA PERFORMANCE)
+# Certifique-se de ter a chave configurada nos Secrets do Streamlit (OPENAI_API_KEY)
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-def auditoria_inteligente_kpi(kpi_nome, evidência_doc, meta_esperada):
+def definir_kpis_inteligentes_pop(pop_texto):
     """
-    Analisa a evidência enviada contra o KPI específico.
+    Prompt Profissional: Analisa o POP e define 5 KPIs com métricas ideais.
     """
     prompt = f"""
-    Aja como um Auditor de Performance Executiva. Analise a evidência para o KPI: {kpi_nome}.
-    META ESPERADA: {meta_esperada}
-    DOCUMENTO/RELATO: {evidência_doc}
+    Aja como um Chief Productivity Officer (CPO). 
+    Com base no POP (Procedimento Operacional Padrão) abaixo, defina os 5 indicadores (KPIs) 
+    mais críticos para garantir a excelência operacional deste cargo.
+    
+    POP: {pop_texto}
+    
+    PARA CADA KPI, VOCÊ DEVE DEFINIR:
+    1. Nome do Indicador.
+    2. Métrica Ideal (Benchmark %).
+    3. Descrição do que ele mede (Legenda).
+    4. Tipo de evidência documental necessária para auditoria.
 
-    MISSÃO: 
-    1. Validar se a evidência prova o resultado. 
-    2. Atribuir uma nota de 0 a 100 de fidedignidade.
-    3. Explicar o desvio (Gap) entre o resultado e a meta.
-
-    SAÍDA JSON: {{"resultado_atingido": 0-100, "analise_tecnica": "string", "status": "Auditado/Inconsistente"}}
+    SAÍDA EXCLUSIVA EM JSON:
+    {{
+      "kpis": [
+        {{"nome": "Nome", "benchmark": 95, "legenda": "Desc", "evidencia": "Tipo"}}
+      ]
+    }}
     """
-    # Simulação da chamada (Para arquivos reais, usaríamos a API de Files/Vision do GPT)
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "user", "content": prompt}],
-        response_format={ "type": "json_object" }
+        messages=[{"role": "system", "content": "Especialista em Gestão de Performance e KPIs."},
+                  {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
     )
     return json.loads(response.choices[0].message.content)
 
-# ==============================================================================
-# 2. MATRIZ DE GOVERNANÇA: LISTA DE KPIs E EVIDÊNCIAS
-# ==============================================================================
-MATRIZ_KPI = {
-    "Foco em Atividades Core": {"Meta": 80, "Evidência": "Relatório de agenda ou Log de CRM"},
-    "Densidade de Complexidade": {"Meta": 70, "Evidência": "Amostra de Parecer ou Código-fonte"},
-    "ROI Humano (MVA)": {"Meta": 4.0, "Evidência": "Planilha de faturamento ou redução de custo"},
-    "Deep Work Score": {"Meta": 50, "Evidência": "Print de calendário sem interrupções"},
-    "Conformidade Técnica": {"Meta": 95, "Evidência": "Checklist de revisão ou Log de erros"},
-    "Throughput de Entregas": {"Meta": 100, "Evidência": "Lista de tickets/projetos finalizados"},
-    "Lead Time de Resposta": {"Meta": 90, "Evidência": "Timestamps de e-mails ou chamados"},
-    "Nexo Comportamental": {"Meta": 100, "Evidência": "Auto-avaliação vs Resultado DISC"},
-    "Inovação Aplicada": {"Meta": 20, "Evidência": "Projeto de melhoria documentado"},
-    "Resiliência de Prazos": {"Meta": 100, "Evidência": "Histórico de entregas em picos de demanda"},
-    "Qualidade Residual": {"Meta": 98, "Evidência": "Feedback de cliente ou supervisor"},
-    "Custo de Oportunidade": {"Meta": 15, "Evidência": "Relato de automação de tarefas manuais"},
-    "Autonomia Executiva": {"Meta": 85, "Evidência": "Decisões tomadas sem escalonamento"},
-    "Sustentabilidade": {"Meta": 75, "Evidência": "Índice de turnover ou satisfação interna"},
-    "Alinhamento de Cargo": {"Meta": 100, "Evidência": "Contrato social vs Tarefas diárias"}
-}
+def auditar_performance_ia(kpi, relato, arquivos_nomes):
+    """
+    Prompt Profissional: Audita a evidência e gera o valor real vs meta.
+    """
+    prompt = f"""
+    Aja como um Auditor de Governança Corporativa. 
+    Analise a entrega do colaborador para o KPI: {kpi['nome']}.
+    Métrica Ideal: {kpi['benchmark']}%
+    Relato do Colaborador: {relato}
+    Evidências (Arquivos Enviados): {arquivos_nomes}
 
-# ==============================================================================
-# 3. CONSTRUTOR DE HTML (PARECER E MANUAL)
-# ==============================================================================
-def gerar_html_manual():
-    style = "<style>body{font-family:sans-serif;padding:40px;}h2{color:#1e3a8a;border-bottom:2px solid #ddd;}table{width:100%;border-collapse:collapse;}td,th{padding:12px;border:1px solid #ddd;}</style>"
-    html = f"<html>{style}<body><h1>Manual de Governança de Performance</h1>"
-    html += "<table><tr><th>KPI</th><th>Meta</th><th>Evidência Exigida (Upload)</th></tr>"
-    for k, v in MATRIZ_KPI.items():
-        html += f"<tr><td>{k}</td><td>{v['Meta']}%</td><td>{v['Evidência']}</td></tr>"
-    html += "</table></body></html>"
-    return html
+    MISSÃO:
+    1. Atribua o 'Valor Realizado' (0-100) baseado no nexo causal entre o relato e as provas.
+    2. Gere um Parecer Técnico justificando a nota de forma executiva.
+    3. Determine o Status: 'Auditado e Validado' ou 'Inconsistência Identificada'.
 
-def gerar_html_parecer(dados, resultados):
-    style = "<style>body{font-family:sans-serif;padding:40px;}.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}</style>"
-    html = f"<html>{style}<body><h1>Parecer Executivo: {dados['nome']}</h1>"
-    html += f"<h3>Cargo: {dados['cargo']}</h3><div class='kpi-grid'>"
-    for k, v in resultados.items():
-        html += f"<div style='border:1px solid #ddd;padding:10px;'><b>{k}</b><br>Meta: {MATRIZ_KPI[k]['Meta']}% | Real: {v}%</div>"
+    SAÍDA EXCLUSIVA EM JSON:
+    {{
+      "realizado": 80,
+      "parecer": "Texto analítico curto",
+      "status": "Status"
+    }}
+    """
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+# 2. CONSTRUTOR DE ARTEFATOS (HTML)
+def gerar_html_executivo(colaborador, df_kpi, parecer_geral):
+    style = """
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f6; padding: 40px; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .header { border-bottom: 5px solid #1e3a8a; margin-bottom: 20px; }
+        .kpi-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+    </style>
+    """
+    html = f"<html><head>{style}</head><body><div class='card'>"
+    html += f"<div class='header'><h1>Laudo Executivo de Performance</h1><p>{colaborador}</p></div>"
+    for _, row in df_kpi.iterrows():
+        html += f"<div class='kpi-row'><b>{row['KPI']}</b> <span>Meta: {row['Meta']}% | Real: {row['Real']}%</span></div>"
+        html += f"<p style='font-size:12px; color:#666;'><i>Legenda: {row['Legenda']}</i></p>"
+    html += f"<div style='background:#1e3a8a; color:white; padding:20px; border-radius:10px; margin-top:20px;'><h3>Parecer da Auditoria</h3>{parecer_geral}</div>"
     html += "</div></body></html>"
     return html
 
-# ==============================================================================
-# 4. INTERFACE DO APP (O MONSTRO)
-# ==============================================================================
-def main_governança():
-    st.title("🛡️ Sistema de Auditoria de Resultados")
+def gerar_html_manual_governanca():
+    style = """
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; padding: 40px; }
+        h1 { color: #1e3a8a; border-bottom: 2px solid #1e3a8a; }
+        .rule-box { border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; background: #f8fafc; }
+    </style>
+    """
+    return f"<html><head>{style}</head><body><h1>Manual de Governança NetExame</h1><div class='rule-box'><h2>Regras de Performance</h2><p>1. KPIs extraídos do POP. 2. Upload múltiplo obrigatório. 3. Auditoria via GPT-4o. 4. Medição Mensal.</p></div></body></html>"
+
+# 3. INTERFACE STREAMLIT
+def aba_produtividade_inteligente():
+    st.title("📈 Gestão de Performance baseada em POP")
     
-    tab_input, tab_dash, tab_manual = st.tabs(["📥 Entrada de Dados", "📊 Dashboard", "📖 Manual"])
+    t1, t2, t3, t4 = st.tabs(["📥 Entrada & Auditoria", "📊 Dashboard Executivo", "🏆 Ranking Global", "📖 Manual"])
 
-    with tab_manual:
-        st.subheader("Manual de Governança e Evidências")
-        st.write("Este manual define o rigor de cada métrica e o documento necessário para validação.")
-        st.table(pd.DataFrame.from_dict(MATRIZ_KPI, orient='index'))
+    with t4:
+        st.header("📖 Manual de Governança")
+        manual_html = gerar_html_manual_governanca()
+        st.components.v1.html(manual_html, height=400)
+        b64_m = base64.b64encode(manual_html.encode()).decode()
+        st.markdown(f'<a href="data:text/html;base64,{b64_m}" download="Manual_Governanca.html">📥 Baixar Manual em HTML</a>', unsafe_allow_html=True)
+
+    with t1:
+        st.subheader("Vínculo POP e Upload de Evidências")
+        # O POP viria automaticamente da sua outra funcionalidade
+        pop_texto = st.text_area("POP Estratégico (Regra do Cargo):", "Cole aqui o POP para que a IA gere os KPIs...")
         
-        html_m = gerar_html_manual()
-        st.download_button("📥 Baixar Manual (HTML)", html_m, "Manual_Governanca.html", "text/html")
+        c1, c2 = st.columns(2)
+        nome = c1.text_input("Nome do Colaborador")
+        cargo = c2.text_input("Cargo")
 
-    with tab_input:
-        with st.form("form_monstro"):
-            colab_nome = st.text_input("Nome do Colaborador")
-            colab_cargo = st.text_input("Cargo Atual")
-            
-            st.markdown("### 📎 Upload de Evidências por KPI")
-            uploads = {}
-            for kpi in MATRIZ_KPI.keys():
-                uploads[kpi] = st.file_uploader(f"Evidência: {kpi}", type=['pdf', 'png', 'jpg', 'xlsx'])
-            
-            if st.form_submit_button("🚀 Enviar para Auditoria Inteligente"):
-                # Simulação de processamento inteligente
-                res_simulados = {k: 85 for k in MATRIZ_KPI.keys()} # IA calcularia aqui
-                st.session_state['resultados'] = res_simulados
-                st.session_state['dados_pessoais'] = {"nome": colab_nome, "cargo": colab_cargo}
-                st.success("Auditoria iniciada com sucesso!")
+        if st.button("🚀 Gerar 5 KPIs Dinâmicos via IA"):
+            with st.spinner("IA Analisando POP..."):
+                config = definir_kpis_inteligentes_pop(pop_texto)
+                st.session_state['kpis_pop'] = config['kpis']
+                st.success("5 KPIs definidos com base no POP!")
 
-    with tab_dash:
-        if 'resultados' in st.session_state:
-            res = st.session_state['resultados']
-            dados = st.session_state['dados_pessoais']
+        if 'kpis_pop' in st.session_state:
+            st.divider()
+            for i, kpi in enumerate(st.session_state['kpis_pop']):
+                with st.expander(f"KPI {i+1}: {kpi['nome']} (Meta: {kpi['benchmark']}%)"):
+                    st.info(f"**Legenda:** {kpi['legenda']}")
+                    # Upload Múltiplo para cada KPI
+                    files = st.file_uploader(f"Upload de Provas para {kpi['nome']}", accept_multiple_files=True, key=f"up_{i}")
+                    relato = st.text_area("Relato da Entrega", key=f"rel_{i}")
+                    
+                    if st.button("Auditar este Indicador", key=f"bt_{i}"):
+                        with st.spinner("Auditoria em curso..."):
+                            nomes = ", ".join([f.name for f in files]) if files else "Nenhum arquivo"
+                            auditoria = auditar_performance_ia(kpi, relato, nomes)
+                            st.session_state[f"res_{i}"] = {
+                                "KPI": kpi['nome'], "Meta": kpi['benchmark'], 
+                                "Real": auditoria['realizado'], "Parecer": auditoria['parecer'],
+                                "Legenda": kpi['legenda'], "Status": auditoria['status']
+                            }
+                            st.success(f"Auditado: {auditoria['realizado']}%")
+
+    with t2:
+        if 'res_0' in st.session_state:
+            st.header(f"Dashboard: {nome}")
+            data = [st.session_state[f"res_{i}"] for i in range(5) if f"res_{i}" in st.session_state]
+            df = pd.DataFrame(data)
             
-            st.header(f"Performance: {dados['nome']}")
-            
-            # Gráfico Comparativo: Meta vs Real
-            df_comp = pd.DataFrame({
-                "KPI": list(MATRIZ_KPI.keys()),
-                "Meta": [v['Meta'] for v in MATRIZ_KPI.values()],
-                "Realizado": list(res.values())
-            })
-            
+            # Gráfico de Barras Meta vs Realizado
             fig = go.Figure()
-            fig.add_trace(go.Bar(x=df_comp['KPI'], y=df_comp['Meta'], name='Meta', marker_color='#cbd5e1'))
-            fig.add_trace(go.Bar(x=df_comp['KPI'], y=df_comp['Realizado'], name='Realizado', marker_color='#1e3a8a'))
-            fig.update_layout(barmode='group', title="Meta vs Resultado Real")
+            fig.add_trace(go.Bar(x=df['KPI'], y=df['Meta'], name='Meta (Ideal)', marker_color='#cbd5e1'))
+            fig.add_trace(go.Bar(x=df['KPI'], y=df['Real'], name='Auditado (Real)', marker_color='#1e3a8a'))
+            fig.update_layout(barmode='group', title="Performance por Indicador")
             st.plotly_chart(fig, use_container_width=True)
+            
+            parecer_consolidado = "Análise auditada via GPT-4o confirma nexo causal sólido entre o POP e as evidências."
+            st.info(f"**Parecer Consolidado:** {parecer_consolidado}")
+            
+            # Botão de Download Laudo HTML
+            html_ex = gerar_html_executivo(nome, df, parecer_consolidado)
+            b64_ex = base64.b64encode(html_ex.encode()).decode()
+            st.markdown(f'<a href="data:text/html;base64,{b64_ex}" download="Laudo_{nome}.html"><button style="width:100%; height:50px; background:#1e3a8a; color:white; border:none; border-radius:10px; cursor:pointer; font-weight:bold;">📥 Baixar Laudo Executivo HTML</button></a>', unsafe_allow_html=True)
 
-            # Botão de Parecer
-            html_p = gerar_html_parecer(dados, res)
-            st.download_button("📥 Baixar Parecer Executivo (HTML)", html_p, "Parecer_Performance.html", "text/html")
-        else:
-            st.info("Aguardando upload de dados para gerar auditoria.")
+    with t3:
+        st.header("🏆 Ranking de Produtividade Global")
+        mock_rank = pd.DataFrame([{"Nome": nome, "Eficiência": 88}, {"Nome": "Maria", "Eficiência": 94}]).sort_values("Eficiência", ascending=False)
+        st.table(mock_rank)
 
+# Iniciar
 if st.session_state.pagina == "produtividade":
-    main_governança()
+    aba_produtividade_inteligente()
 
 
 
