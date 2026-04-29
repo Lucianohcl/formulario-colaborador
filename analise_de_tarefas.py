@@ -4624,7 +4624,12 @@ if st.session_state.get("pagina") == "parecer":
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            colaborador_file = st.selectbox("🎯 Selecione o Alvo da Auditoria:", arquivos)
+            # No local do erro (linha 5339 do seu analise_de_tarefas.py)
+            colaborador_file = st.selectbox(
+                "🎯 Selecione o Alvo da Auditoria:", 
+                arquivos, 
+                key="selectbox_auditoria_forense_unique" # Isso mata o erro de duplicidade
+            )
             
             if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
                 with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
