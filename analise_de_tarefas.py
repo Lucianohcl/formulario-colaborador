@@ -5438,9 +5438,8 @@ def aba_produtividade_inteligente():
     total_m = 0  # Inicialização de segurança
     st.title("🛡️ NetExame: Auditoria Forense Estratégica")
     st.markdown("---")
-
-        
-    # --- CARGA DO COLABORADOR ---
+    
+    # 1. CARGA DO COLABORADOR (CONTROLE MESTRE NO TOPO)
     caminho_dados = "dados"
     if not os.path.exists(caminho_dados):
         st.error("Pasta 'dados' não encontrada.")
@@ -5455,24 +5454,27 @@ def aba_produtividade_inteligente():
     nome_colab = colab['campos'].get('nome', colab['campos'].get('nome_colaborador', 'Alvo'))
     st.info(f"👤 Monitorando: **{nome_colab}**")
 
-    # --- UPLOAD DO POP (FONTE DA VERDADE) ---
-    st.subheader("📁 POP de Referência (PDF)")
-    arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
-
-    if arquivo_pop:
-        if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
-            if 'kpis_sessao' in st.session_state:
-                del st.session_state.kpis_sessao
-            st.session_state.ultimo_pop = arquivo_pop.name
-
+    # 2. DEFINIÇÃO DAS ABAS (PRECISA ESTAR AQUI PARA t1, t2 EXISTIREM)
+    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
     
+    pasta_colab = f"auditorias/{nome_colab}".replace(" ", "_")
+
+    # 3. ABA DE PERÍCIA (TUDO QUE DEPENDE DE t1)
     with t1:
+        st.subheader("📁 POP de Referência (PDF)")
+        arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
+
         if arquivo_pop:
-            # 1. Processamento do POP
+            if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
+                if 'kpis_sessao' in st.session_state:
+                    del st.session_state.kpis_sessao
+                st.session_state.ultimo_pop = arquivo_pop.name
+
+            # Processamento do POP
             texto_pdf = extrair_texto_pdf(arquivo_pop)
             pop_data = estruturar_pop_completo_ia(texto_pdf)
             
-            # 2. Exibição da Tabela de Eficiência
+            # Exibição da Tabela de Eficiência
             st.subheader("📚 Quadro de Eficiência (Baseado no PDF)")
             lista_tabela = []
             total_m = 0
@@ -5492,7 +5494,7 @@ def aba_produtividade_inteligente():
             
             st.dataframe(pd.DataFrame(lista_tabela), use_container_width=True, hide_index=True)
 
-            # 3. Geração de KPIs para Auditoria
+            # Geração de KPIs para Auditoria
             st.markdown("---")
             st.subheader("🕵️ Iniciar Perícia por KPI")
             
@@ -5504,7 +5506,6 @@ def aba_produtividade_inteligente():
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
                     
-                    # Relato e Múltiplos Uploads
                     relato = st.text_area("Relato da conformidade:", key=f"rel_{i}")
                     evidencias = st.file_uploader(
                         "Anexar Provas (PDFs)", 
@@ -5516,10 +5517,7 @@ def aba_produtividade_inteligente():
                     if st.button("🚀 Auditar KPI", key=f"btn_{i}"):
                         if evidencias and relato:
                             with st.spinner(f"IA periciando {kpi['nome']}..."):
-                                # 1. Extração real do conteúdo dos PDFs anexados
                                 texto_das_provas = "".join([extrair_texto_pdf(e) for e in evidencias])
-                                
-                                # 2. Chamada ao Motor de Crítica (IA)
                                 resultado = realizar_critica_universal(
                                     kpi['nome'], 
                                     kpi['objetivo'], 
@@ -5527,52 +5525,18 @@ def aba_produtividade_inteligente():
                                     relato, 
                                     texto_das_provas
                                 )
-                                
-                                # 3. Exibição Instantânea do Veredito
                                 st.markdown("---")
                                 st.subheader(f"⚖️ Resultado: {resultado['percentual_alcance']}%")
                                 st.info(f"**Análise Forense:** {resultado['analise_critica']}")
                                 
-                                # 4. Persistência no GitHub (Banco de Dados)
                                 url_git = salvar_pericia_no_github(nome_colab, kpi, resultado)
-                                
                                 if url_git:
                                     st.success("✅ Registro imortalizado no GitHub!")
                                     st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
                         else:
-                            st.warning("⚠️ O relato e os arquivos PDF são obrigatórios para a perícia.")
+                            st.warning("⚠️ O relato e os arquivos PDF são obrigatórios.")
 
-    # Defina as abas ANTES de qualquer verificação de arquivo
-    t1, t2, t3 = st.tabs(["📥 Perícia e Evidências", "📊 Dashboard", "🏆 Ranking"])
-
-    pasta_colab = f"auditorias/{nome_colab}".replace(" ", "_")
-
-    def carregar_resultados_salvos(pasta):
-        resultados = []
-        if os.path.exists(pasta):
-            for arquivo in os.listdir(pasta):
-                if arquivo.endswith(".json"):
-                    with open(os.path.join(pasta, arquivo), 'r', encoding='utf-8') as f:
-                        resultados.append(json.load(f))
-        return resultados
-
-    with t2:
-        st.header("📊 Dashboard Executivo")
-        dados_salvos = carregar_resultados_salvos(pasta_colab)
-        
-        if dados_salvos:
-            df_score = pd.DataFrame([
-                {"KPI": d.get("kpi_nome", "KPI"), "Nota": d.get("percentual_alcance", 0)} 
-                for d in dados_salvos
-            ])
-            fig = go.Figure(go.Bar(x=df_score['KPI'], y=df_score['Nota'], marker_color='#1e3a8a'))
-            st.plotly_chart(fig)
-        else:
-            st.info("Nenhuma perícia salva encontrada para este colaborador.")
-
-    
-
-        
+    # 4. ABA DE DASHBOARD (TUDO QUE DEPENDE DE t2)
     with t2:
         st.header("📊 Dashboard Executivo")
         scores = [st.session_state[k] for k in st.session_state if k.startswith("score_")]
