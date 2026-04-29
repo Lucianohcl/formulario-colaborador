@@ -5384,24 +5384,34 @@ def aba_produtividade_inteligente():
                     st.session_state['kpis_pop'] = res_kpis['kpis']
                     st.rerun()
 
-            # Exibição do POP e Ocupação
-            if 'pop_ia_atual' in st.session_state:
-                st.divider()
-                pop = st.session_state['pop_ia_atual']
-                dados_tabela = []
-                total_min = 0.0
-                for ativ, info in pop.items():
-                    if isinstance(info, dict):
-                        t = info.get('tempo', 0)
-                        f = info.get('freq', 'DIÁRIA').upper()
-                        impacto = t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
-                        total_min += impacto
-                        dados_tabela.append({"Atividade": ativ, "Freq": f, "Impacto": f"{impacto:.1f}m"})
-                
-                c1, c2 = st.columns(2)
-                c1.metric("Ocupação Diária", f"{total_min:.1f} min")
-                c2.metric("Eficiência", f"{(total_min/480)*100:.1f}%")
-                st.table(pd.DataFrame(dados_tabela))
+            if pop_ia:
+                    # --------------------------------------------------------------
+                    # BLOCO 1: O DEVER (POP PADRÃO IA)
+                    # --------------------------------------------------------------
+                    st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
+                    dados_ia = []
+                    total_ia_diario = 0
+                    for ativ, info in pop_ia.items():
+                        t = info.get('tempo', info.get('tempo_estimado', 0))
+                        f = str(info.get('freq', 'DIÁRIA')).upper()
+                        impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
+                        total_ia_diario += impacto
+                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                        total_ia_diario += imp
+                        dados_ia.append({
+                            "Atividade": ativ,
+                            "Freq": f,
+                            "Tempo Base": f"{t}m",
+                            "Impacto Diário Convertido": f"{imp:.1f}m",
+                            "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
+                            "Meta Auditável": info['meta']
+                        })
+                    
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Carga Alvo", "480 min")
+                    c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
+                    c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                    st.table(pd.DataFrame(dados_ia))
 
             # Auditoria
             if 'kpis_pop' in st.session_state:
