@@ -5546,16 +5546,82 @@ def aba_produtividade_inteligente():
                         else:
                             st.warning("⚠️ O relato e os arquivos PDF são obrigatórios.")
 
-    # 4. ABA DE DASHBOARD (TUDO QUE DEPENDE DE t2)
     with t2:
-        st.header("📊 Dashboard Executivo")
-        scores = [st.session_state[k] for k in st.session_state if k.startswith("score_")]
-        if scores:
-            df_score = pd.DataFrame(scores)
-            fig = go.Figure(go.Bar(x=df_score['KPI'], y=df_score['Nota'], marker_color='#1e3a8a'))
-            st.plotly_chart(fig)
-        else:
-            st.info("Realize a auditoria dos KPIs para gerar o gráfico.")
+        st.header("📊 Dashboard Executivo de Auditoria")
+        
+        # Botão para forçar a atualização (importante para ler novos arquivos do Git)
+        if st.button("🔄 Sincronizar com Banco de Dados"):
+            st.rerun()
+
+        try:
+            g = Github(DB_TOKEN)
+            repo = g.get_repo(REPO_NAME)
+            
+            # 1. BUSCA DOS DADOS NO GITHUB
+            with st.spinner("Extraindo inteligência do GitHub..."):
+                contents = repo.get_contents("auditorias")
+                all_data = []
+                for content_file in contents:
+                    if content_file.type == "dir":
+                        subdir_files = repo.get_contents(content_file.path)
+                        for file in subdir_files:
+                            if file.name.endswith(".json"):
+                                file_data = json.loads(file.decoded_content)
+                                all_data.append(file_data)
+
+            if all_data:
+                df_global = pd.DataFrame(all_data)
+                
+                # --- MÉTRICAS DE TOPO ---
+                m1, m2, m3 = st.columns(3)
+                media_geral = df_global['percentual_alcance'].mean()
+                m1.metric("Média de Conformidade", f"{media_geral:.1f}%")
+                m2.metric("Total de KPIs Auditados", len(df_global))
+                m3.metric("Colaboradores Únicos", len(df_global['kpi_nome'].unique())) # Ajuste conforme sua chave de nome
+
+                st.divider()
+
+                # --- GRÁFICOS LADO A LADO ---
+                col_esq, col_dir = st.columns(2)
+
+                with col_esq:
+                    st.subheader("Performance por KPI")
+                    fig_bar = go.Figure(go.Bar(
+                        x=df_global['kpi_nome'], 
+                        y=df_global['percentual_alcance'],
+                        text=df_global['percentual_alcance'],
+                        textposition='auto',
+                        marker=dict(color=df_global['percentual_alcance'], colorscale='Blues')
+                    ))
+                    fig_bar.update_layout(height=400, margin=dict(l=20, r=20, t=20, b=20))
+                    st.plotly_chart(fig_bar, use_container_width=True)
+
+                with col_dir:
+                    st.subheader("Distribuição de Resultados")
+                    fig_pie = go.Figure(go.Pie(
+                        labels=df_global['kpi_nome'], 
+                        values=df_global['percentual_alcance'],
+                        hole=.4
+                    ))
+                    fig_pie.update_layout(height=400, margin=dict(l=20, r=20, t=20, b=20))
+                    st.plotly_chart(fig_pie, use_container_width=True)
+
+                # --- TABELA DETALHADA ---
+                st.subheader("📋 Histórico Detalhado")
+                st.dataframe(
+                    df_global[['kpi_nome', 'relato_do_auditor', 'percentual_alcance']],
+                    use_container_width=True,
+                    column_config={
+                        "percentual_alcance": st.column_config.ProgressColumn(
+                            "Alcance %", format="%d%%", min_value=0, max_value=100
+                        )
+                    }
+                )
+            else:
+                st.warning("⚠️ Nenhum dado encontrado no GitHub. Realize e salve uma auditoria primeiro.")
+
+        except Exception as e:
+            st.error(f"Erro ao carregar Dashboard: {e}")
 
     with t3:
         st.header("🏆 Ranking")
