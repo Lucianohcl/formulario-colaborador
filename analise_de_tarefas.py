@@ -5517,19 +5517,19 @@ def aba_produtividade_inteligente():
                 dados_ia = []
                 total_ia_diario = 0
                 for ativ, info in pop_ia.items():
-                    if isinstance(info, dict) and "TOTAL" not in ativ.upper():
+                    if isinstance(info, dict) and "TOTAL" not in str(ativ).upper():
                         t = info.get('tempo', info.get('tempo_estimado', 0))
                         f = str(info.get('freq', 'DIÁRIA')).upper()
                         impacto = (t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22))
                         total_ia_diario += impacto
-                    
-                    dados_ia.append({
-                        "Atividade": ativ, 
-                        "Freq": f, 
-                        "Tempo Base": f"{t}m",
-                        "Impacto Diário": f"{impacto:.1f}m", 
-                        "Meta": info.get('meta', '100%')
-                    })
+                        
+                        dados_ia.append({
+                            "Atividade": ativ,
+                            "Freq": f,
+                            "Tempo Base": f"{t}m",
+                            "Impacto Diário": f"{impacto:.1f}m",
+                            "Meta": info.get('meta', '100%')
+                        })
                 
                 c1, c2 = st.columns(2)
                 c1.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
