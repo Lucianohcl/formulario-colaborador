@@ -4849,29 +4849,59 @@ if st.session_state.get("pagina") == "parecer":
                     # BLOCO 3: O CRUZAMENTO (CONFRONTO E NEXO CAUSAL)
                     # --------------------------------------------------------------
                     st.header("⚖️ [C] Cruzamento e Veredito Pericial")
+
                     confronto = []
                     mapeadas = set()
 
-                    for ativ_ia, info_ia in pop_ia.items():
-                        f_ia = info_ia['freq'].upper()
-                        imp_ia = info_ia['tempo'] if "DIÁRIA" in f_ia else (info_ia['tempo']/5 if "SEMANAL" in f_ia else info_ia['tempo']/22)
-                        
+                    # =========================
+                    # GARANTE BASE CORRETA DO POP
+                    # =========================
+                    df_pop = st.session_state["df_pop_ia"].copy()
+
+                    df_pop["Impacto Diário Convertido"] = (
+                        df_pop["Impacto Diário Convertido"]
+                        .astype(str)
+                        .str.replace("m", "", regex=False)
+                        .astype(float)
+                    )
+
+                    pop_dict = df_pop.to_dict("records")
+
+                    # =========================
+                    # NORMALIZA REAL
+                    # =========================
+                    total_real_diario = 0
+
+                    for ativ_ia in pop_dict:
+
+                        ativ_nome = str(ativ_ia["Atividade"]).upper()
+                        imp_ia = float(str(ativ_ia["Impacto Diário Convertido"]))
+
                         imp_real_vinculado = 0
                         status = "❌ AUSENTE"
-                        chave = ativ_ia.split()[0].upper()
-                        
+                        chave = ativ_nome.split()[0].upper()
+
                         for item in atividades_relatadas:
                             desc = str(item.get('Atividade', '')).upper()
+
                             if chave in desc:
-                                h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
-                                t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
+
+                                h = int(str(item.get('Horas', '0')).split()[0])
+                                m = int(str(item.get('Minutos', '0')).split()[0])
+
+                                t_b = (h * 60) + m
+                                f_r = item.get('Frequência', '').upper()
+
                                 imp_v = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
+
                                 imp_real_vinculado += imp_v
+                                total_real_diario += imp_v
+
                                 status = "✅ IDENTIFICADO"
                                 mapeadas.add(desc)
 
                         confronto.append({
-                            "Atividade": ativ_ia,
+                            "Atividade": ativ_nome,
                             "Origem": "POP PADRÃO",
                             "Impacto POP": f"{imp_ia:.1f}m",
                             "Impacto Real": f"{imp_real_vinculado:.1f}m",
@@ -4879,13 +4909,25 @@ if st.session_state.get("pagina") == "parecer":
                             "Status": status
                         })
 
-                    # Adiciona o que sobrou (Desvios)
+                    # =========================
+                    # DESVIOS
+                    # =========================
                     for item in atividades_relatadas:
+
                         desc = str(item.get('Atividade', '')).upper()
+
                         if desc not in mapeadas:
-                            h, m = int(str(item.get('Horas', '0')).split()[0]), int(str(item.get('Minutos', '0')).split()[0])
-                            t_b, f_r = (h * 60) + m, item.get('Frequência', '').upper()
+
+                            h = int(str(item.get('Horas', '0')).split()[0])
+                            m = int(str(item.get('Minutos', '0')).split()[0])
+
+                            t_b = (h * 60) + m
+                            f_r = item.get('Frequência', '').upper()
+
                             imp_extra = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
+
+                            total_real_diario += imp_extra
+
                             confronto.append({
                                 "Atividade": desc,
                                 "Origem": "DESVIO",
@@ -4895,10 +4937,26 @@ if st.session_state.get("pagina") == "parecer":
                                 "Status": "⚠️ FORA DO PADRÃO"
                             })
 
+                    # =========================
+                    # MÉTRICAS FINAIS
+                    # =========================
                     f1, f2, f3 = st.columns(3)
-                    f1.metric("Aderência ao Cargo", f"{(total_ia_diario/total_real_diario*100 if total_real_diario > 0 else 0):.1f}%")
-                    f2.metric("Perda/Ganho Eficiência", f"{total_ia_diario - total_real_diario:+.1f} min")
-                    f3.metric("Risco Operacional", "ALTO" if total_real_diario > 480 else "BAIXO")
+
+                    f1.metric(
+                        "Aderência ao Cargo",
+                        f"{(sum(float(str(x['Impacto POP']))[:-1]) / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}%"
+                    )
+
+                    f2.metric(
+                        "Perda/Ganho Eficiência",
+                        f"{(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min"
+                    )
+
+                    f3.metric(
+                        "Risco Operacional",
+                        "ALTO" if total_real_diario > 480 else "BAIXO"
+                    )
+
                     st.table(pd.DataFrame(confronto))
 
     # --- INICIALIZAÇÃO ---
