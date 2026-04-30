@@ -5735,7 +5735,7 @@ def aba_produtividade_inteligente():
         # =========================
         elif origem_pop == "☁️ Banco (GitHub)":
 
-            pasta = "documentos/pop"
+            pasta = "documentos/empresa_x/adson"
 
             if os.path.exists(pasta):
                 arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
