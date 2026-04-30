@@ -4670,36 +4670,28 @@ if st.session_state.get("pagina") == "parecer":
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     
-                    # 1. Tabela estática apenas para consulta (100% SEGURA)
-                    st.write("### Consulta de Atividades")
-                    df_visual = pd.DataFrame(dados_ia)
-                    st.table(df_visual[["Atividade", "Impacto Diário Convertido"]])
-
-                    # 2. Edição Atômica (Um por um)
-                    st.write("---")
-                    st.write("### Ajuste Manual de Tempos")
+                    # --- BLOCO DE EDIÇÃO CONGELADA (MODO SEGURO) ---
+                    st.subheader("📝 Auditoria Manual")
                     
-                    valores_atualizados = []
-                    
-                    # Criamos um campo de número para cada linha da tabela
-                    # Isso é leve e o Streamlit Cloud aguenta sem cair
-                    for i, linha in df_visual.iterrows():
-                        nome_ativ = linha["Atividade"]
-                        valor_orig = str(linha["Impacto Diário Convertido"]).replace('m', '').replace(',', '.')
+                    # O 'with st.form' congela a tela. O Streamlit não vai tentar 
+                    # atualizar nada enquanto você estiver editando aqui dentro.
+                    with st.form("meu_formulario_estavel"):
+                        st.write("Ajuste os valores abaixo. A tela não vai atualizar até você clicar no botão.")
                         
-                        novo_valor = st.number_input(
-                            # Título curto para não poluir
-                            f"Minutos: {nome_ativ[:30]}...", 
-                            value=float(valor_orig) if valor_orig else 0.0,
-                            key=f"ativ_{i}_v12"
+                        # Criamos uma área de texto simples para você editar
+                        # Sem tabelas complexas, sem frescura. Apenas texto bruto.
+                        texto_para_editar = st.text_area(
+                            "Edite os dados (Atividade | Minutos):",
+                            value="Atividade A: 30\nAtividade B: 45\nAtividade C: 10",
+                            height=300
                         )
-                        valores_atualizados.append(novo_valor)
+                        
+                        # O botão que libera o processamento
+                        botao_salvar = st.form_submit_button("✅ CONCLUIR E CALCULAR")
 
-                    # 3. Resultado Final
-                    total_auditado = sum(valores_atualizados)
-                    st.divider()
-                    st.metric("Total Auditado", f"{total_auditado:.1f} min")
-                    st.metric("Eficiência", f"{(total_auditado/480)*100:.1f}%")                   
+                    if botao_salvar:
+                        st.success("Dados processados!")
+                        # Aqui você pode colocar qualquer lógica simples de soma depois.                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
