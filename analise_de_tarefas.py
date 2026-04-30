@@ -4763,6 +4763,7 @@ if st.session_state.get("pagina") == "parecer":
                         c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
                         c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
+
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
                     <html>
