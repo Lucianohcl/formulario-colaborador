@@ -4671,54 +4671,36 @@ if st.session_state.get("pagina") == "parecer":
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     
                     
-                    # 1. Reconstrução com Chave Nova e Proteção de Dados
-                    df_base = pd.DataFrame(dados_ia)
                     
-                    # --- ESTRUTURA DE SEGURANÇA MÁXIMA ---
-                    # Criamos um container que isola o erro
-                    container_auditoria = st.container()
+                    # 1. Tabela apenas para visualização (100% estável)
+                    df_base = pd.DataFrame(dados_ia)
+                    st.dataframe(df_base, use_container_width=True) 
 
-                    with container_auditoria:
-                        try:
-                            # 1. Editor com a Chave v8 (Reset total)
-                            # Usamos um DataFrame convertido para garantir tipos de dados
-                            df_base = pd.DataFrame(dados_ia).convert_dtypes()
-                            
-                            df_editado = st.data_editor(
-                                df_base, 
-                                hide_index=True, 
-                                use_container_width=True,
-                                key="editor_final_v8", 
-                                num_rows="dynamic"
-                            )
+                    # 2. Espaçamento para organizar o visual
+                    st.write("") 
 
-                            # 2. Cálculo Blindado Externo
-                            total_ia_editado = 0.0
-                            
-                            # Se o usuário deletar a última linha, o df_editado pode vir vazio ou None
-                            if df_editado is not None and len(df_editado) > 0:
-                                col_nome = "Impacto Diário Convertido"
-                                if col_nome in df_editado.columns:
-                                    # O pd.to_numeric é a única forma 100% segura
-                                    valores = pd.to_numeric(
-                                        df_editado[col_nome].astype(str).str.replace('m', '').str.replace(',', '.'),
-                                        errors='coerce'
-                                    ).fillna(0)
-                                    total_ia_editado = float(valores.sum())
+                    # 3. Entrada manual do valor total (Imune a erros de delete)
+                    # O 'value' pode ser a soma inicial da IA para te poupar tempo
+                    soma_inicial = pd.to_numeric(df_base["Impacto Diário Convertido"].astype(str).str.replace('m', '').str.replace(',', '.'), errors='coerce').fillna(0).sum()
+                    
+                    valor_auditado = st.number_input(
+                        "Total de Minutos Auditados (Ajuste aqui)", 
+                        min_value=0.0, 
+                        max_value=1440.0, 
+                        value=float(soma_inicial),
+                        step=1.0
+                    )
 
-                            # 3. Métricas dentro do container isolado
-                            st.divider()
-                            m_c1, m_c2, m_c3 = st.columns(3)
-                            m_c1.metric("Carga Alvo", "480 min")
-                            m_c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
-                            
-                            ef_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
-                            m_c3.metric("Eficiência Real", f"{ef_calc:.1f}%")
-
-                        except Exception:
-                            # Se o Delete quebrar o componente, ele mostra isso e NÃO SAI da tela
-                            st.warning("🔄 Sincronizando alterações na tabela...")
-                            st.stop() # Interrompe apenas ESTE bloco, não o app todo
+                    # 4. Métricas Finais
+                    st.divider()
+                    col_final1, col_final2 = st.columns(2)
+                    
+                    with col_final1:
+                        st.metric("Ocupação Auditada", f"{valor_auditado:.1f} min")
+                    
+                    with col_final2:
+                        eficiencia = (valor_auditado / 480) * 100 if valor_auditado > 0 else 0
+                        st.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
