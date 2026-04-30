@@ -4684,17 +4684,23 @@ if st.session_state.get("pagina") == "parecer":
                         num_rows="dynamic"
                     )
                     
-                    # 3. Cálculo Blindado (Soma apenas o que é número)
+                    # 3. Cálculo Ultra-Blindado
                     total_ia_editado = 0
-                    if "Impacto Diário Convertido" in df_editado.columns:
-                        for valor in df_editado["Impacto Diário Convertido"]:
-                            try:
-                                if valor and str(valor).strip():
-                                    # Remove o 'm', limpa espaços e troca vírgula por ponto
-                                    limpo = str(valor).replace('m', '').replace(',', '.').strip()
-                                    total_ia_editado += float(limpo)
-                            except:
-                                continue
+                    
+                    # Verificamos se o editor retornou dados válidos
+                    if df_editado is not None and not df_editado.empty:
+                        # Usamos .get() para evitar erro se a coluna sumir
+                        coluna_tempo = "Impacto Diário Convertido"
+                        
+                        if coluna_tempo in df_editado.columns:
+                            for valor in df_editado[coluna_tempo]:
+                                try:
+                                    # Se a célula estiver vazia (None ou NaN), o 'if valor' pula
+                                    if pd.notna(valor) and str(valor).strip():
+                                        limpo = str(valor).replace('m', '').replace(',', '.').strip()
+                                        total_ia_editado += float(limpo)
+                                except:
+                                    continue
 
                     # 4. Métricas (EXCLUSIVAS - Certifique-se de que não há outras c1, c2, c3 abaixo)
                     st.write("---") # Linha divisória para organizar
