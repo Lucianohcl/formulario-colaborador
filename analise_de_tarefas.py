@@ -4644,54 +4644,45 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                 if pop_ia:
-                    # --------------------------------------------------------------
-                    # BLOCO 1: O DEVER (POP PADRÃO IA)
-                    # --------------------------------------------------------------
+                    # --- NOVO: LÓGICA DE PERSISTÊNCIA (Session State) ---
+                    # Só processamos o 'pop_ia' para o DataFrame se ele ainda não estiver na memória
+                    if 'dados_auditoria' not in st.session_state:
+                        dados_lista = []
+                        total_acumulado = 0
+                        for ativ, info in pop_ia.items():
+                            t, f = info['tempo'], info['freq'].upper()
+                            imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                            total_acumulado += imp
+                            dados_lista.append({
+                                "Atividade": ativ,
+                                "Freq": f,
+                                "Tempo": float(imp), # Guardamos como número puro para editar
+                                "Meta Auditável": info['meta']
+                            })
+                        # Salva na memória do navegador
+                        st.session_state.dados_auditoria = dados_lista
+                        st.session_state.total_base = total_acumulado
+
+                    # --- INTERFACE DE AUDITORIA CONGELADA ---
                     st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-                    dados_ia = []
-                    total_ia_diario = 0
-                    for ativ, info in pop_ia.items():
-                        t, f = info['tempo'], info['freq'].upper()
-                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                        total_ia_diario += imp
-                        dados_ia.append({
-                            "Atividade": ativ,
-                            "Freq": f,
-                            "Tempo Base": f"{t}m",
-                            "Impacto Diário Convertido": f"{imp:.1f}m",
-                            "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                            "Meta Auditável": info['meta']
-   
-                            
-                        })
                     
+                    # Usamos o data_editor apontando para a memória (session_state)
+                    # Ele não vai mudar se você não pedir
+                    df_editavel = st.data_editor(
+                        pd.DataFrame(st.session_state.dados_auditoria),
+                        hide_index=True,
+                        use_container_width=True,
+                        key="editor_pericial_final"
+                    )
+
+                    # Cálculos feitos sobre o que você está editando AGORA
+                    total_editado = df_editavel["Tempo"].sum()
+                    
+                    st.divider()
                     c1, c2, c3 = st.columns(3)
                     c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                    c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    
-                    # --- BLOCO DE EDIÇÃO CONGELADA (MODO SEGURO) ---
-                    st.subheader("📝 Auditoria Manual")
-                    
-                    # O 'with st.form' congela a tela. O Streamlit não vai tentar 
-                    # atualizar nada enquanto você estiver editando aqui dentro.
-                    with st.form("meu_formulario_estavel"):
-                        st.write("Ajuste os valores abaixo. A tela não vai atualizar até você clicar no botão.")
-                        
-                        # Criamos uma área de texto simples para você editar
-                        # Sem tabelas complexas, sem frescura. Apenas texto bruto.
-                        texto_para_editar = st.text_area(
-                            "Edite os dados (Atividade | Minutos):",
-                            value="Atividade A: 30\nAtividade B: 45\nAtividade C: 10",
-                            height=300
-                        )
-                        
-                        # O botão que libera o processamento
-                        botao_salvar = st.form_submit_button("✅ CONCLUIR E CALCULAR")
-
-                    if botao_salvar:
-                        st.success("Dados processados!")
-                        # Aqui você pode colocar qualquer lógica simples de soma depois.                   
+                    c2.metric("Ocupação Auditada", f"{total_editado:.1f} min")
+                    c3.metric("Eficiência Real", f"{(total_editado/480)*100:.1f}%")                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
