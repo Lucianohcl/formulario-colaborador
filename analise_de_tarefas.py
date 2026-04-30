@@ -4651,6 +4651,9 @@ if st.session_state.get("pagina") == "parecer":
 
                     st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
 
+                    # =========================
+                    # CONSTRUÇÃO DA BASE (SEMPRE FRESCA DA IA)
+                    # =========================
                     dados_ia = []
                     total_ia_diario = 0
 
@@ -4668,15 +4671,51 @@ if st.session_state.get("pagina") == "parecer":
                             "Meta Auditável": info['meta']
                         })
 
+                    base = pd.DataFrame(dados_ia)
+
                     # =========================
-                    # 🔥 GARANTE EXISTÊNCIA DO DATAFRAME
+                    # 🔥 CHAVE DO COLABORADOR
+                    # =========================
+                    colab_key = colaborador_file
+
+                    # =========================
+                    # RESET AO TROCAR COLABORADOR
+                    # =========================
+                    if st.session_state.get("colab_key") != colab_key:
+
+                        st.session_state["colab_key"] = colab_key
+
+                        st.session_state["df_pop_ia"] = base.copy()
+                        st.session_state["df_pop_ia_original"] = base.copy()
+
+                        st.rerun()
+
+                    # =========================
+                    # GARANTIA DE EXISTÊNCIA
                     # =========================
                     if "df_pop_ia" not in st.session_state:
-                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
+                        st.session_state["df_pop_ia"] = base.copy()
 
-                    df_base = st.session_state["df_pop_ia"]
+                    if "df_pop_ia_original" not in st.session_state:
+                        st.session_state["df_pop_ia_original"] = base.copy()
 
-                    df_calc = df_base.copy()
+                    # =========================
+                    # EDITOR
+                    # =========================
+                    df_editavel = st.data_editor(
+                        st.session_state["df_pop_ia"],
+                        use_container_width=True,
+                        num_rows="dynamic",
+                        height=400,
+                        key=f"ed_pop_ia_{colab_key}"
+                    )
+
+                    st.session_state["df_pop_ia"] = df_editavel
+
+                    # =========================
+                    # RECALCULO
+                    # =========================
+                    df_calc = st.session_state["df_pop_ia"].copy()
 
                     df_calc["Impacto Diário Convertido"] = (
                         df_calc["Impacto Diário Convertido"]
@@ -4688,6 +4727,9 @@ if st.session_state.get("pagina") == "parecer":
                     total = df_calc["Impacto Diário Convertido"].sum()
                     eficiencia = (total / 480) * 100
 
+                    # =========================
+                    # MÉTRICAS
+                    # =========================
                     c1, c2, c3 = st.columns(3)
 
                     with c1:
@@ -4700,71 +4742,10 @@ if st.session_state.get("pagina") == "parecer":
                         st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
 
                     # =========================
-                    # STATE PERSISTENTE
+                    # BOTÃO (FORÇA REFRESH)
                     # =========================
-                    if "df_pop_ia" not in st.session_state:
-                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
-
-                    df_editavel = st.data_editor(
-                        st.session_state["df_pop_ia"],
-                        use_container_width=True,
-                        num_rows="dynamic",
-                        height=400,
-                        key="ed_pop_ia_v1"
-                    )
-
-                    # 🔥 CHAVE ÚNICA DO COLABORADOR
-                    colab_key = colaborador_file
-
-                    # =========================
-                    # 🧠 RESET TOTAL AO TROCAR COLABORADOR
-                    # =========================
-                    if st.session_state.get("colab_key") != colab_key:
-
-                        st.session_state["colab_key"] = colab_key
-
-                        # 🔥 LIMPA COMPLETAMENTE OS DADOS ANTERIORES
-                        base = pd.DataFrame(dados_ia)
-
-                        st.session_state["df_pop_ia_original"] = base
-                        st.session_state["df_pop_ia"] = base.copy()
-                        
-
-                        # 🔥 FORÇA RELOAD LIMPO
-                        st.rerun()
-
-                    # =========================
-                    # 📊 GARANTE EXISTÊNCIA
-                    # =========================
-                    if "df_pop_ia" not in st.session_state:
-                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
-
-                    if "df_pop_ia_original" not in st.session_state:
-                        st.session_state["df_pop_ia_original"] = pd.DataFrame(dados_ia)
-
-                    # =========================
-                    # RECALCULO ISOLADO
-                    # =========================
-                    if st.button("📊 Recalcular Eficiência", key="btn_recalc_pop"):
-
-                        df_calc = st.session_state["df_pop_ia"].copy()
-
-                        df_calc["Impacto Diário Convertido"] = (
-                            df_calc["Impacto Diário Convertido"]
-                            .astype(str)
-                            .str.replace("m", "", regex=False)
-                            .astype(float)
-                        )
-
-                        total_editado = df_calc["Impacto Diário Convertido"].sum()
-                        eficiencia = (total_editado / 480) * 100
-
-                        st.subheader("📊 Resultado Editado pelo Auditor")
-
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Carga Alvo", "480 min")
-                        c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
-                        c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
+                    if st.button("📊 Recalcular Eficiência", key=f"btn_recalc_pop_{colab_key}"):
+                        st.rerun()    
 
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
