@@ -4669,8 +4669,10 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    if "df_pop_ia" not in st.session_state:
+                                        if "df_pop_ia" not in st.session_state:
                         st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
+
+                    st.subheader("📊 POP IA - Editor de Carga")
 
                     df_editavel = st.data_editor(
                         st.session_state["df_pop_ia"],
@@ -4680,12 +4682,19 @@ if st.session_state.get("pagina") == "parecer":
                         key="ed_pop_ia_v1"
                     )
 
-                    # 🔥 SALVA ESTADO (SEGREDO PRA NÃO “SUMIR”)
-                    st.session_state["df_pop_ia"] = df_editavel
+                    # ⚠️ NÃO atualiza o state imediatamente (isso causa “pulo”)
+                    if st.button("💾 Salvar alterações", key="btn_save_pop"):
 
-                    if st.button("📊 Recalcular Eficiência", key="btn_recalc_pop"):
-                        
-                        df_calc = df_editavel.copy()
+                        st.session_state["df_pop_ia"] = df_editavel.copy()
+
+                        st.success("Alterações salvas com sucesso!")
+
+                    # =========================
+                    # 🔥 CÁLCULO ISOLADO
+                    # =========================
+                    if st.button("📊 Recalcular Eficiência", key="btn_calc_pop"):
+
+                        df_calc = st.session_state["df_pop_ia"].copy()
 
                         df_calc["Impacto Diário Convertido"] = (
                             df_calc["Impacto Diário Convertido"]
