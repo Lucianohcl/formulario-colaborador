@@ -4675,53 +4675,35 @@ if st.session_state.get("pagina") == "parecer":
                     df_base = pd.DataFrame(dados_ia)
                     
                     # Usamos a v4 para forçar o Streamlit a esquecer o erro anterior
+                    # 1. Editor Final (v6) - Reset de Cache
                     df_editado = st.data_editor(
-                        df_base, 
+                        pd.DataFrame(dados_ia), 
                         hide_index=True, 
                         use_container_width=True,
-                        key="editor_auditoria_v4", 
+                        key="editor_final_v6", 
                         num_rows="dynamic"
                     )
-                    
-                    # 2. Cálculo Ultra-Blindado (Tratando erros de exclusão)
-                    total_ia_editado = 0.0
-                    
-                    # Verificação de segurança: garante que o objeto existe e não está vazio
-                    if df_editado is not None:
-                        try:
-                            # O .copy() evita erros de referência ao manipular a tabela
-                            temp_df = df_editado.copy()
-                            col_alvo = "Impacto Diário Convertido"
-                            
-                            if col_alvo in temp_df.columns:
-                                # Removemos valores nulos antes de iterar para evitar o crash no delete
-                                valores_validos = temp_df[col_alvo].dropna()
-                                
-                                for valor in valores_validos:
-                                    try:
-                                        if valor and str(valor).strip():
-                                            texto_limpo = str(valor).replace('m', '').replace(',', '.').strip()
-                                            total_ia_editado += float(texto_limpo)
-                                    except (ValueError, TypeError):
-                                        continue
-                        except Exception:
-                            # Se a tabela bugar completamente, o sistema assume 0 e NÃO SAI da tela
-                            total_ia_editado = 0.0
 
-                    # 3. Métricas Estabilizadas
-                    st.write("---")
-                    col_m1, col_m2, col_m3 = st.columns(3)
+                    # 2. Resolução Minimalista (Imune a erros de Delete)
+                    if df_editado is not None and "Impacto Diário Convertido" in df_editado.columns:
+                        # Forçamos a conversão de toda a coluna. O que for deletado vira 0 automaticamente.
+                        col_numerica = pd.to_numeric(
+                            df_editado["Impacto Diário Convertido"].astype(str).str.replace('m', '').str.replace(',', '.'), 
+                            errors='coerce'
+                        ).fillna(0)
+                        
+                        total_ia_editado = float(col_numerica.sum())
+                    else:
+                        total_ia_editado = 0.0
+
+                    # 3. Métricas (Alinhadas com o bloco acima)
+                    st.divider()
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Carga Alvo", "480 min")
+                    c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
                     
-                    with col_m1:
-                        st.metric("Carga Alvo", "480 min")
-                    
-                    with col_m2:
-                        st.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
-                    
-                    with col_m3:
-                        # Cálculo de eficiência com trava para zero
-                        efici_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
-                        st.metric("Eficiência Real", f"{efici_calc:.1f}%")
+                    ef_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
+                    c3.metric("Eficiência Real", f"{ef_calc:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
