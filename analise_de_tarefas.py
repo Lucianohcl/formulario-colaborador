@@ -4644,33 +4644,37 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                
-                # 1. BOTÃO DE CAPTURA (O único que toca na IA)
-                if st.button("📥 Carregar POP da IA para Edição"):
-                    # Aqui pegamos o que a IA gerou NESTE MOMENTO e jogamos na gaveta
-                    st.session_state.dados_para_editar = [
-                        {"Atividade": k, "Tempo": float(v['tempo']), "Meta": v['meta']} 
-                        for k, v in pop_ia.items()
-                    ]
-                    st.success("Dados carregados! Agora você pode editar sem que a IA interfira.")
+                # 1. Salva o resultado da IA na memória assim que ele é gerado
+                if pop_ia:
+                    st.session_state.pop_ia_armazenado = pop_ia
 
-                # 2. ÁREA DE EDIÇÃO (Totalmente independente)
+                # 2. Botão que lê da memória segura
+                if st.button("📥 Carregar POP da IA para Edição"):
+                    if 'pop_ia_armazenado' in st.session_state:
+                        st.session_state.dados_para_editar = [
+                            {"Atividade": k, "Tempo": float(v['tempo']), "Meta": v['meta']} 
+                            for k, v in st.session_state.pop_ia_armazenado.items()
+                        ]
+                        st.success("Dados carregados com sucesso!")
+                    else:
+                        st.warning("Gere o POP através da IA primeiro.")
+
+                # 3. Editor independente da IA (não some mais)
                 if 'dados_para_editar' in st.session_state:
                     st.divider()
                     st.subheader("📝 Editor de POP Independente")
                     
-                    # O editor lê da GAVETA, não da variável pop_ia
                     df_final = st.data_editor(
                         pd.DataFrame(st.session_state.dados_para_editar),
                         hide_index=True,
                         use_container_width=True,
                         key="editor_blindado_v1"
                     )
-
-                    # 3. MANTÉM OS DADOS VIVOS
-                    # Se você editar, a gaveta atualiza e não some mais
+                    
+                    # Atualiza a gaveta de dados com a edição feita na tela
                     st.session_state.dados_para_editar = df_final.to_dict('records')
-
-                    # 4. MÉTRICAS (Sempre baseadas na sua edição)
+                    
+                    # Métricas
                     total_v = df_final["Tempo"].sum()
                     c1, c2 = st.columns(2)
                     c1.metric("Ocupação Real", f"{total_v:.1f} min")
