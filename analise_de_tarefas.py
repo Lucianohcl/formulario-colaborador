@@ -4643,75 +4643,72 @@ if st.session_state.get("pagina") == "parecer":
                     colab['campos'].get('cursos', '')
                 )
 
+                
+
                 if pop_ia:
-                    # --------------------------------------------------------------
-                    # BLOCO 1: O DEVER (POP PADRÃO IA)
-                    # --------------------------------------------------------------
-                    st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-                    dados_ia = []
-                    total_ia_diario = 0
-                    for ativ, info in pop_ia.items():
-                        t, f = info['tempo'], info['freq'].upper()
-                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                        total_ia_diario += imp
-                        dados_ia.append({
-                            "Atividade": ativ,
-                            "Freq": f,
-                            "Tempo Base": f"{t}m",
-                            "Impacto Diário Convertido": f"{imp:.1f}m",
-                            "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                            "Meta Auditável": info['meta']
-   
-                            
-                        })
-                    
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                    c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    if "df_pop_ia" not in st.session_state:
-                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
 
-                    st.subheader("📊 POP IA - Editor de Carga")
+                        st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
 
-                    df_editavel = st.data_editor(
-                        st.session_state["df_pop_ia"],
-                        use_container_width=True,
-                        num_rows="dynamic",
-                        height=400,
-                        key="ed_pop_ia_v1"
-                    )
+                        dados_ia = []
+                        total_ia_diario = 0
 
-                    # ⚠️ NÃO atualiza o state imediatamente (isso causa “pulo”)
-                    if st.button("💾 Salvar alterações", key="btn_save_pop"):
+                        for ativ, info in pop_ia.items():
+                            t, f = info['tempo'], info['freq'].upper()
+                            imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                            total_ia_diario += imp
 
-                        st.session_state["df_pop_ia"] = df_editavel.copy()
+                            dados_ia.append({
+                                "Atividade": ativ,
+                                "Freq": f,
+                                "Tempo Base": f"{t}m",
+                                "Impacto Diário Convertido": f"{imp:.1f}m",
+                                "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
+                                "Meta Auditável": info['meta']
+                            })
 
-                        st.success("Alterações salvas com sucesso!")
+                        st.metric("Carga Alvo", "480 min")
+                        st.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
+                        st.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
 
-                    # =========================
-                    # 🔥 CÁLCULO ISOLADO
-                    # =========================
-                    if st.button("📊 Recalcular Eficiência", key="btn_calc_pop"):
+                        # =========================
+                        # 🔥 STATE FORÇADO FORA DO FLUXO
+                        # =========================
+                        if "df_pop_ia" not in st.session_state:
+                            st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
 
-                        df_calc = st.session_state["df_pop_ia"].copy()
-
-                        df_calc["Impacto Diário Convertido"] = (
-                            df_calc["Impacto Diário Convertido"]
-                            .astype(str)
-                            .str.replace("m", "", regex=False)
-                            .astype(float)
+                        df_editavel = st.data_editor(
+                            st.session_state["df_pop_ia"],
+                            use_container_width=True,
+                            num_rows="dynamic",
+                            height=400,
+                            key="ed_pop_ia_v1"
                         )
 
-                        total_editado = df_calc["Impacto Diário Convertido"].sum()
-                        eficiencia = (total_editado / 480) * 100
+                        st.session_state["df_pop_ia"] = df_editavel
 
-                        st.subheader("📊 Resultado Editado pelo Auditor")
+                        # =========================
+                        # 🔘 BOTÃO ISOLADO
+                        # =========================
+                        if st.button("📊 Recalcular Eficiência", key="btn_recalc_pop"):
 
-                        c1, c2, c3 = st.columns(3)
-                        c1.metric("Carga Alvo", "480 min")
-                        c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
-                        c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
+                            df_calc = st.session_state["df_pop_ia"].copy()
+
+                            df_calc["Impacto Diário Convertido"] = (
+                                df_calc["Impacto Diário Convertido"]
+                                .astype(str)
+                                .str.replace("m", "", regex=False)
+                                .astype(float)
+                            )
+
+                            total_editado = df_calc["Impacto Diário Convertido"].sum()
+                            eficiencia = (total_editado / 480) * 100
+
+                            st.subheader("📊 Resultado Editado pelo Auditor")
+
+                            c1, c2, c3 = st.columns(3)
+                            c1.metric("Carga Alvo", "480 min")
+                            c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
+                            c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
