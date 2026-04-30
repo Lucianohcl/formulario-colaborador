@@ -4557,7 +4557,7 @@ if st.session_state.get("pagina") == "parecer":
             
             contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
             
-            # PROMPT DE OURO: ENGENHARIA DE PROCESSOS E CRONOANÁLISE FORENSE
+            # PROMPT DE OURO: MANTIDO COM SUAS INSTRUÇÕES
             prompt = f"""
             Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
             Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
@@ -4608,9 +4608,7 @@ if st.session_state.get("pagina") == "parecer":
         Se o JSON for o mesmo, o Streamlit retorna o laudo da memória.
         Custo: 0 créditos nas repetições.
         """
-        # CHAME AQUI A SUA FUNÇÃO QUE CONECTA COM A OPENAI
-        # Certifique-se de que 'realizar_pericia_direta' existe no seu script
-        return realizar_pericia_direta(dados_json_str)
+        return {} # Substitua ou adicione a função real aqui
 
     def mostrar_pagina_parecer():
         st.title("🛡️ NetExame: Auditoria Forense Estratégica")
@@ -4624,27 +4622,58 @@ if st.session_state.get("pagina") == "parecer":
         arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
         
         if arquivos:
-            # No local do erro (linha 5339 do seu analise_de_tarefas.py)
             colaborador_file = st.selectbox(
                 "🎯 Selecione o Alvo da Auditoria:", 
                 arquivos, 
-                key="selectbox_auditoria_forense_unique" # Isso mata o erro de duplicidade
+                key="selectbox_auditoria_forense_unique"
             )
             
-            if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
+            # 1. Botão para acionar a IA e salvar na memória
+            if st.button("🚀 Gerar Laudo de Eficiência Avançado", key="btn_gerar_laudo"):
                 with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                     colab = json.load(f)
                 
-                # Execução do Cérebro IA
                 pop_ia = buscar_benchmark_ia_estrategico(
                     colab['campos'].get('cargo', 'N/A').upper(),
                     colab['campos'].get('funcao', 'GESTÃO').upper(),
                     colab['campos'].get('objetivo', ''),
                     colab['campos'].get('cursos', '')
                 )
+                
+                if pop_ia:
+                    st.session_state['ia_backup'] = pop_ia
+                    st.session_state['dados_para_editar'] = [
+                        {
+                            "Atividade": k, 
+                            "Tempo": float(v['tempo']), 
+                            "Meta": v['meta'],
+                            "Frequência": v['freq'],
+                            "Complexidade": v.get('complexidade', 'MÉDIA')
+                        }
+                        for k, v in pop_ia.items()
+                    ]
+                    st.rerun() # Força a interface a renderizar os dados logo após a IA terminar
 
-               
-                st.table(pd.DataFrame(dados_ia))                   
+            # 2. Editor independente da IA (não é apagado nas edições)
+            if 'dados_para_editar' in st.session_state:
+                st.markdown("---")
+                st.subheader("📝 Editor de POP Independente")
+                
+                df_final = st.data_editor(
+                    pd.DataFrame(st.session_state['dados_para_editar']),
+                    hide_index=True,
+                    use_container_width=True,
+                    key="editor_final_estavel"
+                )
+                
+                # Atualiza o estado para que os dados persistam ao digitar
+                st.session_state['dados_para_editar'] = df_final.to_dict('records')
+                
+                # 3. Métricas baseadas no DataFrame
+                total_v = df_final["Tempo"].sum()
+                c1, c2 = st.columns(2)
+                c1.metric("Ocupação Real", f"{total_v:.1f} min")
+                c2.metric("Eficiência Atualizada", f"{(total_v/480)*100:.1f}%")                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
