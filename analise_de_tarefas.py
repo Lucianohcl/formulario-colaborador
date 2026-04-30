@@ -4669,7 +4669,14 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    st.table(pd.DataFrame(dados_ia))
+                    # Substituição da linha st.table:
+                    df_ia = pd.DataFrame(dados_ia)
+                    df_editado = st.data_editor(
+                        df_ia, 
+                        hide_index=True, 
+                        use_container_width=True,
+                        key="editor_minimalista_ia"
+                    )
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
