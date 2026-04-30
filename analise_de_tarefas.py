@@ -4644,34 +4644,37 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                
-                # 1. Trava os dados na memória (Session State) - 16 espaços
-                if pop_ia and 'dados_audit' not in st.session_state:
-                    st.session_state.dados_audit = []
-                    for ativ, info in pop_ia.items():
-                        t, f = info['tempo'], info['freq'].upper()
-                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                        st.session_state.dados_audit.append({
-                            "Atividade": ativ,
-                            "Tempo": float(imp),
-                            "Meta": info['meta']
-                        })
+                # 1. BOTÃO DE CAPTURA (O único que toca na IA)
+                if st.button("📥 Carregar POP da IA para Edição"):
+                    # Aqui pegamos o que a IA gerou NESTE MOMENTO e jogamos na gaveta
+                    st.session_state.dados_para_editar = [
+                        {"Atividade": k, "Tempo": float(v['tempo']), "Meta": v['meta']} 
+                        for k, v in pop_ia.items()
+                    ]
+                    st.success("Dados carregados! Agora você pode editar sem que a IA interfira.")
 
-                # 2. Exibição persistente (Não some ao editar)
-                if 'dados_audit' in st.session_state:
-                    st.header("📚 Auditoria de Eficiência")
+                # 2. ÁREA DE EDIÇÃO (Totalmente independente)
+                if 'dados_para_editar' in st.session_state:
+                    st.divider()
+                    st.subheader("📝 Editor de POP Independente")
                     
-                    df_editavel = st.data_editor(
-                        pd.DataFrame(st.session_state.dados_audit),
+                    # O editor lê da GAVETA, não da variável pop_ia
+                    df_final = st.data_editor(
+                        pd.DataFrame(st.session_state.dados_para_editar),
                         hide_index=True,
                         use_container_width=True,
-                        key="editor_estavel_final"
+                        key="editor_blindado_v1"
                     )
 
-                    # Métricas automáticas baseadas na edição
-                    total_v = df_editavel["Tempo"].sum()
+                    # 3. MANTÉM OS DADOS VIVOS
+                    # Se você editar, a gaveta atualiza e não some mais
+                    st.session_state.dados_para_editar = df_final.to_dict('records')
+
+                    # 4. MÉTRICAS (Sempre baseadas na sua edição)
+                    total_v = df_final["Tempo"].sum()
                     c1, c2 = st.columns(2)
-                    c1.metric("Ocupação", f"{total_v:.1f} min")
-                    c2.metric("Eficiência", f"{(total_v/480)*100:.1f}%")                       
+                    c1.metric("Ocupação Real", f"{total_v:.1f} min")
+                    c2.metric("Eficiência Atualizada", f"{(total_v/480)*100:.1f}%")                       
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
