@@ -4668,7 +4668,13 @@ if st.session_state.get("pagina") == "parecer":
                             "Meta Auditável": info['meta']
                         })
 
-                    df_base = st.session_state.get("df_pop_ia", pd.DataFrame(dados_ia))
+                    # =========================
+                    # 🔥 GARANTE EXISTÊNCIA DO DATAFRAME
+                    # =========================
+                    if "df_pop_ia" not in st.session_state:
+                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
+
+                    df_base = st.session_state["df_pop_ia"]
 
                     df_calc = df_base.copy()
 
