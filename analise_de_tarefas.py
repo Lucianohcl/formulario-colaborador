@@ -4669,15 +4669,21 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                    if "df_pop_ia" not in st.session_state:
+                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
+
                     df_editavel = st.data_editor(
-                        pd.DataFrame(dados_ia),
+                        st.session_state["df_pop_ia"],
                         use_container_width=True,
                         num_rows="dynamic",
                         height=400,
-                        key="editor_pop_ia"
+                        key="ed_pop_ia_v1"
                     )
 
-                    if st.button("📊 Recalcular Eficiência", key="btn_recalcular_pop"):
+                    # 🔥 SALVA ESTADO (SEGREDO PRA NÃO “SUMIR”)
+                    st.session_state["df_pop_ia"] = df_editavel
+
+                    if st.button("📊 Recalcular Eficiência", key="btn_recalc_pop"):
                         
                         df_calc = df_editavel.copy()
 
