@@ -4959,6 +4959,59 @@ if st.session_state.get("pagina") == "parecer":
 
                     st.table(pd.DataFrame(confronto))
 
+                    if st.button("📥 Gerar Relatório HTML do Cruzamento"):
+
+                        html_df = pd.DataFrame(confronto)
+
+                        html_content = f"""
+                        <html>
+                            <head><meta charset="UTF-8"><title>Veredito Pericial</title></head>
+                            <body style="font-family: sans-serif; padding: 20px;">
+                                <h2>⚖️ Cruzamento e Veredito Pericial</h2>
+
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr>
+                                        <th>Atividade</th>
+                                        <th>Origem</th>
+                                        <th>Impacto POP</th>
+                                        <th>Impacto Real</th>
+                                        <th>Divergência</th>
+                                        <th>Status</th>
+                                    </tr>
+                        """
+
+                        for d in html_df.to_dict("records"):
+                            html_content += f"""
+                                    <tr>
+                                        <td>{d['Atividade']}</td>
+                                        <td>{d['Origem']}</td>
+                                        <td>{d['Impacto POP']}</td>
+                                        <td>{d['Impacto Real']}</td>
+                                        <td>{d['Divergência']}</td>
+                                        <td>{d['Status']}</td>
+                                    </tr>
+                            """
+
+                        html_content += f"""
+                                </table>
+
+                                <p>
+                                    <strong>Aderência:</strong> {(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}% |
+                                    <strong>Diferença:</strong> {(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min |
+                                    <strong>Risco:</strong> {"ALTO" if total_real_diario > 480 else "BAIXO"}
+                                </p>
+                            </body>
+                        </html>
+                        """
+
+                        st.download_button(
+                            label="📥 Baixar Veredito em HTML",
+                            data=html_content,
+                            file_name="veredito_pericial.html",
+                            mime="text/html"
+                        )
+
+
     # --- INICIALIZAÇÃO ---
     if 'pagina' not in st.session_state:
         st.session_state.pagina = "parecer"
