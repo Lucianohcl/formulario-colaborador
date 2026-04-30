@@ -4707,7 +4707,7 @@ if st.session_state.get("pagina") == "parecer":
                         key="ed_pop_ia_v1"
                     )
 
-                    df_original = st.session_state["df_pop_ia_original"]
+                    df_original = st.session_state.get("df_pop_ia_original", pd.DataFrame(dados_ia))
 
                     if not df_editavel.equals(df_original):
                         st.session_state["df_pop_ia"] = df_editavel.copy()
