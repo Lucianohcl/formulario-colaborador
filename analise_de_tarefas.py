@@ -4672,25 +4672,31 @@ if st.session_state.get("pagina") == "parecer":
                     df_editavel = st.data_editor(
                         pd.DataFrame(dados_ia),
                         use_container_width=True,
-                        num_rows="dynamic"
+                        num_rows="dynamic",
+                        height=400,
+                        key="editor_pop_ia"
                     )
 
-                    df_calc = df_editavel.copy()
+                    if st.button("📊 Recalcular Eficiência", key="btn_recalcular_pop"):
+                        
+                        df_calc = df_editavel.copy()
 
-                    df_calc["Impacto Diário Convertido"] = (
-                        df_calc["Impacto Diário Convertido"]
-                        .str.replace("m", "", regex=False)
-                        .astype(float)
-                    )
+                        df_calc["Impacto Diário Convertido"] = (
+                            df_calc["Impacto Diário Convertido"]
+                            .astype(str)
+                            .str.replace("m", "", regex=False)
+                            .astype(float)
+                        )
 
-                    total_editado = df_calc["Impacto Diário Convertido"].sum()
-                    eficiencia = (total_editado / 480) * 100
+                        total_editado = df_calc["Impacto Diário Convertido"].sum()
+                        eficiencia = (total_editado / 480) * 100
 
-                    st.subheader("📊 Resultado Editado pelo Auditor")
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
-                    c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
+                        st.subheader("📊 Resultado Editado pelo Auditor")
+
+                        c1, c2, c3 = st.columns(3)
+                        c1.metric("Carga Alvo", "480 min")
+                        c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
+                        c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
