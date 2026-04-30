@@ -4751,25 +4751,53 @@ if st.session_state.get("pagina") == "parecer":
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
                     <html>
-                    <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
-                    <body style="font-family: sans-serif; padding: 20px;">
-                        <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
-                        <table border="1" style="border-collapse: collapse; width: 100%;">
-                            <tr style="background-color: #f2f2f2;">
-                                <th>Atividade</th><th>Freq</th><th>Tempo Base</th><th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
-                            </tr>
+                        <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
+                        <body style="font-family: sans-serif; padding: 20px;">
+                            <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
+
+                            <table border="1" style="border-collapse: collapse; width: 100%;">
+                                <tr style="background-color: #f2f2f2;">
+                                    <th>Atividade</th>
+                                    <th>Freq</th>
+                                    <th>Tempo Base</th>
+                                    <th>Impacto Diário</th>
+                                    <th>Eficiência</th>
+                                    <th>Meta Auditável</th>
+                                </tr>
                     """
-                    for d in dados_ia:
+
+                    for d in st.session_state["df_pop_ia"].to_dict("records"):
                         html_content += f"""
-                            <tr>
-                                <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
-                                <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td><td>{d['Meta Auditável']}</td>
-                            </tr>"""
+                                <tr>
+                                    <td>{d['Atividade']}</td>
+                                    <td>{d['Freq']}</td>
+                                    <td>{d['Tempo Base']}</td>
+                                    <td>{d['Impacto Diário Convertido']}</td>
+                                    <td>{d['Eficiência vs 480m']}</td>
+                                    <td>{d['Meta Auditável']}</td>
+                                </tr>
+                        """
+
+                    df_html = st.session_state["df_pop_ia"].copy()
+
+                    df_html["Impacto Diário Convertido"] = (
+                        df_html["Impacto Diário Convertido"]
+                        .astype(str)
+                        .str.replace("m", "", regex=False)
+                        .astype(float)
+                    )
+
+                    total_ia_diario = df_html["Impacto Diário Convertido"].sum()
 
                     html_content += f"""
-                        </table>
-                        <p><strong>Carga Alvo:</strong> 480 min | <strong>Ocupação:</strong> {total_ia_diario:.1f} min | <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%</p>
-                    </body>
+                            </table>
+
+                            <p>
+                                <strong>Carga Alvo:</strong> 480 min |
+                                <strong>Ocupação:</strong> {total_ia_diario:.1f} min |
+                                <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%
+                            </p>
+                        </body>
                     </html>
                     """
 
