@@ -4707,7 +4707,14 @@ if st.session_state.get("pagina") == "parecer":
                         key="ed_pop_ia_v1"
                     )
 
-                    df_original = st.session_state.get("df_pop_ia_original", pd.DataFrame(dados_ia))
+                    colab_key = colaborador_file
+
+                    if st.session_state.get("colab_atual") != colab_key:
+                        st.session_state["colab_atual"] = colab_key
+                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
+                        st.session_state["df_pop_ia_original"] = pd.DataFrame(dados_ia)
+
+                    df_original = st.session_state["df_pop_ia_original"]
 
                     if not df_editavel.equals(df_original):
                         st.session_state["df_pop_ia"] = df_editavel.copy()
