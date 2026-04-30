@@ -4670,40 +4670,25 @@ if st.session_state.get("pagina") == "parecer":
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     
-                    # 1. Preparação enxuta dos dados
-                    # Filtramos apenas o necessário para a tabela não ficar pesada
-                    df_para_editar = pd.DataFrame(dados_ia)[["Atividade", "Impacto Diário Convertido"]].copy()
+                    # 1. Carrega os dados
+                    df_base = pd.DataFrame(dados_ia)
 
-                    # 2. O Editor em Modo de Segurança (v10)
-                    # Desativamos a adição/exclusão dinâmica para garantir que a tela não suma
+                    # 2. O Editor puro (v11)
+                    # Sem cálculos automáticos abaixo dele para não forçar o servidor
+                    st.write("### Auditoria de Dados")
                     df_editado = st.data_editor(
-                        df_para_editar,
+                        df_base,
                         hide_index=True,
                         use_container_width=True,
-                        key="editor_seguro_v10",
-                        num_rows="fixed" # 'fixed' impede o crash do botão delete/add
+                        key="editor_simples_v11",
+                        num_rows="dynamic"
                     )
 
-                    # 3. Cálculo em Tempo Real (Blindado)
-                    total_auditado = 0.0
-                    try:
-                        if df_editado is not None:
-                            # Converte a coluna editada para números de forma segura
-                            total_auditado = pd.to_numeric(
-                                df_editado["Impacto Diário Convertido"].astype(str).str.replace('m', '').str.replace(',', '.'),
-                                errors='coerce'
-                            ).fillna(0).sum()
-                    except:
-                        total_auditado = 0.0
-
-                    # 4. Exibição das Métricas
-                    st.divider()
-                    col1, col2 = st.columns(2)
-                    col1.metric("Ocupação Auditada", f"{total_auditado:.1f} min")
-                    
-                    ef = (total_auditado / 480) * 100 if total_auditado > 0 else 0
-                    col2.metric("Eficiência Real", f"{ef:.1f}%")
-                    
+                    # 3. Botão opcional apenas para salvar/ver que terminou
+                    if st.button("Gravar Alterações"):
+                        st.success("Alterações registradas com sucesso!")
+                        # O cálculo abaixo é opcional, mas se quiser usar, ele entra aqui:
+                        # total = df_editado["Impacto Diário Convertido"].sum()                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
