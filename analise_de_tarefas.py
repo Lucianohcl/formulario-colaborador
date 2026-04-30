@@ -4944,7 +4944,7 @@ if st.session_state.get("pagina") == "parecer":
 
                     f1.metric(
                         "Aderência ao Cargo",
-                        f"{(sum(float(str(x['Impacto POP']))[:-1]) / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}%"
+                        f"{(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}%"
                     )
 
                     f2.metric(
