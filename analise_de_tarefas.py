@@ -4669,41 +4669,47 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    # --- LIMPEZA E RECONSTRUÇÃO DO BLOCO DE AUDITORIA ---
                     
-                    # 1. Criamos o DataFrame com segurança
+                    
+                    # 1. Reconstrução com Chave Nova e Proteção de Dados
                     df_base = pd.DataFrame(dados_ia)
                     
-                    # 2. O Editor (Ocupa o lugar da st.table antiga)
-                    # Usamos uma chave dinâmica para evitar que o cache trave a tela
+                    # Usamos a v4 para forçar o Streamlit a esquecer o erro anterior
                     df_editado = st.data_editor(
                         df_base, 
                         hide_index=True, 
                         use_container_width=True,
-                        key="editor_auditoria_v3", 
+                        key="editor_auditoria_v4", 
                         num_rows="dynamic"
                     )
                     
-                    # 3. Cálculo Ultra-Blindado
-                    total_ia_editado = 0
+                    # 2. Cálculo Ultra-Blindado (Tratando erros de exclusão)
+                    total_ia_editado = 0.0
                     
-                    # Verificamos se o editor retornou dados válidos
-                    if df_editado is not None and not df_editado.empty:
-                        # Usamos .get() para evitar erro se a coluna sumir
-                        coluna_tempo = "Impacto Diário Convertido"
-                        
-                        if coluna_tempo in df_editado.columns:
-                            for valor in df_editado[coluna_tempo]:
-                                try:
-                                    # Se a célula estiver vazia (None ou NaN), o 'if valor' pula
-                                    if pd.notna(valor) and str(valor).strip():
-                                        limpo = str(valor).replace('m', '').replace(',', '.').strip()
-                                        total_ia_editado += float(limpo)
-                                except:
-                                    continue
+                    # Verificação de segurança: garante que o objeto existe e não está vazio
+                    if df_editado is not None:
+                        try:
+                            # O .copy() evita erros de referência ao manipular a tabela
+                            temp_df = df_editado.copy()
+                            col_alvo = "Impacto Diário Convertido"
+                            
+                            if col_alvo in temp_df.columns:
+                                # Removemos valores nulos antes de iterar para evitar o crash no delete
+                                valores_validos = temp_df[col_alvo].dropna()
+                                
+                                for valor in valores_validos:
+                                    try:
+                                        if valor and str(valor).strip():
+                                            texto_limpo = str(valor).replace('m', '').replace(',', '.').strip()
+                                            total_ia_editado += float(texto_limpo)
+                                    except (ValueError, TypeError):
+                                        continue
+                        except Exception:
+                            # Se a tabela bugar completamente, o sistema assume 0 e NÃO SAI da tela
+                            total_ia_editado = 0.0
 
-                    # 4. Métricas (EXCLUSIVAS - Certifique-se de que não há outras c1, c2, c3 abaixo)
-                    st.write("---") # Linha divisória para organizar
+                    # 3. Métricas Estabilizadas
+                    st.write("---")
                     col_m1, col_m2, col_m3 = st.columns(3)
                     
                     with col_m1:
@@ -4713,6 +4719,7 @@ if st.session_state.get("pagina") == "parecer":
                         st.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
                     
                     with col_m3:
+                        # Cálculo de eficiência com trava para zero
                         efici_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
                         st.metric("Eficiência Real", f"{efici_calc:.1f}%")
 
