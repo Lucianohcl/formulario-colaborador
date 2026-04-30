@@ -4643,46 +4643,36 @@ if st.session_state.get("pagina") == "parecer":
                     colab['campos'].get('cursos', '')
                 )
 
-                if pop_ia:
-                    # --- NOVO: LÓGICA DE PERSISTÊNCIA (Session State) ---
-                    # Só processamos o 'pop_ia' para o DataFrame se ele ainda não estiver na memória
-                    if 'dados_auditoria' not in st.session_state:
-                        dados_lista = []
-                        total_acumulado = 0
+               
+                    # 1. Se a IA gerou os dados agora, salva na memória
+                    if pop_ia and 'dados_audit' not in st.session_state:
+                        st.session_state.dados_audit = []
                         for ativ, info in pop_ia.items():
                             t, f = info['tempo'], info['freq'].upper()
                             imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                            total_acumulado += imp
-                            dados_lista.append({
+                            st.session_state.dados_audit.append({
                                 "Atividade": ativ,
-                                "Freq": f,
-                                "Tempo": float(imp), # Guardamos como número puro para editar
-                                "Meta Auditável": info['meta']
+                                "Tempo": float(imp),
+                                "Meta": info['meta']
                             })
-                        # Salva na memória do navegador
-                        st.session_state.dados_auditoria = dados_lista
-                        st.session_state.total_base = total_acumulado
 
-                    # --- INTERFACE DE AUDITORIA CONGELADA ---
-                    st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-                    
-                    # Usamos o data_editor apontando para a memória (session_state)
-                    # Ele não vai mudar se você não pedir
-                    df_editavel = st.data_editor(
-                        pd.DataFrame(st.session_state.dados_auditoria),
-                        hide_index=True,
-                        use_container_width=True,
-                        key="editor_pericial_final"
-                    )
+                    # 2. Em vez de 'if pop_ia:', use o Session State
+                    # Isso garante que, mesmo após editar, os dados continuem na tela
+                    if 'dados_audit' in st.session_state:
+                        st.header("📚 Auditoria de Eficiência")
+                        
+                        df_editavel = st.data_editor(
+                            pd.DataFrame(st.session_state.dados_audit),
+                            hide_index=True,
+                            use_container_width=True,
+                            key="editor_fixo_v1"
+                        )
 
-                    # Cálculos feitos sobre o que você está editando AGORA
-                    total_editado = df_editavel["Tempo"].sum()
-                    
-                    st.divider()
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação Auditada", f"{total_editado:.1f} min")
-                    c3.metric("Eficiência Real", f"{(total_editado/480)*100:.1f}%")                   
+                        # Métricas sempre visíveis
+                        total_v = df_editavel["Tempo"].sum()
+                        c1, c2 = st.columns(2)
+                        c1.metric("Ocupação", f"{total_v:.1f} min")
+                        c2.metric("Eficiência", f"{(total_v/480)*100:.1f}%")                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
