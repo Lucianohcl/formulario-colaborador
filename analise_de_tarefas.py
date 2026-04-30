@@ -4669,41 +4669,28 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    lista_pop = []
-                    for k, v in pop_ia.items():
-                        lista_pop.append({
-                            "Atividade": k,
-                            "Frequência": v.get("freq", "").upper(),
-                            "Tempo (min)": v.get("tempo", 0),
-                            "Meta Auditável": v.get("meta", ""),
-                            "Complexidade": v.get("complexidade", "MÉDIA")
-                        })
-                    
-                    df_pop = pd.DataFrame(lista_pop)
-                    
-                    cfg = {
-                        "Atividade": st.column_config.TextColumn("Atividade", width="large"),
-                        "Frequência": st.column_config.SelectboxColumn(
-                            options=["DIÁRIA", "SEMANAL", "MENSAL"], 
-                            width="small"
-                        ),
-                        "Tempo (min)": st.column_config.NumberColumn("Tempo", width="small", min_value=0),
-                        "Meta Auditável": st.column_config.TextColumn("Meta Auditável", width="large"),
-                        "Complexidade": st.column_config.SelectboxColumn(
-                            options=["ALTA", "MÉDIA", "BAIXA"], 
-                            width="small"
-                        )
-                    }
-                    
-                    df_editado = st.data_editor(
-                        df_pop, 
-                        key="ed_pop_ia_v3", 
-                        column_config=cfg, 
+                    df_editavel = st.data_editor(
+                        pd.DataFrame(dados_ia),
                         use_container_width=True,
-                        num_rows="fixed"
+                        num_rows="dynamic"
                     )
-                    
-                    st.session_state["rascunho_atual"]["pop_ia"] = df_editado.to_dict("records")
+
+                    df_calc = df_editavel.copy()
+
+                    df_calc["Impacto Diário Convertido"] = (
+                        df_calc["Impacto Diário Convertido"]
+                        .str.replace("m", "", regex=False)
+                        .astype(float)
+                    )
+
+                    total_editado = df_calc["Impacto Diário Convertido"].sum()
+                    eficiencia = (total_editado / 480) * 100
+
+                    st.subheader("📊 Resultado Editado pelo Auditor")
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Carga Alvo", "480 min")
+                    c2.metric("Ocupação Editada", f"{total_editado:.1f} min")
+                    c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
