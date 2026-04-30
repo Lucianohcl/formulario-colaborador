@@ -4671,12 +4671,35 @@ if st.session_state.get("pagina") == "parecer":
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     # Substituição da linha st.table:
                     df_ia = pd.DataFrame(dados_ia)
+                    
                     df_editado = st.data_editor(
-                        df_ia, 
+                        pd.DataFrame(dados_ia), 
                         hide_index=True, 
                         use_container_width=True,
-                        key="editor_minimalista_ia"
+                        key="editor_protegido_ia",
+                        num_rows="dynamic"  # <--- ESSA LINHA É A CHAVE
                     )
+                    
+                    # CÁLCULO COM TRAVA DE SEGURANÇA (Para não sumir a tela)
+                    total_ia_editado = 0
+                    for valor in df_editado["Impacto Diário Convertido"]:
+                        try:
+                            # Só tenta somar se o campo não estiver vazio
+                            if valor and str(valor).strip():
+                                num = float(str(valor).replace('m', '').replace(',', '.'))
+                                total_ia_editado += num
+                        except (ValueError, TypeError):
+                            # Se der erro ou estiver vazio, ignora e não quebra a tela
+                            continue
+                    
+                    # Colunas de métricas
+                    c1, c2, c3 = st.columns(3)
+                    c1.metric("Carga Alvo", "480 min")
+                    c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
+                    
+                    # Evita divisão por zero se a carga for apagada
+                    eficiencia = (total_ia_editado/480)*100 if total_ia_editado > 0 else 0
+                    c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
