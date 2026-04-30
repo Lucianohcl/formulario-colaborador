@@ -4669,37 +4669,46 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                    # Substituição da linha st.table:
-                    df_ia = pd.DataFrame(dados_ia)
+                    # --- LIMPEZA E RECONSTRUÇÃO DO BLOCO DE AUDITORIA ---
                     
+                    # 1. Criamos o DataFrame com segurança
+                    df_base = pd.DataFrame(dados_ia)
+                    
+                    # 2. O Editor (Ocupa o lugar da st.table antiga)
+                    # Usamos uma chave dinâmica para evitar que o cache trave a tela
                     df_editado = st.data_editor(
-                        pd.DataFrame(dados_ia), 
+                        df_base, 
                         hide_index=True, 
                         use_container_width=True,
-                        key="editor_protegido_ia",
-                        num_rows="dynamic"  # <--- ESSA LINHA É A CHAVE
+                        key="editor_auditoria_v3", 
+                        num_rows="dynamic"
                     )
                     
-                    # CÁLCULO COM TRAVA DE SEGURANÇA (Para não sumir a tela)
+                    # 3. Cálculo Blindado (Soma apenas o que é número)
                     total_ia_editado = 0
-                    for valor in df_editado["Impacto Diário Convertido"]:
-                        try:
-                            # Só tenta somar se o campo não estiver vazio
-                            if valor and str(valor).strip():
-                                num = float(str(valor).replace('m', '').replace(',', '.'))
-                                total_ia_editado += num
-                        except (ValueError, TypeError):
-                            # Se der erro ou estiver vazio, ignora e não quebra a tela
-                            continue
+                    if "Impacto Diário Convertido" in df_editado.columns:
+                        for valor in df_editado["Impacto Diário Convertido"]:
+                            try:
+                                if valor and str(valor).strip():
+                                    # Remove o 'm', limpa espaços e troca vírgula por ponto
+                                    limpo = str(valor).replace('m', '').replace(',', '.').strip()
+                                    total_ia_editado += float(limpo)
+                            except:
+                                continue
+
+                    # 4. Métricas (EXCLUSIVAS - Certifique-se de que não há outras c1, c2, c3 abaixo)
+                    st.write("---") # Linha divisória para organizar
+                    col_m1, col_m2, col_m3 = st.columns(3)
                     
-                    # Colunas de métricas
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
+                    with col_m1:
+                        st.metric("Carga Alvo", "480 min")
                     
-                    # Evita divisão por zero se a carga for apagada
-                    eficiencia = (total_ia_editado/480)*100 if total_ia_editado > 0 else 0
-                    c3.metric("Eficiência Real", f"{eficiencia:.1f}%")
+                    with col_m2:
+                        st.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
+                    
+                    with col_m3:
+                        efici_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
+                        st.metric("Eficiência Real", f"{efici_calc:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
