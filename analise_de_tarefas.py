@@ -4674,52 +4674,51 @@ if st.session_state.get("pagina") == "parecer":
                     # 1. Reconstrução com Chave Nova e Proteção de Dados
                     df_base = pd.DataFrame(dados_ia)
                     
-                    # --- SISTEMA DE AUDITORIA ULTRA-RESILIENTE ---
-                    try:
-                        # 1. Editor com a Chave Final v7 para resetar o cache do servidor
-                        df_editado = st.data_editor(
-                            pd.DataFrame(dados_ia), 
-                            hide_index=True, 
-                            use_container_width=True,
-                            key="editor_final_v7", 
-                            num_rows="dynamic"
-                        )
+                    # --- ESTRUTURA DE SEGURANÇA MÁXIMA ---
+                    # Criamos um container que isola o erro
+                    container_auditoria = st.container()
 
-                        # 2. Variável de soma inicializada fora para segurança
-                        total_ia_editado = 0.0
-                        
-                        # Verificação tripla: existe? não é vazio? tem a coluna?
-                        if df_editado is not None and not df_editado.empty:
-                            # O .get evita erro se a coluna sumir por um milésimo de segundo
-                            coluna_impacto = df_editado.get("Impacto Diário Convertido")
+                    with container_auditoria:
+                        try:
+                            # 1. Editor com a Chave v8 (Reset total)
+                            # Usamos um DataFrame convertido para garantir tipos de dados
+                            df_base = pd.DataFrame(dados_ia).convert_dtypes()
                             
-                            if coluna_impacto is not None:
-                                # Conversão em massa imune a strings ou nulos (Delete)
-                                col_limpa = pd.to_numeric(
-                                    coluna_impacto.astype(str).str.replace('m', '').str.replace(',', '.'), 
-                                    errors='coerce'
-                                ).fillna(0)
-                                total_ia_editado = float(col_limpa.sum())
+                            df_editado = st.data_editor(
+                                df_base, 
+                                hide_index=True, 
+                                use_container_width=True,
+                                key="editor_final_v8", 
+                                num_rows="dynamic"
+                            )
 
-                        # 3. Métricas (Colunagem fixa e segura)
-                        st.divider()
-                        m_c1, m_c2, m_c3 = st.columns(3)
-                        
-                        with m_c1:
-                            st.metric("Carga Alvo", "480 min")
-                        
-                        with m_c2:
-                            st.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
-                        
-                        with m_c3:
-                            # Cálculo de eficiência com trava de segurança para zero
+                            # 2. Cálculo Blindado Externo
+                            total_ia_editado = 0.0
+                            
+                            # Se o usuário deletar a última linha, o df_editado pode vir vazio ou None
+                            if df_editado is not None and len(df_editado) > 0:
+                                col_nome = "Impacto Diário Convertido"
+                                if col_nome in df_editado.columns:
+                                    # O pd.to_numeric é a única forma 100% segura
+                                    valores = pd.to_numeric(
+                                        df_editado[col_nome].astype(str).str.replace('m', '').str.replace(',', '.'),
+                                        errors='coerce'
+                                    ).fillna(0)
+                                    total_ia_editado = float(valores.sum())
+
+                            # 3. Métricas dentro do container isolado
+                            st.divider()
+                            m_c1, m_c2, m_c3 = st.columns(3)
+                            m_c1.metric("Carga Alvo", "480 min")
+                            m_c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
+                            
                             ef_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
-                            st.metric("Eficiência Real", f"{ef_calc:.1f}%")
+                            m_c3.metric("Eficiência Real", f"{ef_calc:.1f}%")
 
-                    except Exception:
-                        # SE TUDO FALHAR, O APP NÃO SAI. Ele apenas exibe um aviso discreto
-                        # e continua renderizando o resto da página normalmente.
-                        st.info("Aguardando atualização dos dados da tabela...")
+                        except Exception:
+                            # Se o Delete quebrar o componente, ele mostra isso e NÃO SAI da tela
+                            st.warning("🔄 Sincronizando alterações na tabela...")
+                            st.stop() # Interrompe apenas ESTE bloco, não o app todo
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
