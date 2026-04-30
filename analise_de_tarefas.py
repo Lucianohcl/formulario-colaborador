@@ -5690,13 +5690,77 @@ def aba_produtividade_inteligente():
     # 3. ABA DE PERÍCIA (TUDO QUE DEPENDE DE t1)
     with t1:
         st.subheader("📁 POP de Referência (PDF)")
-        arquivo_pop = st.file_uploader("Upload do POP oficial para extração de metas:", type=["pdf"], key="pop_mestre")
+        # =========================
+        # 📁 ORIGEM DO POP
+        # =========================
+        origem_pop = st.radio(
+            "📌 Origem do POP:",
+            ["📤 Upload do PC", "💻 Arquivo local", "☁️ Banco (GitHub)"],
+            key="origem_pop"
+        )
 
+        arquivo_pop = None
+
+        # =========================
+        # 📤 UPLOAD DO PC
+        # =========================
+        if origem_pop == "📤 Upload do PC":
+
+            arquivo_pop = st.file_uploader(
+                "Upload do POP oficial para extração de metas:",
+                type=["pdf"],
+                key="pop_mestre"
+            )
+
+        # =========================
+        # 💻 ARQUIVO LOCAL
+        # =========================
+        elif origem_pop == "💻 Arquivo local":
+
+            pasta = "documentos/pop"
+
+            if os.path.exists(pasta):
+                arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+            else:
+                arquivos = []
+
+            if arquivos:
+                selecionado = st.selectbox("Selecionar POP local:", arquivos)
+                arquivo_pop = os.path.join(pasta, selecionado)
+            else:
+                st.warning("Nenhum POP encontrado na pasta local.")
+
+        # =========================
+        # ☁️ BANCO (GITHUB)
+        # =========================
+        elif origem_pop == "☁️ Banco (GitHub)":
+
+            pasta = "documentos/pop"
+
+            if os.path.exists(pasta):
+                arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+            else:
+                arquivos = []
+
+            if arquivos:
+                selecionado = st.selectbox("Selecionar POP do banco:", arquivos)
+                arquivo_pop = os.path.join(pasta, selecionado)
+            else:
+                st.warning("Nenhum POP encontrado no banco.")
+
+        # =========================
+        # 🔥 CONTROLE DE TROCA DE POP
+        # =========================
         if arquivo_pop:
-            if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != arquivo_pop.name:
+
+            nome_pop = arquivo_pop.name if hasattr(arquivo_pop, "name") else os.path.basename(arquivo_pop)
+
+            if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != nome_pop:
+
                 if 'kpis_sessao' in st.session_state:
                     del st.session_state.kpis_sessao
-                st.session_state.ultimo_pop = arquivo_pop.name
+
+                st.session_state.ultimo_pop = nome_pop
 
             # Processamento do POP
             texto_pdf = extrair_texto_pdf(arquivo_pop)
