@@ -4644,42 +4644,7 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                
-                # 1. Captura Silenciosa: Se a IA gerou algo, guardamos na "sombra"
-                if pop_ia:
-                    st.session_state['cache_ia'] = pop_ia
-
-                # 2. Botão de Carga com Trava de Estado
-                if st.button("📥 Carregar POP para Edição", key="btn_carga_final"):
-                    if 'cache_ia' in st.session_state:
-                        st.session_state.dados_para_editar = [
-                            {"Atividade": k, "Tempo": float(v['tempo']), "Meta": v['meta']} 
-                            for k, v in st.session_state['cache_ia'].items()
-                        ]
-                        st.success("POP carregado com sucesso!")
-                        st.rerun() # Força a exibição imediata
-                    else:
-                        st.error("Gere o POP primeiro para poder carregar.")
-
-                # 3. Exibição Blindada (Só aparece se houver dados na gaveta)
-                if 'dados_para_editar' in st.session_state:
-                    st.divider()
-                    st.subheader("📝 Editor de POP")
-                    
-                    df_final = st.data_editor(
-                        pd.DataFrame(st.session_state.dados_para_editar),
-                        hide_index=True,
-                        use_container_width=True,
-                        key="editor_estavel_245am"
-                    )
-                    
-                    # Salva qualquer edição feita na tabela de volta para a gaveta
-                    st.session_state.dados_para_editar = df_final.to_dict('records')
-                    
-                    # Métricas
-                    total_v = df_final["Tempo"].sum()
-                    c1, c2 = st.columns(2)
-                    c1.metric("Ocupação Real", f"{total_v:.1f} min")
-                    c2.metric("Eficiência", f"{(total_v/480)*100:.1f}%")                       
+                st.table(pd.DataFrame(dados_ia))                   
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
