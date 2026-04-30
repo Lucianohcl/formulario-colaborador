@@ -4724,8 +4724,11 @@ if st.session_state.get("pagina") == "parecer":
                         st.session_state["colab_key"] = colab_key
 
                         # 🔥 LIMPA COMPLETAMENTE OS DADOS ANTERIORES
-                        st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia).copy()
-                        st.session_state["df_pop_ia_original"] = pd.DataFrame(dados_ia).copy()
+                        base = pd.DataFrame(dados_ia)
+
+                        st.session_state["df_pop_ia_original"] = base
+                        st.session_state["df_pop_ia"] = base.copy()
+                        
 
                         # 🔥 FORÇA RELOAD LIMPO
                         st.rerun()
