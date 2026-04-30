@@ -4632,6 +4632,9 @@ if st.session_state.get("pagina") == "parecer":
             )
             
             if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
+                st.session_state["laudo_ativo"] = True
+
+            if st.session_state.get("laudo_ativo"):
 
                 with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                     colab = json.load(f)
@@ -4670,7 +4673,7 @@ if st.session_state.get("pagina") == "parecer":
                     st.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
 
                     # =========================
-                    # 🔥 STATE FORÇADO FORA DO FLUXO
+                    # STATE PERSISTENTE
                     # =========================
                     if "df_pop_ia" not in st.session_state:
                         st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
@@ -4686,7 +4689,7 @@ if st.session_state.get("pagina") == "parecer":
                     st.session_state["df_pop_ia"] = df_editavel
 
                     # =========================
-                    # 🔘 BOTÃO ISOLADO
+                    # RECALCULO ISOLADO
                     # =========================
                     if st.button("📊 Recalcular Eficiência", key="btn_recalc_pop"):
 
