@@ -4670,37 +4670,32 @@ if st.session_state.get("pagina") == "parecer":
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
                     
-                    
-                    
-                    # 1. Tabela apenas para visualização (100% estável)
-                    df_base = pd.DataFrame(dados_ia)
-                    st.dataframe(df_base, use_container_width=True) 
+                    # 1. Tabela apenas visual (NÃO CRASHA)
+                    st.write("### Dados da IA")
+                    st.dataframe(pd.DataFrame(dados_ia), use_container_width=True) 
 
-                    # 2. Espaçamento para organizar o visual
-                    st.write("") 
-
-                    # 3. Entrada manual do valor total (Imune a erros de delete)
-                    # O 'value' pode ser a soma inicial da IA para te poupar tempo
-                    soma_inicial = pd.to_numeric(df_base["Impacto Diário Convertido"].astype(str).str.replace('m', '').str.replace(',', '.'), errors='coerce').fillna(0).sum()
-                    
+                    # 2. Entrada Manual Totalmente Independente
+                    # Usamos um número fixo (0.0) para evitar que ele tente somar a tabela e quebre
+                    st.write("---")
                     valor_auditado = st.number_input(
-                        "Total de Minutos Auditados (Ajuste aqui)", 
+                        "Digite o Total de Minutos Auditados", 
                         min_value=0.0, 
-                        max_value=1440.0, 
-                        value=float(soma_inicial),
-                        step=1.0
+                        value=0.0, # Começa em zero para não causar conflito
+                        key="campo_final_paz"
                     )
 
-                    # 4. Métricas Finais
-                    st.divider()
-                    col_final1, col_final2 = st.columns(2)
+                    # 3. Métricas Simples
+                    if valor_auditado > 0:
+                        c1, c2 = st.columns(2)
+                        with c1:
+                            st.metric("Ocupação", f"{valor_auditado} min")
+                        with c2:
+                            ef = (valor_auditado / 480) * 100
+                            st.metric("Eficiência", f"{ef:.1f}%")
+                    else:
+                        st.info("Insira o valor auditado acima para calcular a eficiência.")
                     
-                    with col_final1:
-                        st.metric("Ocupação Auditada", f"{valor_auditado:.1f} min")
                     
-                    with col_final2:
-                        eficiencia = (valor_auditado / 480) * 100 if valor_auditado > 0 else 0
-                        st.metric("Eficiência Real", f"{eficiencia:.1f}%")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
