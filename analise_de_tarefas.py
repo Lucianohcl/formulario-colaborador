@@ -4668,9 +4668,30 @@ if st.session_state.get("pagina") == "parecer":
                             "Meta Auditável": info['meta']
                         })
 
-                    st.metric("Carga Alvo", "480 min")
-                    st.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
-                    st.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
+                    df_base = st.session_state["df_pop_ia"]
+
+                    df_calc = df_base.copy()
+
+                    df_calc["Impacto Diário Convertido"] = (
+                        df_calc["Impacto Diário Convertido"]
+                        .astype(str)
+                        .str.replace("m", "", regex=False)
+                        .astype(float)
+                    )
+
+                    total = df_calc["Impacto Diário Convertido"].sum()
+                    eficiencia = (total / 480) * 100
+
+                    c1, c2, c3 = st.columns(3)
+
+                    with c1:
+                        st.metric("Carga Alvo", "480 min")
+
+                    with c2:
+                        st.metric("Ocupação POP IA", f"{total:.1f} min")
+
+                    with c3:
+                        st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
 
                     # =========================
                     # STATE PERSISTENTE
