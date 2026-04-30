@@ -4669,7 +4669,7 @@ if st.session_state.get("pagina") == "parecer":
                     c1.metric("Carga Alvo", "480 min")
                     c2.metric("Ocupação POP IA", f"{total_ia_diario:.1f} min")
                     c3.metric("Eficiência Teórica", f"{(total_ia_diario/480)*100:.1f}%")
-                                        if "df_pop_ia" not in st.session_state:
+                    if "df_pop_ia" not in st.session_state:
                         st.session_state["df_pop_ia"] = pd.DataFrame(dados_ia)
 
                     st.subheader("📊 POP IA - Editor de Carga")
