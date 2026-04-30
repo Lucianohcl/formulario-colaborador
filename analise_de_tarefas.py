@@ -4657,7 +4657,6 @@ if st.session_state.get("pagina") == "parecer":
                             })
 
                     # 2. Em vez de 'if pop_ia:', use o Session State
-                    # Isso garante que, mesmo após editar, os dados continuem na tela
                     if 'dados_audit' in st.session_state:
                         st.header("📚 Auditoria de Eficiência")
                         
