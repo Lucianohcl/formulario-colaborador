@@ -4674,36 +4674,52 @@ if st.session_state.get("pagina") == "parecer":
                     # 1. Reconstrução com Chave Nova e Proteção de Dados
                     df_base = pd.DataFrame(dados_ia)
                     
-                    # Usamos a v4 para forçar o Streamlit a esquecer o erro anterior
-                    # 1. Editor Final (v6) - Reset de Cache
-                    df_editado = st.data_editor(
-                        pd.DataFrame(dados_ia), 
-                        hide_index=True, 
-                        use_container_width=True,
-                        key="editor_final_v6", 
-                        num_rows="dynamic"
-                    )
+                    # --- SISTEMA DE AUDITORIA ULTRA-RESILIENTE ---
+                    try:
+                        # 1. Editor com a Chave Final v7 para resetar o cache do servidor
+                        df_editado = st.data_editor(
+                            pd.DataFrame(dados_ia), 
+                            hide_index=True, 
+                            use_container_width=True,
+                            key="editor_final_v7", 
+                            num_rows="dynamic"
+                        )
 
-                    # 2. Resolução Minimalista (Imune a erros de Delete)
-                    if df_editado is not None and "Impacto Diário Convertido" in df_editado.columns:
-                        # Forçamos a conversão de toda a coluna. O que for deletado vira 0 automaticamente.
-                        col_numerica = pd.to_numeric(
-                            df_editado["Impacto Diário Convertido"].astype(str).str.replace('m', '').str.replace(',', '.'), 
-                            errors='coerce'
-                        ).fillna(0)
-                        
-                        total_ia_editado = float(col_numerica.sum())
-                    else:
+                        # 2. Variável de soma inicializada fora para segurança
                         total_ia_editado = 0.0
+                        
+                        # Verificação tripla: existe? não é vazio? tem a coluna?
+                        if df_editado is not None and not df_editado.empty:
+                            # O .get evita erro se a coluna sumir por um milésimo de segundo
+                            coluna_impacto = df_editado.get("Impacto Diário Convertido")
+                            
+                            if coluna_impacto is not None:
+                                # Conversão em massa imune a strings ou nulos (Delete)
+                                col_limpa = pd.to_numeric(
+                                    coluna_impacto.astype(str).str.replace('m', '').str.replace(',', '.'), 
+                                    errors='coerce'
+                                ).fillna(0)
+                                total_ia_editado = float(col_limpa.sum())
 
-                    # 3. Métricas (Alinhadas com o bloco acima)
-                    st.divider()
-                    c1, c2, c3 = st.columns(3)
-                    c1.metric("Carga Alvo", "480 min")
-                    c2.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
-                    
-                    ef_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
-                    c3.metric("Eficiência Real", f"{ef_calc:.1f}%")
+                        # 3. Métricas (Colunagem fixa e segura)
+                        st.divider()
+                        m_c1, m_c2, m_c3 = st.columns(3)
+                        
+                        with m_c1:
+                            st.metric("Carga Alvo", "480 min")
+                        
+                        with m_c2:
+                            st.metric("Ocupação Auditada", f"{total_ia_editado:.1f} min")
+                        
+                        with m_c3:
+                            # Cálculo de eficiência com trava de segurança para zero
+                            ef_calc = (total_ia_editado / 480) * 100 if total_ia_editado > 0 else 0
+                            st.metric("Eficiência Real", f"{ef_calc:.1f}%")
+
+                    except Exception:
+                        # SE TUDO FALHAR, O APP NÃO SAI. Ele apenas exibe um aviso discreto
+                        # e continua renderizando o resto da página normalmente.
+                        st.info("Aguardando atualização dos dados da tabela...")
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
                     html_content = f"""
