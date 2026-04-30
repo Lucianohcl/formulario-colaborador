@@ -4644,34 +4644,34 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                
-                    # 1. Se a IA gerou os dados agora, salva na memória
-                    if pop_ia and 'dados_audit' not in st.session_state:
-                        st.session_state.dados_audit = []
-                        for ativ, info in pop_ia.items():
-                            t, f = info['tempo'], info['freq'].upper()
-                            imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                            st.session_state.dados_audit.append({
-                                "Atividade": ativ,
-                                "Tempo": float(imp),
-                                "Meta": info['meta']
-                            })
+                # 1. Trava os dados na memória (Session State) - 16 espaços
+                if pop_ia and 'dados_audit' not in st.session_state:
+                    st.session_state.dados_audit = []
+                    for ativ, info in pop_ia.items():
+                        t, f = info['tempo'], info['freq'].upper()
+                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
+                        st.session_state.dados_audit.append({
+                            "Atividade": ativ,
+                            "Tempo": float(imp),
+                            "Meta": info['meta']
+                        })
 
-                    # 2. Em vez de 'if pop_ia:', use o Session State
-                    if 'dados_audit' in st.session_state:
-                        st.header("📚 Auditoria de Eficiência")
-                        
-                        df_editavel = st.data_editor(
-                            pd.DataFrame(st.session_state.dados_audit),
-                            hide_index=True,
-                            use_container_width=True,
-                            key="editor_fixo_v1"
-                        )
+                # 2. Exibição persistente (Não some ao editar)
+                if 'dados_audit' in st.session_state:
+                    st.header("📚 Auditoria de Eficiência")
+                    
+                    df_editavel = st.data_editor(
+                        pd.DataFrame(st.session_state.dados_audit),
+                        hide_index=True,
+                        use_container_width=True,
+                        key="editor_estavel_final"
+                    )
 
-                        # Métricas sempre visíveis
-                        total_v = df_editavel["Tempo"].sum()
-                        c1, c2 = st.columns(2)
-                        c1.metric("Ocupação", f"{total_v:.1f} min")
-                        c2.metric("Eficiência", f"{(total_v/480)*100:.1f}%")                   
+                    # Métricas automáticas baseadas na edição
+                    total_v = df_editavel["Tempo"].sum()
+                    c1, c2 = st.columns(2)
+                    c1.metric("Ocupação", f"{total_v:.1f} min")
+                    c2.metric("Eficiência", f"{(total_v/480)*100:.1f}%")                       
                     
 
                     # --- GERADOR DE HTML PARA DOWNLOAD ---
