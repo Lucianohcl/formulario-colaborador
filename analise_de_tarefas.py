@@ -5521,124 +5521,45 @@ def extrair_texto_pdf(arquivo_pdf):
         st.error(f"Erro ao ler PDF: {e}")
         return None
 
-@st.cache_data(show_spinner="IA Gerando POP Detalhado...")
-def estruturar_pop_completo_ia(texto_pdf):
-    """Extrai todas as atividades sem resumir as metas"""
-    prompt = f"""
-    Analise o PDF e extraia TODAS as atividades para um POP. 
-    Não resuma as metas. Capture a 'Meta Auditável' completa.
-    Retorne APENAS JSON:
-    {{"atividades": [{{"nome": "...", "tempo": 60, "freq": "DIÁRIA", "meta": "..."}}]}}
-    Texto: {texto_pdf[:6000]}
-    """
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[{"role": "system", "content": "Analista de Processos. Você é detalhista e não resume textos."},
-                 {"role": "user", "content": prompt}],
-        response_format={"type": "json_object"}
-    )
-    return json.loads(response.choices[0].message.content)
-
-@st.cache_data(show_spinner="IA definindo 5 KPIs estratégicos...")
-def gerar_5_kpis_periciais(atividades_pop):
-    """Gera 5 KPIs baseados no POP extraído com ID garantido"""
-    prompt = f"""
-    Com base nestas atividades de trabalho: {json.dumps(atividades_pop)}
-    
-    Defina 5 KPIs periciais estratégicos para auditoria. 
-    É OBRIGATÓRIO que cada KPI tenha um ID numérico (1 a 5).
-    
-    Retorne ESTRITAMENTE um JSON no seguinte formato:
-    {{
-      "kpis": [
-        {{
-          "id": 1,
-          "nome": "Nome do KPI",
-          "objetivo": "Objetivo detalhado",
-          "evidencia_sugerida": "O que auditar"
-        }}
-      ]
-    }}
-    """
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {"role": "system", "content": "Auditor Forense Sênior. Você sempre entrega IDs numéricos sequenciais para os KPIs."},
-            {"role": "user", "content": prompt}
-        ],
-        response_format={"type": "json_object"}
-    )
-    return json.loads(response.choices[0].message.content)
-
 @st.cache_data(show_spinner="IA realizando análise pericial...")
 def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
     """
-    Motor de Auditoria Pericial (versão determinística e com extração controlada de evidências).
+    Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
     """
 
     prompt_auditoria = f"""
 Você é um Auditor Forense de Departamento Pessoal e Processos.
 
-Sua missão é avaliar evidências e gerar um laudo técnico estruturado.
+DADOS DA PERÍCIA:
+- KPI Analisado: {kpi_nome}
+- Objetivo Esperado: {objetivo}
+- Provas Sugeridas no POP: {evidencias_sugeridas}
+- Relato de Execução do Funcionário: {relato_usuario}
+- Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
 
-========================================================
-⚠️ SEPARAÇÃO OBRIGATÓRIA DE FONTES
-========================================================
-
-RELATO DO COLABORADOR (NÃO É PROVA):
-{relato_usuario}
-
-BASE DOCUMENTAL (ÚNICA FONTE VÁLIDA DE EVIDÊNCIA):
-{texto_evidencias[:12000]}
-
-REGRAS CRÍTICAS ABSOLUTAS:
-
-1. O relato do colaborador NÃO pode ser usado como evidência.
-2. "evidencia_afetada" deve ser EXTRAÍDA SOMENTE da BASE DOCUMENTAL.
-3. É PROIBIDO resumir, interpretar ou reformular evidências.
-4. Se não houver trecho exato no documento:
-   → "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
-
-========================================================
-CRITÉRIOS DE AVALIAÇÃO (0 a 25)
-========================================================
-
+CRITÉRIOS OBRIGATÓRIOS (0 a 25):
 - aderencia
 - integridade
 - tempestividade
 - completude
 
-========================================================
-REGRAS DE PONDERAÇÃO OBRIGATÓRIAS
-========================================================
+REGRAS ESTRITAS:
 
-1. Notas inteiras de 0 a 25 obrigatórias para todos os critérios.
+1. Você DEVE atribuir nota inteira de 0 a 25 para cada critério.
+2. NÃO invente critérios fora dos 4 acima.
+3. Ordene internamente as notas do menor para o maior.
+4. O campo "gap_de_conformidade" deve conter EXATAMENTE os 2 critérios com menor nota.
+5. É PROIBIDO criar lista genérica de falhas.
+6. "evidencia_afetada" deve ser SOMENTE:
+   - trecho real do texto fornecido OU
+   - "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
 
-2. Ranking interno obrigatório:
-   menor nota = maior falha
-   maior nota = melhor desempenho
-
-3. gap_de_conformidade deve conter EXATAMENTE os 3 menores critérios.
-
-4. O maior critério NÃO pode aparecer no gap.
-
-5. Empates devem seguir ordem fixa:
-   1º aderencia
-   2º integridade
-   3º tempestividade
-   4º completude
-
-6. Proibido inventar critérios fora dos 4 existentes.
-
-========================================================
-FORMATO DE SAÍDA (JSON OBRIGATÓRIO)
-========================================================
+RETORNE APENAS ESTE JSON:
 
 {{
     "percentual_alcance": 0-100,
     "status_pericial": "CONFORME | PARCIAL | NÃO CONFORME",
-
-    "analise_critica": "Análise técnica baseada exclusivamente em evidências documentais.",
+    "analise_critica": "Análise técnica baseada exclusivamente nas evidências documentais.",
 
     "ponderacao_detalhada": {{
         "aderencia": {{
@@ -5647,7 +5568,7 @@ FORMATO DE SAÍDA (JSON OBRIGATÓRIO)
         }},
         "integridade": {{
             "nota": 0-25,
-            "descricao": "Coerência entre evidência e validação técnica"
+            "descricao": "Coerência entre relato e evidência"
         }},
         "tempestividade": {{
             "nota": 0-25,
@@ -5663,29 +5584,16 @@ FORMATO DE SAÍDA (JSON OBRIGATÓRIO)
         {{
             "ordem": 1,
             "criterio": "MENOR NOTA (ranking real)",
-            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-            "nota_base": 0,
             "impacto": "alto | medio | baixo",
-            "descricao_falha": "Falha crítica derivada do menor score real",
-            "evidencia_afetada": "TRECHO EXATO do documento base ou 'EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO'"
+            "descricao_falha": "Falha principal derivada do menor score",
+            "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
         }},
         {{
             "ordem": 2,
             "criterio": "SEGUNDA MENOR NOTA (ranking real)",
-            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-            "nota_base": 0,
             "impacto": "alto | medio | baixo",
-            "descricao_falha": "Segunda maior fragilidade identificada",
-            "evidencia_afetada": "TRECHO EXATO do documento base ou 'EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO'"
-        }},
-        {{
-            "ordem": 3,
-            "criterio": "TERCEIRA MENOR NOTA (ranking real)",
-            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-            "nota_base": 0,
-            "impacto": "alto | medio | baixo",
-            "descricao_falha": "Terceira fragilidade identificada",
-            "evidencia_afetada": "TRECHO EXATO do documento base ou 'EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO'"
+            "descricao_falha": "Segunda falha mais relevante",
+            "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
         }}
     ]
 }}
@@ -5694,7 +5602,7 @@ FORMATO DE SAÍDA (JSON OBRIGATÓRIO)
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Você é um auditor forense rigoroso e NÃO pode inventar dados sob nenhuma hipótese."},
+            {"role": "system", "content": "Você é um auditor forense rigoroso e NÃO pode inventar dados."},
             {"role": "user", "content": prompt_auditoria}
         ],
         response_format={"type": "json_object"}
