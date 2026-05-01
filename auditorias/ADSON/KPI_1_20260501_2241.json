@@ -1,0 +1,20 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "Embora o relatório de auditoria interna apresente dados conciliados e sem divergências, cobrindo aspectos como salários, horas extras, INSS segurados e FGTS, ele não é suficiente para comprovar todas as dimensões da conformidade legislativa mencionadas no relato. A documentação não abrange o ciclo operacional completo, como as validações de rubricas de eventos de afastamento e desligamento (S-2230 e S-2299) ou a verificação de obrigações acessórias e a inexistência de passivos ocultos. A análise também se restringe a um único mês, enquanto o objetivo é garantir uma não conformidade abaixo de 2% continuamente.",
+    "gap_de_conformidade": [
+        "Verificação completa de eventos de afastamento (S-2230) e desligamento (S-2299)",
+        "Validação das obrigações acessórias como eSocial e DCTFweb",
+        "Confirmação da inexistência de passivos ocultos no período",
+        "Cobertura contínua e não apenas mensal da conformidade legislativa"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período.\n"
+}
