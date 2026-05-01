@@ -6159,7 +6159,9 @@ def aba_produtividade_inteligente():
                     keep='last'
                 )
 
-                ranking = df_ranking.groupby("colaborador")["percentual_alcance"].mean().reset_index().sort_values(by="percentual_alcance",   ascending=False).reset_index(drop=True)
+                ranking = df_ranking.groupby("colaborador")["percentual_alcance"].sum().reset_index().sort_values(by="percentual_alcance",    ascending=False).reset_index(drop=True)
+
+                ranking["percentual_alcance"] = ranking["percentual_alcance"] / 5
 
                 ranking.index = ranking.index + 1
                 ranking.columns = ["Colaborador", "Média de Eficiência"]
