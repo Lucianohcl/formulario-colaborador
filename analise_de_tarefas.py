@@ -5521,6 +5521,55 @@ def extrair_texto_pdf(arquivo_pdf):
         st.error(f"Erro ao ler PDF: {e}")
         return None
 
+@st.cache_data(show_spinner="IA Gerando POP Detalhado...")
+def estruturar_pop_completo_ia(texto_pdf):
+    """Extrai todas as atividades sem resumir as metas"""
+    prompt = f"""
+    Analise o PDF e extraia TODAS as atividades para um POP. 
+    Não resuma as metas. Capture a 'Meta Auditável' completa.
+    Retorne APENAS JSON:
+    {{"atividades": [{{"nome": "...", "tempo": 60, "freq": "DIÁRIA", "meta": "..."}}]}}
+    Texto: {texto_pdf[:6000]}
+    """
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "system", "content": "Analista de Processos. Você é detalhista e não resume textos."},
+                 {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
+@st.cache_data(show_spinner="IA definindo 5 KPIs estratégicos...")
+def gerar_5_kpis_periciais(atividades_pop):
+    """Gera 5 KPIs baseados no POP extraído com ID garantido"""
+    prompt = f"""
+    Com base nestas atividades de trabalho: {json.dumps(atividades_pop)}
+    
+    Defina 5 KPIs periciais estratégicos para auditoria. 
+    É OBRIGATÓRIO que cada KPI tenha um ID numérico (1 a 5).
+    
+    Retorne ESTRITAMENTE um JSON no seguinte formato:
+    {{
+      "kpis": [
+        {{
+          "id": 1,
+          "nome": "Nome do KPI",
+          "objetivo": "Objetivo detalhado",
+          "evidencia_sugerida": "O que auditar"
+        }}
+      ]
+    }}
+    """
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "Auditor Forense Sênior. Você sempre entrega IDs numéricos sequenciais para os KPIs."},
+            {"role": "user", "content": prompt}
+        ],
+        response_format={"type": "json_object"}
+    )
+    return json.loads(response.choices[0].message.content)
+
 @st.cache_data(show_spinner="IA realizando análise pericial...")
 def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
     """
