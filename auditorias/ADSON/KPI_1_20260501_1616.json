@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório de auditoria interna apresenta aderência ao tipo de documento requerido e confirma integridade ao não apresentar divergências. Está dentro do prazo analisado, no entanto, não foi possível verificar a evidência completa em relação à conformidade com a legislação trabalhista abaixo de 2% devido à ausência de relatórios mensais comparativos de não conformidade previstos no POP. Isso impacta diretamente a completude da evidência.",
+    "gap_de_conformidade": [
+        "Falta do relatório mensal de não conformidade para comparação com o benchmark de 2%"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 10,
+        "tempestividade": 10,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
