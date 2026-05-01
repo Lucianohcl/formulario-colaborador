@@ -6159,7 +6159,18 @@ def aba_produtividade_inteligente():
                     keep='last'
                 )
 
-                ranking = df_ranking.groupby("colaborador")["percentual_alcance"].mean().reset_index()
+                total_kpis_esperados = 5
+
+                agrupado = df_ranking.groupby("colaborador").agg(
+                    media_eficiencia=("percentual_alcance", "mean"),
+                    qtd_kpis=("kpi_nome", "nunique")
+                ).reset_index()
+
+                agrupado["cobertura"] = agrupado["qtd_kpis"] / total_kpis_esperados
+
+                agrupado["produtividade_real"] = agrupado["media_eficiencia"] * agrupado["cobertura"]
+
+                ranking = agrupado.sort_values(by="produtividade_real", ascending=False).reset_index(drop=True)
                 
                 # Ordena do melhor para o pior
                 ranking = ranking.sort_values(by="percentual_alcance", ascending=False).reset_index(drop=True)
