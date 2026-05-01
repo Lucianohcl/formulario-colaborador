@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "A documentação apresentada não é suficiente para comprovar a conformidade legislativa abaixo de 2% de não conformidade. O documento simulado para fins de auditoria e testes de sistema não fornece evidências diretas de não conformidades ou conformidades específicas com a legislação trabalhista. Além disso, não foram apresentados relatórios mensais de não conformidade que comprovem a aderência ao benchmark de 2%.",
+    "gap_de_conformidade": [
+        "Relatórios mensais de não conformidade comparados com o benchmark de 2%",
+        "Evidências diretas de ausência de inconsistências em eventos de afastamento e desligamento",
+        "Prova de conciliação com o financeiro confirmando cumprimento integral dos prazos legais"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
