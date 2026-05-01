@@ -5591,11 +5591,14 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     Avalie a completude da evidência em relação ao objetivo. 
     Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
 
-    CRITÉRIOS DE PONDERAÇÃO (Cada um vale 25%):
-    1. ADERÊNCIA: Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado. (0-25)
-    2. INTEGRIDADE: Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas. (0-25)
-    3. TEMPESTIVIDADE: Avalie se os documentos estão dentro do período correto do KPI e seguem uma sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal. (0-25)
-    4. COMPLETUDE: Avalie se o conjunto de evidências é suficiente e completo para comprovar o cumprimento do KPI, sem lacunas críticas, inferências subjetivas ou dependência de interpretação externa. Considere obrigatoriamente as evidências listadas em "Provas Sugeridas no POP". A ausência de qualquer evidência obrigatória deve reduzir severamente a pontuação desta categoria (máximo 20% da pontuação total do critério). (0-25)
+    CRITÉRIOS DE PONDERAÇÃO (O percentual_alcance abaixo deve ser a soma direta dos critérios ponderados:
+aderencia + integridade + tempestividade + completude = 0 a 100.
+Não utilize estimativas subjetivas fora dessa fórmula.) :
+
+    1. ADERÊNCIA: Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado. (0-10)
+    2. INTEGRIDADE: Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas. (0-10)
+    3. TEMPESTIVIDADE: Avalie se os documentos estão dentro do período correto do KPI e seguem uma sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal. (0-10)
+    4. COMPLETUDE: Avalie se o conjunto de evidências é suficiente e completo para comprovar o cumprimento do KPI, sem lacunas críticas, inferências subjetivas ou dependência de interpretação externa. Considere obrigatoriamente as evidências listadas em "Provas Sugeridas no POP". A ausência de qualquer evidência obrigatória deve reduzir severamente a pontuação desta categoria (máximo 20% da pontuação total do critério). (0-70)
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
@@ -5604,10 +5607,10 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
         "analise_critica": "Descreva tecnicamente os acertos e falhas da prova.",
         "gap_de_conformidade": ["Lista de itens que faltaram para chegar a 100%"],
         "ponderacao_detalhada": {{
-            "aderencia": 0-25,
-            "integridade": 0-25,
-            "tempestividade": 0-25,
-            "completude": 0-25
+            "aderencia": 0-10,
+            "integridade": 0-10,
+            "tempestividade": 0-10,
+            "completude": 0-70
         }}
     }}
     """
