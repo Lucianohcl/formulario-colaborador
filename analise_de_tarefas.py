@@ -5936,7 +5936,7 @@ def aba_produtividade_inteligente():
             if all_data:
                 df_dash = pd.DataFrame(all_data)
 
-                df_dash = df_dash.dropna(subset=["kpi_nome", "percentual_alcance"])
+                df_dash = df_dash.dropna(subset=["colaborador", "kpi_nome", "percentual_alcance"])
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
                 lista_colabs = ["Todos"] + sorted(list(df_dash['colaborador'].unique()))
@@ -5967,14 +5967,14 @@ def aba_produtividade_inteligente():
                 # KPI mais crítico
                 pior_kpi_serie = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean()
 
-                pior_kpi_nome = pior_kpi_serie.idxmin() if not pior_kpi_serie.empty else "N/A"
+                if not pior_kpi_serie.empty:
+                    pior_kpi_nome = pior_kpi_serie.idxmin()
+                    pior_valor = pior_kpi_serie.min()
+                else:
+                    pior_kpi_nome = "Sem dados"
+                    pior_valor = 0
 
-                m3.metric(
-                    "KPI Crítico",
-                    pior_kpi_nome,
-                    f"{pior_kpi_serie.min():.1f}%" if not pior_kpi_serie.empty else "0%",
-                    delta_color="inverse"
-                )
+                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_valor:.1f}%")
 
                 st.divider()
 
