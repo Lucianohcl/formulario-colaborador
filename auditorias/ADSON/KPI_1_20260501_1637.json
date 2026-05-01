@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 85,
+    "status_pericial": "CONFORME",
+    "analise_critica": "O documento enviado corresponde ao solicitado e confirma o relato de execução, demonstrando que as rubricas estavam corretamente conciliadas entre o sistema ERP Conformity Plus e o eSocial. As datas dos documentos são recentes, compatíveis e atuais (20/04/2026), e não há evidência de inconsistências nos dados apresentados. O relatório cobre aspectos críticos da conformidade com a legislação trabalhista, porém não menciona explicitamente obrigações acessórias como DCTFWeb e FGTS Digital, nem informa sobre eventos de afastamento e desligamento, que fazem parte do escopo de auditoria conforme o relato.",
+    "gap_de_conformidade": [
+        "Ausência de detalhes sobre a validação e conciliação das obrigações acessórias (DCTFWeb e FGTS Digital)",
+        "Não foi verificada a inexistência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299)"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
