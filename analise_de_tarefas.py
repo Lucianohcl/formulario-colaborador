@@ -5588,62 +5588,26 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     - Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
 
     SUA TAREFA:
-    Avalie a completude da evidência em relação ao objetivo nos DADOS DA PERÍCIA.
-    Considere apenas as evidências explicitamente presentes em "Provas Sugeridas no POP". A ausência de evidências impacta diretamente a COMPLETUDE conforme regra própria.
-    Se não houver evidência documental no PDF, a informação deve ser considerada não comprovada.
+    Avalie a completude da evidência em relação ao objetivo. 
+    Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
 
-    CRITÉRIOS DE PONDERAÇÃO (o percentual_alcance deve ser a soma direta dos critérios):
-    aderencia + integridade + tempestividade + completude = 0 a 100.
-    Não utilize estimativas subjetivas fora dessa fórmula.
+    CRITÉRIOS DE PONDERAÇÃO (Cada um vale 25%):
+    1. ADERÊNCIA: O documento enviado é o solicitado? (0-25)
+    2. INTEGRIDADE: Os dados do PDF confirmam o que foi escrito no relato? (0-25)
+    3. TEMPESTIVIDADE: As datas dos documentos são atuais/corretas? (0-25)
+    4. COMPLETUDE: O conjunto de provas é suficiente para dar o objetivo como alcançado? (0-25)
 
-    1. ADERÊNCIA (0-10):
-    Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado.
+    REGRA FINAL DE CONTROLE (ABSOLUTA):
 
-    2. INTEGRIDADE (0-10):
-    Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas.
+    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final deverá ser calculado normalmente pela soma dos critérios (aderência +       integridade + tempestividade + completude), porém será obrigatoriamente LIMITADO a no máximo 30%.
 
-    3. TEMPESTIVIDADE (0-10):
-    Avalie se os documentos estão dentro do período correto do KPI e seguem sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal.
+    Essa limitação é um teto rígido e incondicional:
+    - Não pode ser ignorado
+    - Não pode ser substituído por outra regra
+    - Não pode ser excedido sob nenhuma hipótese
+    - Aplica-se apenas quando houver pelo menos uma evidência obrigatória ausente
 
-    4. COMPLETUDE (0-70):
-    Avalie exclusivamente com base na presença ou ausência das evidências listadas em "Provas Sugeridas no POP".
-
-    
-    REGRA FINAL DE CONTROLE (PRIORIDADE MÁXIMA):
-    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final será FIXADO em no máximo 30.
-    Esta regra substitui qualquer outra regra de cálculo em caso de conflito.
-
-    Regras obrigatórias:
-        1) Transforme as evidências em checklist explícito (PRESENTE ou AUSENTE).
-        2) Não inferir, presumir ou completar informações ausentes.
-        3) Evidência não encontrada = AUSENTE (sem exceção).
-        4) O score inicia em 70.
-        5) Para cada evidência AUSENTE, subtraia 70 dividido pelo total de evidências obrigatórias.
-        6) Todas as evidências têm o mesmo peso.
-        7) Resultado final limitado entre 0 e 70.
-        8) O total de evidências obrigatórias deve ser obtido exclusivamente do POP.
-
-    OBSERVAÇÃO CRÍTICA:
-    Não esqueça: a COMPLETUDE é o critério mais importante do sistema de auditoria.
-    Se as evidências estiverem incompletas, o percentual_alcance deve cair significativamente, conforme as regras acima.
-    A ausência de evidências obrigatórias impacta diretamente o resultado global e pode levar o KPI a níveis baixos mesmo que os demais critérios estejam adequados.
-
-    REGRA OPERACIONAL OBRIGATÓRIA:
-    Cada item do gap_de_conformidade deve ser um artefato auditável concreto, com nome funcional e finalidade específica dentro do KPI.
-
-    FORMATO OBRIGATÓRIO:
-    - [Nome exato do artefato ou registro operacional específico] — [o que ele comprova no KPI + período ou contexto]
-
-    REGRAS DE VALIDAÇÃO:
-    1) É proibido usar termos genéricos isolados como: "relatório", "registro", "documento", "controle", "evidência"
-
-    2) Todo artefato deve indicar obrigatoriamente: - o tipo de processo que ele comprova, - sua função dentro do KPI, - o contexto temporal ou operacional
-
-    3) O item só é válido se puder ser auditado ou verificado em um sistema, processo ou documento real compatível com o POP.
-
-    4) O conteúdo deve ser derivado exclusivamente de "Provas Sugeridas no POP" e do contexto do KPI, sem inventar novos tipos de evidência.
-
-    
+    A COMPLETUDE é o fator que aciona esta limitação.   
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
@@ -5652,13 +5616,14 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
         "analise_critica": "Descreva tecnicamente os acertos e falhas da prova.",
         "gap_de_conformidade": ["Lista de itens que faltaram para chegar a 100%"],
         "ponderacao_detalhada": {{
-            "aderencia": 0-10,
-            "integridade": 0-10,
-            "tempestividade": 0-10,
-            "completude": 0-70
+            "aderencia": 0-25,
+            "integridade": 0-25,
+            "tempestividade": 0-25,
+            "completude": 0-25
         }}
     }}
     """
+
     
     response = client.chat.completions.create(
         model="gpt-4o",
