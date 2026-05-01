@@ -1,0 +1,20 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "Embora o documento analisado seja pertinente ao objetivo de reduzir os erros na folha de pagamento, não há evidências suficientes para comprovar que a meta de reduzir os erros em 15% foi alcançada. O relatório de não conformidades identifica inconsistências específicas, mas não fornece uma análise ao longo do tempo que comprove a redução dos erros. Além disso, a implantação de auditoria automatizada e outras medidas estão previstas para ações futuras, sem demonstração de impactos já alcançados.",
+    "gap_de_conformidade": [
+        "Falta de dados quantitativos que comprovem a redução de 15% nos erros de folha.",
+        "Ausência de comparação com dados anteriores que demonstrem a diferença ou impacto das ações tomadas.",
+        "Relatórios de conformidade semanais completos ou comparativos não foram apresentados.",
+        "Evidência de alcance de objetivos no relatório de melhorias contínuas."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 15,
+        "tempestividade": 20,
+        "completude": 10
+    },
+    "kpi_nome": "Eficácia da Auditoria Interna",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Verificar relatórios semanais de conformidade  para evidenciar redução consistente das não conformidades relacionadas à folha de pagamento, com melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos, indicando eficácia das rotinas de auditoria contínua."
+}
