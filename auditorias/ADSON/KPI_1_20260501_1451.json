@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório de auditoria interna apresentado é aderente ao pedido e demonstra que a conciliação das rubricas foi feita corretamente, confirmando a conformidade com as transmissões do eSocial sem divergências. No entanto, o documento não fornece uma visão completa sobre a presença de passivos ocultos ou inconsistências relacionadas aos eventos de afastamento (S-2230) e desligamento (S-2299). Ademais, o cumprimento das obrigações acessórias, como DCTFWeb e FGTS Digital, não está documentado na prova apresentada, o que compromete a avaliação da conformidade completa quanto ao objetivo fixado.",
+    "gap_de_conformidade": [
+        "Relatório de verificação de passivos ocultos no período.",
+        "Confirmação/documentação da ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299).",
+        "Comprovante do cumprimento das obrigações acessórias (DCTFWeb e FGTS Digital) e reconciliação com o financeiro."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
