@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "Embora o relatório de auditoria interna forneça resultados consistentes e sem divergências, as evidências não cobrem todos os requisitos listados em 'Provas Sugeridas no POP'. Isso prejudica a completude da análise e, por consequência, a conformidade esperada do KPI.",
+    "gap_de_conformidade": [
+        "Relatório mensal de não conformidade — Verificação da taxa mensal de não conformidade em relação ao benchmark de 2%"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 10,
+        "tempestividade": 10,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
