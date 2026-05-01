@@ -6029,6 +6029,13 @@ def aba_produtividade_inteligente():
                 # --- CORREÇÃO DA CHAVE AQUI ---
                 # Usando 'colaborador' (como sai no seu JSON) e 'percentual_alcance'
                 # Se o campo de nota no seu JSON tiver outro nome, mude 'percentual_alcance' abaixo
+                df_ranking = pd.DataFrame(all_data)
+
+                df_ranking = df_ranking.drop_duplicates(
+                    subset=['colaborador', 'kpi_nome'],
+                    keep='last'
+                )
+
                 ranking = df_ranking.groupby("colaborador")["percentual_alcance"].mean().reset_index()
                 
                 # Ordena do melhor para o pior
