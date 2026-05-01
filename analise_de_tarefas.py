@@ -5949,11 +5949,7 @@ def aba_produtividade_inteligente():
                 m1, m2, m3 = st.columns(3)
 
                 # Média Geral (Considerando apenas o último relato de cada KPI)
-                df_ultimos = (
-                    df_dash
-                    .sort_values("percentual_alcance", ascending=True)
-                    .drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
-                )
+                df_ultimos = df_dash.groupby(['colaborador','kpi_nome'], as_index=False)['percentual_alcance'].mean()
                 total_kpis_esperados = 5
 
                 st.write("DEBUG df_dash:", df_dash.shape)
