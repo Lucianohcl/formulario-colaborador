@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 65,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório de auditoria interna possui uma boa aderência aos dados apresentados no relato do funcionário, uma vez que os valores do ERP Conformity Plus estão exatamente alinhados com os relatórios do eSocial, sem divergências de valores. Porém, não há evidências de que todos os requisitos do KPI Conformidade Legislativa foram atendidos, especialmente a verificação específica dos eventos S-2230 e S-2299, assim como a confirmação do cumprimento integral das obrigações acessórias DCTFWeb e FGTS Digital. Estas lacunas comprometem a completude e a capacidade de assegurar que a conformidade esteja sempre abaixo de 2% de não conformidade.",
+    "gap_de_conformidade": [
+        "Falta de evidência sobre a verificação de eventos S-2230 e S-2299",
+        "Ausência de comprovação da conciliação das obrigações DCTFWeb e FGTS Digital",
+        "Não evidenciada a validação do cumprimento de prazos legais de obrigações acessórias"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
