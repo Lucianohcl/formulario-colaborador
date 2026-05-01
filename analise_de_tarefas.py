@@ -5936,10 +5936,6 @@ def aba_produtividade_inteligente():
             if all_data:
                 df_dash = pd.DataFrame(all_data)
 
-                st.write("DEBUG df_dash columns:", df_dash.columns)
-                st.write("DEBUG df_dash sample:", df_dash.head(3))
-                st.write("DEBUG filtro_colab:", filtro_colab)
-                st.write("DEBUG df_ultimos shape:", df_ultimos.shape)
                 
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
@@ -5951,12 +5947,10 @@ def aba_produtividade_inteligente():
 
                 # --- MÉTRICAS DE DESEMPENHO ---
                 m1, m2, m3 = st.columns(3)
-                
-                # Média Geral (Considerando apenas o último relato de cada KPI para o filtro atual)
+
+                # Média Geral (Considerando apenas o último relato de cada KPI)
                 df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
                 total_kpis_esperados = 5
-
-                df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
 
                 qtd_kpis = len(df_ultimos)
 
@@ -5965,13 +5959,22 @@ def aba_produtividade_inteligente():
                 eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
 
                 m1.metric("Eficiência Real", f"{eficiencia_sistematica:.1f}%")
+
                 m2.metric("KPIs Auditados (5)", f"{qtd_kpis}/{total_kpis_esperados}")
-                m2.metric("KPIs Auditados", len(df_ultimos))
-                
-                # Identifica qual KPI precisa de mais atenção (menor média)
+
+                m3.metric("KPIs Auditados", len(df_ultimos))
+
+                # KPI mais crítico
                 pior_kpi_serie = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean()
-                pior_kpi_nome = pior_kpi_serie.idxmin()
-                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")
+
+                pior_kpi_nome = pior_kpi_serie.idxmin() if not pior_kpi_serie.empty else "N/A"
+
+                m3.metric(
+                    "KPI Crítico",
+                    pior_kpi_nome,
+                    f"{pior_kpi_serie.min():.1f}%" if not pior_kpi_serie.empty else "0%",
+                    delta_color="inverse"
+                )
 
                 st.divider()
 
