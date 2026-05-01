@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação apresentada demonstra uma boa conformidade em relação aos processos de folha e declarações principais, como conciliado no ERP e relatórios de não divergências. No entanto, não há verificação explícita da auditoria preventiva e dos eventos específicos de afastamento e desligamento (S-2230 e S-2299) mencionados no relato da execução. Além disso, não há evidências sobre a conferência das obrigações acessórias (DCTFWeb e FGTS Digital) com o financeiro.",
+    "gap_de_conformidade": [
+        "Verificação específica dos eventos S-2230 (afastamento) e S-2299 (desligamento)",
+        "Evidências adicionais sobre a conferência das obrigações acessórias (DCTFWeb e FGTS Digital) com o financeiro",
+        "Provas de auditoria preventiva de compliance"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
