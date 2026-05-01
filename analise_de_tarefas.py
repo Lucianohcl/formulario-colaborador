@@ -5588,17 +5588,40 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     - Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
 
     SUA TAREFA:
-    Avalie a completude da evidência em relação ao objetivo. 
-    Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
+    Avalie a completude da evidência em relação ao objetivo nos DADOS DA PERÍCIA.
+    Considere apenas as evidências explicitamente presentes em "Provas Sugeridas no POP". A ausência de evidências impacta diretamente a COMPLETUDE conforme regra própria.
+    Se não houver evidência documental no PDF, a informação deve ser considerada não comprovada.
 
-    CRITÉRIOS DE PONDERAÇÃO (O percentual_alcance abaixo deve ser a soma direta dos critérios ponderados:
-aderencia + integridade + tempestividade + completude = 0 a 100.
-Não utilize estimativas subjetivas fora dessa fórmula.) :
+    CRITÉRIOS DE PONDERAÇÃO (o percentual_alcance deve ser a soma direta dos critérios):
+    aderencia + integridade + tempestividade + completude = 0 a 100.
+    Não utilize estimativas subjetivas fora dessa fórmula.
 
-    1. ADERÊNCIA: Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado. (0-10)
-    2. INTEGRIDADE: Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas. (0-10)
-    3. TEMPESTIVIDADE: Avalie se os documentos estão dentro do período correto do KPI e seguem uma sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal. (0-10)
-    4. COMPLETUDE: Avalie exclusivamente a presença ou ausência das evidências listadas em "Provas Sugeridas no POP". Regras obrigatória:1) Cada evidência obrigatória deve ser verificada como PRESENTE ou AUSENTE.2) É proibido inferir, presumir ou considerar evidência não explicitamente encontrada no PDF ou relato.3) O score inicia em 70 e sofre redução proporcional para cada evidência AUSENTE.4) Evidências não encontradas devem ser consideradas AUSENTES, sem exceção.5) Cada evidência AUSENTE reduz o score de COMPLETUDE por uma fração fixa: 70 dividido pelo número total de evidências obrigatórias. Não há pesos diferentes entre evidências.6) O resultado final não pode ser menor que 0 nem maior que 70.7) O número total de evidências obrigatórias deve ser obtido exclusivamente da lista "Provas Sugeridas no POP". (0-70)
+    1. ADERÊNCIA (0-10):
+    Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado.
+
+    2. INTEGRIDADE (0-10):
+    Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas.
+
+    3. TEMPESTIVIDADE (0-10):
+    Avalie se os documentos estão dentro do período correto do KPI e seguem sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal.
+
+    4. COMPLETUDE (0-70):
+    Avalie exclusivamente com base na presença ou ausência das evidências listadas em "Provas Sugeridas no POP".
+
+    Regras obrigatórias:
+        1) Transforme as evidências em checklist explícito (PRESENTE ou AUSENTE).
+        2) Não inferir, presumir ou completar informações ausentes.
+        3) Evidência não encontrada = AUSENTE (sem exceção).
+        4) O score inicia em 70.
+        5) Para cada evidência AUSENTE, subtraia 70 dividido pelo total de evidências obrigatórias.
+        6) Todas as evidências têm o mesmo peso.
+        7) Resultado final limitado entre 0 e 70.
+        8) O total de evidências obrigatórias deve ser obtido exclusivamente do POP.
+
+    OBSERVAÇÃO CRÍTICA:
+    Não esqueça: a COMPLETUDE é o critério mais importante do sistema de auditoria.
+    Se as evidências estiverem incompletas, o percentual_alcance deve cair significativamente, conforme as regras acima.
+    A ausência de evidências obrigatórias impacta diretamente o resultado global e pode levar o KPI a níveis baixos mesmo que os demais critérios estejam adequados.
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
