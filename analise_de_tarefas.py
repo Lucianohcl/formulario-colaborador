@@ -6005,124 +6005,58 @@ def aba_produtividade_inteligente():
                 st.subheader("🔍 Últimos Relatos do Campo")
                 st.table(df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
 
-                # --- DETALHAMENTO ISOLADO ---
                 st.markdown("---")
                 st.subheader("🎯 Diagnóstico por Indicador")
-                
+
                 for kpi in df_ultimos['kpi_nome'].unique():
                     dados_kpi = df_ultimos[df_ultimos['kpi_nome'] == kpi].iloc[-1]
                     
                     nota = dados_kpi['percentual_alcance']
-                    cor = "green" if nota >= 80 else "orange" if nota >= 50 else "red"
+                    cor = "green" if nota >= 80 else ("orange" if nota >= 50 else "red")
                     
-                    with st.expander(f"🔍 Detalhes: {kpi} - :{cor}[{nota:.1f}%]"):
-                        c1, c2 = st.columns([1, 2])
-                        with c1:
-                            st.write("**Veredito Técnico:**")
-                            st.write(f"Status: `{dados_kpi['status_pericial']}`")
-                        with c2:
-                            st.write("**Análise do Auditor (IA):**")
-                            st.info(dados_kpi['analise_critica'])
-                            if dados_kpi.get('gap_de_conformidade'):
-                                st.warning("**O que faltou para 100%:**")
-                                for item in dados_kpi['gap_de_conformidade']:
-                                    st.write(f"• {item}")
-
-            else:
-                st.info("Sincronize os dados para carregar o dashboard.")
-
-        except Exception as e:
-            st.error(f"Erro no Dashboard T2: {e}")
-
-        # 👇 FORA do try/except, mas ainda dentro do with t2
-        if all_data:
-
-            if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio"):
-
-                html_kpis = df_kpi.to_html(index=False)
-                html_relatos = df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5).to_html(index=False)
-
-                grafico_bar_html = fig_bar.to_html(full_html=False, include_plotlyjs='cdn')
-                grafico_pie_html = fig_pie.to_html(full_html=False, include_plotlyjs=False)
-
-                html_final = f"""
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Relatório de Auditoria</title>
-                        <style>
-                            body {{
-                                font-family: Arial;
-                                background-color: #f4f6f8;
-                                padding: 30px;
-                            }}
-                            h1, h2 {{
-                                color: #1e3a8a;
-                            }}
-                            table {{
-                                border-collapse: collapse;
-                                width: 100%;
-                                margin-bottom: 30px;
-                            }}
-                            th, td {{
-                                border: 1px solid #ccc;
-                                padding: 8px;
-                                text-align: left;
-                            }}
-                            th {{
-                                background-color: #1e3a8a;
-                                color: white;
-                            }}
-                            .card {{
-                                background: white;
-                                padding: 20px;
-                                border-radius: 10px;
-                                margin-bottom: 20px;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                            }}
-                        </style>
-                    </head>
-                    <body>
-
-                        <h1>📊 Relatório de Auditoria de KPIs</h1>
-
-                        <div class="card">
-                            <h2>Métricas Gerais</h2>
-                            <p><b>Eficiência Média:</b> {media_alcance:.1f}%</p>
-                            <p><b>Total de KPIs:</b> {len(df_ultimos)}</p>
-                            <p><b>KPI Crítico:</b> {pior_kpi_nome}</p>
+                    # Construção da estrutura HTML em f-string
+                    html_detalhes = f"""
+                    <details>
+                        <summary>
+                            <div class="summary-title">
+                                <span>🔍 Detalhes: {kpi}</span>
+                                <span class="pill bg-{cor}">{nota:.1f}%</span>
+                            </div>
+                        </summary>
+                        <div class="content">
+                            <div class="col-1">
+                                <p><strong>Veredito Técnico:</strong></p>
+                                <p>Status: <code>{dados_kpi['status_pericial']}</code></p>
+                            </div>
+                            <div class="col-2">
+                                <p><strong>Análise do Auditor (IA):</strong></p>
+                                <div class="info-box">
+                                    {dados_kpi['analise_critica']}
+                                </div>
+                    """
+                    
+                    # Adiciona o bloco de warning caso o gap de conformidade exista
+                    if dados_kpi.get('gap_de_conformidade'):
+                        html_detalhes += """
+                                <div class="warning-box">
+                                    <strong>O que faltou para 100%:</strong>
+                                    <ul>
+                        """
+                        for item in dados_kpi['gap_de_conformidade']:
+                            html_detalhes += f"                                <li>{item}</li>\n"
+                        html_detalhes += """
+                                    </ul>
+                                </div>
+                        """
+                        
+                    html_detalhes += """
                         </div>
-
-                        <div class="card">
-                            <h2>Média por Indicador</h2>
-                            {grafico_bar_html}
-                        </div>
-
-                        <div class="card">
-                            <h2>Volume de Auditorias</h2>
-                            {grafico_pie_html}
-                        </div>
-
-                        <div class="card">
-                            <h2>Tabela de KPIs</h2>
-                            {html_kpis}
-                        </div>
-
-                        <div class="card">
-                            <h2>Últimos Relatos</h2>
-                            {html_relatos}
-                        </div>
-
-                    </body>
-                </html>
-                """
-
-                st.download_button(
-                    label="⬇️ Baixar Relatório HTML",
-                    data=html_final,
-                    file_name="relatorio_auditoria.html",
-                    mime="text/html"
-                )        
+                    </div>
+                </details>
+                    """
+                    
+                    st.markdown(html_detalhes, unsafe_allow_html=True)
+             
 
                                             
                 
