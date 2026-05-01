@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 85,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório de auditoria interna se apresenta em conformidade formal com o padrão esperado, sem divergências numéricas entre o sistema e o eSocial. No entanto, apenas a conciliação de um mês não garante, por si só, que todos os processos do período foram devidamente auditados, como eventos de afastamento e desligamento (S-2230 e S-2299) e a conciliação das obrigações acessórias com o financeiro. Faltam evidências mais abrangentes do ciclo completo e outras provas materiais.",
+    "gap_de_conformidade": [
+        "Evidência de auditoria específica dos eventos S-2230 e S-2299",
+        "Documentação comprovando o cumprimento integral das obrigações acessórias (DCTFWeb e FGTS Digital) conciliadas com o financeiro",
+        "Relatórios mensais ou adicionais para o período do KPI, além do mês apresentado"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 20,
+        "completude": 15
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
