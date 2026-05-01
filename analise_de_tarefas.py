@@ -5958,8 +5958,8 @@ def aba_produtividade_inteligente():
 
                 eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
 
-                m1.metric("Eficiência Real do Sistema", f"{eficiencia_sistematica:.1f}%")
-                m2.metric("KPIs Auditados", f"{qtd_kpis}/{total_kpis_esperados}")
+                m1.metric("Eficiência Real", f"{eficiencia_sistematica:.1f}%")
+                m2.metric("KPIs Auditados (5)", f"{qtd_kpis}/{total_kpis_esperados}")
                 m2.metric("KPIs Auditados", len(df_ultimos))
                 
                 # Identifica qual KPI precisa de mais atenção (menor média)
