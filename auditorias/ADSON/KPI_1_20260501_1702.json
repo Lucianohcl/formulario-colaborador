@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "O relatório de auditoria interna e a certidão negativa de débitos trabalhistas fornecem indícios de conformidade. No entanto, não há dados específicos sobre a porcentagem de não conformidade para concluir que está abaixo dos 2% esperados, conforme definido no KPI. Embora os documentos demonstrem prática de conformidade fiscal e ausência de débitos, a falta de informações específicas sobre a taxa de não conformidade legislativa impede uma confirmação total do objetivo.",
+    "gap_de_conformidade": [
+        "Falta de dados específicos sobre a porcentagem de não conformidade em relação ao benchmark de 2%."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
