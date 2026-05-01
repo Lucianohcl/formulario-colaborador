@@ -5799,12 +5799,72 @@ def aba_produtividade_inteligente():
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
                     
                     relato = st.text_area("Relato da conformidade:", key=f"rel_{i}")
-                    evidencias = st.file_uploader(
-                        "Anexar Provas (PDFs)", 
-                        type=["pdf"], 
-                        accept_multiple_files=True, 
-                        key=f"files_{i}"
+                    # =========================
+                    # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
+                    # =========================
+                    origem_ev = st.radio(
+                        "📌 Origem das Evidências:",
+                        ["📤 Upload do PC", "💻 Arquivo local", "☁️ Banco (GitHub)"],
+                        key=f"origem_ev_{i}"
                     )
+
+                    evidencias = []
+
+                    # =========================
+                    # 📤 UPLOAD DO PC
+                    # =========================
+                    if origem_ev == "📤 Upload do PC":
+
+                        evidencias = st.file_uploader(
+                            "Anexar Provas (PDFs)",
+                            type=["pdf"],
+                            accept_multiple_files=True,
+                            key=f"files_{i}"
+                        )
+
+                    # =========================
+                    # 💻 ARQUIVO LOCAL
+                    # =========================
+                    elif origem_ev == "💻 Arquivo local":
+
+                        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+
+                        if os.path.exists(pasta):
+                            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+                        else:
+                            arquivos = []
+
+                        if arquivos:
+                            selecionados = st.multiselect(
+                                "Selecionar evidências locais:",
+                                arquivos,
+                                key=f"local_{i}"
+                            )
+                            evidencias = [open(os.path.join(pasta, f), "rb") for f in selecionados]
+                        else:
+                            st.warning("Nenhum arquivo local encontrado.")
+
+                    # =========================
+                    # ☁️ BANCO (GITHUB)
+                    # =========================
+                    elif origem_ev == "☁️ Banco (GitHub)":
+
+                        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+
+                        if os.path.exists(pasta):
+                            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+                        else:
+                            arquivos = []
+
+                        if arquivos:
+                            selecionados = st.multiselect(
+                                "Selecionar evidências do banco:",
+                                arquivos,
+                                key=f"git_{i}"
+                            )
+                            evidencias = [open(os.path.join(pasta, f), "rb") for f in selecionados]
+                        else:
+                            st.warning("Nenhum arquivo encontrado no banco.")
                     
                     if st.button("🚀 Auditar KPI", key=f"btn_{i}"):
                         if evidencias and relato:
