@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 64,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A evidência apresentada está aderente ao tipo exigido no POP, confirmando consistência com o relato do executante e demonstrando tempestividade. No entanto, a completude ficou comprometida devido a ausência de todas as provas sugeridas no POP especificamente o relatório mensal de não conformidade.",
+    "gap_de_conformidade": [
+        "Relatório mensal de não conformidade"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 10,
+        "tempestividade": 10,
+        "completude": 34
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
