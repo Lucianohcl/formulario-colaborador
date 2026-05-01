@@ -5524,11 +5524,12 @@ def extrair_texto_pdf(arquivo_pdf):
 @st.cache_data(show_spinner="IA realizando análise pericial...")
 def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
     """
-    Motor de Auditoria Pericial (versão estável e determinística).
+    Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
     """
 
     prompt_auditoria = f"""
-Você é um Auditor Forense de Departamento Pessoal e Processos.
+Você é um Auditor Forense de Departamento Pessoal e Processos. 
+Sua missão é dar um veredito técnico sobre a execução de um KPI.
 
 DADOS DA PERÍCIA:
 - KPI Analisado: {kpi_nome}
@@ -5537,25 +5538,21 @@ DADOS DA PERÍCIA:
 - Relato de Execução do Funcionário: {relato_usuario}
 - Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
 
-CRITÉRIOS OBRIGATÓRIOS (0 a 25):
-- aderencia
-- integridade
-- tempestividade
-- completude
+SUA TAREFA:
+Avalie a completude da evidência em relação ao objetivo. 
+Se o funcionário diz que fez, mas o PDF não comprova, reduza a nota.
 
-REGRAS ABSOLUTAS:
+CRITÉRIOS DE PONDERAÇÃO (0 a 25 cada):
+1. ADERÊNCIA
+2. INTEGRIDADE
+3. TEMPESTIVIDADE
+4. COMPLETUDE
 
-1. Você DEVE atribuir notas inteiras de 0 a 25 para os 4 critérios.
-2. NÃO invente critérios fora desses 4.
-3. O ranking deve ser REAL (menor nota = pior desempenho).
-4. O campo "gap_de_conformidade" deve conter EXATAMENTE os 2 critérios com menor nota.
-5. O 3º e 4º melhores critérios NÃO devem aparecer no gap.
-6. "evidencia_afetada" deve ser:
-   - trecho real do texto OU
-   - "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
-
-IMPORTANTE:
-Se não houver evidência suficiente no texto, marque explicitamente como não localizada.
+REGRAS:
+- Notas inteiras de 0 a 25
+- NÃO inventar critérios fora dos 4 acima
+- gap_de_conformidade deve conter EXATAMENTE os 2 menores critérios
+- "evidencia_afetada" deve ser trecho real do documento ou "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
 
 RETORNE APENAS JSON VÁLIDO:
 
@@ -5565,42 +5562,26 @@ RETORNE APENAS JSON VÁLIDO:
     "analise_critica": "Análise técnica baseada exclusivamente nas evidências documentais.",
 
     "ponderacao_detalhada": {{
-        "aderencia": {{
-            "nota": 0-25,
-            "descricao": "Correspondência entre documento e KPI"
-        }},
-        "integridade": {{
-            "nota": 0-25,
-            "descricao": "Coerência entre relato e evidência"
-        }},
-        "tempestividade": {{
-            "nota": 0-25,
-            "descricao": "Validade temporal das evidências"
-        }},
-        "completude": {{
-            "nota": 0-25,
-            "descricao": "Suficiência das provas para validação do KPI"
-        }}
+        "aderencia": 0,
+        "integridade": 0,
+        "tempestividade": 0,
+        "completude": 0
     }},
 
     "gap_de_conformidade": [
         {{
             "ordem": 1,
             "criterio": "MENOR NOTA (ranking real)",
-            "criterio_relacionado": "critério com menor pontuação real",
-            "nota_base": 0-25,
             "impacto": "alto | medio | baixo",
-            "descricao_falha": "Falha principal derivada do menor score",
-            "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
+            "descricao_falha": "Falha principal identificada",
+            "evidencia_afetada": "trecho real ou EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
         }},
         {{
             "ordem": 2,
             "criterio": "SEGUNDA MENOR NOTA (ranking real)",
-            "criterio_relacionado": "segundo pior desempenho",
-            "nota_base": 0-25,
             "impacto": "alto | medio | baixo",
-            "descricao_falha": "Segunda fragilidade mais relevante",
-            "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
+            "descricao_falha": "Segunda falha mais relevante",
+            "evidencia_afetada": "trecho real ou EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
         }}
     ]
 }}
@@ -5609,7 +5590,7 @@ RETORNE APENAS JSON VÁLIDO:
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Você é um auditor forense rigoroso e nunca inventa dados."},
+            {"role": "system", "content": "Você é um auditor forense rigoroso e não pode inventar dados."},
             {"role": "user", "content": prompt_auditoria}
         ],
         response_format={"type": "json_object"}
