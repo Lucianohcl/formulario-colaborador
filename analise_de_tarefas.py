@@ -5952,6 +5952,10 @@ def aba_produtividade_inteligente():
                 df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
                 total_kpis_esperados = 5
 
+                st.write("DEBUG df_dash:", df_dash.shape)
+                st.write("DEBUG df_ultimos:", df_ultimos.shape)
+                st.write(df_ultimos.head(3))
+
                 qtd_kpis = len(df_ultimos)
 
                 media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
