@@ -6061,12 +6061,7 @@ def aba_produtividade_inteligente():
 
                     st.markdown(html_detalhes, unsafe_allow_html=True)
 
-                # =========================
-                # FIM DO BLOCO LÓGICO DO KPI
-                # =========================
-
-except Exception as e:
-    st.error(f"Erro ao carregar diagnóstico: {e}")            
+                            
 
                                             
                 
