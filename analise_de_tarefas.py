@@ -5972,7 +5972,7 @@ def aba_produtividade_inteligente():
 
                 # --- LISTA DE RELATOS RECENTES ---
                 st.subheader("🔍 Últimos Relatos do Campo")
-                st.table(df_dash[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
+                st.table(df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
 
                 # --- DETALHAMENTO ISOLADO ---
                 st.markdown("---")
