@@ -6005,58 +6005,68 @@ def aba_produtividade_inteligente():
                 st.subheader("🔍 Últimos Relatos do Campo")
                 st.table(df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5))
 
+                
+ 
                 st.markdown("---")
                 st.subheader("🎯 Diagnóstico por Indicador")
 
                 for kpi in df_ultimos['kpi_nome'].unique():
                     dados_kpi = df_ultimos[df_ultimos['kpi_nome'] == kpi].iloc[-1]
-                    
+
                     nota = dados_kpi['percentual_alcance']
                     cor = "green" if nota >= 80 else ("orange" if nota >= 50 else "red")
-                    
-                    # Construção da estrutura HTML em f-string
+
+                    with st.expander(f"🔍 Detalhes: {kpi} - :{cor}[{nota:.1f}%]"):
+                        c1, c2 = st.columns([1, 2])
+
+                        with c1:
+                            st.write("**Veredito Técnico:**")
+                            st.write(f"Status: `{dados_kpi['status_pericial']}`")
+
+                        with c2:
+                            st.write("**Análise do Auditor (IA):**")
+                            st.info(dados_kpi['analise_critica'])
+
+                            if dados_kpi.get('gap_de_conformidade'):
+                                st.warning("**O que faltou para 100%:**")
+                                for item in dados_kpi['gap_de_conformidade']:
+                                    st.write(f"• {item}")
+
                     html_detalhes = f"""
-                    <details>
-                        <summary>
-                            <div class="summary-title">
-                                <span>🔍 Detalhes: {kpi}</span>
-                                <span class="pill bg-{cor}">{nota:.1f}%</span>
-                            </div>
-                        </summary>
-                        <div class="content">
-                            <div class="col-1">
-                                <p><strong>Veredito Técnico:</strong></p>
-                                <p>Status: <code>{dados_kpi['status_pericial']}</code></p>
-                            </div>
-                            <div class="col-2">
-                                <p><strong>Análise do Auditor (IA):</strong></p>
-                                <div class="info-box">
-                                    {dados_kpi['analise_critica']}
-                                </div>
+                    <div style="margin-top: 10px; padding: 16px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">
+                        <h4>📄 Versão HTML do KPI: {kpi}</h4>
+
+                        <p><strong>Percentual:</strong> <span style="color:{cor}; font-weight:bold;">{nota:.1f}%</span></p>
+
+                        <p><strong>Status:</strong> <code>{dados_kpi['status_pericial']}</code></p>
+
+                        <p><strong>Análise da IA:</strong></p>
+                        <div style="padding:10px; background:#e8f4fd; border-radius:4px;">
+                            {dados_kpi['analise_critica']}
+                        </div>
                     """
-                    
-                    # Adiciona o bloco de warning caso o gap de conformidade exista
+
                     if dados_kpi.get('gap_de_conformidade'):
                         html_detalhes += """
-                                <div class="warning-box">
-                                    <strong>O que faltou para 100%:</strong>
-                                    <ul>
+                        <p style="margin-top:10px;"><strong>Gaps de conformidade:</strong></p>
+                        <ul>
                         """
+
                         for item in dados_kpi['gap_de_conformidade']:
-                            html_detalhes += f"                                <li>{item}</li>\n"
-                        html_detalhes += """
-                                    </ul>
-                                </div>
-                        """
-                        
-                    html_detalhes += """
-                        </div>
-                    </div>
-                </details>
-                    """
-                    
+                            html_detalhes += f"<li>{item}</li>"
+
+                        html_detalhes += "</ul>"
+
+                    html_detalhes += "</div>"
+
                     st.markdown(html_detalhes, unsafe_allow_html=True)
-             
+
+                # =========================
+                # FIM DO BLOCO LÓGICO DO KPI
+                # =========================
+
+except Exception as e:
+    st.error(f"Erro ao carregar diagnóstico: {e}")            
 
                                             
                 
