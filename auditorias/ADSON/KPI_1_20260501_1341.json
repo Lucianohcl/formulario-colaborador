@@ -1,0 +1,55 @@
+{
+    "percentual_alcance": 85,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A análise revelou algumas discrepâncias menores em relação à completude e tempestividade das evidências. No entanto, a aderência e integridade dos documentos com o KPI demonstram um bom nível de conformidade geral.",
+    "ponderacao_detalhada": {
+        "aderencia": {
+            "nota": 22,
+            "descricao": "Correspondência entre documento e KPI"
+        },
+        "integridade": {
+            "nota": 23,
+            "descricao": "Coerência entre relato e evidência"
+        },
+        "tempestividade": {
+            "nota": 20,
+            "descricao": "Validade temporal das evidências"
+        },
+        "completude": {
+            "nota": 18,
+            "descricao": "Suficiência das provas para validação do KPI"
+        }
+    },
+    "gap_de_conformidade": [
+        {
+            "ordem": 1,
+            "criterio": "TERCEIRA MENOR NOTA",
+            "criterio_relacionado": "completude",
+            "nota_base": 18,
+            "impacto": "medio",
+            "descricao_falha": "Faltam evidências complementares que assegurem a suficiência total da documentação para validação completa do KPI.",
+            "evidencia_afetada": "Relatórios mensais de não conformidade"
+        },
+        {
+            "ordem": 2,
+            "criterio": "SEGUNDA MENOR NOTA",
+            "criterio_relacionado": "tempestividade",
+            "nota_base": 20,
+            "impacto": "medio",
+            "descricao_falha": "Algumas evidências apresentadas não estão dentro do período relevante para a análise completa de conformidade.",
+            "evidencia_afetada": "Data/hora da transmissão da DCTFWeb"
+        },
+        {
+            "ordem": 3,
+            "criterio": "MENOR NOTA",
+            "criterio_relacionado": "aderencia",
+            "nota_base": 22,
+            "impacto": "baixo",
+            "descricao_falha": "Pequenas inconsistências na relação direta entre documentos e KPI especificado.",
+            "evidencia_afetada": "Documentos de eSocial e folha de pagamento cruzados"
+        }
+    ],
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
