@@ -5592,10 +5592,10 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
 
     CRITÉRIOS DE PONDERAÇÃO (Cada um vale 25%):
-    1. ADERÊNCIA: O documento enviado é o solicitado? (0-25)
-    2. INTEGRIDADE: Os dados do PDF confirmam o que foi escrito no relato? (0-25)
-    3. TEMPESTIVIDADE: As datas dos documentos são atuais/corretas? (0-25)
-    4. COMPLETUDE: O conjunto de provas é suficiente para dar o objetivo como alcançado? (0-25)
+    1. ADERÊNCIA: Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado. (0-25)
+    2. INTEGRIDADE: Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas. (0-25)
+    3. TEMPESTIVIDADE: Avalie se os documentos estão dentro do período correto do KPI e seguem uma sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal. (0-25)
+    4. COMPLETUDE: Avalie se o conjunto de evidências é suficiente e completo para comprovar o cumprimento do KPI, sem lacunas críticas, inferências subjetivas ou dependência de interpretação externa. (0-25)
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
