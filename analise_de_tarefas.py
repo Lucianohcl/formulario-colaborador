@@ -6035,10 +6035,7 @@ def aba_produtividade_inteligente():
                                 for item in dados_kpi['gap_de_conformidade']:
                                     st.write(f"• {item}")
 
-                    # =========================
-                    # HTML DO EXPANDER (VERSÃO EXPORTÁVEL)
-                    # =========================
-
+                                  
                     html_detalhes = f"""
                     <details style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">
 
@@ -6057,14 +6054,15 @@ def aba_produtividade_inteligente():
                             <div style="padding:10px; background:#e8f4fd; border-radius:4px;">
                                 {dados_kpi['analise_critica']}
                             </div>
+
+                            <hr>
+                            <p><strong>O que faltou para 100%:</strong></p>
                     """
 
                     if dados_kpi.get('gap_de_conformidade'):
-                        html_detalhes += "<p><strong>O que faltou para 100%:</strong></p><ul>"
-
+                        html_detalhes += "<ul>"
                         for item in dados_kpi['gap_de_conformidade']:
                             html_detalhes += f"<li>{item}</li>"
-
                         html_detalhes += "</ul>"
 
                     html_detalhes += """
@@ -6086,11 +6084,11 @@ def aba_produtividade_inteligente():
                     </details>
                     """
 
-                    st.markdown(html_detalhes, unsafe_allow_html=True)              
-
+                    st.markdown(html_detalhes, unsafe_allow_html=True)
                             
 
-                                            
+            else:
+                st.info("Sincronize os dados para carregar o dashboard.")                                            
                 
                 
     with t3:
