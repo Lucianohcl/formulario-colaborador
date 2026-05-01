@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "CONFORME",
+    "analise_critica": "A documentação fornecida atende amplamente aos requisitos. Os arquivos analisados, incluindo o relatório de auditoria interna e a certidão negativa de débitos trabalhistas, comprovam a conformidade com a legislação. As rubricas foram conciliadas sem divergências, e as obrigações acessórias foram entregues conforme os prazos. As datas dos documentos são atuais e correspondem ao período de análise. O único ponto de atenção é que há ausência de documentação específica que mencione explicitamente a conferência dos eventos de afastamento (S-2230) e desligamento (S-2299), embora a não conformidade geral esteja abaixo de 2%.",
+    "gap_de_conformidade": [
+        "Documentação evidenciando especificamente a conferência dos eventos de afastamento (S-2230) e desligamento (S-2299)."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 20
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
