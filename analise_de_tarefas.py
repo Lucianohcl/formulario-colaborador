@@ -5608,9 +5608,10 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     4. COMPLETUDE (0-70):
     Avalie exclusivamente com base na presença ou ausência das evidências listadas em "Provas Sugeridas no POP".
 
-    REGRA OBRIGATÓRIA DE CONTROLE:
-    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o valor final de percentual_alcance será limitado a no máximo 50.
-    Essa regra é absoluta e deve ser aplicada após a soma dos critérios.
+    
+    REGRA FINAL DE CONTROLE (PRIORIDADE MÁXIMA):
+    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final será FIXADO em no máximo 30.
+    Esta regra substitui qualquer outra regra de cálculo em caso de conflito.
 
     Regras obrigatórias:
         1) Transforme as evidências em checklist explícito (PRESENTE ou AUSENTE).
@@ -5626,6 +5627,10 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     Não esqueça: a COMPLETUDE é o critério mais importante do sistema de auditoria.
     Se as evidências estiverem incompletas, o percentual_alcance deve cair significativamente, conforme as regras acima.
     A ausência de evidências obrigatórias impacta diretamente o resultado global e pode levar o KPI a níveis baixos mesmo que os demais critérios estejam adequados.
+
+    O campo "gap_de_conformidade" deve conter apenas evidências objetivas, específicas e verificáveis.
+    Proibido gerar descrições genéricas.
+    Cada item deve seguir o formato:- Nome exato da evidência esperada no POP ou documento específico faltante
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
