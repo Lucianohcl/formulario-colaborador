@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "Os dados analisados indicam que não há divergências nos valores apresentados entre o sistema ERP e o eSocial. No entanto, as evidências apresentadas cobrem apenas a conciliação de rubricas e não atendem completamente às 'Provas Sugeridas no POP'. O relatório interno apenas demonstra a conciliação entre valores do sistema e do eSocial, mas não inclui o relatório mensal de não conformidade diretamente relacionado ao benchmark de 2% de conformidade da legislação trabalhista, conforme exigido.",
+    "gap_de_conformidade": [
+        "Relatório mensal de não conformidade com comparação ao benchmark de 2% conforme POP"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 10,
+        "tempestividade": 10,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
