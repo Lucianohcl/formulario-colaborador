@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório de auditoria interna se apresenta consistente com o esperado em termos de aderência, dado que é o documento solicitado para verificação. A integridade é assegurada, pois os dados constantes no PDF batem com o relato de execução do funcionário. O documento possui a data correta e relevante, indicando tempestividade. No entanto, há uma falha crítica na completude: o conjunto de provas apresentado não confirmou diretamente o índice de não conformidade inferior a 2% para o total das operações analisadas, conforme o objetivo do KPI solicitado.",
+    "gap_de_conformidade": [
+        "Índice de não conformidade abaixo de 2% não foi comprovado diretamente"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 0
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
