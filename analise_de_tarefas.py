@@ -5948,9 +5948,18 @@ def aba_produtividade_inteligente():
                 
                 # Média Geral (Considerando apenas o último relato de cada KPI para o filtro atual)
                 df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
-                media_alcance = df_ultimos['percentual_alcance'].mean()
-                
-                m1.metric("Eficiência Média", f"{media_alcance:.1f}%")
+                total_kpis_esperados = 5
+
+                df_ultimos = df_dash.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
+
+                qtd_kpis = len(df_ultimos)
+
+                media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
+
+                eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
+
+                m1.metric("Eficiência Real do Sistema", f"{eficiencia_sistematica:.1f}%")
+                m2.metric("KPIs Auditados", f"{qtd_kpis}/{total_kpis_esperados}")
                 m2.metric("KPIs Auditados", len(df_ultimos))
                 
                 # Identifica qual KPI precisa de mais atenção (menor média)
