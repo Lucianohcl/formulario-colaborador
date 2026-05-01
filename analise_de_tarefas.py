@@ -5573,97 +5573,111 @@ def gerar_5_kpis_periciais(atividades_pop):
 @st.cache_data(show_spinner="IA realizando análise pericial...")
 def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
     """
-    Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
+    Motor de Auditoria Pericial (versão determinística).
     """
 
-    # O PROMPT DA IA (A LOGICA DE CRITICA)
     prompt_auditoria = f"""
-    Você é um Auditor Forense de Departamento Pessoal e Processos.
+Você é um Auditor Forense de Departamento Pessoal e Processos.
 
-    Sua missão é avaliar evidências e gerar um laudo técnico estruturado.
+Sua missão é avaliar evidências e gerar um laudo técnico estruturado.
 
-    DADOS DA PERÍCIA:
-    - KPI Analisado: {kpi_nome}
-    - Objetivo Esperado: {objetivo}
-    - Provas Sugeridas no POP: {evidencias_sugeridas}
-    - Relato de Execução: {relato_usuario}
-    - Evidências Documentais: {texto_evidencias[:12000]}
+DADOS DA PERÍCIA:
+- KPI Analisado: {kpi_nome}
+- Objetivo Esperado: {objetivo}
+- Provas Sugeridas no POP: {evidencias_sugeridas}
+- Relato de Execução: {relato_usuario}
+- Evidências Documentais: {texto_evidencias[:12000]}
 
-    CRITÉRIOS DE AVALIAÇÃO (0 a 25 cada):
-    1. ADERÊNCIA: compatibilidade entre documento e KPI
-    2. INTEGRIDADE: coerência entre relato e evidência
-    3. TEMPESTIVIDADE: validade temporal das provas
-    4. COMPLETUDE: suficiência das evidências
+CRITÉRIOS OBRIGATÓRIOS DE AVALIAÇÃO (0 a 25):
+- aderencia
+- integridade
+- tempestividade
+- completude
 
-    REGRAS OBRIGATÓRIAS:
-    - Atribua notas inteiras de 0 a 25
-    - Ordene os critérios da menor para a maior nota internamente
-    - O gap_de_conformidade deve conter EXATAMENTE os 3 menores critérios
-    - Nunca gere mais de 3 gaps
+REGRAS CRÍTICAS (OBRIGATÓRIAS):
 
-    IMPORTANTE:
-    RETORNE APENAS O JSON ABAIXO. NÃO ESCREVA TEXTO FORA DO JSON.
+1. Você DEVE atribuir notas inteiras de 0 a 25 para cada critério.
 
-    {{
-        "percentual_alcance": 0-100,
-        "status_pericial": "CONFORME | PARCIAL | NÃO CONFORME",
-        "analise_critica": "Análise técnica objetiva baseada em evidências",
+2. Você DEVE calcular um ranking interno REAL dos critérios:
+   - menor nota → pior desempenho
+   - maior nota → melhor desempenho
 
-        "ponderacao_detalhada": {{
-            "aderencia": {{
-                "nota": 0-25,
-                "descricao": "Correspondência entre documento e KPI"
-            }},
-            "integridade": {{
-                "nota": 0-25,
-                "descricao": "Coerência entre relato e evidência"
-            }},
-            "tempestividade": {{
-                "nota": 0-25,
-                "descricao": "Validade temporal das evidências"
-            }},
-            "completude": {{
-                "nota": 0-25,
-                "descricao": "Suficiência das provas para validação do KPI"
-            }}
+3. O campo "gap_de_conformidade" deve conter EXATAMENTE os 3 critérios com menor nota.
+
+4. O 4º critério (maior nota) NÃO pode aparecer em gap_de_conformidade.
+
+5. PROIBIDO inventar critérios fora dos 4 existentes.
+
+6. Em caso de empate de notas, usar desempate FIXO:
+   1º aderencia
+   2º integridade
+   3º tempestividade
+   4º completude
+
+7. "evidencia_afetada" deve SEMPRE ser um trecho real ou referência direta do texto de evidências fornecido — nunca genérico.
+
+RETORNE APENAS JSON VÁLIDO:
+
+{{
+    "percentual_alcance": 0-100,
+    "status_pericial": "CONFORME | PARCIAL | NÃO CONFORME",
+    "analise_critica": "Análise técnica objetiva baseada exclusivamente nas evidências fornecidas",
+
+    "ponderacao_detalhada": {{
+        "aderencia": {{
+            "nota": 0-25,
+            "descricao": "Correspondência entre documento e KPI"
         }},
+        "integridade": {{
+            "nota": 0-25,
+            "descricao": "Coerência entre relato e evidência"
+        }},
+        "tempestividade": {{
+            "nota": 0-25,
+            "descricao": "Validade temporal das evidências"
+        }},
+        "completude": {{
+            "nota": 0-25,
+            "descricao": "Suficiência das provas para validação do KPI"
+        }}
+    }},
 
-        "gap_de_conformidade": [
-            {{
-                "ordem": 1,
-                "criterio": "MENOR NOTA",
-                "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-                "nota_base": 0,
-                "impacto": "alto | medio | baixo",
-                "descricao_falha": "Falha crítica principal",
-                "evidencia_afetada": "Trecho específico"
-            }},
-            {{
-                "ordem": 2,
-                "criterio": "SEGUNDA MENOR NOTA",
-                "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-                "nota_base": 0,
-                "impacto": "alto | medio | baixo",
-                "descricao_falha": "Segunda falha mais relevante",
-                "evidencia_afetada": "Trecho específico"
-            }},
-            {{
-                "ordem": 3,
-                "criterio": "TERCEIRA MENOR NOTA",
-                "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
-                "nota_base": 0,
-                "impacto": "alto | medio | baixo",
-                "descricao_falha": "Terceira falha relevante",
-                "evidencia_afetada": "Trecho específico"
-            }}
-        ]
-    }}
-    """
+    "gap_de_conformidade": [
+        {{
+            "ordem": 1,
+            "criterio": "MENOR NOTA (ranking real)",
+            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
+            "nota_base": 0,
+            "impacto": "alto | medio | baixo",
+            "descricao_falha": "Falha diretamente derivada do menor score real",
+            "evidencia_afetada": "Trecho EXATO do texto de evidências que justifica a falha"
+        }},
+        {{
+            "ordem": 2,
+            "criterio": "SEGUNDA MENOR NOTA (ranking real)",
+            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
+            "nota_base": 0,
+            "impacto": "alto | medio | baixo",
+            "descricao_falha": "Segunda maior fragilidade identificada",
+            "evidencia_afetada": "Trecho EXATO do texto de evidências que justifica a falha"
+        }},
+        {{
+            "ordem": 3,
+            "criterio": "TERCEIRA MENOR NOTA (ranking real)",
+            "criterio_relacionado": "aderencia | integridade | tempestividade | completude",
+            "nota_base": 0,
+            "impacto": "alto | medio | baixo",
+            "descricao_falha": "Terceira fragilidade identificada",
+            "evidencia_afetada": "Trecho EXATO do texto de evidências que justifica a falha"
+        }}
+    ]
+}}
+"""
 
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Você é um auditor..."},
+            {"role": "system", "content": "Você é um auditor forense rigoroso e não pode inventar dados."},
             {"role": "user", "content": prompt_auditoria}
         ],
         response_format={"type": "json_object"}
@@ -5671,6 +5685,7 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
 
     resultado = json.loads(response.choices[0].message.content)
     resultado["kpi_nome"] = kpi_nome
+
     return resultado
 
 def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
