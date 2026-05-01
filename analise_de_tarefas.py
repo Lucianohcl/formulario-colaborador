@@ -6010,84 +6010,83 @@ def aba_produtividade_inteligente():
                 # --- DETALHAMENTO ISOLADO ---
                 st.markdown("---")
                 st.subheader("🎯 Diagnóstico por Indicador")
-                
+
                 for kpi in df_ultimos['kpi_nome'].unique():
+
                     dados_kpi = df_ultimos[df_ultimos['kpi_nome'] == kpi].iloc[-1]
-                    
+
                     nota = dados_kpi['percentual_alcance']
                     cor = "green" if nota >= 80 else "orange" if nota >= 50 else "red"
-                    
+
                     with st.expander(f"🔍 Detalhes: {kpi} - :{cor}[{nota:.1f}%]"):
+
                         c1, c2 = st.columns([1, 2])
+
                         with c1:
                             st.write("**Veredito Técnico:**")
                             st.write(f"Status: `{dados_kpi['status_pericial']}`")
+
                         with c2:
                             st.write("**Análise do Auditor (IA):**")
                             st.info(dados_kpi['analise_critica'])
+
                             if dados_kpi.get('gap_de_conformidade'):
                                 st.warning("**O que faltou para 100%:**")
                                 for item in dados_kpi['gap_de_conformidade']:
                                     st.write(f"• {item}")
 
-            else:
-                st.info("Sincronize os dados para carregar o dashboard.")
+                    # =========================
+                    # HTML DO EXPANDER (VERSÃO EXPORTÁVEL)
+                    # =========================
 
-        except Exception as e:
-            st.error(f"Erro no Dashboard T2: {e}")
+                    html_detalhes = f"""
+                    <details style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">
 
-        # 👇 FORA do try/except, mas ainda dentro do with t2
-        if all_data:
+                        <summary style="cursor: pointer; font-size: 16px; font-weight: bold;">
+                            🔍 Detalhes: {kpi} - <span style="color:{cor};">{nota:.1f}%</span>
+                        </summary>
 
-            
-            html_detalhes = f"""
-            <details style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">
+                        <div style="margin-top: 10px; padding: 10px;">
 
-                <summary style="cursor: pointer; font-size: 16px; font-weight: bold;">
-                    🔍 Detalhes: {kpi} - <span style="color:{cor};">{nota:.1f}%</span>
-                </summary>
+                            <p><strong>Veredito Técnico:</strong></p>
+                            <p>Status: <code>{dados_kpi['status_pericial']}</code></p>
 
-                <div style="margin-top: 10px; padding: 10px;">
+                            <hr>
 
-                    <p><strong>Veredito Técnico:</strong></p>
-                    <p>Status: <code>{dados_kpi['status_pericial']}</code></p>
+                            <p><strong>Análise do Auditor (IA):</strong></p>
+                            <div style="padding:10px; background:#e8f4fd; border-radius:4px;">
+                                {dados_kpi['analise_critica']}
+                            </div>
+                    """
 
-                    <hr>
+                    if dados_kpi.get('gap_de_conformidade'):
+                        html_detalhes += "<p><strong>O que faltou para 100%:</strong></p><ul>"
 
-                    <p><strong>Análise do Auditor (IA):</strong></p>
-                    <div style="padding:10px; background:#e8f4fd; border-radius:4px;">
-                        {dados_kpi['analise_critica']}
-                    </div>
+                        for item in dados_kpi['gap_de_conformidade']:
+                            html_detalhes += f"<li>{item}</li>"
 
-                    <hr>
+                        html_detalhes += "</ul>"
 
-                    <p><strong>O que faltou para 100%:</strong></p>
-            """
+                    html_detalhes += """
+                            <hr>
 
-            if dados_kpi.get('gap_de_conformidade'):
-                html_detalhes += "<ul>"
-                for item in dados_kpi['gap_de_conformidade']:
-                    html_detalhes += f"<li>{item}</li>"
-                html_detalhes += "</ul>"
+                            <a href="#" style="
+                                display:inline-block;
+                                padding:10px 16px;
+                                background:#1e3a8a;
+                                color:white;
+                                text-decoration:none;
+                                border-radius:6px;
+                                font-weight:bold;
+                            ">
+                                🔄 Reprocessar KPI
+                            </a>
 
-            html_detalhes += """
-                    <hr>
+                        </div>
+                    </details>
+                    """
 
-                    <a href="#" style="
-                        display:inline-block;
-                        padding:10px 16px;
-                        background:#1e3a8a;
-                        color:white;
-                        text-decoration:none;
-                        border-radius:6px;
-                        font-weight:bold;
-                    ">
-                        🔄 Reprocessar KPI
-                    </a>
-
-                </div>
-            </details>
-            """              
+                    st.markdown(html_detalhes, unsafe_allow_html=True)              
 
                             
 
