@@ -5526,79 +5526,53 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     """
     Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
     """
-
+    # O PROMPT DA IA (A LOGICA DE CRITICA)
     prompt_auditoria = f"""
-Você é um Auditor Forense de Departamento Pessoal e Processos. 
-Sua missão é dar um veredito técnico sobre a execução de um KPI.
+    Você é um Auditor Forense de Departamento Pessoal e Processos. 
+    Sua missão é dar um veredito técnico sobre a execução de um KPI.
 
-DADOS DA PERÍCIA:
-- KPI Analisado: {kpi_nome}
-- Objetivo Esperado: {objetivo}
-- Provas Sugeridas no POP: {evidencias_sugeridas}
-- Relato de Execução do Funcionário: {relato_usuario}
-- Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
+    DADOS DA PERÍCIA:
+    - KPI Analisado: {kpi_nome}
+    - Objetivo Esperado: {objetivo}
+    - Provas Sugeridas no POP: {evidencias_sugeridas}
+    - Relato de Execução do Funcionário: {relato_usuario}
+    - Conteúdo Extraído dos Anexos (PROVA MATERIAL): {texto_evidencias[:12000]}
 
-SUA TAREFA:
-Avalie a completude da evidência em relação ao objetivo. 
-Se o funcionário diz que fez, mas o PDF não comprova, reduza a nota.
+    SUA TAREFA:
+    Avalie a completude da evidência em relação ao objetivo. 
+    Se o funcionário diz que fez, mas o PDF não mostra dados que comprovem, a nota deve ser baixa.
 
-CRITÉRIOS DE PONDERAÇÃO (0 a 25 cada):
-1. ADERÊNCIA
-2. INTEGRIDADE
-3. TEMPESTIVIDADE
-4. COMPLETUDE
+    CRITÉRIOS DE PONDERAÇÃO (Cada um vale 25%):
+    1. ADERÊNCIA: O documento enviado é o solicitado? (0-25)
+    2. INTEGRIDADE: Os dados do PDF confirmam o que foi escrito no relato? (0-25)
+    3. TEMPESTIVIDADE: As datas dos documentos são atuais/corretas? (0-25)
+    4. COMPLETUDE: O conjunto de provas é suficiente para dar o objetivo como alcançado? (0-25)
 
-REGRAS:
-- Notas inteiras de 0 a 25
-- NÃO inventar critérios fora dos 4 acima
-- gap_de_conformidade deve conter EXATAMENTE os 2 menores critérios
-- "evidencia_afetada" deve ser trecho real do documento ou "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
-
-RETORNE APENAS JSON VÁLIDO:
-
-{{
-    "percentual_alcance": 0-100,
-    "status_pericial": "CONFORME | PARCIAL | NÃO CONFORME",
-    "analise_critica": "Análise técnica baseada exclusivamente nas evidências documentais.",
-
-    "ponderacao_detalhada": {{
-        "aderencia": 0,
-        "integridade": 0,
-        "tempestividade": 0,
-        "completude": 0
-    }},
-
-    "gap_de_conformidade": [
-        {{
-            "ordem": 1,
-            "criterio": "MENOR NOTA (ranking real)",
-            "impacto": "alto | medio | baixo",
-            "descricao_falha": "Falha principal identificada",
-            "evidencia_afetada": "trecho real ou EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
-        }},
-        {{
-            "ordem": 2,
-            "criterio": "SEGUNDA MENOR NOTA (ranking real)",
-            "impacto": "alto | medio | baixo",
-            "descricao_falha": "Segunda falha mais relevante",
-            "evidencia_afetada": "trecho real ou EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
+    RETORNE ESTRITAMENTE UM JSON:
+    {{
+        "percentual_alcance": 0-100,
+        "status_pericial": "CONFORME / PARCIAL / NÃO CONFORME",
+        "analise_critica": "Descreva tecnicamente os acertos e falhas da prova.",
+        "gap_de_conformidade": ["Lista de itens que faltaram para chegar a 100%"],
+        "ponderacao_detalhada": {{
+            "aderencia": 0-25,
+            "integridade": 0-25,
+            "tempestividade": 0-25,
+            "completude": 0-25
         }}
-    ]
-}}
-"""
-
+    }}
+    """
+    
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Você é um auditor forense rigoroso e não pode inventar dados."},
+            {"role": "system", "content": "Você é um auditor..."},
             {"role": "user", "content": prompt_auditoria}
         ],
         response_format={"type": "json_object"}
     )
-
     resultado = json.loads(response.choices[0].message.content)
-    resultado["kpi_nome"] = kpi_nome
-
+    resultado["kpi_nome"] = kpi_nome  # Identificador universal para o Dashboard
     return resultado
 
 def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
