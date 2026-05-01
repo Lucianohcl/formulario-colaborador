@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 77,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação fornecida é adequada e apresentada de acordo com o padrão esperado, corroborando o processo de conferência das rubricas evalidando a conformidade dos valores registrados no sistema ERP e no eSocial. Contudo, carece de informações sobre a verificação do cumprimento das obrigações acessórias, como a DCTFWeb e FGTS Digital, fundamentais para garantir a conformidade integral com o objetivo do KPI.",
+    "gap_de_conformidade": [
+        "Ausência de evidências sobre a conciliação e cumprimento das obrigações acessórias (DCTFWeb e FGTS Digital).",
+        "Faltam provas documentais de que não há passivos ocultos, como verificações detalhadas de inconsistências em eventos de afastamento e desligamento."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 10,
+        "tempestividade": 7,
+        "completude": 50
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
