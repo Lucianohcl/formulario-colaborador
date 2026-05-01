@@ -5628,18 +5628,22 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     Se as evidências estiverem incompletas, o percentual_alcance deve cair significativamente, conforme as regras acima.
     A ausência de evidências obrigatórias impacta diretamente o resultado global e pode levar o KPI a níveis baixos mesmo que os demais critérios estejam adequados.
 
-    O campo "gap_de_conformidade" deve conter apenas evidências objetivas e verificáveis relacionadas ao domínio do KPI analisado.
+    REGRA OPERACIONAL OBRIGATÓRIA:
+    Cada item do gap_de_conformidade deve ser um artefato auditável concreto, com nome funcional e finalidade específica dentro do KPI.
 
-    Sempre que possível, transformar abstrações em artefatos reais do próprio contexto do KPI, tais como:
-    - relatórios operacionais
-    - registros de sistema
-    - logs ou evidências de execução
-    - documentos formais exigidos no POP
-    - indicadores ou demonstrativos diretamente ligados ao objetivo avaliado
+    FORMATO OBRIGATÓRIO:
+    - [Nome exato do artefato ou registro operacional específico] — [o que ele comprova no KPI + período ou contexto]
 
-    As evidências devem ser inferidas exclusivamente a partir do "Provas Sugeridas no POP" e do contexto do KPI, sem uso de exemplos fixos de qualquer área específica.
+    REGRAS DE VALIDAÇÃO:
+    1) É proibido usar termos genéricos isolados como: "relatório", "registro", "documento", "controle", "evidência"
 
-    É proibido utilizar listas pré-definidas de sistemas ou documentos de qualquer domínio (ex: fiscal, vendas, RH). O modelo deve se adaptar ao contexto analisado.
+    2) Todo artefato deve indicar obrigatoriamente: - o tipo de processo que ele comprova, - sua função dentro do KPI, - o contexto temporal ou operacional
+
+    3) O item só é válido se puder ser auditado ou verificado em um sistema, processo ou documento real compatível com o POP.
+
+    4) O conteúdo deve ser derivado exclusivamente de "Provas Sugeridas no POP" e do contexto do KPI, sem inventar novos tipos de evidência.
+
+    
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
