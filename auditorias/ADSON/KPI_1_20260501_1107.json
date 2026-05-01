@@ -1,0 +1,20 @@
+{
+    "percentual_alcance": 50,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento apresentado está relacionado à DCTFWeb, que é uma obrigação acessória, porém, o relato exige mais do que apenas essa comprovação. Embora o documento demonstre que os débitos e créditos estão conciliados, não há evidências específicas sobre a conformidade das rubricas e eventos no eSocial, nem verificação de todas as rubricas e ausência de inconsistências em eventos de afastamento e desligamento. Além disso, não são provadas a conciliação das obrigações acessórias como FGTS Digital com o financeiro. O documento também não evidencia o cumprimento do indicador de 2% de não conformidade.",
+    "gap_de_conformidade": [
+        "Falta de documentação que comprove a análise de conformidade das rubricas do eSocial.",
+        "Ausência de prova sobre a ausência de inconsistências em eventos de afastamento e desligamento.",
+        "Documentação sobre a conciliação do FGTS Digital com o financeiro.",
+        "Relatório de não conformidade comparado com o benchmark de 2%."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 10,
+        "tempestividade": 15,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
