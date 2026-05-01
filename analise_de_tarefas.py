@@ -6004,7 +6004,7 @@ def aba_produtividade_inteligente():
             st.error(f"Erro no Dashboard T2: {e}")
 
         # 👇 FORA do try/except, mas ainda dentro do with t2
-        if 'df_ultimos' in locals():
+        if all_data:
 
             if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio") and 'btn_html_clickado' not in st.session_state:
                 st.session_state.btn_html_clickado = True
