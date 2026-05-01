@@ -5608,6 +5608,10 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     4. COMPLETUDE (0-70):
     Avalie exclusivamente com base na presença ou ausência das evidências listadas em "Provas Sugeridas no POP".
 
+    REGRA OBRIGATÓRIA DE CONTROLE:
+    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o valor final de percentual_alcance será limitado a no máximo 50.
+    Essa regra é absoluta e deve ser aplicada após a soma dos critérios.
+
     Regras obrigatórias:
         1) Transforme as evidências em checklist explícito (PRESENTE ou AUSENTE).
         2) Não inferir, presumir ou completar informações ausentes.
