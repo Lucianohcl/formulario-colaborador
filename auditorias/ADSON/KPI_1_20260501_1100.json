@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento da DCTFWeb enviado possui uma boa aderência ao propósito de verificação de conformidade tributária descrito pelo funcionário. No entanto, não há evidências diretas sobre outros aspectos da conformidade legislativa trabalhista que foram mencionados, como a conferência de 100% das rubricas e a validação de eventos de afastamento e desligamento. A integridade do que foi afirmado no relato não pode ser completamente confirmada somente com o recibo da DCTFWeb, e não há provas específicas para todos os pontos abordados. A tempestividade é considerada adequada, visto que a documentação se refere ao mês de abril de 2026. Porém, em completude, a evidência apresentada não é suficiente para cobrir todo o escopo do KPI de Conformidade Legislativa.",
+    "gap_de_conformidade": [
+        "Relatórios mensais de não conformidade específicos para legislação trabalhista",
+        "Provas de conferência de 100% das rubricas e ausência de inconsistências em eventos S-2230 e S-2299",
+        "Documentação de conciliação com o financeiro para DCTFWeb e FGTS Digital"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validamos o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período.\n"
+}
