@@ -5598,7 +5598,7 @@ Não utilize estimativas subjetivas fora dessa fórmula.) :
     1. ADERÊNCIA: Avalie se o documento enviado corresponde exatamente ao tipo exigido no POP, conforme especificação do KPI, sem substituições genéricas ou equivalentes indiretos e com aderência formal ao padrão esperado. (0-10)
     2. INTEGRIDADE: Avalie se os dados do PDF são consistentes e confirmam diretamente o relato do executante, sem contradições internas e sem depender de suposições externas. (0-10)
     3. TEMPESTIVIDADE: Avalie se os documentos estão dentro do período correto do KPI e seguem uma sequência cronológica lógica, sem indícios de retroatividade ou inconsistência temporal. (0-10)
-    4. COMPLETUDE: Avalie se o conjunto de evidências é suficiente e completo para comprovar o cumprimento do KPI, sem lacunas críticas, inferências subjetivas ou dependência de interpretação externa. Considere obrigatoriamente as evidências listadas em "Provas Sugeridas no POP". A ausência de qualquer evidência obrigatória deve reduzir severamente a pontuação desta categoria (máximo 20% da pontuação total do critério). (0-70)
+    4. COMPLETUDE: Avalie se o conjunto de evidências é suficiente e completo para comprovar o cumprimento do KPI, sem lacunas críticas, inferências subjetivas ou dependência de interpretação externa. Considere obrigatoriamente as evidências listadas em "Provas Sugeridas no POP". A ausência de qualquer evidência obrigatória deve reduzir severamente a pontuação desta categoria (máximo 5% da pontuação total do critério). (0-70)
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
