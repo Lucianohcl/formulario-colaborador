@@ -5524,7 +5524,7 @@ def extrair_texto_pdf(arquivo_pdf):
 @st.cache_data(show_spinner="IA realizando análise pericial...")
 def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_usuario, texto_evidencias):
     """
-    Este é o 'Cérebro' da Auditoria. Ele aplica a lógica de ponderação universal.
+    Motor de Auditoria Pericial (versão estável e determinística).
     """
 
     prompt_auditoria = f"""
@@ -5543,18 +5543,21 @@ CRITÉRIOS OBRIGATÓRIOS (0 a 25):
 - tempestividade
 - completude
 
-REGRAS ESTRITAS:
+REGRAS ABSOLUTAS:
 
-1. Você DEVE atribuir nota inteira de 0 a 25 para cada critério.
-2. NÃO invente critérios fora dos 4 acima.
-3. Ordene internamente as notas do menor para o maior.
+1. Você DEVE atribuir notas inteiras de 0 a 25 para os 4 critérios.
+2. NÃO invente critérios fora desses 4.
+3. O ranking deve ser REAL (menor nota = pior desempenho).
 4. O campo "gap_de_conformidade" deve conter EXATAMENTE os 2 critérios com menor nota.
-5. É PROIBIDO criar lista genérica de falhas.
-6. "evidencia_afetada" deve ser SOMENTE:
-   - trecho real do texto fornecido OU
+5. O 3º e 4º melhores critérios NÃO devem aparecer no gap.
+6. "evidencia_afetada" deve ser:
+   - trecho real do texto OU
    - "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
 
-RETORNE APENAS ESTE JSON:
+IMPORTANTE:
+Se não houver evidência suficiente no texto, marque explicitamente como não localizada.
+
+RETORNE APENAS JSON VÁLIDO:
 
 {{
     "percentual_alcance": 0-100,
@@ -5584,6 +5587,8 @@ RETORNE APENAS ESTE JSON:
         {{
             "ordem": 1,
             "criterio": "MENOR NOTA (ranking real)",
+            "criterio_relacionado": "critério com menor pontuação real",
+            "nota_base": 0-25,
             "impacto": "alto | medio | baixo",
             "descricao_falha": "Falha principal derivada do menor score",
             "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
@@ -5591,8 +5596,10 @@ RETORNE APENAS ESTE JSON:
         {{
             "ordem": 2,
             "criterio": "SEGUNDA MENOR NOTA (ranking real)",
+            "criterio_relacionado": "segundo pior desempenho",
+            "nota_base": 0-25,
             "impacto": "alto | medio | baixo",
-            "descricao_falha": "Segunda falha mais relevante",
+            "descricao_falha": "Segunda fragilidade mais relevante",
             "evidencia_afetada": "trecho real OU EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
         }}
     ]
@@ -5602,7 +5609,7 @@ RETORNE APENAS ESTE JSON:
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "Você é um auditor forense rigoroso e NÃO pode inventar dados."},
+            {"role": "system", "content": "Você é um auditor forense rigoroso e nunca inventa dados."},
             {"role": "user", "content": prompt_auditoria}
         ],
         response_format={"type": "json_object"}
