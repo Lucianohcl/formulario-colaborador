@@ -6159,6 +6159,7 @@ def aba_produtividade_inteligente():
                     keep='last'
                 )
 
+                # TESTE GIT: verificando alteração no cálculo de cobertura KPIs
                 total_kpis_esperados = 5
 
                 agrupado = df_ranking.groupby("colaborador").agg(
