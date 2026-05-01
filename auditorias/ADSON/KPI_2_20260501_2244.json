@@ -1,0 +1,20 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A evidência fornecida não atende plenamente aos objetivos esperados para o KPI de Eficácia da Auditoria Interna. Embora o documento de simulação contenha informações relacionadas aos eventos de remuneração e pagamento, ele não é suficiente para confirmar uma redução efetiva de 15% nas não conformidades da folha de pagamento. A integridade dos dados é baixa, dado que a prova não corresponde aos eventos reais ocorridos, conforme indicado pela natureza simulada do documento. Além disso, não há evidência de comparação entre períodos anteriores e atuais que demonstre a eficácia das auditorias contínuas na redução dos erros. A ausência de documentação que corrobore uma redução consistente de não conformidades inviabiliza a comprovação do alcance do objetivo estipulado. As falhas destacadas incluem a falta de relatórios que demonstrem redução de erros nos processos de folha de pagamento e ausência de provas concretas da melhoria contínua mencionada no relato de execução do funcionário.",
+    "gap_de_conformidade": [
+        "Relatórios que demonstrem redução de erros nos processos de folha de pagamento.",
+        "Provas concretas da melhoria contínua mencionada no relato de execução do funcionário.",
+        "Documentação comparativa entre períodos que comprove efetiva redução de 15% nas não conformidades.",
+        "Evidências de que os erros de folha de pagamento estão dentro da meta estabelecida."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 15,
+        "integridade": 10,
+        "tempestividade": 15,
+        "completude": 0
+    },
+    "kpi_nome": "Eficácia da Auditoria Interna",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Verificar relatórios semanais de conformidade  para evidenciar redução consistente das não conformidades relacionadas à folha de pagamento, com melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos, indicando eficácia das rotinas de auditoria contínua."
+}
