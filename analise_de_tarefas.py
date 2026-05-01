@@ -5628,9 +5628,18 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     Se as evidências estiverem incompletas, o percentual_alcance deve cair significativamente, conforme as regras acima.
     A ausência de evidências obrigatórias impacta diretamente o resultado global e pode levar o KPI a níveis baixos mesmo que os demais critérios estejam adequados.
 
-    O campo "gap_de_conformidade" deve conter apenas evidências objetivas, específicas e verificáveis.
-    Proibido gerar descrições genéricas.
-    Cada item deve seguir o formato:- Nome exato da evidência esperada no POP ou documento específico faltante
+    O campo "gap_de_conformidade" deve conter apenas evidências objetivas e verificáveis relacionadas ao domínio do KPI analisado.
+
+    Sempre que possível, transformar abstrações em artefatos reais do próprio contexto do KPI, tais como:
+    - relatórios operacionais
+    - registros de sistema
+    - logs ou evidências de execução
+    - documentos formais exigidos no POP
+    - indicadores ou demonstrativos diretamente ligados ao objetivo avaliado
+
+    As evidências devem ser inferidas exclusivamente a partir do "Provas Sugeridas no POP" e do contexto do KPI, sem uso de exemplos fixos de qualquer área específica.
+
+    É proibido utilizar listas pré-definidas de sistemas ou documentos de qualquer domínio (ex: fiscal, vendas, RH). O modelo deve se adaptar ao contexto analisado.
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
