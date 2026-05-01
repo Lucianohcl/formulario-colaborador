@@ -5936,8 +5936,10 @@ def aba_produtividade_inteligente():
             if all_data:
                 df_dash = pd.DataFrame(all_data)
 
-                st.write("DEBUG df_dash shape:", df_dash.shape)
-                st.write(df_dash.head())
+                st.write("DEBUG df_dash columns:", df_dash.columns)
+                st.write("DEBUG df_dash sample:", df_dash.head(3))
+                st.write("DEBUG filtro_colab:", filtro_colab)
+                st.write("DEBUG df_ultimos shape:", df_ultimos.shape)
                 
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
