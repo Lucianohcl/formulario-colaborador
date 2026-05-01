@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 73,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento apresentado tem boa aderência ao tipo exigido no POP, correspondendo ao relatório de conciliação de rubricas necessário. A integridade dos dados é alta, pois os valores no ERP Conformity Plus estão em perfeita consonância com os do eSocial, sem divergências. Entretanto, a completude das evidências é limitada, visto que o relatório não menciona diretamente os percentuais de não conformidade relativos ao KPI de Conformidade Legislativa. Além disso, não há informações específicas sobre os eventos de afastamento (S-2230) e desligamento (S-2299), nem há uma seção detalhando a conciliação das obrigações acessórias (DCTFWeb e FGTS Digital).",
+    "gap_de_conformidade": [
+        "Ausência de dados sobre percentuais de não conformidade em comparação ao benchmark de 2%",
+        "Falta de informações específicas sobre eventos de afastamento (S-2230) e desligamento (S-2299)",
+        "Ausência de detalhes específicos sobre a conciliação das obrigações acessórias como DCTFWeb e FGTS Digital"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 9,
+        "integridade": 10,
+        "tempestividade": 10,
+        "completude": 44
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
