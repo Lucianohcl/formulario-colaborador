@@ -6039,93 +6039,55 @@ def aba_produtividade_inteligente():
         # 👇 FORA do try/except, mas ainda dentro do with t2
         if all_data:
 
-            if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio"):
+            
+            html_detalhes = f"""
+            <details style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">
 
-                html_kpis = df_kpi.to_html(index=False)
-                html_relatos = df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5).to_html(index=False)
+                <summary style="cursor: pointer; font-size: 16px; font-weight: bold;">
+                    🔍 Detalhes: {kpi} - <span style="color:{cor};">{nota:.1f}%</span>
+                </summary>
 
-                grafico_bar_html = fig_bar.to_html(full_html=False, include_plotlyjs='cdn')
-                grafico_pie_html = fig_pie.to_html(full_html=False, include_plotlyjs=False)
+                <div style="margin-top: 10px; padding: 10px;">
 
-                html_final = f"""
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Relatório de Auditoria</title>
-                        <style>
-                            body {{
-                                font-family: Arial;
-                                background-color: #f4f6f8;
-                                padding: 30px;
-                            }}
-                            h1, h2 {{
-                                color: #1e3a8a;
-                            }}
-                            table {{
-                                border-collapse: collapse;
-                                width: 100%;
-                                margin-bottom: 30px;
-                            }}
-                            th, td {{
-                                border: 1px solid #ccc;
-                                padding: 8px;
-                                text-align: left;
-                            }}
-                            th {{
-                                background-color: #1e3a8a;
-                                color: white;
-                            }}
-                            .card {{
-                                background: white;
-                                padding: 20px;
-                                border-radius: 10px;
-                                margin-bottom: 20px;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                            }}
-                        </style>
-                    </head>
-                    <body>
+                    <p><strong>Veredito Técnico:</strong></p>
+                    <p>Status: <code>{dados_kpi['status_pericial']}</code></p>
 
-                        <h1>📊 Relatório de Auditoria de KPIs</h1>
+                    <hr>
 
-                        <div class="card">
-                            <h2>Métricas Gerais</h2>
-                            <p><b>Eficiência Média:</b> {media_alcance:.1f}%</p>
-                            <p><b>Total de KPIs:</b> {len(df_ultimos)}</p>
-                            <p><b>KPI Crítico:</b> {pior_kpi_nome}</p>
-                        </div>
+                    <p><strong>Análise do Auditor (IA):</strong></p>
+                    <div style="padding:10px; background:#e8f4fd; border-radius:4px;">
+                        {dados_kpi['analise_critica']}
+                    </div>
 
-                        <div class="card">
-                            <h2>Média por Indicador</h2>
-                            {grafico_bar_html}
-                        </div>
+                    <hr>
 
-                        <div class="card">
-                            <h2>Volume de Auditorias</h2>
-                            {grafico_pie_html}
-                        </div>
+                    <p><strong>O que faltou para 100%:</strong></p>
+            """
 
-                        <div class="card">
-                            <h2>Tabela de KPIs</h2>
-                            {html_kpis}
-                        </div>
+            if dados_kpi.get('gap_de_conformidade'):
+                html_detalhes += "<ul>"
+                for item in dados_kpi['gap_de_conformidade']:
+                    html_detalhes += f"<li>{item}</li>"
+                html_detalhes += "</ul>"
 
-                        <div class="card">
-                            <h2>Últimos Relatos</h2>
-                            {html_relatos}
-                        </div>
+            html_detalhes += """
+                    <hr>
 
-                    </body>
-                </html>
-                """
+                    <a href="#" style="
+                        display:inline-block;
+                        padding:10px 16px;
+                        background:#1e3a8a;
+                        color:white;
+                        text-decoration:none;
+                        border-radius:6px;
+                        font-weight:bold;
+                    ">
+                        🔄 Reprocessar KPI
+                    </a>
 
-                st.download_button(
-                    label="⬇️ Baixar Relatório HTML",
-                    data=html_final,
-                    file_name="relatorio_auditoria.html",
-                    mime="text/html"
-                )
-              
+                </div>
+            </details>
+            """              
 
                             
 
