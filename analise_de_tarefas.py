@@ -6006,7 +6006,7 @@ def aba_produtividade_inteligente():
         # 👇 FORA do try/except, mas ainda dentro do with t2
         if 'df_ultimos' in locals():
 
-            if st.button("📥 Gerar Relatório HTML Completo"):
+            if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio"):
 
                 html_kpis = df_kpi.to_html(index=False)
                 html_relatos = df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5).to_html(index=False)
