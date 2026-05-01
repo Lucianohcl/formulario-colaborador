@@ -6162,7 +6162,7 @@ def aba_produtividade_inteligente():
                 total_kpis_esperados = 5
 
                 agrupado = df_ranking.groupby("colaborador").agg(
-                    media_eficiencia=("percentual_alcance", "mean"),
+                    media_eficiencia=("produtividade_real", "mean"),
                     qtd_kpis=("kpi_nome", "nunique")
                 ).reset_index()
 
