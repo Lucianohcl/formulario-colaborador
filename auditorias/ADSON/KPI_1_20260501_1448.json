@@ -1,0 +1,22 @@
+{
+    "percentual_alcance": 37.5,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "O documento fornecido, uma Certidão Negativa de Débitos Trabalhistas (CNDT), não atende especificamente ao KPI de Conformidade Legislativa, que requer a análise da conformidade com a legislação trabalhista em termos de não conformidade abaixo de 2%. A CNDT apenas certifica a inexistência de débitos trabalhistas no Banco Nacional de Devedores Trabalhistas, mas não abrange todos os aspectos da legislação trabalhista que são esperados no KPI analisado. Ademais, o documento não confirma diretamente as ações descritas pelo funcionário, como auditorias de compliance ou validação específica dos eventos trabalhistas (S-2230 e S-2299). Além disso, a data do documento é de 2026, o que é incoerente com o período atual e o ciclo operacional mencionado.",
+    "gap_de_conformidade": [
+        "Relatórios mensais de não conformidade abaixo de 2%",
+        "Comprovação das auditorias preventivas de compliance realizadas",
+        "Evidências detalhadas da conferência da Malha Fiscal Trabalhista",
+        "Confirmação do enquadramento de 100% das rubricas",
+        "Provas de validação dos eventos de afastamento (S-2230) e desligamento (S-2299)",
+        "Conciliation das obrigações acessórias com o financeiro"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 10,
+        "integridade": 5,
+        "tempestividade": 0,
+        "completude": 5
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
