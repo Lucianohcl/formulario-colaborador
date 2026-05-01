@@ -5932,8 +5932,12 @@ def aba_produtividade_inteligente():
                             if file.name.endswith(".json"):
                                 all_data.append(json.loads(file.decoded_content))
 
+            
             if all_data:
                 df_dash = pd.DataFrame(all_data)
+
+                st.write("DEBUG df_dash shape:", df_dash.shape)
+                st.write(df_dash.head())
                 
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
