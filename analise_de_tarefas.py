@@ -6159,7 +6159,6 @@ def aba_produtividade_inteligente():
                     keep='last'
                 )
 
-                # TESTE GIT: verificando alteração no cálculo de cobertura KPIs
                 total_kpis_esperados = 5
 
                 agrupado = df_ranking.groupby("colaborador").agg(
@@ -6169,16 +6168,17 @@ def aba_produtividade_inteligente():
 
                 agrupado["cobertura"] = agrupado["qtd_kpis"] / total_kpis_esperados
 
-                agrupado["produtividade_real"] = agrupado["media_eficiencia"] * agrupado["cobertura"]
+                agrupado["produtividade_real"] = (
+                    agrupado["qtd_kpis"] * (100 / total_kpis_esperados) * (agrupado["media_eficiencia"] / 100)
+                )
 
-                ranking = agrupado.sort_values(by="produtividade_real", ascending=False).reset_index(drop=True)
-                
-                # Ordena do melhor para o pior
-                ranking = ranking.sort_values(by="percentual_alcance", ascending=False).reset_index(drop=True)
-                
-                # Ajuste de exibição
+                ranking = agrupado.sort_values(
+                    by="produtividade_real",
+                    ascending=False
+                ).reset_index(drop=True)
+
                 ranking.index = ranking.index + 1
-                ranking.columns = ["Colaborador", "Média de Eficiência"]
+                ranking.columns = ["Colaborador", "Produtividade Real"]
 
                 # --- EXIBIÇÃO DO PÓDIO ---
                 c1, c2, c3 = st.columns(3)
