@@ -5930,7 +5930,7 @@ def aba_produtividade_inteligente():
                         subdir_files = repo.get_contents(content_file.path)
                         for file in subdir_files:
                             if file.name.endswith(".json"):
-                                all_data.append(json.loads(file.decoded_content.decode("utf-8"))
+                                all_data.append(json.loads(file.decoded_content.decode("utf-8")))
 
             
             if all_data:
