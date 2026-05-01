@@ -1,0 +1,55 @@
+{
+    "percentual_alcance": 80,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "Análise técnica baseada exclusivamente em evidências documentais.",
+    "ponderacao_detalhada": {
+        "aderencia": {
+            "nota": 20,
+            "descricao": "Correspondência entre documento e KPI"
+        },
+        "integridade": {
+            "nota": 25,
+            "descricao": "Coerência entre evidência e validação técnica"
+        },
+        "tempestividade": {
+            "nota": 20,
+            "descricao": "Validade temporal das evidências"
+        },
+        "completude": {
+            "nota": 15,
+            "descricao": "Suficiência das provas para validação do KPI"
+        }
+    },
+    "gap_de_conformidade": [
+        {
+            "ordem": 1,
+            "criterio": "MENOR NOTA (ranking real)",
+            "criterio_relacionado": "completude",
+            "nota_base": 15,
+            "impacto": "alto",
+            "descricao_falha": "Falha crítica derivada do menor score real",
+            "evidencia_afetada": "EVIDÊNCIA NÃO LOCALIZADA NO DOCUMENTO"
+        },
+        {
+            "ordem": 2,
+            "criterio": "SEGUNDA MENOR NOTA (ranking real)",
+            "criterio_relacionado": "aderencia",
+            "nota_base": 20,
+            "impacto": "medio",
+            "descricao_falha": "Segunda maior fragilidade identificada",
+            "evidencia_afetada": "TIPO: MENSAL"
+        },
+        {
+            "ordem": 3,
+            "criterio": "TERCEIRA MENOR NOTA (ranking real)",
+            "criterio_relacionado": "tempestividade",
+            "nota_base": 20,
+            "impacto": "medio",
+            "descricao_falha": "Terceira fragilidade identificada",
+            "evidencia_afetada": "DATA/HORA DA TRANSMISSÃO:  15/04/2026 - 14:32:10"
+        }
+    ],
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100% das rubricas e a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). As obrigações acessórias (DCTFWeb e FGTS Digital) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
