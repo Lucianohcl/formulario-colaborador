@@ -6316,37 +6316,31 @@ if st.session_state.pagina == "evidencias":
                 mime="text/html"
             )
 
+
 import streamlit as st
 from github import Github
 import json
 import pandas as pd
 import os
-import pypdf
+import PyPDF2
 import re
 
 def normalizar_cargo(cargo):
     """
-    Normaliza o nome do cargo para tratar variações de maiúsculas,
-    minúsculas, singular e plural.
+    Normaliza o nome do cargo de forma universal, convertendo para maiúsculas 
+    e removendo espaços em branco extras.
     """
     if not cargo:
         return ""
     
-    mapa_cargos = {
-        "ANALISTAS DE CUSTOS": "ANALISTA DE CUSTOS",
-        "GESTOR DE DEPARTAMENTO PESSOAL": "GESTOR DE DP",
-        "GESTOR DE DP": "GESTOR DE DP"
-    }
-    
-    c_upper = str(cargo).upper().strip()
-    return mapa_cargos.get(c_upper, c_upper)
+    return str(cargo).upper().strip()
 
 def extrair_eficiencia_do_pdf(arquivo_stream):
     """
-    Extrai o percentual de eficiência do arquivo PDF carregado.
+    Extrai o percentual de eficiência do arquivo PDF carregado usando PyPDF2.
     """
     try:
-        reader = pypdf.PdfReader(arquivo_stream)
+        reader = PyPDF2.PdfReader(arquivo_stream)
         texto_completo = ""
         for pagina in reader.pages:
             texto_completo += pagina.extract_text() or ""
@@ -6369,6 +6363,9 @@ def extrair_eficiencia_do_pdf(arquivo_stream):
 
 def carregar_df_dash():
     try:
+        DB_TOKEN = st.secrets["DB_TOKEN"]
+        REPO_NAME = st.secrets["REPO_NAME"]
+        
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
     except Exception as e:
@@ -6520,7 +6517,6 @@ def comparador_produtividade_por_cargo(df_dash):
             evidencias = uploaded_files
 
     elif origem_ev in ["💻 Arquivo local", "☁️ Banco (GitHub)"]:
-        # Ajusta o caminho da pasta
         pasta = f"documentos/empresa_x/{nome_colab.lower()}"
 
         if os.path.exists(pasta):
@@ -6543,7 +6539,6 @@ def comparador_produtividade_por_cargo(df_dash):
         else:
             st.warning("Nenhum arquivo local encontrado para este colaborador.")
 
-    # Processamento do Veredito da Eficiência no Arquivo PDF
     if evidencias:
         st.write(f"### 🎯 Resultados da Eficiência para {nome_colab}")
         for idx, arquivo in enumerate(evidencias):
@@ -6551,9 +6546,6 @@ def comparador_produtividade_por_cargo(df_dash):
             
             st.info(f"**Arquivo {idx+1}:** {getattr(arquivo, 'name', 'Arquivo de Upload')} | **Eficiência Encontrada:** `{eficiencia_encontrada}`")
 
-# ==============================================================================
-# EXECUÇÃO FINAL
-# ==============================================================================
 if __name__ == "__main__":
     try:
         df_dash = carregar_df_dash()
