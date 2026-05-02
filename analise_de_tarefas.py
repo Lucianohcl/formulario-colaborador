@@ -6338,7 +6338,9 @@ def comparador_produtividade_por_cargo():
     for arq in arquivos:
         with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
             dados = json.load(f)
-            colabs[dados["colaborador"]] = dados
+            nome = dados.get("colaborador")
+            if nome:
+                colabs[nome] = dados
 
     # =========================
     # 2. SELEÇÃO DE COLABORADOR
