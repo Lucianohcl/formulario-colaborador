@@ -6316,24 +6316,41 @@ if st.session_state.pagina == "evidencias":
                 mime="text/html"
             )
 
-# ==============================================================================
-# 🔎 COMPARADOR INTELIGENTE POR CARGO (AUTOSSUFICIENTE)
-# ==============================================================================
+import streamlit as st
+from github import Github
+import json
+import pandas as pd
+
+def normalizar_cargo(cargo):
+    """
+    Normaliza o nome do cargo para tratar variações de maiúsculas,
+    minúsculas, singular e plural.
+    """
+    if not cargo:
+        return ""
+    
+    mapa_cargos = {
+        "ANALISTAS DE CUSTOS": "ANALISTA DE CUSTOS",
+        "GESTOR DE DEPARTAMENTO PESSOAL": "GESTOR DE DP",
+        "GESTOR DE DP": "GESTOR DE DP"
+    }
+    
+    c_upper = str(cargo).upper().strip()
+    return mapa_cargos.get(c_upper, c_upper)
 
 def carregar_df_dash():
-    import streamlit as st
-    from github import Github
-    import json
-    import pandas as pd
-
-    g = Github(DB_TOKEN)
-    repo = g.get_repo(REPO_NAME)
+    # Defina suas variáveis DB_TOKEN e REPO_NAME no escopo global ou local conforme o seu projeto
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+    except Exception as e:
+        st.error(f"❌ Erro ao conectar ao GitHub: {e}")
+        return pd.DataFrame()
 
     all_data = []
 
     st.write("🔍 DEBUG: iniciando carga de JSONs")
 
-    # ✔️ CAMINHO CORRETO (COM BRANCH SEGURO)
     try:
         contents = repo.get_contents(
             "dados",
@@ -6343,15 +6360,12 @@ def carregar_df_dash():
         st.error(f"❌ Erro ao acessar /dados: {e}")
         return pd.DataFrame()
 
-    # garante lista
     if not isinstance(contents, list):
         contents = [contents]
 
     for file in contents:
-
         if file.type != "file":
             continue
-
         if not file.name.endswith(".json"):
             continue
 
@@ -6361,7 +6375,6 @@ def carregar_df_dash():
 
             if not isinstance(data, dict):
                 continue
-
             if not data.get("colaborador"):
                 continue
 
@@ -6373,7 +6386,6 @@ def carregar_df_dash():
             data["cargo"] = campos.get("cargo")
 
             all_data.append(data)
-
         except Exception as e:
             st.error(f"Erro no arquivo {file.path}: {e}")
             continue
@@ -6389,87 +6401,85 @@ def carregar_df_dash():
     return df
 
 def comparador_produtividade_por_cargo(df_dash):
-
     st.title("⚖️ Comparador de Produtividade por Cargo")
 
     if df_dash is None or df_dash.empty:
         st.warning("Nenhum dado encontrado")
         return
 
-    # =========================
-    # COLABORADOR BASE
-    # =========================
+    # 1. Normalização do cargo no DataFrame
+    df_dash['cargo_normalizado'] = df_dash['cargo'].apply(normalizar_cargo)
+
     colab_base = st.selectbox(
         "👤 Selecione o colaborador base",
-        sorted(df_dash["colaborador"].unique()),
+        sorted(df_dash["colaborador"].dropna().unique()),
         key="comp_colab_base"
     )
 
-    cargo_base = df_dash[df_dash["colaborador"] == colab_base]["campos"].iloc[0]["cargo"]
-    st.info(f"📌 Cargo analisado: {cargo_base}")
+    linha_base = df_dash[df_dash["colaborador"] == colab_base]
+    if linha_base.empty:
+        st.warning("Colaborador base não encontrado nos registros.")
+        return
 
-    # =========================
-    # FILTRAR MESMO CARGO
-    # =========================
-    def get_cargo(c):
-        return df_dash[df_dash["colaborador"] == c]["campos"].iloc[0]["cargo"]
+    cargo_base = linha_base.iloc[0]["cargo"]
+    cargo_base_normalizado = linha_base.iloc[0]["cargo_normalizado"]
+    
+    st.info(f"📌 Cargo analisado: {cargo_base} (Normalizado: {cargo_base_normalizado})")
 
-    cols_mesmo_cargo = [
-        c for c in df_dash["colaborador"].unique()
-        if get_cargo(c) == cargo_base
-    ]
+    # 2. Filtrar colaboradores com o mesmo cargo normalizado
+    cols_mesmo_cargo = []
+    for c in df_dash["colaborador"].unique():
+        df_c = df_dash[df_dash["colaborador"] == c]
+        if not df_c.empty:
+            c_cargo = df_c.iloc[0]["cargo_normalizado"]
+            if c_cargo == cargo_base_normalizado:
+                cols_mesmo_cargo.append(c)
 
     df_cargo = df_dash[df_dash["colaborador"].isin(cols_mesmo_cargo)]
 
-    # =========================
-    # MÉTRICA IGUAL T2
-    # =========================
-    def eficiencia(df):
-        df_ult = df.drop_duplicates(subset=["colaborador", "kpi_nome"], keep="last")
+    # 3. Cálculo de Eficiência baseado no trecho `t2` (KPIs)
+    def calcular_eficiencia(df_ind):
+        # Verifica se existem as colunas do KPI para realizar a operação com segurança
+        if 'kpi_nome' not in df_ind.columns or 'percentual_alcance' not in df_ind.columns:
+            return 0.0
 
-        qtd = len(df_ult)
-        media = df_ult["percentual_alcance"].mean() if qtd > 0 else 0
+        df_ultimos = df_ind.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
+        qtd_kpis = len(df_ultimos)
+        media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
+        
+        total_kpis_esperados = 5
+        eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
+        
+        return float(eficiencia_sistematica)
 
-        return (media * qtd) / 5
-
-    # =========================
-    # RANKING
-    # =========================
     ranking = []
-
     for c in cols_mesmo_cargo:
         df_ind = df_cargo[df_cargo["colaborador"] == c]
-
         ranking.append({
             "Colaborador": c,
-            "Eficiência": eficiencia(df_ind)
+            "Eficiência (%)": f"{calcular_eficiencia(df_ind):.1f}%"
         })
 
-    df_rank = pd.DataFrame(ranking).sort_values("Eficiência", ascending=False)
+    df_rank = pd.DataFrame(ranking).sort_values("Eficiência (%)", ascending=False).reset_index(drop=True)
 
-    # =========================
-    # VISUALIZAÇÃO
-    # =========================
+    # 4. Exibição
     st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank, use_container_width=True)
 
     sel = df_rank[df_rank["Colaborador"] == colab_base].iloc[0]
 
     c1, c2 = st.columns(2)
-    c1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
+    c1.metric("Eficiência", sel['Eficiência (%)'])
     c2.metric("Cargo", cargo_base)
 
     st.divider()
 
-
 # ==============================================================================
-# 🚀 EXECUÇÃO FINAL (OBRIGATÓRIA)
+# EXECUÇÃO FINAL (OBRIGATÓRIA)
 # ==============================================================================
-
 if st.session_state.pagina == "comparar":
     try:
         df_dash = carregar_df_dash()
         comparador_produtividade_por_cargo(df_dash)
-
     except Exception as e:
         st.error(f"Erro ao carregar dados: {e}")
