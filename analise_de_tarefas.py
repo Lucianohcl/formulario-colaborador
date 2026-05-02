@@ -6369,6 +6369,7 @@ def comparador_produtividade_por_cargo():
     # =========================
     # 4. SIMULAÇÃO KPI (usa df_dash externo)
     # =========================
+    df_dash = pd.DataFrame(sum(colabs.values(), []))
     df_filtrado = df_dash[df_dash["colaborador"].isin(mesmo_cargo)]
 
     df_ultimos = df_filtrado.drop_duplicates(
