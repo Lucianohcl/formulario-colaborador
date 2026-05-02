@@ -6258,16 +6258,19 @@ if st.button("🚀 Gerar Evidências"):
 
     resultados = []
 
-    for d in dados:
+    
+
+    df = pd.DataFrame(dados)
+
+    for kpi, grupo in df.groupby("kpi_nome"):
         try:
-            evidencias = gerar_evidencias(
-                d.get("kpi_nome", "KPI não informado"),
-                d.get("relato_do_auditor", ""),
-                d.get("gap_de_conformidade", [])
-            )
+            relato = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
+            gaps = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
+
+            evidencias = gerar_evidencias(kpi, relato, gaps)
 
             resultados.append({
-                "kpi": d.get("kpi_nome", "KPI"),
+                "kpi": kpi,
                 "evidencias": evidencias
             })
 
