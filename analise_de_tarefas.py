@@ -6326,7 +6326,7 @@ import PyPDF2
 import re
 import io
 
-# Definido diretamente no código para evitar erros de busca no st.secrets
+# Repositório fixado diretamente no código
 REPO_NAME = "Lucianohcl/formulario-colaborador"
 
 # Carrega apenas o token de acesso de forma segura
@@ -6346,7 +6346,8 @@ def normalizar_cargo(cargo):
     mapa_cargos = {
         "ANALISTAS DE CUSTOS": "ANALISTA DE CUSTOS",
         "GESTOR DE DEPARTAMENTO PESSOAL": "GESTOR DE DP",
-        "GESTOR DE DP": "GESTOR DE DP"
+        "GESTOR DE DP": "GESTOR DE DP",
+        "ANALISTA DEPARTAMENTO PESSOAL": "ANALISTA DEPARTAMENTO PESSOAL"
     }
     
     c_upper = str(cargo).upper().strip()
@@ -6385,8 +6386,6 @@ def carregar_df_dash():
         return pd.DataFrame()
 
     all_data = []
-
-    st.write("🔍 DEBUG: iniciando carga de JSONs")
 
     try:
         contents = repo.get_contents(
@@ -6428,14 +6427,34 @@ def carregar_df_dash():
             continue
 
     df = pd.DataFrame(all_data)
-
-    if not df.empty:
-        st.write("📊 TOTAL REGISTROS:", len(df))
-        st.write("📊 COLUNAS:", list(df.columns))
-        st.write("📊 AMOSTRA:")
-        st.dataframe(df.head(2))
-
     return df
+
+def obter_eficiencia_do_pdf_github(repo, colaborador):
+    """
+    Busca o primeiro arquivo PDF na pasta do colaborador no GitHub, 
+    extrai o valor numérico da eficiência e o retorna.
+    """
+    pasta = f"documentos/empresa_x/{colaborador.lower()}"
+    try:
+        contents = repo.get_contents(pasta)
+        if not isinstance(contents, list):
+            contents = [contents]
+        
+        for file in contents:
+            if file.name.endswith(".pdf"):
+                f_stream = io.BytesIO(file.decoded_content)
+                setattr(f_stream, 'name', file.name)
+                
+                texto_eficiencia = extrair_eficiencia_do_pdf(f_stream)
+                # Extrai o valor numérico (remove %) e converte para float
+                match = re.search(r"\d+[\.,]?\d*", texto_eficiencia)
+                if match:
+                    valor_str = match.group(0).replace(",", ".")
+                    return float(valor_str)
+    except Exception:
+        pass
+    
+    return 0.0
 
 def comparador_produtividade_por_cargo(df_dash):
     st.title("⚖️ Comparador de Produtividade por Cargo")
@@ -6472,40 +6491,38 @@ def comparador_produtividade_por_cargo(df_dash):
             if c_cargo == cargo_base_normalizado:
                 cols_mesmo_cargo.append(c)
 
-    df_cargo = df_dash[df_dash["colaborador"].isin(cols_mesmo_cargo)]
-
-    # 3. Cálculo de Eficiência baseado no trecho `t2` (KPIs)
-    def calcular_eficiencia(df_ind):
-        if 'kpi_nome' not in df_ind.columns or 'percentual_alcance' not in df_ind.columns:
-            return 0.0
-
-        df_ultimos = df_ind.drop_duplicates(subset=['colaborador', 'kpi_nome'], keep='last')
-        qtd_kpis = len(df_ultimos)
-        media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
-        
-        total_kpis_esperados = 5
-        eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
-        
-        return float(eficiencia_sistematica)
+    # 3. Cálculo de Eficiência baseado na leitura dos PDFs
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+    except:
+        repo = None
 
     ranking = []
     for c in cols_mesmo_cargo:
-        df_ind = df_cargo[df_cargo["colaborador"] == c]
+        eficiencia_val = 0.0
+        if repo:
+            eficiencia_val = obter_eficiencia_do_pdf_github(repo, c)
+            
         ranking.append({
             "Colaborador": c,
-            "Eficiência (%)": f"{calcular_eficiencia(df_ind):.1f}%"
+            "Eficiência (%)": f"{eficiencia_val:.1f}%",
+            "valor_float": eficiencia_val
         })
 
-    df_rank = pd.DataFrame(ranking).sort_values("Eficiência (%)", ascending=False).reset_index(drop=True)
+    df_rank = pd.DataFrame(ranking).sort_values("valor_float", ascending=False).reset_index(drop=True)
+    # Remove a coluna auxiliar do display
+    df_rank_display = df_rank[["Colaborador", "Eficiência (%)"]]
 
     # 4. Exibição da tela
     st.subheader("📊 Ranking por Cargo")
-    st.dataframe(df_rank, use_container_width=True)
+    st.dataframe(df_rank_display, use_container_width=True, hide_index=True)
 
-    sel = df_rank[df_rank["Colaborador"] == colab_base].iloc[0]
+    sel = df_rank[df_rank["Colaborador"] == colab_base]
+    eficiencia_base = sel.iloc[0]["Eficiência (%)"] if not sel.empty else "0.0%"
 
     c1, c2 = st.columns(2)
-    c1.metric("Eficiência", sel['Eficiência (%)'])
+    c1.metric("Eficiência", eficiencia_base)
     c2.metric("Cargo", cargo_base)
 
     st.divider()
@@ -6585,7 +6602,6 @@ def comparador_produtividade_por_cargo(df_dash):
                 for file in contents:
                     if file.name == f:
                         try:
-                            # Converte conteúdo do GitHub para stream de bytes
                             f_stream = io.BytesIO(file.decoded_content)
                             setattr(f_stream, 'name', file.name)
                             evidencias.append(f_stream)
