@@ -5599,7 +5599,8 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
 
     REGRA FINAL DE CONTROLE (ABSOLUTA):
 
-    Se evidências obrigatórias estiverem AUSENTES na COMPLETUDE, o percentual_alcance final deverá ser calculado normalmente pela soma dos critérios (aderência +  integridade + tempestividade + completude), e ao final aplicar uma penalização proporcional baseada na completude.
+    Se evidências obrigatórias estiverem AUSENTES na COMPLETUDE, o percentual_alcance final deverá ser calculado normalmente pela soma dos critérios (aderência +  
+integridade + tempestividade + completude), e ao final aplicar uma penalização proporcional baseada na completude.
 
     A penalização deve seguir:
 
@@ -5624,6 +5625,7 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
     REGRAS DE EXECUÇÃO:
     - Determinística
     - Não interpretativa
+   
 
     RETORNE ESTRITAMENTE UM JSON:
     {{
@@ -5931,26 +5933,17 @@ def aba_produtividade_inteligente():
             # 1. BUSCA DOS DADOS NO GITHUB
             with st.spinner("Analisando indicadores..."):
                 contents = repo.get_contents("auditorias")
-
-
-                all_data = {}
-
+                all_data = []
                 for content_file in contents:
                     if content_file.type == "dir":
                         subdir_files = repo.get_contents(content_file.path)
-
                         for file in subdir_files:
                             if file.name.endswith(".json"):
-                                data = json.loads(file.decoded_content)
+                                all_data.append(json.loads(file.decoded_content))
 
-                                colab = data.get("colaborador", "desconhecido")
-
-                                if colab not in all_data:
-                                    all_data[colab] = []
-
-                                all_data[colab].append(data)
-
-
+            if all_data:
+                df_dash = pd.DataFrame(all_data)
+                
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
                 lista_colabs = ["Todos"] + sorted(list(df_dash['colaborador'].unique()))
@@ -6050,9 +6043,104 @@ def aba_produtividade_inteligente():
                 st.info("Sincronize os dados para carregar o dashboard.")
 
         except Exception as e:
-
             st.error(f"Erro no Dashboard T2: {e}")
 
+        # 👇 FORA do try/except, mas ainda dentro do with t2
+        if all_data:
+
+            if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio"):
+
+                html_kpis = df_kpi.to_html(index=False)
+                html_relatos = df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5).to_html(index=False)
+
+                grafico_bar_html = fig_bar.to_html(full_html=False, include_plotlyjs='cdn')
+                grafico_pie_html = fig_pie.to_html(full_html=False, include_plotlyjs=False)
+
+                html_final = f"""
+                <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>Relatório de Auditoria</title>
+                        <style>
+                            body {{
+                                font-family: Arial;
+                                background-color: #f4f6f8;
+                                padding: 30px;
+                            }}
+                            h1, h2 {{
+                                color: #1e3a8a;
+                            }}
+                            table {{
+                                border-collapse: collapse;
+                                width: 100%;
+                                margin-bottom: 30px;
+                            }}
+                            th, td {{
+                                border: 1px solid #ccc;
+                                padding: 8px;
+                                text-align: left;
+                            }}
+                            th {{
+                                background-color: #1e3a8a;
+                                color: white;
+                            }}
+                            .card {{
+                                background: white;
+                                padding: 20px;
+                                border-radius: 10px;
+                                margin-bottom: 20px;
+                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                            }}
+                        </style>
+                    </head>
+                    <body>
+
+                        <h1>📊 Relatório de Auditoria de KPIs</h1>
+
+                        <div class="card">
+                            <h2>Métricas Gerais</h2>
+                            <p><b>Eficiência Média:</b> {media_alcance:.1f}%</p>
+                            <p><b>Total de KPIs:</b> {len(df_ultimos)}</p>
+                            <p><b>KPI Crítico:</b> {pior_kpi_nome}</p>
+                        </div>
+
+                        <div class="card">
+                            <h2>Média por Indicador</h2>
+                            {grafico_bar_html}
+                        </div>
+
+                        <div class="card">
+                            <h2>Volume de Auditorias</h2>
+                            {grafico_pie_html}
+                        </div>
+
+                        <div class="card">
+                            <h2>Tabela de KPIs</h2>
+                            {html_kpis}
+                        </div>
+
+                        <div class="card">
+                            <h2>Últimos Relatos</h2>
+                            {html_relatos}
+                        </div>
+
+                    </body>
+                </html>
+                """
+
+                st.download_button(
+                    label="⬇️ Baixar Relatório HTML",
+                    data=html_final,
+                    file_name="relatorio_auditoria.html",
+                    mime="text/html"
+                )
+              
+
+                            
+
+                                            
+                
+                
     with t3:
         st.header("🏆 Ranking Global de Produtividade")
         
@@ -6118,10 +6206,3 @@ def aba_produtividade_inteligente():
 
 if __name__ == "__main__":
     aba_produtividade_inteligente()
-
-
-
-
-
-
-               
