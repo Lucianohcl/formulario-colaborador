@@ -6326,7 +6326,7 @@ def carregar_df_dash():
     g = Github(DB_TOKEN)
     repo = g.get_repo(REPO_NAME)
 
-    contents = repo.get_contents("formulario-colaborador/dados")
+    contents = repo.get_contents("dados")
     all_data = []
 
     st.write("🔍 DEBUG: iniciando carga de JSONs")
