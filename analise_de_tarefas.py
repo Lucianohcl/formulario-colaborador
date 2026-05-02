@@ -6326,27 +6326,35 @@ import PyPDF2
 import re
 import io
 
-# Carrega as chaves do st.secrets com fallback para evitar erros de chave não encontrada
+# Definido diretamente no código para evitar erros de busca no st.secrets
+REPO_NAME = "Lucianohcl/formulario-colaborador"
+
+# Carrega apenas o token de acesso de forma segura
 try:
     DB_TOKEN = st.secrets["DB_TOKEN"]
-    REPO_NAME = st.secrets["REPO_NAME"]
 except Exception:
-    DB_TOKEN = ""  # Insira seu token ou configure o secrets.toml
-    REPO_NAME = "seu-usuario/seu-repositorio"
+    DB_TOKEN = "" 
 
 def normalizar_cargo(cargo):
     """
-    Normaliza o nome do cargo de forma universal, convertendo para maiúsculas 
-    e removendo espaços em branco extras.
+    Normaliza o nome do cargo para tratar variações de maiúsculas,
+    minúsculas, singular e plural.
     """
     if not cargo:
         return ""
     
-    return str(cargo).upper().strip()
+    mapa_cargos = {
+        "ANALISTAS DE CUSTOS": "ANALISTA DE CUSTOS",
+        "GESTOR DE DEPARTAMENTO PESSOAL": "GESTOR DE DP",
+        "GESTOR DE DP": "GESTOR DE DP"
+    }
+    
+    c_upper = str(cargo).upper().strip()
+    return mapa_cargos.get(c_upper, c_upper)
 
 def extrair_eficiencia_do_pdf(arquivo_stream):
     """
-    Extrai o percentual de eficiência do arquivo PDF carregado usando PyPDF2.
+    Extrai o percentual de eficiência do arquivo PDF carregado.
     """
     try:
         reader = PyPDF2.PdfReader(arquivo_stream)
@@ -6354,14 +6362,12 @@ def extrair_eficiencia_do_pdf(arquivo_stream):
         for pagina in reader.pages:
             texto_completo += pagina.extract_text() or ""
         
-        # Procura pelo padrão que define o percentual
         padrao = r"(Eficiência|Eficiência Real|Eficiência Sistemática).*?(\d{1,3}[\.,]?\d*%)"
         busca = re.search(padrao, texto_completo, re.IGNORECASE)
         
         if busca:
             return busca.group(2)
         
-        # Fallback para buscar qualquer porcentagem no texto
         todos_percentuais = re.findall(r"\b\d{1,3}[\.,]?\d*%", texto_completo)
         if todos_percentuais:
             return todos_percentuais[0]
@@ -6559,7 +6565,6 @@ def comparador_produtividade_por_cargo(df_dash):
     elif origem_ev == "☁️ Banco (GitHub)":
         pasta = f"documentos/empresa_x/{nome_colab.lower()}"
         try:
-            from github import Github
             g = Github(DB_TOKEN)
             repo = g.get_repo(REPO_NAME)
 
@@ -6580,7 +6585,7 @@ def comparador_produtividade_por_cargo(df_dash):
                 for file in contents:
                     if file.name == f:
                         try:
-                            # Converte o conteúdo binário recuperado para IO
+                            # Converte conteúdo do GitHub para stream de bytes
                             f_stream = io.BytesIO(file.decoded_content)
                             setattr(f_stream, 'name', file.name)
                             evidencias.append(f_stream)
