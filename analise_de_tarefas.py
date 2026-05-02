@@ -6329,8 +6329,8 @@ def carregar_df_dash():
     g = Github(DB_TOKEN)
     repo = g.get_repo(REPO_NAME)
 
-    # 🔥 CAMINHO CORRETO FIXO
-    contents = repo.get_contents("formulario-colaborador/dados")
+    # ✔️ CAMINHO CORRETO
+    contents = repo.get_contents("formulario-colaborador/dados", ref="main")
 
     all_data = []
 
@@ -6338,11 +6338,14 @@ def carregar_df_dash():
 
     for file in contents:
 
+        # ✔️ GARANTE QUE SÓ PEGA ARQUIVO
+        if file.type != "file":
+            continue
+
         if not file.name.endswith(".json"):
             continue
 
         try:
-            # 🔥 leitura correta do GitHub
             raw = file.decoded_content.decode("utf-8")
             data = json.loads(raw)
 
@@ -6373,7 +6376,6 @@ def carregar_df_dash():
         st.write("📊 AMOSTRA:", df.head(2))
 
     return df
-
 def comparador_produtividade_por_cargo(df_dash):
 
     st.title("⚖️ Comparador de Produtividade por Cargo")
