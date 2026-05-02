@@ -6324,6 +6324,15 @@ import pandas as pd
 import os
 import PyPDF2
 import re
+import io
+
+# Carrega as chaves do st.secrets com fallback para evitar erros de chave não encontrada
+try:
+    DB_TOKEN = st.secrets["DB_TOKEN"]
+    REPO_NAME = st.secrets["REPO_NAME"]
+except Exception:
+    DB_TOKEN = ""  # Insira seu token ou configure o secrets.toml
+    REPO_NAME = "seu-usuario/seu-repositorio"
 
 def normalizar_cargo(cargo):
     """
@@ -6363,9 +6372,6 @@ def extrair_eficiencia_do_pdf(arquivo_stream):
 
 def carregar_df_dash():
     try:
-        DB_TOKEN = st.secrets["DB_TOKEN"]
-        REPO_NAME = st.secrets["REPO_NAME"]
-        
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
     except Exception as e:
@@ -6373,6 +6379,8 @@ def carregar_df_dash():
         return pd.DataFrame()
 
     all_data = []
+
+    st.write("🔍 DEBUG: iniciando carga de JSONs")
 
     try:
         contents = repo.get_contents(
@@ -6410,9 +6418,18 @@ def carregar_df_dash():
 
             all_data.append(data)
         except Exception as e:
+            st.error(f"Erro no arquivo {file.path}: {e}")
             continue
 
-    return pd.DataFrame(all_data)
+    df = pd.DataFrame(all_data)
+
+    if not df.empty:
+        st.write("📊 TOTAL REGISTROS:", len(df))
+        st.write("📊 COLUNAS:", list(df.columns))
+        st.write("📊 AMOSTRA:")
+        st.dataframe(df.head(2))
+
+    return df
 
 def comparador_produtividade_por_cargo(df_dash):
     st.title("⚖️ Comparador de Produtividade por Cargo")
@@ -6516,7 +6533,7 @@ def comparador_produtividade_por_cargo(df_dash):
         if uploaded_files:
             evidencias = uploaded_files
 
-    elif origem_ev in ["💻 Arquivo local", "☁️ Banco (GitHub)"]:
+    elif origem_ev == "💻 Arquivo local":
         pasta = f"documentos/empresa_x/{nome_colab.lower()}"
 
         if os.path.exists(pasta):
@@ -6528,7 +6545,7 @@ def comparador_produtividade_por_cargo(df_dash):
             selecionados = st.multiselect(
                 "Selecionar evidências:",
                 arquivos,
-                key=f"sel_{origem_ev.lower().replace(' ', '_')}"
+                key="sel_arquivo_local"
             )
             for f in selecionados:
                 caminho_completo = os.path.join(pasta, f)
@@ -6539,6 +6556,39 @@ def comparador_produtividade_por_cargo(df_dash):
         else:
             st.warning("Nenhum arquivo local encontrado para este colaborador.")
 
+    elif origem_ev == "☁️ Banco (GitHub)":
+        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+        try:
+            from github import Github
+            g = Github(DB_TOKEN)
+            repo = g.get_repo(REPO_NAME)
+
+            contents = repo.get_contents(pasta)
+            if not isinstance(contents, list):
+                contents = [contents]
+            arquivos = [file.name for file in contents if file.name.endswith(".pdf")]
+        except Exception:
+            arquivos = []
+
+        if arquivos:
+            selecionados = st.multiselect(
+                "Selecionar evidências:",
+                arquivos,
+                key="sel_banco_github"
+            )
+            for f in selecionados:
+                for file in contents:
+                    if file.name == f:
+                        try:
+                            # Converte o conteúdo binário recuperado para IO
+                            f_stream = io.BytesIO(file.decoded_content)
+                            setattr(f_stream, 'name', file.name)
+                            evidencias.append(f_stream)
+                        except Exception as e:
+                            st.error(f"Erro ao ler arquivo do GitHub {f}: {e}")
+        else:
+            st.warning("Nenhum arquivo encontrado no repositório GitHub para este colaborador.")
+
     if evidencias:
         st.write(f"### 🎯 Resultados da Eficiência para {nome_colab}")
         for idx, arquivo in enumerate(evidencias):
@@ -6546,7 +6596,13 @@ def comparador_produtividade_por_cargo(df_dash):
             
             st.info(f"**Arquivo {idx+1}:** {getattr(arquivo, 'name', 'Arquivo de Upload')} | **Eficiência Encontrada:** `{eficiencia_encontrada}`")
 
-if __name__ == "__main__":
+# ==============================================================================
+# EXECUÇÃO FINAL
+# ==============================================================================
+if "pagina" not in st.session_state:
+    st.session_state.pagina = "comparar"
+
+if st.session_state.pagina == "comparar":
     try:
         df_dash = carregar_df_dash()
         if not df_dash.empty:
