@@ -6320,6 +6320,9 @@ import streamlit as st
 from github import Github
 import json
 import pandas as pd
+import os
+import pypdf
+import re
 
 def normalizar_cargo(cargo):
     """
@@ -6338,8 +6341,33 @@ def normalizar_cargo(cargo):
     c_upper = str(cargo).upper().strip()
     return mapa_cargos.get(c_upper, c_upper)
 
+def extrair_eficiencia_do_pdf(arquivo_stream):
+    """
+    Extrai o percentual de eficiência do arquivo PDF carregado.
+    """
+    try:
+        reader = pypdf.PdfReader(arquivo_stream)
+        texto_completo = ""
+        for pagina in reader.pages:
+            texto_completo += pagina.extract_text() or ""
+        
+        # Procura pelo padrão que define o percentual
+        padrao = r"(Eficiência|Eficiência Real|Eficiência Sistemática).*?(\d{1,3}[\.,]?\d*%)"
+        busca = re.search(padrao, texto_completo, re.IGNORECASE)
+        
+        if busca:
+            return busca.group(2)
+        
+        # Fallback para buscar qualquer porcentagem no texto
+        todos_percentuais = re.findall(r"\b\d{1,3}[\.,]?\d*%", texto_completo)
+        if todos_percentuais:
+            return todos_percentuais[0]
+            
+        return "Não localizada"
+    except Exception as e:
+        return f"Erro ao ler PDF: {e}"
+
 def carregar_df_dash():
-    # Defina suas variáveis DB_TOKEN e REPO_NAME no escopo global ou local conforme o seu projeto
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
@@ -6348,8 +6376,6 @@ def carregar_df_dash():
         return pd.DataFrame()
 
     all_data = []
-
-    st.write("🔍 DEBUG: iniciando carga de JSONs")
 
     try:
         contents = repo.get_contents(
@@ -6387,18 +6413,9 @@ def carregar_df_dash():
 
             all_data.append(data)
         except Exception as e:
-            st.error(f"Erro no arquivo {file.path}: {e}")
             continue
 
-    df = pd.DataFrame(all_data)
-
-    if not df.empty:
-        st.write("📊 TOTAL REGISTROS:", len(df))
-        st.write("📊 COLUNAS:", list(df.columns))
-        st.write("📊 AMOSTRA:")
-        st.dataframe(df.head(2))
-
-    return df
+    return pd.DataFrame(all_data)
 
 def comparador_produtividade_por_cargo(df_dash):
     st.title("⚖️ Comparador de Produtividade por Cargo")
@@ -6439,7 +6456,6 @@ def comparador_produtividade_por_cargo(df_dash):
 
     # 3. Cálculo de Eficiência baseado no trecho `t2` (KPIs)
     def calcular_eficiencia(df_ind):
-        # Verifica se existem as colunas do KPI para realizar a operação com segurança
         if 'kpi_nome' not in df_ind.columns or 'percentual_alcance' not in df_ind.columns:
             return 0.0
 
@@ -6462,7 +6478,7 @@ def comparador_produtividade_por_cargo(df_dash):
 
     df_rank = pd.DataFrame(ranking).sort_values("Eficiência (%)", ascending=False).reset_index(drop=True)
 
-    # 4. Exibição
+    # 4. Exibição da tela
     st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank, use_container_width=True)
 
@@ -6474,12 +6490,74 @@ def comparador_produtividade_por_cargo(df_dash):
 
     st.divider()
 
+    # =========================================
+    # 📤 ANÁLISE DE EVIDÊNCIAS DE EFICIÊNCIA
+    # =========================================
+    st.subheader("📤 Análise de Evidências por Colaborador")
+
+    nome_colab = st.selectbox(
+        "👤 Selecione o colaborador para evidências",
+        sorted(df_dash["colaborador"].dropna().unique()),
+        key="colab_ev"
+    )
+
+    origem_ev = st.selectbox(
+        "Selecione a origem da evidência:",
+        ["📤 Upload do PC", "💻 Arquivo local", "☁️ Banco (GitHub)"],
+        key="origem_evidencias"
+    )
+
+    evidencias = []
+
+    if origem_ev == "📤 Upload do PC":
+        uploaded_files = st.file_uploader(
+            "Anexar Provas (PDFs)",
+            type=["pdf"],
+            accept_multiple_files=True,
+            key="files_upload"
+        )
+        if uploaded_files:
+            evidencias = uploaded_files
+
+    elif origem_ev in ["💻 Arquivo local", "☁️ Banco (GitHub)"]:
+        # Ajusta o caminho da pasta
+        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+
+        if os.path.exists(pasta):
+            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+        else:
+            arquivos = []
+
+        if arquivos:
+            selecionados = st.multiselect(
+                "Selecionar evidências:",
+                arquivos,
+                key=f"sel_{origem_ev.lower().replace(' ', '_')}"
+            )
+            for f in selecionados:
+                caminho_completo = os.path.join(pasta, f)
+                try:
+                    evidencias.append(open(caminho_completo, "rb"))
+                except Exception as e:
+                    st.error(f"Erro ao abrir o arquivo {f}: {e}")
+        else:
+            st.warning("Nenhum arquivo local encontrado para este colaborador.")
+
+    # Processamento do Veredito da Eficiência no Arquivo PDF
+    if evidencias:
+        st.write(f"### 🎯 Resultados da Eficiência para {nome_colab}")
+        for idx, arquivo in enumerate(evidencias):
+            eficiencia_encontrada = extrair_eficiencia_do_pdf(arquivo)
+            
+            st.info(f"**Arquivo {idx+1}:** {getattr(arquivo, 'name', 'Arquivo de Upload')} | **Eficiência Encontrada:** `{eficiencia_encontrada}`")
+
 # ==============================================================================
-# EXECUÇÃO FINAL (OBRIGATÓRIA)
+# EXECUÇÃO FINAL
 # ==============================================================================
-if st.session_state.pagina == "comparar":
+if __name__ == "__main__":
     try:
         df_dash = carregar_df_dash()
-        comparador_produtividade_por_cargo(df_dash)
+        if not df_dash.empty:
+            comparador_produtividade_por_cargo(df_dash)
     except Exception as e:
-        st.error(f"Erro ao carregar dados: {e}")
+        st.error(f"Erro geral ao inicializar o comparador: {e}")
