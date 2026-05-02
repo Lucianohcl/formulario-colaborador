@@ -6315,3 +6315,99 @@ if st.session_state.pagina == "evidencias":
                 file_name=f"{colaborador}.html",
                 mime="text/html"
             )
+
+# ==============================================================================
+# 🔎 COMPARADOR INTELIGENTE POR CARGO (MÓDULO INDEPENDENTE)
+# ==============================================================================
+
+def comparador_produtividade_por_cargo():
+    st.title("⚖️ Comparador de Produtividade por Cargo")
+
+    # =========================
+    # 1. CARREGAR JSONs
+    # =========================
+    caminho = "dados"
+    arquivos = [f for f in os.listdir(caminho) if f.endswith(".json")]
+
+    if not arquivos:
+        st.warning("Nenhum JSON encontrado na pasta /dados")
+        return
+
+    colabs = {}
+
+    for arq in arquivos:
+        with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
+            dados = json.load(f)
+            colabs[dados["colaborador"]] = dados
+
+    # =========================
+    # 2. SELEÇÃO DE COLABORADOR
+    # =========================
+    nome_sel = st.selectbox(
+        "👤 Selecione o colaborador base:",
+        list(colabs.keys()),
+        key="comp_cargo_sel"
+    )
+
+    cargo_sel = colabs[nome_sel]["campos"]["cargo"]
+
+    st.info(f"📌 Cargo analisado: **{cargo_sel}**")
+
+    # =========================
+    # 3. FILTRAR MESMO CARGO
+    # =========================
+    mesmo_cargo = [
+        c for c in colabs
+        if colabs[c]["campos"]["cargo"] == cargo_sel
+    ]
+
+    st.write(f"👥 Total no mesmo cargo: **{len(mesmo_cargo)}**")
+
+    # =========================
+    # 4. SIMULAÇÃO KPI (usa df_dash externo)
+    # =========================
+    df_filtrado = df_dash[df_dash["colaborador"].isin(mesmo_cargo)]
+
+    df_ultimos = df_filtrado.drop_duplicates(
+        subset=["colaborador", "kpi_nome"],
+        keep="last"
+    )
+
+    # =========================
+    # 5. CÁLCULO DE EFICIÊNCIA
+    # =========================
+    ranking = []
+
+    for c in mesmo_cargo:
+        df_c = df_ultimos[df_ultimos["colaborador"] == c]
+
+        qtd_kpis = len(df_c)
+        media = df_c["percentual_alcance"].mean() if qtd_kpis > 0 else 0
+        eficiencia = (media * qtd_kpis) / 5
+
+        ranking.append({
+            "Colaborador": c,
+            "Eficiência": eficiencia,
+            "KPIs Auditados": qtd_kpis
+        })
+
+    df_rank = pd.DataFrame(ranking).sort_values("Eficiência", ascending=False)
+
+    # =========================
+    # 6. VISUALIZAÇÃO
+    # =========================
+    st.subheader("📊 Ranking do Cargo")
+
+    st.dataframe(df_rank, use_container_width=True)
+
+    # =========================
+    # 7. DESTAQUE DO SELECIONADO
+    # =========================
+    st.markdown("### 🎯 Destaque Individual")
+
+    sel = df_rank[df_rank["Colaborador"] == nome_sel].iloc[0]
+
+    col1, col2 = st.columns(2)
+
+    col1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
+    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/5")    
