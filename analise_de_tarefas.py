@@ -5119,9 +5119,7 @@ if st.session_state.get("pagina") == "parecer":
         """
         return html
 
-    return html
-
-
+    
 st.divider()
 
 
