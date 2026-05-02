@@ -6243,7 +6243,7 @@ Descrição: objetiva
 # -------------------------------
 if st.session_state.pagina == "evidencias":
 
-   st.title("📊 Evidências por KPI")
+    st.title("📊 Evidências por KPI")
 
     colaboradores = listar_colaboradores()
 
