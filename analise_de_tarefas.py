@@ -6286,7 +6286,11 @@ if st.button("🚀 Gerar Evidências"):
 if "res" in st.session_state:
     for r in st.session_state["res"]:
         st.subheader(r["kpi"])
-        st.text(r["evidencias"])
+        r["evidencias"] = st.text_area(
+            f"Editar evidências - {r['kpi']}",
+            value=r["evidencias"],
+            height=200
+        )
 
 
 # -------------------------------
