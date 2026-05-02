@@ -6410,4 +6410,7 @@ def comparador_produtividade_por_cargo():
     col1, col2 = st.columns(2)
 
     col1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
-    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/5")    
+    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/5")
+
+if st.session_state.pagina == "comparar":
+    comparador_produtividade_por_cargo()    
