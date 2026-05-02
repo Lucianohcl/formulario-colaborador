@@ -933,6 +933,7 @@ btn_disc = st.sidebar.button("🧠 Perfil DISC")
 btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
 btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
 btn_produtividade = st.sidebar.button("🚀 Produtividade")
+btn_gerar_evidencias = st.sidebar.button("✨ Gerar Evidências")
 
 
 st.sidebar.markdown("---")
@@ -953,6 +954,10 @@ elif btn_parecer:
     st.session_state.pagina = "parecer"
 elif btn_visualizar:
     st.session_state.pagina = "visualizar"
+elif btn_produtividade:
+    st.session_state.pagina = "produtividade"
+elif btn_gerar_evidencias:
+    st.session_state.pagina = "evidencias"
 # O elif abaixo verifica a URL sem precisar de botão
 elif st.session_state.pagina == "formulario":
     pass # Este comando é obrigatório para não dar erro de sintaxe
@@ -6236,76 +6241,78 @@ Descrição: objetiva
 # -------------------------------
 # UI
 # -------------------------------
-st.title("📊 Evidências por KPI")
+if st.session_state.pagina == "evidencias":
 
-colaboradores = listar_colaboradores()
+   st.title("📊 Evidências por KPI")
 
-if not colaboradores:
-    st.warning("Nenhum colaborador encontrado")
-    st.stop()
+    colaboradores = listar_colaboradores()
 
-colaborador = st.selectbox("Selecione o colaborador", colaboradores)
-
-# -------------------------------
-# GERAR
-# -------------------------------
-if st.button("🚀 Gerar Evidências"):
-    dados = carregar_jsons(colaborador)
-
-    if not dados:
-        st.warning("Nenhum JSON encontrado")
+    if not colaboradores:
+        st.warning("Nenhum colaborador encontrado")
         st.stop()
 
-    resultados = []
+    colaborador = st.selectbox("Selecione o colaborador", colaboradores)
 
-    
+    # -------------------------------
+    # GERAR
+    # -------------------------------
+    if st.button("🚀 Gerar Evidências"):
+        dados = carregar_jsons(colaborador)
 
-    df = pd.DataFrame(dados)
+        if not dados:
+            st.warning("Nenhum JSON encontrado")
+            st.stop()
 
-    for kpi, grupo in df.groupby("kpi_nome"):
-        try:
-            relato = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
-            gaps = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
+        resultados = []
 
-            evidencias = gerar_evidencias(kpi, relato, gaps)
+        
 
-            resultados.append({
-                "kpi": kpi,
-                "evidencias": evidencias
-            })
+        df = pd.DataFrame(dados)
 
-        except Exception as e:
-            st.error(f"Erro no item: {e}")
+        for kpi, grupo in df.groupby("kpi_nome"):
+            try:
+                relato = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
+                gaps = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
 
-    st.session_state["res"] = resultados
+                evidencias = gerar_evidencias(kpi, relato, gaps)
 
+                resultados.append({
+                    "kpi": kpi,
+                    "evidencias": evidencias
+                })
 
-# -------------------------------
-# EXIBIR
-# -------------------------------
-if "res" in st.session_state:
-    for r in st.session_state["res"]:
-        st.subheader(r["kpi"])
-        r["evidencias"] = st.text_area(
-            f"Editar evidências - {r['kpi']}",
-            value=r["evidencias"],
-            height=200
-        )
+            except Exception as e:
+                st.error(f"Erro no item: {e}")
+
+        st.session_state["res"] = resultados
 
 
-# -------------------------------
-# HTML
-# -------------------------------
-if "res" in st.session_state:
-    if st.button("📄 Gerar HTML"):
-        html = f"<h1>Relatório - {colaborador}</h1>"
-
+    # -------------------------------
+    # EXIBIR
+    # -------------------------------
+    if "res" in st.session_state:
         for r in st.session_state["res"]:
-            html += f"<h2>{r['kpi']}</h2><pre>{r['evidencias']}</pre>"
+            st.subheader(r["kpi"])
+            r["evidencias"] = st.text_area(
+                f"Editar evidências - {r['kpi']}",
+                value=r["evidencias"],
+                height=200
+            )
 
-        st.download_button(
-            "⬇️ Baixar HTML",
-            html,
-            file_name=f"{colaborador}.html",
-            mime="text/html"
-        )
+
+    # -------------------------------
+    # HTML
+    # -------------------------------
+    if "res" in st.session_state:
+        if st.button("📄 Gerar HTML"):
+            html = f"<h1>Relatório - {colaborador}</h1>"
+
+            for r in st.session_state["res"]:
+                html += f"<h2>{r['kpi']}</h2><pre>{r['evidencias']}</pre>"
+
+            st.download_button(
+                "⬇️ Baixar HTML",
+                html,
+                file_name=f"{colaborador}.html",
+                mime="text/html"
+            )
