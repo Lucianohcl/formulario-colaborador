@@ -6530,7 +6530,7 @@ def comparador_produtividade_por_cargo(df_dash):
     # =========================================
     # 📤 ANÁLISE DE EVIDÊNCIAS DE EFICIÊNCIA
     # =========================================
-    st.subheader("📤 Análise de Evidências por Colaborador")
+    st.subheader("📤 Análise de Eficiência por Colaborador")
 
     nome_colab = st.selectbox(
         "👤 Selecione o colaborador para evidências",
