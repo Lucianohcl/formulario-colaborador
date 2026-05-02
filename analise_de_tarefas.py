@@ -1,4 +1,5 @@
 
+
 # ============================================================
 # IMPORTS
 # ============================================================
@@ -6122,11 +6123,8 @@ def aba_produtividade_inteligente():
         except Exception as e:
             st.error(f"Erro ao processar ranking: {e}")
 
-if __name__ == "__main__":
+if st.session_state.pagina == "produtividade":
     aba_produtividade_inteligente()
-
-
-
 
 import streamlit as st
 import requests
