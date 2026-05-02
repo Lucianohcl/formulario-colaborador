@@ -5120,8 +5120,6 @@ if st.session_state.get("pagina") == "parecer":
         return html
 
     
-st.markdown("<hr style='border:1px solid #ddd'>", unsafe_allow_html=True)
-
 
 # ==============================================================================  
 # 4. INTERFACE E EXECUÇÃO  
