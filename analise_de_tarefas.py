@@ -6330,15 +6330,30 @@ def carregar_df_dash():
     for content_file in contents:
         if content_file.type == "dir":
             subdir_files = repo.get_contents(content_file.path)
+
             for file in subdir_files:
                 if file.name.endswith(".json"):
+
                     raw = file.decoded_content
                     if isinstance(raw, bytes):
                         raw = raw.decode("utf-8")
-                    all_data.append(json.loads(raw))
+
+                    try:
+                        data = json.loads(raw)
+
+                        if (
+                            isinstance(data, dict)
+                            and "colaborador" in data
+                            and "campos" in data
+                            and isinstance(data["campos"], dict)
+                            and "cargo" in data["campos"]
+                        ):
+                            all_data.append(data)
+
+                    except:
+                        continue
 
     return pd.DataFrame(all_data) if all_data else pd.DataFrame()
-
 
 def comparador_produtividade_por_cargo(df_dash):
 
