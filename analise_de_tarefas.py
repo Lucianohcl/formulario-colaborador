@@ -6341,13 +6341,15 @@ def carregar_df_dash():
                     try:
                         data = json.loads(raw)
 
-                        if (
-                            isinstance(data, dict)
-                            and "colaborador" in data
-                            and "campos" in data
-                            and isinstance(data["campos"], dict)
-                            and "cargo" in data["campos"]
-                        ):
+                        # 🔥 GARANTIA MÍNIMA (NÃO APAGA DADOS VÁLIDOS)
+                        if isinstance(data, dict) and data.get("colaborador"):
+                            
+                            if not isinstance(data.get("campos"), dict):
+                                data["campos"] = {}
+
+                            if not data["campos"].get("cargo"):
+                                continue
+
                             all_data.append(data)
 
                     except:
