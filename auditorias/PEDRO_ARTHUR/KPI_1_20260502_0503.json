@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 56.25,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A evidência apresentada no relatório PDF atende a alguns dos requisitos, mas não todos. Aderência e integridade dos dados são adequadas, porém há uma lacuna significativa na completude para alcançar o objetivo do KPI. O índice de resolução no prazo está abaixo do objetivo de 95%, e a satisfação do usuário está ligeiramente acima do alvo de 90%, mas não suficiente para compensar o déficit na resolução no prazo.",
+    "gap_de_conformidade": [
+        "Alcançar 95% de resolução no prazo.",
+        "Melhoria na taxa de resolução de tickets no mesmo dia.",
+        "Consistência maior nos feedbacks no prazo para completar a conformidade."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Eficiência no Atendimento ao Usuário",
+    "colaborador": "PEDRO ARTHUR",
+    "relato_do_auditor": "Verificar os relatórios semanais de conformidade para evidenciar a redução consistente das não conformidades relacionadas ao suporte ao usuário. O processo visa demonstrar a melhoria na acurácia dos registros, a aderência aos procedimentos normativos internos (POP) e a eficácia das rotinas de auditoria contínua sobre o tempo de atendimento."
+}
