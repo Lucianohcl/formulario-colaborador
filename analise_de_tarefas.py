@@ -6317,19 +6317,39 @@ if st.session_state.pagina == "evidencias":
             )
 
 # ==============================================================================
-# 🔎 COMPARADOR INTELIGENTE POR CARGO (BASEADO NO T2)
+# 🔎 COMPARADOR INTELIGENTE POR CARGO (AUTOSSUFICIENTE)
 # ==============================================================================
+
+def carregar_df_dash():
+    g = Github(DB_TOKEN)
+    repo = g.get_repo(REPO_NAME)
+
+    contents = repo.get_contents("auditorias")
+    all_data = []
+
+    for content_file in contents:
+        if content_file.type == "dir":
+            subdir_files = repo.get_contents(content_file.path)
+            for file in subdir_files:
+                if file.name.endswith(".json"):
+                    raw = file.decoded_content
+                    if isinstance(raw, bytes):
+                        raw = raw.decode("utf-8")
+                    all_data.append(json.loads(raw))
+
+    return pd.DataFrame(all_data) if all_data else pd.DataFrame()
+
 
 def comparador_produtividade_por_cargo(df_dash):
 
     st.title("⚖️ Comparador de Produtividade por Cargo")
 
     if df_dash is None or df_dash.empty:
-        st.warning("Dados KPI não carregados (df_dash vazio)")
+        st.warning("Nenhum dado encontrado")
         return
 
     # =========================
-    # 1. COLABORADOR BASE
+    # COLABORADOR BASE
     # =========================
     colab_base = st.selectbox(
         "👤 Selecione o colaborador base",
@@ -6337,79 +6357,71 @@ def comparador_produtividade_por_cargo(df_dash):
         key="comp_colab_base"
     )
 
-    # pega cargo direto do dataset real
     cargo_base = df_dash[df_dash["colaborador"] == colab_base]["campos"].iloc[0]["cargo"]
-
     st.info(f"📌 Cargo analisado: {cargo_base}")
 
     # =========================
-    # 2. FILTRAR MESMO CARGO
+    # FILTRAR MESMO CARGO
     # =========================
-    def get_cargo(colab):
-        return df_dash[df_dash["colaborador"] == colab]["campos"].iloc[0]["cargo"]
+    def get_cargo(c):
+        return df_dash[df_dash["colaborador"] == c]["campos"].iloc[0]["cargo"]
 
-    colaboradores_mesmo_cargo = [
+    cols_mesmo_cargo = [
         c for c in df_dash["colaborador"].unique()
         if get_cargo(c) == cargo_base
     ]
 
-    df_cargo = df_dash[df_dash["colaborador"].isin(colaboradores_mesmo_cargo)]
+    df_cargo = df_dash[df_dash["colaborador"].isin(cols_mesmo_cargo)]
 
     # =========================
-    # 3. FUNÇÃO OFICIAL (IGUAL T2)
+    # MÉTRICA IGUAL T2
     # =========================
-    def calcular_eficiencia(df):
-        df_ultimos = df.drop_duplicates(
-            subset=["colaborador", "kpi_nome"],
-            keep="last"
-        )
+    def eficiencia(df):
+        df_ult = df.drop_duplicates(subset=["colaborador", "kpi_nome"], keep="last")
 
-        qtd_kpis = len(df_ultimos)
-        media_kpis = df_ultimos["percentual_alcance"].mean() if qtd_kpis > 0 else 0
+        qtd = len(df_ult)
+        media = df_ult["percentual_alcance"].mean() if qtd > 0 else 0
 
-        return (media_kpis * qtd_kpis) / 5
+        return (media * qtd) / 5
 
     # =========================
-    # 4. RANKING
+    # RANKING
     # =========================
     ranking = []
 
-    for c in colaboradores_mesmo_cargo:
+    for c in cols_mesmo_cargo:
         df_ind = df_cargo[df_cargo["colaborador"] == c]
 
         ranking.append({
             "Colaborador": c,
-            "Eficiência": calcular_eficiencia(df_ind)
+            "Eficiência": eficiencia(df_ind)
         })
 
     df_rank = pd.DataFrame(ranking).sort_values("Eficiência", ascending=False)
 
     # =========================
-    # 5. VISUALIZAÇÃO
+    # VISUALIZAÇÃO
     # =========================
     st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank, use_container_width=True)
 
-    # =========================
-    # 6. DESTAQUE DO SELECIONADO
-    # =========================
     sel = df_rank[df_rank["Colaborador"] == colab_base].iloc[0]
 
     c1, c2 = st.columns(2)
     c1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
     c2.metric("Cargo", cargo_base)
 
-    st.divider()   
+    st.divider()
 
 
-# =========================
-# EXECUÇÃO DA PÁGINA
-# =========================
+# ==============================================================================
+# 🚀 EXECUÇÃO FINAL (OBRIGATÓRIA)
+# ==============================================================================
+
 if st.session_state.pagina == "comparar":
-
     try:
-        df_dash_local = df_dash
-        comparador_produtividade_por_cargo(df_dash_local)
+        df_dash = carregar_df_dash()
+        comparador_produtividade_por_cargo(df_dash)
 
-    except NameError:
-        st.warning("Carregue o dashboard (T2) primeiro")
+    except Exception as e:
+        st.error(f"Erro ao carregar dados: {e}")
