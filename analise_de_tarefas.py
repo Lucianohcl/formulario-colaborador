@@ -6336,7 +6336,7 @@ def carregar_df_dash():
     # ✔️ CAMINHO CORRETO (COM BRANCH SEGURO)
     try:
         contents = repo.get_contents(
-            "formulario-colaborador/dados",
+            "dados",
             ref=repo.default_branch
         )
     except Exception as e:
