@@ -5125,7 +5125,7 @@ if st.session_state.get("pagina") == "parecer":
     # ==============================================================================
     # 4. INTERFACE E EXECUÇÃO
     # ==============================================================================
-    st.title("⚖️ NetExame: Perícia Forense de Processos")
+    st.title("🧠 Diagnóstico de Performance Operacional")
 
     # Inputs (No seu caso, isso viria do JSON que você já carrega)
     nome_alvo = st.text_input("Nome do Colaborador", "ADSON")
