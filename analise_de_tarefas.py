@@ -5599,7 +5599,7 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
 
     REGRA FINAL DE CONTROLE (ABSOLUTA):
 
-    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final deverá ser calculado normalmente pela soma dos critérios (aderência +       integridade + tempestividade + completude), porém será obrigatoriamente LIMITADO a no máximo 30%.
+    Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final deverá ser calculado normalmente pela soma dos critérios (aderência +       integridade + tempestividade + completude), porém será obrigatoriamente LIMITADO a no máximo 40%.
 
     REGRA DE CÁLCULO OBRIGATÓRIA (PRIORIDADE MÁXIMA ABSOLUTA):
 
@@ -5607,14 +5607,14 @@ def realizar_critica_universal(kpi_nome, objetivo, evidencias_sugeridas, relato_
 
     1. Calcular os critérios individuais: aderencia + integridade + tempestividade + completude
 
-    2. Verificar condição de completude: Se qualquer evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final será IGNORADO do cálculo bruto e   FIXADO em: MIN(soma dos critérios, 30)
+    2. Verificar condição de completude: Se alguma evidência obrigatória estiver AUSENTE na COMPLETUDE, o percentual_alcance final será AFETADO no cálculo bruto e   AJUSTADO PARA MENOS
 
     3. Caso contrário: percentual_alcance = soma dos critérios
 
     REGRAS DE EXECUÇÃO:
     - Esta regra substitui qualquer outra instrução do prompt.
     - Não é interpretativa, é determinística.
-    - O valor final nunca pode ultrapassar 30 quando houver ausência de evidência obrigatória.
+    - O valor final nunca pode ultrapassar 40 quando houver ausência de evidência obrigatória.
 
     A COMPLETUDE é o fator que aciona esta limitação.   
 
