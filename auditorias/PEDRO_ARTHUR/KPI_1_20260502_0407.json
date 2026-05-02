@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 58.5,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento fornecido é relevante para a análise do KPI de Eficiência no Atendimento ao Usuário. Os dados confirmam parcialmente o relato do cumprimento do objetivo esperado. No entanto, os resultados não atingem as metas de 95% de tickets resolvidos no mesmo dia, sendo apenas 87,8%. A satisfação dos usuários está adequada em 93%. Falta de completude devido à não observância completa dos objetivos esperados.",
+    "gap_de_conformidade": [
+        "Meta de 95% de resolução no mesmo dia não alcançada (está em 87,8%).",
+        "Relatórios complementares que comprovem a melhoria na acurácia dos registros."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Eficiência no Atendimento ao Usuário",
+    "colaborador": "PEDRO ARTHUR",
+    "relato_do_auditor": "Verificar os relatórios semanais de conformidade para evidenciar a redução consistente das não conformidades relacionadas ao suporte ao usuário. O processo visa demonstrar a melhoria na acurácia dos registros, a aderência aos procedimentos normativos internos (POP) e a eficácia das rotinas de auditoria contínua sobre o tempo de atendimento."
+}
