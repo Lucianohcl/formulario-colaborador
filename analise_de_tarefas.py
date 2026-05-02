@@ -5210,7 +5210,7 @@ if st.session_state.get("pagina") == "parecer":
 
     # 2. INTERFACE UNIVERSAL
     def main():
-        st.title("🛡️ Motor de Perícia e Auditoria IA 360°")
+        st.title("📊 Diagnóstico de Performance 360°")
         st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
 
         # Busca arquivos JSON
@@ -5462,7 +5462,7 @@ if st.session_state.get("pagina") == "parecer":
     # 3. INTERFACE
     # ==============================================================================
     def main():
-        st.title("🛡️ NetExame: Perícia & POP")
+        st.title("📊 Análise de Perfil e Eficiência Operacional")
         
         arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
         escolha = st.selectbox("🎯 Selecionar Perfil:", arquivos)
