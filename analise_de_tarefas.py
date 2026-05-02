@@ -4618,7 +4618,7 @@ if st.session_state.get("pagina") == "parecer":
         return realizar_pericia_direta(dados_json_str)
 
     def mostrar_pagina_parecer():
-        st.title("🛡️ NetExame: Auditoria Forense Estratégica")
+        st.title("📋 POP Padrão — Visualização e Análise")
         st.markdown("---")
         
         caminho_dados = "dados"
@@ -5117,6 +5117,9 @@ if st.session_state.get("pagina") == "parecer":
         """
         return html
 
+# ==============================================================================
+# ======================== FIM DO BLOC0 =====================================
+# ==============================================================================
 
 
     # ==============================================================================
