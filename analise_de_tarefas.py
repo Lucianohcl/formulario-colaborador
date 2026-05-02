@@ -5702,7 +5702,7 @@ def salvar_pericia_no_github(nome_colab, kpi, resultado, relato_usuario):
 
 def aba_produtividade_inteligente():
     total_m = 0  # Inicialização de segurança
-    st.title("🛡️ NetExame: Auditoria Forense Estratégica")
+    st.title("📊 Gestão de Produtividade e Indicadores")
     st.markdown("---")
     
     # 1. CARGA DO COLABORADOR (CONTROLE MESTRE NO TOPO)
