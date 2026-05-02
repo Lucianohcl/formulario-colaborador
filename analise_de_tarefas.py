@@ -5931,17 +5931,26 @@ def aba_produtividade_inteligente():
             # 1. BUSCA DOS DADOS NO GITHUB
             with st.spinner("Analisando indicadores..."):
                 contents = repo.get_contents("auditorias")
-                all_data = []
+
+
+                all_data = {}
+
                 for content_file in contents:
                     if content_file.type == "dir":
                         subdir_files = repo.get_contents(content_file.path)
+
                         for file in subdir_files:
                             if file.name.endswith(".json"):
-                                all_data.append(json.loads(file.decoded_content))
+                                data = json.loads(file.decoded_content)
 
-            if all_data:
-                df_dash = pd.DataFrame(all_data)
-                
+                                colab = data.get("colaborador", "desconhecido")
+
+                                if colab not in all_data:
+                                    all_data[colab] = []
+
+                                all_data[colab].append(data)
+
+
                 # --- FILTRO POR COLABORADOR (Opcional, mas muito útil) ---
                 # Isso permite ver o dashboard da empresa toda ou de alguém específico
                 lista_colabs = ["Todos"] + sorted(list(df_dash['colaborador'].unique()))
@@ -6323,3 +6332,5 @@ if st.button("🚀 Executar Auditoria"):
 st.caption("Sistema universal: JSON → Gaps → IA → Evidências → Email automático")
 
 
+
+               
