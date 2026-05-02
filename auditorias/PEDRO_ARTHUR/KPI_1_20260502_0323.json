@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 40,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "O relatório evidencia que o índice de resolução no prazo é de 87,8%, abaixo dos 95% esperados pelo objetivo do KPI. Apesar da alta satisfação dos usuários (93%), o objetivo de prazo não foi atingido. A aderência ao formato solicitado está correta, e a integridade dos dados é validada pelo hash e assinatura. Há um detalhe a ser mencionado: a falta de conformidade na completude devido a não atender o índice de resolução esperado.",
+    "gap_de_conformidade": [
+        "Índice de Resolução no Prazo abaixo do esperado (95% necessário)"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Eficiência no Atendimento ao Usuário",
+    "colaborador": "PEDRO ARTHUR",
+    "relato_do_auditor": "Verificar os relatórios semanais de conformidade para evidenciar a redução consistente das não conformidades relacionadas ao suporte ao usuário. O processo visa demonstrar a melhoria na acurácia dos registros, a aderência aos procedimentos normativos internos (POP) e a eficácia das rotinas de auditoria contínua sobre o tempo de atendimento."
+}
