@@ -6321,11 +6321,15 @@ if st.session_state.pagina == "evidencias":
 # ==============================================================================
 
 def carregar_df_dash():
+    import streamlit as st
+
     g = Github(DB_TOKEN)
     repo = g.get_repo(REPO_NAME)
 
     contents = repo.get_contents("auditorias")
     all_data = []
+
+    st.write("🔍 DEBUG: iniciando carga de JSONs")
 
     for content_file in contents:
         if content_file.type == "dir":
@@ -6334,35 +6338,59 @@ def carregar_df_dash():
             for file in subdir_files:
                 if file.name.endswith(".json"):
 
-                    raw = file.decoded_content
-                    if isinstance(raw, bytes):
-                        raw = raw.decode("utf-8")
-
                     try:
+                        raw = file.decoded_content
+                        if isinstance(raw, bytes):
+                            raw = raw.decode("utf-8")
+
                         data = json.loads(raw)
 
-                        # 🔥 validação mínima real
+                        # 🔎 DEBUG 1: arquivo atual
+                        st.write("📄 Arquivo:", file.path)
+
+                        # 🔎 DEBUG 2: tipo do dado
+                        st.write("Tipo:", type(data))
+
                         if not isinstance(data, dict):
+                            st.warning("Pulado: não é dict")
                             continue
 
                         if not data.get("colaborador"):
+                            st.warning("Pulado: sem colaborador")
                             continue
 
-                        campos = data.get("campos", {})
+                        campos = data.get("campos")
+
+                        # 🔎 DEBUG 3: campos bruto
+                        st.write("Campos bruto:", campos)
+
                         if not isinstance(campos, dict):
+                            st.warning("Campos inválido, corrigindo para dict vazio")
                             campos = {}
 
+                        # normaliza
                         data["campos"] = campos
 
-                        # 🔥 garante cargo SEM quebrar nada
-                        data["cargo"] = campos.get("cargo")
+                        cargo = campos.get("cargo")
+
+                        # 🔎 DEBUG 4: cargo final
+                        st.write("Cargo extraído:", cargo)
+
+                        data["cargo"] = cargo
 
                         all_data.append(data)
 
-                    except:
+                    except Exception as e:
+                        st.error(f"Erro no arquivo {file.path}: {e}")
                         continue
 
-    return pd.DataFrame(all_data)
+    df = pd.DataFrame(all_data)
+
+    # 🔎 DEBUG FINAL
+    st.write("📊 DF FINAL COLUNAS:", df.columns)
+    st.write("📊 DF FINAL HEAD:", df.head())
+
+    return df
 
 def comparador_produtividade_por_cargo(df_dash):
 
