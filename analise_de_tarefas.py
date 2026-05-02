@@ -6322,47 +6322,48 @@ if st.session_state.pagina == "evidencias":
 
 def carregar_df_dash():
     import streamlit as st
+    from github import Github
+    import json
+    import pandas as pd
 
     g = Github(DB_TOKEN)
     repo = g.get_repo(REPO_NAME)
 
-    repo.get_contents("formulario-colaborador/dados")
+    # 🔥 CAMINHO CORRETO FIXO
+    contents = repo.get_contents("formulario-colaborador/dados")
+
     all_data = []
 
     st.write("🔍 DEBUG: iniciando carga de JSONs")
 
-    for content_file in contents:
-        if content_file.type == "dir":
-            subdir_files = repo.get_contents(content_file.path)
+    for file in contents:
 
-            for file in subdir_files:
-                if not file.name.endswith(".json"):
-                    continue
+        if not file.name.endswith(".json"):
+            continue
 
-                try:
-                    # 🔥 CORREÇÃO CRÍTICA (ERA AQUI O ERRO)
-                    raw = file.decoded_content.decode("utf-8")
+        try:
+            # 🔥 leitura correta do GitHub
+            raw = file.decoded_content.decode("utf-8")
+            data = json.loads(raw)
 
-                    data = json.loads(raw)
+            if not isinstance(data, dict):
+                continue
 
-                    if not isinstance(data, dict):
-                        continue
+            if not data.get("colaborador"):
+                continue
 
-                    if not data.get("colaborador"):
-                        continue
+            campos = data.get("campos") or {}
+            if not isinstance(campos, dict):
+                campos = {}
 
-                    campos = data.get("campos") or {}
-                    if not isinstance(campos, dict):
-                        campos = {}
+            data["campos"] = campos
+            data["cargo"] = campos.get("cargo")
 
-                    data["campos"] = campos
-                    data["cargo"] = campos.get("cargo")
+            all_data.append(data)
 
-                    all_data.append(data)
-
-                except Exception as e:
-                    st.error(f"Erro no arquivo {file.path}: {e}")
-                    continue
+        except Exception as e:
+            st.error(f"Erro no arquivo {file.path}: {e}")
+            continue
 
     df = pd.DataFrame(all_data)
 
