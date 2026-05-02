@@ -6321,7 +6321,12 @@ if st.session_state.pagina == "evidencias":
 # ==============================================================================
 
 def comparador_produtividade_por_cargo():
+
     st.title("⚖️ Comparador de Produtividade por Cargo")
+
+    import os
+    import json
+    import pandas as pd
 
     # =========================
     # 1. CARREGAR JSONs
@@ -6336,12 +6341,22 @@ def comparador_produtividade_por_cargo():
     colabs = {}
 
     for arq in arquivos:
-        with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
-            dados = json.load(f)
-            if isinstance(dados, dict):
-                nome = dados.get("colaborador")
-                if nome:
-                    colabs[nome] = dados
+        try:
+            with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
+                dados = json.load(f)
+
+                if isinstance(dados, dict):
+                    nome = dados.get("colaborador")
+
+                    if nome:
+                        colabs[nome] = dados
+
+        except:
+            continue
+
+    if not colabs:
+        st.warning("Nenhum colaborador válido encontrado")
+        return
 
     # =========================
     # 2. SELEÇÃO DE COLABORADOR
@@ -6352,7 +6367,7 @@ def comparador_produtividade_por_cargo():
         key="comp_cargo_sel"
     )
 
-    cargo_sel = colabs[nome_sel]["campos"]["cargo"]
+    cargo_sel = colabs[nome_sel].get("campos", {}).get("cargo", "N/A")
 
     st.info(f"📌 Cargo analisado: **{cargo_sel}**")
 
@@ -6360,17 +6375,24 @@ def comparador_produtividade_por_cargo():
     # 3. FILTRAR MESMO CARGO
     # =========================
     mesmo_cargo = [
-        c for c in colabs
-        if colabs[c]["campos"]["cargo"] == cargo_sel
+        nome for nome, dados in colabs.items()
+        if dados.get("campos", {}).get("cargo") == cargo_sel
     ]
 
     st.write(f"👥 Total no mesmo cargo: **{len(mesmo_cargo)}**")
 
     # =========================
-    # 4. SIMULAÇÃO KPI (usa df_dash externo)
+    # 4. USAR df_dash JÁ EXISTENTE NO SISTEMA
     # =========================
-    df_dash = pd.DataFrame(list(colabs.values()))
-    df_filtrado = df_dash[df_dash["colaborador"].isin(mesmo_cargo)]
+    try:
+        df_filtrado = df_dash[df_dash["colaborador"].isin(mesmo_cargo)]
+    except NameError:
+        st.error("df_dash não está disponível no sistema. Carregue o módulo de KPIs antes.")
+        return
+
+    if "kpi_nome" not in df_filtrado.columns:
+        st.error("Estrutura de KPI inválida (kpi_nome não encontrado no df_dash)")
+        return
 
     df_ultimos = df_filtrado.drop_duplicates(
         subset=["colaborador", "kpi_nome"],
@@ -6382,16 +6404,20 @@ def comparador_produtividade_por_cargo():
     # =========================
     ranking = []
 
+    total_kpis_esperados = 5
+
     for c in mesmo_cargo:
+
         df_c = df_ultimos[df_ultimos["colaborador"] == c]
 
         qtd_kpis = len(df_c)
-        media = df_c["percentual_alcance"].mean() if qtd_kpis > 0 else 0
-        eficiencia = (media * qtd_kpis) / 5
+        media_kpis = df_c["percentual_alcance"].mean() if qtd_kpis > 0 else 0
+
+        eficiencia = (media_kpis * qtd_kpis) / total_kpis_esperados
 
         ranking.append({
             "Colaborador": c,
-            "Eficiência": eficiencia,
+            "Eficiência": round(eficiencia, 1),
             "KPIs Auditados": qtd_kpis
         })
 
@@ -6405,16 +6431,30 @@ def comparador_produtividade_por_cargo():
     st.dataframe(df_rank, use_container_width=True)
 
     # =========================
-    # 7. DESTAQUE DO SELECIONADO
+    # 7. DESTAQUE INDIVIDUAL
     # =========================
     st.markdown("### 🎯 Destaque Individual")
 
-    sel = df_rank[df_rank["Colaborador"] == nome_sel].iloc[0]
+    if df_rank.empty:
+        st.warning("Sem dados suficientes para comparação")
+        return
+
+    sel = df_rank[df_rank["Colaborador"] == nome_sel]
+
+    if sel.empty:
+        st.warning("Colaborador não encontrado no ranking")
+        return
+
+    sel = sel.iloc[0]
 
     col1, col2 = st.columns(2)
 
-    col1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
-    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/5")
+    col1.metric("Eficiência", f"{sel['Eficiência']}%")
+    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/{total_kpis_esperados}")   
 
+
+# =========================
+# EXECUÇÃO DA PÁGINA
+# =========================
 if st.session_state.pagina == "comparar":
     comparador_produtividade_por_cargo()    
