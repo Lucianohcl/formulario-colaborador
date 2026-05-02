@@ -6336,59 +6336,40 @@ def carregar_df_dash():
             subdir_files = repo.get_contents(content_file.path)
 
             for file in subdir_files:
-                if file.name.endswith(".json"):
+                if not file.name.endswith(".json"):
+                    continue
 
-                    try:
-                        raw = file.decoded_content
-                        if isinstance(raw, bytes):
-                            raw = raw.decode("utf-8")
+                try:
+                    # 🔥 CORREÇÃO CRÍTICA (ERA AQUI O ERRO)
+                    raw = file.decoded_content.decode("utf-8")
 
-                        data = json.loads(raw)
+                    data = json.loads(raw)
 
-                        # 🔎 DEBUG 1: arquivo atual
-                        st.write("📄 Arquivo:", file.path)
-
-                        # 🔎 DEBUG 2: tipo do dado
-                        st.write("Tipo:", type(data))
-
-                        if not isinstance(data, dict):
-                            st.warning("Pulado: não é dict")
-                            continue
-
-                        if not data.get("colaborador"):
-                            st.warning("Pulado: sem colaborador")
-                            continue
-
-                        campos = data.get("campos")
-
-                        # 🔎 DEBUG 3: campos bruto
-                        st.write("Campos bruto:", campos)
-
-                        if not isinstance(campos, dict):
-                            st.warning("Campos inválido, corrigindo para dict vazio")
-                            campos = {}
-
-                        # normaliza
-                        data["campos"] = campos
-
-                        cargo = campos.get("cargo")
-
-                        # 🔎 DEBUG 4: cargo final
-                        st.write("Cargo extraído:", cargo)
-
-                        data["cargo"] = cargo
-
-                        all_data.append(data)
-
-                    except Exception as e:
-                        st.error(f"Erro no arquivo {file.path}: {e}")
+                    if not isinstance(data, dict):
                         continue
+
+                    if not data.get("colaborador"):
+                        continue
+
+                    campos = data.get("campos") or {}
+                    if not isinstance(campos, dict):
+                        campos = {}
+
+                    data["campos"] = campos
+                    data["cargo"] = campos.get("cargo")
+
+                    all_data.append(data)
+
+                except Exception as e:
+                    st.error(f"Erro no arquivo {file.path}: {e}")
+                    continue
 
     df = pd.DataFrame(all_data)
 
-    # 🔎 DEBUG FINAL
-    st.write("📊 DF FINAL COLUNAS:", df.columns)
-    st.write("📊 DF FINAL HEAD:", df.head())
+    if not df.empty:
+        st.write("📊 TOTAL REGISTROS:", len(df))
+        st.write("📊 COLUNAS:", df.columns)
+        st.write("📊 AMOSTRA:", df.head(2))
 
     return df
 
