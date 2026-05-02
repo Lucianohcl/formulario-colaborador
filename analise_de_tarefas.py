@@ -6045,95 +6045,7 @@ def aba_produtividade_inteligente():
         except Exception as e:
             st.error(f"Erro no Dashboard T2: {e}")
 
-        # 👇 FORA do try/except, mas ainda dentro do with t2
-        if all_data:
-
-            if st.button("📥 Gerar Relatório HTML Completo", key="btn_html_relatorio"):
-
-                html_kpis = df_kpi.to_html(index=False)
-                html_relatos = df_ultimos[['colaborador', 'kpi_nome', 'relato_do_auditor']].tail(5).to_html(index=False)
-
-                grafico_bar_html = fig_bar.to_html(full_html=False, include_plotlyjs='cdn')
-                grafico_pie_html = fig_pie.to_html(full_html=False, include_plotlyjs=False)
-
-                html_final = f"""
-                <html>
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Relatório de Auditoria</title>
-                        <style>
-                            body {{
-                                font-family: Arial;
-                                background-color: #f4f6f8;
-                                padding: 30px;
-                            }}
-                            h1, h2 {{
-                                color: #1e3a8a;
-                            }}
-                            table {{
-                                border-collapse: collapse;
-                                width: 100%;
-                                margin-bottom: 30px;
-                            }}
-                            th, td {{
-                                border: 1px solid #ccc;
-                                padding: 8px;
-                                text-align: left;
-                            }}
-                            th {{
-                                background-color: #1e3a8a;
-                                color: white;
-                            }}
-                            .card {{
-                                background: white;
-                                padding: 20px;
-                                border-radius: 10px;
-                                margin-bottom: 20px;
-                                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                            }}
-                        </style>
-                    </head>
-                    <body>
-
-                        <h1>📊 Relatório de Auditoria de KPIs</h1>
-
-                        <div class="card">
-                            <h2>Métricas Gerais</h2>
-                            <p><b>Eficiência Média:</b> {media_alcance:.1f}%</p>
-                            <p><b>Total de KPIs:</b> {len(df_ultimos)}</p>
-                            <p><b>KPI Crítico:</b> {pior_kpi_nome}</p>
-                        </div>
-
-                        <div class="card">
-                            <h2>Média por Indicador</h2>
-                            {grafico_bar_html}
-                        </div>
-
-                        <div class="card">
-                            <h2>Volume de Auditorias</h2>
-                            {grafico_pie_html}
-                        </div>
-
-                        <div class="card">
-                            <h2>Tabela de KPIs</h2>
-                            {html_kpis}
-                        </div>
-
-                        <div class="card">
-                            <h2>Últimos Relatos</h2>
-                            {html_relatos}
-                        </div>
-
-                    </body>
-                </html>
-                """
-
-                st.download_button(
-                    label="⬇️ Baixar Relatório HTML",
-                    data=html_final,
-                    file_name="relatorio_auditoria.html",
-                    mime="text/html"
-                )
+        
               
 
                             
@@ -6206,3 +6118,185 @@ def aba_produtividade_inteligente():
 
 if __name__ == "__main__":
     aba_produtividade_inteligente()
+
+
+
+
+import streamlit as st
+import requests
+from openai import OpenAI
+
+# -------------------------------
+# CONFIG
+# -------------------------------
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO = "lucianohcl/formulario-colaborador"
+
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+# -------------------------------
+# FUNÇÕES GITHUB (COM PROTEÇÃO)
+# -------------------------------
+def listar_colaboradores():
+    try:
+        url = f"https://api.github.com/repos/{REPO}/contents/auditorias"
+        res = requests.get(url, headers=HEADERS)
+
+        if res.status_code != 200:
+            st.error("Erro ao acessar GitHub (auditorias)")
+            return []
+
+        return [i["name"] for i in res.json() if i["type"] == "dir"]
+
+    except Exception as e:
+        st.error(f"Erro listar_colaboradores: {e}")
+        return []
+
+
+def carregar_jsons(colaborador):
+    try:
+        url = f"https://api.github.com/repos/{REPO}/contents/auditorias/{colaborador}"
+        res = requests.get(url, headers=HEADERS)
+
+        if res.status_code != 200:
+            st.error("Erro ao acessar pasta do colaborador")
+            return []
+
+        dados = []
+        for item in res.json():
+            if item["name"].endswith(".json"):
+                try:
+                    file = requests.get(item["download_url"]).json()
+                    dados.append(file)
+                except:
+                    st.warning(f"JSON inválido: {item['name']}")
+
+        return dados
+
+    except Exception as e:
+        st.error(f"Erro carregar_jsons: {e}")
+        return []
+
+
+# -------------------------------
+# IA (COM PROTEÇÃO)
+# -------------------------------
+def gerar_evidencias(kpi, relato, gaps_lista):
+
+    try:
+        gaps = "\n- ".join(gaps_lista)
+        relato = relato.replace("[Mês/Ano]", "período analisado")
+
+        prompt = f"""
+Você é um especialista em auditoria e controle de processos.
+
+Gere exatamente 3 evidências documentais com base nos gaps.
+
+REGRAS:
+- Não genérico
+- Não repetir
+- Auditável
+- Conectar com os gaps
+
+KPI: {kpi}
+
+RELATO:
+{relato}
+
+GAPS IDENTIFICADOS:
+- {gaps}
+
+FORMATO:
+
+1. Nome do documento
+Descrição: objetiva
+
+2. Nome do documento
+Descrição: objetiva
+
+3. Nome do documento
+Descrição: objetiva
+"""
+
+        r = client.chat.completions.create(
+            model="gpt-5-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.2
+        )
+
+        return r.choices[0].message.content
+
+    except Exception as e:
+        return f"Erro IA: {e}"
+
+
+# -------------------------------
+# UI
+# -------------------------------
+st.title("📊 Evidências por KPI")
+
+colaboradores = listar_colaboradores()
+
+if not colaboradores:
+    st.warning("Nenhum colaborador encontrado")
+    st.stop()
+
+colaborador = st.selectbox("Selecione o colaborador", colaboradores)
+
+# -------------------------------
+# GERAR
+# -------------------------------
+if st.button("🚀 Gerar Evidências"):
+    dados = carregar_jsons(colaborador)
+
+    if not dados:
+        st.warning("Nenhum JSON encontrado")
+        st.stop()
+
+    resultados = []
+
+    for d in dados:
+        try:
+            evidencias = gerar_evidencias(
+                d.get("kpi_nome", "KPI não informado"),
+                d.get("relato_do_auditor", ""),
+                d.get("gap_de_conformidade", [])
+            )
+
+            resultados.append({
+                "kpi": d.get("kpi_nome", "KPI"),
+                "evidencias": evidencias
+            })
+
+        except Exception as e:
+            st.error(f"Erro no item: {e}")
+
+    st.session_state["res"] = resultados
+
+
+# -------------------------------
+# EXIBIR
+# -------------------------------
+if "res" in st.session_state:
+    for r in st.session_state["res"]:
+        st.subheader(r["kpi"])
+        st.text(r["evidencias"])
+
+
+# -------------------------------
+# HTML
+# -------------------------------
+if "res" in st.session_state:
+    if st.button("📄 Gerar HTML"):
+        html = f"<h1>Relatório - {colaborador}</h1>"
+
+        for r in st.session_state["res"]:
+            html += f"<h2>{r['kpi']}</h2><pre>{r['evidencias']}</pre>"
+
+        st.download_button(
+            "⬇️ Baixar HTML",
+            html,
+            file_name=f"{colaborador}.html",
+            mime="text/html"
+        )
