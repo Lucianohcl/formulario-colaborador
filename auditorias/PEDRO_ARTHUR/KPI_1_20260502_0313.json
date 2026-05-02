@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 30,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "A evidência fornecida no PDF não demonstra que o objetivo de resolver 95% dos tickets no mesmo dia com 90% de satisfação foi alcançado. A resolução no prazo foi de 87,8%, abaixo do objetivo de 95%, embora a satisfação esteja acima do esperado (93%). A conclusão do KPI não é suportada pelos dados apresentados.",
+    "gap_de_conformidade": [
+        "Resolução no prazo abaixo de 95%",
+        "Evidências de que todos os tickets são tratados no mesmo dia não foram apresentadas"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 0
+    },
+    "kpi_nome": "Eficiência no Atendimento ao Usuário",
+    "colaborador": "PEDRO ARTHUR",
+    "relato_do_auditor": "Verificar os relatórios semanais de conformidade para evidenciar a redução consistente das não conformidades relacionadas ao suporte ao usuário. O processo visa demonstrar a melhoria na acurácia dos registros, a aderência aos procedimentos normativos internos (POP) e a eficácia das rotinas de auditoria contínua sobre o tempo de atendimento."
+}
