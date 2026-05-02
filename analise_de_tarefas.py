@@ -6329,16 +6329,26 @@ def carregar_df_dash():
     g = Github(DB_TOKEN)
     repo = g.get_repo(REPO_NAME)
 
-    # ✔️ CAMINHO CORRETO
-    contents = repo.get_contents("formulario-colaborador/dados", ref="main")
-
     all_data = []
 
     st.write("🔍 DEBUG: iniciando carga de JSONs")
 
+    # ✔️ CAMINHO CORRETO (COM BRANCH SEGURO)
+    try:
+        contents = repo.get_contents(
+            "formulario-colaborador/dados",
+            ref=repo.default_branch
+        )
+    except Exception as e:
+        st.error(f"❌ Erro ao acessar /dados: {e}")
+        return pd.DataFrame()
+
+    # garante lista
+    if not isinstance(contents, list):
+        contents = [contents]
+
     for file in contents:
 
-        # ✔️ GARANTE QUE SÓ PEGA ARQUIVO
         if file.type != "file":
             continue
 
@@ -6372,10 +6382,12 @@ def carregar_df_dash():
 
     if not df.empty:
         st.write("📊 TOTAL REGISTROS:", len(df))
-        st.write("📊 COLUNAS:", df.columns)
-        st.write("📊 AMOSTRA:", df.head(2))
+        st.write("📊 COLUNAS:", list(df.columns))
+        st.write("📊 AMOSTRA:")
+        st.dataframe(df.head(2))
 
     return df
+
 def comparador_produtividade_por_cargo(df_dash):
 
     st.title("⚖️ Comparador de Produtividade por Cargo")
