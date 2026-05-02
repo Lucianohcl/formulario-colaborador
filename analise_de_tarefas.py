@@ -6341,31 +6341,28 @@ def carregar_df_dash():
                     try:
                         data = json.loads(raw)
 
-                        # 🔥 ACEITA SÓ O ESSENCIAL REAL
-                        if isinstance(data, dict) and data.get("colaborador"):
+                        # 🔥 validação mínima real
+                        if not isinstance(data, dict):
+                            continue
 
-                            campos = data.get("campos") or {}
+                        if not data.get("colaborador"):
+                            continue
 
-                            # se não tiver cargo, tenta não bloquear tudo
-                            if isinstance(campos, dict):
-                                data["campos"] = campos
-                            else:
-                                data["campos"] = {}
+                        campos = data.get("campos", {})
+                        if not isinstance(campos, dict):
+                            campos = {}
 
-                            all_data.append(data)
+                        data["campos"] = campos
+
+                        # 🔥 garante cargo SEM quebrar nada
+                        data["cargo"] = campos.get("cargo")
+
+                        all_data.append(data)
 
                     except:
                         continue
 
-    df = pd.DataFrame(all_data)
-
-    # 🔥 GARANTE COLUNA EXISTE SEM QUEBRAR O SISTEMA
-    if not df.empty and "campos" in df.columns:
-        df["cargo"] = df["campos"].apply(
-            lambda x: x.get("cargo") if isinstance(x, dict) else None
-        )
-
-    return df
+    return pd.DataFrame(all_data)
 
 def comparador_produtividade_por_cargo(df_dash):
 
