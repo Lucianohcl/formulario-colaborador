@@ -6317,140 +6317,89 @@ if st.session_state.pagina == "evidencias":
             )
 
 # ==============================================================================
-# 🔎 COMPARADOR INTELIGENTE POR CARGO (MÓDULO INDEPENDENTE)
+# 🔎 COMPARADOR INTELIGENTE POR CARGO (BASEADO NO T2)
 # ==============================================================================
 
-def comparador_produtividade_por_cargo():
+def comparador_produtividade_por_cargo(df_dash):
 
     st.title("⚖️ Comparador de Produtividade por Cargo")
 
-    import os
-    import json
-    import pandas as pd
-
-    # =========================
-    # 1. CARREGAR JSONs
-    # =========================
-    caminho = "dados"
-    arquivos = [f for f in os.listdir(caminho) if f.endswith(".json")]
-
-    if not arquivos:
-        st.warning("Nenhum JSON encontrado na pasta /dados")
-        return
-
-    colabs = {}
-
-    for arq in arquivos:
-        try:
-            with open(os.path.join(caminho, arq), "r", encoding="utf-8") as f:
-                dados = json.load(f)
-
-                if isinstance(dados, dict):
-                    nome = dados.get("colaborador")
-
-                    if nome:
-                        colabs[nome] = dados
-
-        except:
-            continue
-
-    if not colabs:
-        st.warning("Nenhum colaborador válido encontrado")
+    if df_dash is None or df_dash.empty:
+        st.warning("Dados KPI não carregados (df_dash vazio)")
         return
 
     # =========================
-    # 2. SELEÇÃO DE COLABORADOR
+    # 1. COLABORADOR BASE
     # =========================
-    nome_sel = st.selectbox(
-        "👤 Selecione o colaborador base:",
-        list(colabs.keys()),
-        key="comp_cargo_sel"
+    colab_base = st.selectbox(
+        "👤 Selecione o colaborador base",
+        sorted(df_dash["colaborador"].unique()),
+        key="comp_colab_base"
     )
 
-    cargo_sel = colabs[nome_sel].get("campos", {}).get("cargo", "N/A")
+    # pega cargo direto do dataset real
+    cargo_base = df_dash[df_dash["colaborador"] == colab_base]["campos"].iloc[0]["cargo"]
 
-    st.info(f"📌 Cargo analisado: **{cargo_sel}**")
+    st.info(f"📌 Cargo analisado: {cargo_base}")
 
     # =========================
-    # 3. FILTRAR MESMO CARGO
+    # 2. FILTRAR MESMO CARGO
     # =========================
-    mesmo_cargo = [
-        nome for nome, dados in colabs.items()
-        if dados.get("campos", {}).get("cargo") == cargo_sel
+    def get_cargo(colab):
+        return df_dash[df_dash["colaborador"] == colab]["campos"].iloc[0]["cargo"]
+
+    colaboradores_mesmo_cargo = [
+        c for c in df_dash["colaborador"].unique()
+        if get_cargo(c) == cargo_base
     ]
 
-    st.write(f"👥 Total no mesmo cargo: **{len(mesmo_cargo)}**")
+    df_cargo = df_dash[df_dash["colaborador"].isin(colaboradores_mesmo_cargo)]
 
     # =========================
-    # 4. USAR df_dash JÁ EXISTENTE NO SISTEMA
+    # 3. FUNÇÃO OFICIAL (IGUAL T2)
     # =========================
-    try:
-        df_filtrado = df_dash[df_dash["colaborador"].isin(mesmo_cargo)]
-    except NameError:
-        st.error("df_dash não está disponível no sistema. Carregue o módulo de KPIs antes.")
-        return
+    def calcular_eficiencia(df):
+        df_ultimos = df.drop_duplicates(
+            subset=["colaborador", "kpi_nome"],
+            keep="last"
+        )
 
-    if "kpi_nome" not in df_filtrado.columns:
-        st.error("Estrutura de KPI inválida (kpi_nome não encontrado no df_dash)")
-        return
+        qtd_kpis = len(df_ultimos)
+        media_kpis = df_ultimos["percentual_alcance"].mean() if qtd_kpis > 0 else 0
 
-    df_ultimos = df_filtrado.drop_duplicates(
-        subset=["colaborador", "kpi_nome"],
-        keep="last"
-    )
+        return (media_kpis * qtd_kpis) / 5
 
     # =========================
-    # 5. CÁLCULO DE EFICIÊNCIA
+    # 4. RANKING
     # =========================
     ranking = []
 
-    total_kpis_esperados = 5
-
-    for c in mesmo_cargo:
-
-        df_c = df_ultimos[df_ultimos["colaborador"] == c]
-
-        qtd_kpis = len(df_c)
-        media_kpis = df_c["percentual_alcance"].mean() if qtd_kpis > 0 else 0
-
-        eficiencia = (media_kpis * qtd_kpis) / total_kpis_esperados
+    for c in colaboradores_mesmo_cargo:
+        df_ind = df_cargo[df_cargo["colaborador"] == c]
 
         ranking.append({
             "Colaborador": c,
-            "Eficiência": round(eficiencia, 1),
-            "KPIs Auditados": qtd_kpis
+            "Eficiência": calcular_eficiencia(df_ind)
         })
 
     df_rank = pd.DataFrame(ranking).sort_values("Eficiência", ascending=False)
 
     # =========================
-    # 6. VISUALIZAÇÃO
+    # 5. VISUALIZAÇÃO
     # =========================
-    st.subheader("📊 Ranking do Cargo")
-
+    st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank, use_container_width=True)
 
     # =========================
-    # 7. DESTAQUE INDIVIDUAL
+    # 6. DESTAQUE DO SELECIONADO
     # =========================
-    st.markdown("### 🎯 Destaque Individual")
+    sel = df_rank[df_rank["Colaborador"] == colab_base].iloc[0]
 
-    if df_rank.empty:
-        st.warning("Sem dados suficientes para comparação")
-        return
+    c1, c2 = st.columns(2)
+    c1.metric("Eficiência", f"{sel['Eficiência']:.1f}%")
+    c2.metric("Cargo", cargo_base)
 
-    sel = df_rank[df_rank["Colaborador"] == nome_sel]
-
-    if sel.empty:
-        st.warning("Colaborador não encontrado no ranking")
-        return
-
-    sel = sel.iloc[0]
-
-    col1, col2 = st.columns(2)
-
-    col1.metric("Eficiência", f"{sel['Eficiência']}%")
-    col2.metric("KPIs Auditados", f"{sel['KPIs Auditados']}/{total_kpis_esperados}")   
+    st.divider()   
 
 
 # =========================
