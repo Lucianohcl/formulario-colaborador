@@ -6406,7 +6406,10 @@ def comparador_produtividade_por_cargo(df_dash):
 # EXECUÇÃO DA PÁGINA
 # =========================
 if st.session_state.pagina == "comparar":
+
     try:
-        comparador_produtividade_por_cargo(df_dash)
+        df_dash_local = df_dash
+        comparador_produtividade_por_cargo(df_dash_local)
+
     except NameError:
         st.warning("Carregue o dashboard (T2) primeiro")
