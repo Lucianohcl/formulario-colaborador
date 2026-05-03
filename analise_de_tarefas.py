@@ -5141,7 +5141,7 @@ if st.session_state.get("pagina") == "parecer":
     else:
         # Mapeia os arquivos para o selectbox
         lista_colab = {os.path.basename(f): f for f in arquivos}
-        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
+        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()), key="selectbox_auditoria_colaborador")
 
         caminho_arquivo = lista_colab[escolha]
 
