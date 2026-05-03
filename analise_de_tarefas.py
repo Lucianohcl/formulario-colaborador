@@ -6470,6 +6470,117 @@ def carregar_df_dash():
 
 def obter_eficiencia_do_pdf_github(repo, colaborador):
     """
+import streamlit as st
+from github import Github
+import json
+import pandas as pd
+import os
+import PyPDF2
+import re
+import io
+
+# Repositório fixado diretamente no código
+REPO_NAME = "Lucianohcl/formulario-colaborador"
+
+# Carrega apenas o token de acesso de forma segura
+try:
+    DB_TOKEN = st.secrets["DB_TOKEN"]
+except Exception:
+    DB_TOKEN = "" 
+
+def normalizar_cargo(cargo):
+    """
+    Normaliza o nome do cargo para tratar variações de maiúsculas,
+    minúsculas, singular e plural.
+    """
+    if not cargo:
+        return ""
+    
+    mapa_cargos = {
+        "ANALISTAS DE CUSTOS": "ANALISTA DE CUSTOS",
+        "GESTOR DE DEPARTAMENTO PESSOAL": "GESTOR DE DP",
+        "GESTOR DE DP": "GESTOR DE DP",
+        "ANALISTA DEPARTAMENTO PESSOAL": "ANALISTA DEPARTAMENTO PESSOAL"
+    }
+    
+    c_upper = str(cargo).upper().strip()
+    return mapa_cargos.get(c_upper, c_upper)
+
+def extrair_eficiencia_do_pdf(arquivo_stream):
+    """
+    Extrai o percentual de eficiência do arquivo PDF carregado.
+    """
+    try:
+        reader = PyPDF2.PdfReader(arquivo_stream)
+        texto_completo = ""
+        for pagina in reader.pages:
+            texto_completo += pagina.extract_text() or ""
+        
+        padrao = r"(Eficiência|Eficiência Real|Eficiência Sistemática).*?(\d{1,3}[\.,]?\d*%)"
+        busca = re.search(padrao, texto_completo, re.IGNORECASE)
+        
+        if busca:
+            return busca.group(2)
+        
+        todos_percentuais = re.findall(r"\b\d{1,3}[\.,]?\d*%", texto_completo)
+        if todos_percentuais:
+            return todos_percentuais[0]
+            
+        return "Não localizada"
+    except Exception:
+        return "Não localizada"
+
+def carregar_df_dash():
+    try:
+        g = Github(DB_TOKEN)
+        repo = g.get_repo(REPO_NAME)
+    except Exception:
+        return pd.DataFrame()
+
+    all_data = []
+
+    try:
+        contents = repo.get_contents(
+            "dados",
+            ref=repo.default_branch
+        )
+    except Exception:
+        return pd.DataFrame()
+
+    if not isinstance(contents, list):
+        contents = [contents]
+
+    for file in contents:
+        if file.type != "file":
+            continue
+        if not file.name.endswith(".json"):
+            continue
+
+        try:
+            raw = file.decoded_content.decode("utf-8")
+            data = json.loads(raw)
+
+            if not isinstance(data, dict):
+                continue
+            if not data.get("colaborador"):
+                continue
+
+            campos = data.get("campos") or {}
+            if not isinstance(campos, dict):
+                campos = {}
+
+            data["campos"] = campos
+            data["cargo"] = campos.get("cargo")
+
+            all_data.append(data)
+        except Exception:
+            continue
+
+    df = pd.DataFrame(all_data)
+    return df
+
+def obter_eficiencia_do_pdf_github(repo, colaborador):
+    """
     Busca o arquivo PDF do colaborador na pasta 'eficiencia_colaborador', 
     extrai o valor numérico da eficiência e o retorna.
     """
@@ -6493,8 +6604,8 @@ def obter_eficiencia_do_pdf_github(repo, colaborador):
                     valor_str = match.group(0).replace(",", ".")
                     return float(valor_str)
                     
-    except Exception as e:
-        
+    except Exception:
+        pass
         
     return 0.0
 
@@ -6520,8 +6631,6 @@ def comparador_produtividade_por_cargo(df_dash):
 
     cargo_base = linha_base.iloc[0]["cargo"]
     cargo_base_normalizado = linha_base.iloc[0]["cargo_normalizado"]
-    
-    
 
     cols_mesmo_cargo = []
     for c in df_dash["colaborador"].unique():
@@ -6534,7 +6643,7 @@ def comparador_produtividade_por_cargo(df_dash):
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
-    except:
+    except Exception:
         repo = None
 
     ranking = []
@@ -6612,8 +6721,8 @@ def comparador_produtividade_por_cargo(df_dash):
                 caminho_completo = os.path.join(pasta, f)
                 try:
                     evidencias.append(open(caminho_completo, "rb"))
-                except Exception as e:
-                    
+                except Exception:
+                    pass
         else:
             st.warning("Nenhum arquivo local encontrado para este colaborador.")
 
@@ -6631,8 +6740,7 @@ def comparador_produtividade_por_cargo(df_dash):
                 if file.name.endswith(".pdf") and 
                 nome_colab.lower().replace(" ", "").replace("_", "") in file.name.lower().replace(" ", "").replace("_", "")
             ]
-        except Exception as e:
-            
+        except Exception:
             arquivos = []
 
         if arquivos:
@@ -6648,17 +6756,10 @@ def comparador_produtividade_por_cargo(df_dash):
                             f_stream = io.BytesIO(file.decoded_content)
                             setattr(f_stream, 'name', file.name)
                             evidencias.append(f_stream)
-                        except Exception as e:
-                            
+                        except Exception:
+                            pass
         else:
             st.warning("Nenhum arquivo encontrado no repositório GitHub para este colaborador.")
-
-    if evidencias:
-        st.write(f"### 🎯 Resultados da Eficiência para {nome_colab}")
-        for idx, arquivo in enumerate(evidencias):
-            eficiencia_encontrada = extrair_eficiencia_do_pdf(arquivo)
-            
-            st.info(f"**Arquivo {idx+1}:** {getattr(arquivo, 'name', 'Arquivo de Upload')} | **Eficiência Encontrada:** `{eficiencia_encontrada}`")
 
 if "pagina" not in st.session_state:
     st.session_state.pagina = "comparar"
@@ -6668,5 +6769,6 @@ if st.session_state.pagina == "comparar":
         df_dash = carregar_df_dash()
         if not df_dash.empty:
             comparador_produtividade_por_cargo(df_dash)
-    except Exception as e:
+    except Exception:
+        pass
         
