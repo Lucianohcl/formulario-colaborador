@@ -4673,7 +4673,7 @@ if st.session_state.get("pagina") == "parecer":
                             "Tempo Base": f"{t}m",
                             "Impacto Diário Convertido": f"{imp:.1f}m",
                             "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                            "Meta Auditável": info['meta']
+                            "Meta Auditável": info.get('meta', 'Não informada')
                         })
 
                     base = pd.DataFrame(dados_ia)
