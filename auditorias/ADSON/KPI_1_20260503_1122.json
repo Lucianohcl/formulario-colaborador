@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 72,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação apresentada evidencia um bom nível de aderência e tempestividade, alinhando-se ao propósito da auditoria. No entanto, a integridade das informações, embora parcialmente refletidas no documento, apresenta lacunas ao confrontar com o relato de execução. A completude é prejudicada pela ausência de provas suficientes que garantam integralmente a conformidade legislativa.",
+    "gap_de_conformidade": [
+        "Falta de documentação completa para todas as categorias de não conformidade.",
+        "Ausência de evidências detalhadas sobre o enquadramento de 100% das rubricas mencionadas.",
+        "Insuficiência de registros sobre obrigações acessórias e prazos legais mencionados no relato."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 12
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
