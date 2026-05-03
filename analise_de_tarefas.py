@@ -6057,8 +6057,7 @@ def aba_produtividade_inteligente():
                             <div class="card critical">
                                 <div class="title">KPI Crítico</div>
                                 <div class="value">Folha de Pagamento</div>
-                                <div class="delta">45.2% -</div>
-                            </div>
+                                <div class="delta">45.2%</div>
 
                         </div>
 
@@ -6711,4 +6710,5 @@ if st.session_state.pagina == "comparar":
         if not df_dash.empty:
             comparador_produtividade_por_cargo(df_dash)
     except Exception as e:
-        st.error(f"Erro geral ao inicializar o comparador: {e}")
+        st.error(f"Erro geral ao inicializar o comparador: {e}")                                    
+
