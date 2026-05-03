@@ -6479,19 +6479,22 @@ def obter_eficiencia_do_pdf_github(repo, colaborador):
             contents = [contents]
         
         for file in contents:
-            if file.name.endswith(".pdf") and colaborador.lower() in file.name.lower():
+            colab_norm = colaborador.lower().replace(" ", "").replace("_", "")
+            nome_file_norm = file.name.lower().replace(" ", "").replace("_", "")
+            
+            if file.name.endswith(".pdf") and colab_norm in nome_file_norm:
                 f_stream = io.BytesIO(file.decoded_content)
                 setattr(f_stream, 'name', file.name)
                 
                 texto_eficiencia = extrair_eficiencia_do_pdf(f_stream)
-                # Extrai o valor numérico (remove %) e converte para float
                 match = re.search(r"\d+[\.,]?\d*", texto_eficiencia)
                 if match:
                     valor_str = match.group(0).replace(",", ".")
                     return float(valor_str)
-    except Exception:
-        pass
-    
+                    
+    except Exception as e:
+        st.error(f"Erro ao ler arquivo no GitHub: {e}")
+        
     return 0.0
 
 def comparador_produtividade_por_cargo(df_dash):
@@ -6501,7 +6504,6 @@ def comparador_produtividade_por_cargo(df_dash):
         st.warning("Nenhum dado encontrado")
         return
 
-    # 1. Normalização do cargo no DataFrame
     df_dash['cargo_normalizado'] = df_dash['cargo'].apply(normalizar_cargo)
 
     colab_base = st.selectbox(
@@ -6520,7 +6522,6 @@ def comparador_produtividade_por_cargo(df_dash):
     
     st.info(f"📌 Cargo analisado: {cargo_base} (Normalizado: {cargo_base_normalizado})")
 
-    # 2. Filtrar colaboradores com o mesmo cargo normalizado
     cols_mesmo_cargo = []
     for c in df_dash["colaborador"].unique():
         df_c = df_dash[df_dash["colaborador"] == c]
@@ -6529,7 +6530,6 @@ def comparador_produtividade_por_cargo(df_dash):
             if c_cargo == cargo_base_normalizado:
                 cols_mesmo_cargo.append(c)
 
-    # 3. Cálculo de Eficiência baseado na leitura dos PDFs
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
@@ -6549,10 +6549,8 @@ def comparador_produtividade_por_cargo(df_dash):
         })
 
     df_rank = pd.DataFrame(ranking).sort_values("valor_float", ascending=False).reset_index(drop=True)
-    # Remove a coluna auxiliar do display
     df_rank_display = df_rank[["Colaborador", "Eficiência (%)"]]
 
-    # 4. Exibição da tela
     st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank_display, use_container_width=True, hide_index=True)
 
@@ -6565,9 +6563,6 @@ def comparador_produtividade_por_cargo(df_dash):
 
     st.divider()
 
-    # =========================================
-    # 📤 ANÁLISE DE EVIDÊNCIAS DE EFICIÊNCIA
-    # =========================================
     st.subheader("📤 Análise de Eficiência por Colaborador")
 
     nome_colab = st.selectbox(
@@ -6598,7 +6593,11 @@ def comparador_produtividade_por_cargo(df_dash):
         pasta = "eficiencia_colaborador"
 
         if os.path.exists(pasta):
-            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf") and nome_colab.lower() in f.lower()]
+            arquivos = [
+                f for f in os.listdir(pasta) 
+                if f.endswith(".pdf") and 
+                nome_colab.lower().replace(" ", "").replace("_", "") in f.lower().replace(" ", "").replace("_", "")
+            ]
         else:
             arquivos = []
 
@@ -6626,8 +6625,13 @@ def comparador_produtividade_por_cargo(df_dash):
             contents = repo.get_contents(pasta)
             if not isinstance(contents, list):
                 contents = [contents]
-            arquivos = [file.name for file in contents if file.name.endswith(".pdf") and nome_colab.lower() in file.name.lower()]
-        except Exception:
+            arquivos = [
+                file.name for file in contents 
+                if file.name.endswith(".pdf") and 
+                nome_colab.lower().replace(" ", "").replace("_", "") in file.name.lower().replace(" ", "").replace("_", "")
+            ]
+        except Exception as e:
+            st.error(f"Erro ao buscar arquivos no repositório: {e}")
             arquivos = []
 
         if arquivos:
@@ -6655,9 +6659,6 @@ def comparador_produtividade_por_cargo(df_dash):
             
             st.info(f"**Arquivo {idx+1}:** {getattr(arquivo, 'name', 'Arquivo de Upload')} | **Eficiência Encontrada:** `{eficiencia_encontrada}`")
 
-# ==============================================================================
-# EXECUÇÃO FINAL
-# ==============================================================================
 if "pagina" not in st.session_state:
     st.session_state.pagina = "comparar"
 
