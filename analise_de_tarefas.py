@@ -5947,7 +5947,7 @@ def aba_produtividade_inteligente():
                         subdir_files = repo.get_contents(content_file.path)
                         for file in subdir_files:
                             if file.name.endswith(".json"):
-                                all_data.append(json.loads(file.decoded_content))
+                                all_data.append(json.loads(file.decoded_content))              
 
             if all_data:
                 df_dash = pd.DataFrame(all_data)
@@ -5985,6 +5985,88 @@ def aba_produtividade_inteligente():
                 m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")
 
                 st.divider()
+
+
+            <!-- ===================== HTML EQUIVALENTE ===================== -->
+
+            <div class="all-data-block">
+
+                        <!-- if all_data -->
+
+                        <div class="df-dash">
+                            <!-- df_dash = pd.DataFrame(all_data) -->
+                        </div>
+
+                        <!-- FILTRO POR COLABORADOR -->
+
+                        <div class="filter-section">
+
+                            <label>Filtrar análise por:</label>
+
+                            <select>
+                                <option>Todos</option>
+                                <option>Colaborador A</option>
+                                <option>Colaborador B</option>
+                            </select>
+
+                        </div>
+
+                        <!-- if filtro_colab != "Todos" -->
+
+                        <div class="filtered-dash">
+                            <!-- df_dash = df_dash[df_dash['colaborador'] == filtro_colab] -->
+                        </div>
+
+                        <!-- MÉTRICAS DE DESEMPENHO -->
+
+                        <div class="metrics">
+
+                            <!-- m1, m2, m3 = st.columns(3) -->
+
+                            <div class="card">
+                                <div class="title">Eficiência Real</div>
+                                <div class="value">78.4%</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="title">KPIs Auditados (5)</div>
+                                <div class="value">3/5</div>
+                            </div>
+
+                            <div class="card">
+                                <div class="title">KPIs Auditados</div>
+                                <div class="value">3</div>
+                            </div>
+
+                        </div>
+
+                        <!-- CÁLCULOS INTERNOS -->
+
+                        <div class="analysis-block">
+
+                            <!-- media_kpis -->
+                            <!-- qtd_kpis -->
+                            <!-- eficiencia_sistematica -->
+
+                        </div>
+
+                        <!-- KPI CRÍTICO -->
+
+                        <div class="metrics">
+
+                            <div class="card critical">
+                                <div class="title">KPI Crítico</div>
+                                <div class="value">Folha de Pagamento</div>
+                                <div class="delta">45.2% ↓</div>
+                            </div>
+
+                        </div>
+
+                        <!-- st.divider() -->
+
+                        <div class="divider"></div>
+
+            </div>
 
                 # --- GRÁFICOS ---
                 col_esq, col_dir = st.columns(2)
