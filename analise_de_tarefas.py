@@ -6057,7 +6057,7 @@ def aba_produtividade_inteligente():
                             <div class="card critical">
                                 <div class="title">KPI Crítico</div>
                                 <div class="value">Folha de Pagamento</div>
-                                <div class="delta">45.2% ↓</div>
+                                <div class="delta">45.2% -</div>
                             </div>
 
                         </div>
