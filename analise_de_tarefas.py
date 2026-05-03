@@ -5136,12 +5136,25 @@ if st.session_state.get("pagina") == "parecer":
         lista_colaboradores = ["Nenhum colaborador encontrado"]
 
     nome_alvo = st.selectbox("Selecione o Colaborador", lista_colaboradores)
-    cargo_alvo = st.text_input("Cargo", "GESTOR DE DP")
+
+    # Busca o cargo correspondente ao colaborador selecionado no DataFrame df_dash
+    cargo_padrao = "GESTOR DE DP"
+    if "df_dash" in locals() or "df_dash" in globals():
+        linha_colab = df_dash[df_dash["colaborador"] == nome_alvo]
+        if not linha_colab.empty:
+            cargo_padrao = str(linha_colab.iloc[0]["cargo"])
+
+    cargo_alvo = st.text_input("Cargo", value=cargo_padrao)
     relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
 
     if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
         with st.spinner("IA analisando nexo causal e eficiência..."):
-            resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
+            # Certifique-se de que a função 'realizar_pericia_ia' está disponível no escopo
+            if "realizar_pericia_ia" in globals():
+                resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
+            else:
+                resultado = None
+                st.error("Erro: função 'realizar_pericia_ia' não encontrada.")
             
             if resultado:
                 # SALVA NO ESTADO DA SESSÃO
@@ -5150,7 +5163,10 @@ if st.session_state.get("pagina") == "parecer":
                 st.session_state['analise_concluida'] = True
                 
                 st.success("Análise Concluída!")
-                st.markdown(f"**Parecer:** {resultado['parecer_pericial']}")
+
+    # Exibe o parecer fora do bloco do botão para torná-lo persistente
+    if st.session_state.get('analise_concluida', False):
+        st.markdown(f"**Parecer:** {st.session_state['resultado_parecer_gpt']}")
 
     # --- SEÇÃO DE DOWNLOAD DO LAUDO ---
     if st.session_state['analise_concluida']:
