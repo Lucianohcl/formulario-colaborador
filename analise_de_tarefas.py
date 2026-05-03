@@ -5129,8 +5129,13 @@ if st.session_state.get("pagina") == "parecer":
     # ==============================================================================
     st.title("🧠 Diagnóstico de Performance Operacional")
 
-    # Inputs (No seu caso, isso viria do JSON que você já carrega)
-    nome_alvo = st.text_input("Nome do Colaborador", "ADSON")
+    # Extrai os nomes da base de dados para preencher o selectbox
+    try:
+        lista_colaboradores = sorted(df_dash["colaborador"].dropna().unique())
+    except Exception:
+        lista_colaboradores = ["Nenhum colaborador encontrado"]
+
+    nome_alvo = st.selectbox("Selecione o Colaborador", lista_colaboradores)
     cargo_alvo = st.text_input("Cargo", "GESTOR DE DP")
     relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
 
