@@ -1,4 +1,4 @@
-# ============================================================
+  # ============================================================
 # IMPORTS
 # ============================================================
 
@@ -5982,87 +5982,47 @@ def aba_produtividade_inteligente():
                 # Identifica qual KPI precisa de mais atenção (menor média)
                 pior_kpi_serie = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean()
                 pior_kpi_nome = pior_kpi_serie.idxmin()
-                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")
+                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")              
 
                 st.divider()
 
-            <div class="all-data-block">
+                # ===== PDF =====
+                from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+                from reportlab.lib.styles import getSampleStyleSheet
+                import io
 
-                        <!-- if all_data -->
+                def gerar_pdf():
+                    buffer = io.BytesIO()
+                    
+                    doc = SimpleDocTemplate(buffer)
+                    styles = getSampleStyleSheet()
 
-                        <div class="df-dash">
-                            <!-- df_dash = pd.DataFrame(all_data) -->
-                        </div>
+                    content = []
 
-                        <!-- FILTRO POR COLABORADOR -->
+                    content.append(Paragraph("Dashboard KPI", styles["Title"]))
+                    content.append(Spacer(1, 12))
 
-                        <div class="filter-section">
+                    content.append(Paragraph(f"Eficiência Real: {eficiencia_sistematica:.1f}%", styles["Normal"]))
+                    content.append(Paragraph(f"KPIs Auditados (5): {qtd_kpis}/{total_kpis_esperados}", styles["Normal"]))
+                    content.append(Paragraph(f"KPIs Auditados: {qtd_kpis}", styles["Normal"]))
+                    content.append(Spacer(1, 12))
 
-                            <label>Filtrar análise por:</label>
+                    content.append(Paragraph(f"KPI Crítico: {pior_kpi_nome}", styles["Normal"]))
+                    content.append(Paragraph(f"Valor: {pior_kpi_serie.min():.1f}%", styles["Normal"]))
 
-                            <select>
-                                <option>Todos</option>
-                                <option>Colaborador A</option>
-                                <option>Colaborador B</option>
-                            </select>
+                    doc.build(content)
 
-                        </div>
+                    buffer.seek(0)
+                    return buffer
 
-                        <!-- if filtro_colab != "Todos" -->
+                pdf_file = gerar_pdf()
 
-                        <div class="filtered-dash">
-                            <!-- df_dash = df_dash[df_dash['colaborador'] == filtro_colab] -->
-                        </div>
-
-                        <!-- MÉTRICAS DE DESEMPENHO -->
-
-                        <div class="metrics">
-
-                            <!-- m1, m2, m3 = st.columns(3) -->
-
-                            <div class="card">
-                                <div class="title">Eficiência Real</div>
-                                <div class="value">78.4%</div>
-                            </div>
-
-                            <div class="card">
-                                <div class="title">KPIs Auditados (5)</div>
-                                <div class="value">3/5</div>
-                            </div>
-
-                            <div class="card">
-                                <div class="title">KPIs Auditados</div>
-                                <div class="value">3</div>
-                            </div>
-
-                        </div>
-
-                        <!-- CÁLCULOS INTERNOS -->
-
-                        <div class="analysis-block">
-
-                            <!-- media_kpis -->
-                            <!-- qtd_kpis -->
-                            <!-- eficiencia_sistematica -->
-
-                        </div>
-
-                        <!-- KPI CRÍTICO -->
-
-                        <div class="metrics">
-
-                            <div class="card critical">
-                                <div class="title">KPI Crítico</div>
-                                <div class="value">Folha de Pagamento</div>
-                                <div class="delta">45.2%</div>
-
-                        </div>
-
-                        <!-- st.divider() -->
-
-                        <div class="divider"></div>
-
-            </div>
+                st.download_button(
+                    label="📄 Baixar Relatório em PDF",
+                    data=pdf_file,
+                    file_name="dashboard_kpi.pdf",
+                    mime="application/pdf"
+                )
 
                 # --- GRÁFICOS ---
                 col_esq, col_dir = st.columns(2)
