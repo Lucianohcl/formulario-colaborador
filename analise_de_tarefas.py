@@ -5128,55 +5128,57 @@ if st.session_state.get("pagina") == "parecer":
     # 4. INTERFACE E EXECUÇÃO
     # ==============================================================================
     st.title("🧠 Diagnóstico de Performance Operacional")
+    st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
 
-    # Garante que df_dash está carregado no escopo antes de tentar extrair os dados
-    try:
-        df_dash = carregar_df_dash()
-    except Exception:
-        df_dash = pd.DataFrame()
+    # Busca arquivos JSON
+    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
 
-    # Extrai os nomes da base de dados para preencher o selectbox
-    try:
-        if not df_dash.empty:
-            lista_colaboradores = sorted(df_dash["colaborador"].dropna().unique())
-        else:
-            lista_colaboradores = ["Nenhum colaborador encontrado"]
-    except Exception:
-        lista_colaboradores = ["Nenhum colaborador encontrado"]
+    if not arquivos:
+        st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
+    else:
+        # Mapeia os arquivos para o selectbox
+        lista_colab = {os.path.basename(f): f for f in arquivos}
+        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
 
-    nome_alvo = st.selectbox("Selecione o Colaborador", lista_colaboradores)
+        caminho_arquivo = lista_colab[escolha]
 
-    # Busca o cargo correspondente ao colaborador selecionado no DataFrame df_dash
-    cargo_padrao = "GESTOR DE DP"
-    if not df_dash.empty:
-        linha_colab = df_dash[df_dash["colaborador"] == nome_alvo]
-        if not linha_colab.empty:
-            cargo_padrao = str(linha_colab.iloc[0]["cargo"])
-
-    cargo_alvo = st.text_input("Cargo", value=cargo_padrao)
-    relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
-
-    if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
-        with st.spinner("IA analisando nexo causal e eficiência..."):
-            
-            # Certifique-se de que a função 'realizar_pericia_ia' está disponível no escopo
-            if "realizar_pericia_ia" in globals():
-                resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
-            else:
-                resultado = None
-                st.error("Erro: função 'realizar_pericia_ia' não encontrada.")
-            
-            if resultado:
-                # SALVA NO ESTADO DA SESSÃO
-                st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
-                st.session_state['pop_universal_ia'] = resultado['pop_universal']
-                st.session_state['analise_concluida'] = True
+        # Lê os dados do arquivo selecionado diretamente no sistema
+        try:
+            with open(caminho_arquivo, 'r', encoding='utf-8') as f:
+                dados_json = json.load(f)
                 
-                st.success("Análise Concluída!")
+            nome_alvo = dados_json.get("colaborador", escolha.replace(".json", ""))
+            campos = dados_json.get("campos", {})
+            cargo_padrao = campos.get("cargo", "GESTOR DE DP")
+        except Exception:
+            nome_alvo = escolha.replace(".json", "")
+            cargo_padrao = "GESTOR DE DP"
 
-    # Exibe o parecer fora do bloco do botão para torná-lo persistente
-    if st.session_state.get('analise_concluida', False):
-        st.markdown(f"**Parecer:** {st.session_state['resultado_parecer_gpt']}")
+        st.write(f"**Colaborador:** {nome_alvo}")
+        cargo_alvo = st.text_input("Cargo", value=cargo_padrao)
+        relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
+
+        if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
+            with st.spinner("IA analisando nexo causal e eficiência..."):
+                
+                # Certifique-se de que a função 'realizar_pericia_ia' está disponível no escopo
+                if "realizar_pericia_ia" in globals():
+                    resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
+                else:
+                    resultado = None
+                    st.error("Erro: função 'realizar_pericia_ia' não encontrada.")
+                
+                if resultado:
+                    # SALVA NO ESTADO DA SESSÃO
+                    st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
+                    st.session_state['pop_universal_ia'] = resultado['pop_universal']
+                    st.session_state['analise_concluida'] = True
+                    
+                    st.success("Análise Concluída!")
+
+        # Exibe o parecer fora do bloco do botão para torná-lo persistente
+        if st.session_state.get('analise_concluida', False):
+            st.markdown(f"**Parecer:** {st.session_state['resultado_parecer_gpt']}")
 
     # --- SEÇÃO DE DOWNLOAD DO LAUDO ---
     if st.session_state['analise_concluida']:
