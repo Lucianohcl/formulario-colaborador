@@ -6469,17 +6469,17 @@ def carregar_df_dash():
 
 def obter_eficiencia_do_pdf_github(repo, colaborador):
     """
-    Busca o primeiro arquivo PDF na pasta do colaborador no GitHub, 
+    Busca o arquivo PDF do colaborador na pasta 'eficiencia_colaborador', 
     extrai o valor numérico da eficiência e o retorna.
     """
-    pasta = f"documentos/empresa_x/{colaborador.lower()}"
+    pasta = "eficiencia_colaborador"
     try:
         contents = repo.get_contents(pasta)
         if not isinstance(contents, list):
             contents = [contents]
         
         for file in contents:
-            if file.name.endswith(".pdf"):
+            if file.name.endswith(".pdf") and colaborador.lower() in file.name.lower():
                 f_stream = io.BytesIO(file.decoded_content)
                 setattr(f_stream, 'name', file.name)
                 
@@ -6595,10 +6595,10 @@ def comparador_produtividade_por_cargo(df_dash):
             evidencias = uploaded_files
 
     elif origem_ev == "💻 Arquivo local":
-        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+        pasta = "eficiencia_colaborador"
 
         if os.path.exists(pasta):
-            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
+            arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf") and nome_colab.lower() in f.lower()]
         else:
             arquivos = []
 
@@ -6618,7 +6618,7 @@ def comparador_produtividade_por_cargo(df_dash):
             st.warning("Nenhum arquivo local encontrado para este colaborador.")
 
     elif origem_ev == "☁️ Banco (GitHub)":
-        pasta = f"documentos/empresa_x/{nome_colab.lower()}"
+        pasta = "eficiencia_colaborador"
         try:
             g = Github(DB_TOKEN)
             repo = g.get_repo(REPO_NAME)
@@ -6626,7 +6626,7 @@ def comparador_produtividade_por_cargo(df_dash):
             contents = repo.get_contents(pasta)
             if not isinstance(contents, list):
                 contents = [contents]
-            arquivos = [file.name for file in contents if file.name.endswith(".pdf")]
+            arquivos = [file.name for file in contents if file.name.endswith(".pdf") and nome_colab.lower() in file.name.lower()]
         except Exception:
             arquivos = []
 
@@ -6667,5 +6667,4 @@ if st.session_state.pagina == "comparar":
         if not df_dash.empty:
             comparador_produtividade_por_cargo(df_dash)
     except Exception as e:
-        st.error(f"Erro geral ao inicializar o comparador: {e}")                                    
-
+        st.error(f"Erro geral ao inicializar o comparador: {e}")
