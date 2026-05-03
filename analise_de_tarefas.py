@@ -6413,14 +6413,15 @@ def extrair_eficiencia_do_pdf(arquivo_stream):
             
         return "Não localizada"
     except Exception as e:
-        return f"Erro ao ler PDF: {e}"
+        return "Não localizada"
+        
 
 def carregar_df_dash():
     try:
         g = Github(DB_TOKEN)
         repo = g.get_repo(REPO_NAME)
     except Exception as e:
-        st.error(f"❌ Erro ao conectar ao GitHub: {e}")
+        
         return pd.DataFrame()
 
     all_data = []
@@ -6431,7 +6432,7 @@ def carregar_df_dash():
             ref=repo.default_branch
         )
     except Exception as e:
-        st.error(f"❌ Erro ao acessar /dados: {e}")
+        
         return pd.DataFrame()
 
     if not isinstance(contents, list):
@@ -6461,7 +6462,7 @@ def carregar_df_dash():
 
             all_data.append(data)
         except Exception as e:
-            st.error(f"Erro no arquivo {file.path}: {e}")
+            
             continue
 
     df = pd.DataFrame(all_data)
@@ -6493,7 +6494,7 @@ def obter_eficiencia_do_pdf_github(repo, colaborador):
                     return float(valor_str)
                     
     except Exception as e:
-        st.error(f"Erro ao ler arquivo no GitHub: {e}")
+        
         
     return 0.0
 
@@ -6520,7 +6521,7 @@ def comparador_produtividade_por_cargo(df_dash):
     cargo_base = linha_base.iloc[0]["cargo"]
     cargo_base_normalizado = linha_base.iloc[0]["cargo_normalizado"]
     
-    st.info(f"📌 Cargo analisado: {cargo_base} (Normalizado: {cargo_base_normalizado})")
+    
 
     cols_mesmo_cargo = []
     for c in df_dash["colaborador"].unique():
@@ -6612,7 +6613,7 @@ def comparador_produtividade_por_cargo(df_dash):
                 try:
                     evidencias.append(open(caminho_completo, "rb"))
                 except Exception as e:
-                    st.error(f"Erro ao abrir o arquivo {f}: {e}")
+                    
         else:
             st.warning("Nenhum arquivo local encontrado para este colaborador.")
 
@@ -6631,7 +6632,7 @@ def comparador_produtividade_por_cargo(df_dash):
                 nome_colab.lower().replace(" ", "").replace("_", "") in file.name.lower().replace(" ", "").replace("_", "")
             ]
         except Exception as e:
-            st.error(f"Erro ao buscar arquivos no repositório: {e}")
+            
             arquivos = []
 
         if arquivos:
@@ -6648,7 +6649,7 @@ def comparador_produtividade_por_cargo(df_dash):
                             setattr(f_stream, 'name', file.name)
                             evidencias.append(f_stream)
                         except Exception as e:
-                            st.error(f"Erro ao ler arquivo do GitHub {f}: {e}")
+                            
         else:
             st.warning("Nenhum arquivo encontrado no repositório GitHub para este colaborador.")
 
@@ -6668,4 +6669,4 @@ if st.session_state.pagina == "comparar":
         if not df_dash.empty:
             comparador_produtividade_por_cargo(df_dash)
     except Exception as e:
-        st.error(f"Erro geral ao inicializar o comparador: {e}")
+        
