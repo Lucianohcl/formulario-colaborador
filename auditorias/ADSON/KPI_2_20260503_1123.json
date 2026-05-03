@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 40,
+    "status_pericial": "NÃO CONFORME",
+    "analise_critica": "Os documentos apresentados não confirmam a eficácia das ações pretendidas para alcançar a redução de erros em 15% nos processos de folha de pagamento. Embora os relatórios abranjam algumas das não conformidades em março de 2026, eles não demonstram uma redução consistente de erros ao longo do tempo. Além disso, o relato de execução do funcionário não é integralmente corroborado pelos documentos fornecidos.",
+    "gap_de_conformidade": [
+        "Evidências de redução consistente de erros nos relatórios semanais",
+        "Dados comparativos mostrando a diminuição de erros em 15%",
+        "Relatórios que cobrem um período de tempo suficiente para demonstrar tendências de melhoria"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 15,
+        "integridade": 10,
+        "tempestividade": 20,
+        "completude": 5
+    },
+    "kpi_nome": "Eficácia da Auditoria Interna",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Verificar relatórios semanais de conformidade  para evidenciar redução consistente das não conformidades relacionadas à folha de pagamento, com melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos, indicando eficácia das rotinas de auditoria contínua."
+}
