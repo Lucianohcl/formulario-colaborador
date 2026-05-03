@@ -4833,6 +4833,8 @@ if st.session_state.get("pagina") == "parecer":
                         if "D" in f_real: imp = t_bruto
                         elif "S" in f_real: imp = t_bruto / 5
                         elif "M" in f_real: imp = t_bruto / 22
+                        elif "T" in f_real: imp = t_bruto / 66
+                        elif "A" in f_real: imp = t_bruto / 264
                         else: imp = 0
                         
                         total_real_diario += imp
