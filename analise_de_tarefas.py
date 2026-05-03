@@ -5129,9 +5129,18 @@ if st.session_state.get("pagina") == "parecer":
     # ==============================================================================
     st.title("🧠 Diagnóstico de Performance Operacional")
 
+    # Garante que df_dash está carregado no escopo antes de tentar extrair os dados
+    try:
+        df_dash = carregar_df_dash()
+    except Exception:
+        df_dash = pd.DataFrame()
+
     # Extrai os nomes da base de dados para preencher o selectbox
     try:
-        lista_colaboradores = sorted(df_dash["colaborador"].dropna().unique())
+        if not df_dash.empty:
+            lista_colaboradores = sorted(df_dash["colaborador"].dropna().unique())
+        else:
+            lista_colaboradores = ["Nenhum colaborador encontrado"]
     except Exception:
         lista_colaboradores = ["Nenhum colaborador encontrado"]
 
@@ -5139,7 +5148,7 @@ if st.session_state.get("pagina") == "parecer":
 
     # Busca o cargo correspondente ao colaborador selecionado no DataFrame df_dash
     cargo_padrao = "GESTOR DE DP"
-    if "df_dash" in locals() or "df_dash" in globals():
+    if not df_dash.empty:
         linha_colab = df_dash[df_dash["colaborador"] == nome_alvo]
         if not linha_colab.empty:
             cargo_padrao = str(linha_colab.iloc[0]["cargo"])
@@ -5149,6 +5158,7 @@ if st.session_state.get("pagina") == "parecer":
 
     if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
         with st.spinner("IA analisando nexo causal e eficiência..."):
+            
             # Certifique-se de que a função 'realizar_pericia_ia' está disponível no escopo
             if "realizar_pericia_ia" in globals():
                 resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
