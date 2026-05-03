@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 84.0,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento apresentado atende integralmente aos critérios de aderência, integridade e tempestividade. No entanto, apesar de fornecer um relatório detalhado de conformidade das notas fiscais analisadas, a prova não fornece evidências para todas as notas fiscais emitidas e recebidas no período. A amostragem está documentada, mas não cobre a totalidade das operações. Portanto, a completude é limitada, e há ausência de evidências que confirmem a conformidade de 100% das notas fiscais.",
+    "gap_de_conformidade": [
+        "Evidência documental que comprove a conformidade de todas as notas fiscais emitidas e recebidas, não apenas uma amostragem."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 9
+    },
+    "kpi_nome": "Conformidade Tributária das Notas Fiscais",
+    "colaborador": "MATHEUS VINICIUS VIRGINIO DA SILVA",
+    "relato_do_auditor": "Garantir a conformidade de 100% das notas fiscais emitidas e recebidas com a legislação tributária vigente, assegurando a consistência para cruzamento com declarações fiscais e evitando contingências fiscais ou trabalhistas."
+}
