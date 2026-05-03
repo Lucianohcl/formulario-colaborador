@@ -4663,7 +4663,7 @@ if st.session_state.get("pagina") == "parecer":
                     total_ia_diario = 0
 
                     for ativ, info in pop_ia.items():
-                        t, f = info['tempo'], info['freq'].upper()
+                        t, f = info.get('tempo', 0.0), info.get('freq', '').upper()
                         imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
                         total_ia_diario += imp
 
