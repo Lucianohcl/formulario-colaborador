@@ -926,6 +926,7 @@ if not st.session_state.logged_in and st.session_state.pagina != "formulario":
 st.sidebar.title("📌 Menu de Navegação")
 
 btn_home = st.sidebar.button("🏠 Home")
+btn_tutorial = st.sidebar.button("🎓 Tutorial")
 btn_analise = st.sidebar.button("📊 Análise Inteligente")
 btn_comparar = st.sidebar.button("⚖️ Comparar Colaboradores")
 btn_disc = st.sidebar.button("🧠 Perfil DISC")
@@ -943,6 +944,8 @@ pagina_anterior = st.session_state.pagina
 
 if btn_home:
     st.session_state.pagina = "home"
+elif btn_tutorial:
+    st.session_state.pagina = "tutorial"
 elif btn_analise:
     st.session_state.pagina = "analise"
 elif btn_comparar:
@@ -6416,4 +6419,31 @@ if st.session_state.pagina == "comparar":
             comparador_produtividade_por_cargo(df_dash)
     except Exception as e:
         st.error(f"Erro geral ao inicializar o comparador: {e}")
+
+
+
+if st.session_state.pagina == "tutorial":
+    st.title("🎓 Tutorial do Sistema")
+    st.markdown("---")
+    
+    import base64
+
+    with open("Tutorial_Sistema_Analise_Tarefas.pdf", "rb") as f:
+        pdf_bytes = f.read()
+
+    b64 = base64.b64encode(pdf_bytes).decode()
+    st.markdown(
+        f'<iframe src="data:application/pdf;base64,{b64}" '
+        f'width="100%" height="800px" type="application/pdf"></iframe>',
+        unsafe_allow_html=True
+    )
+
+    st.download_button(
+        label="⬇️ Baixar Tutorial em PDF",
+        data=pdf_bytes,
+        file_name="Tutorial_Sistema_Analise_Tarefas.pdf",
+        mime="application/pdf"
+    )
+
+
         
