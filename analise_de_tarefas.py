@@ -4774,6 +4774,7 @@ if st.session_state.get("pagina") == "parecer":
     # ==========================================================================
     with aba1:
         st.title("📋 POP Padrão — Visualização e Análise")
+        st.caption("ℹ️ Gera o POP padrão via IA com base no cargo, cruza com a realidade relatada e emite veredito de aderência e eficiência.")
         st.markdown("---")
 
         caminho_dados = "dados"
@@ -5065,6 +5066,7 @@ if st.session_state.get("pagina") == "parecer":
     # ==========================================================================
     with aba2:
         st.title("🧠 Diagnóstico de Performance Operacional")
+        st.caption("ℹ️ Analisa carga horária, desvios de função e emite parecer técnico sobre inconsistências operacionais.")
         st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
 
         arquivos_op = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
@@ -5119,6 +5121,7 @@ if st.session_state.get("pagina") == "parecer":
     # ==========================================================================
     with aba3:
         st.title("📊 Diagnóstico de Performance 360°")
+        st.caption("ℹ️ Cruza formação, DISC, carga e objetivo estratégico. Aponta burnout mascarado, delegação e foco imediato.")
         st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
 
         arquivos_360 = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
@@ -5192,6 +5195,7 @@ if st.session_state.get("pagina") == "parecer":
     # ==========================================================================
     with aba4:
         st.title("📊 Análise de Perfil e Eficiência Operacional")
+        st.caption("ℹ️ Gera laudo técnico unindo perfil DISC, competências e POP recomendado. Saída em HTML para download.")
 
         arquivos_perfil = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
         escolha_perfil = st.selectbox(
