@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 52,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação fornecida cumpre parcialmente o objetivo de garantir conformidade legislativa abaixo de 2%. Aderência adequada é observada, pois o documento enviado corresponde à solicitação de revisão de conformidade. A integridade é confirmada na correlação dos dados integrados entre o sistema ERP e o eSocial. Porém, há faltas significativas em completude, já que o relatório apresentado não abrange todos os eventos auditáveis, em especial as conciliações de eventos de afastamento e desligamento, e a ausência de segmentos adicionais que validam oficialmente o relatório com exemplos abrangentes para todo o mês analisado.",
+    "gap_de_conformidade": [
+        "A ausência de informações sobre eventos de afastamento (S-2230) e desligamento (S-2299) na documentação anexada.",
+        "Não há detalhes completos sobre o cruzamento subsequente e precavido dos valores em obrigações acessórias como DCTFweb e outros mencionados no relato."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 12
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
