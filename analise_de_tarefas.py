@@ -4542,27 +4542,25 @@ if st.session_state.pagina == "disc":
 st.markdown("---")
 
 
-
-
 import streamlit as st
 import pandas as pd
 import json
 import os
+import glob
+import base64
 from openai import OpenAI
 
-import streamlit as st
-
-
 if st.session_state.get("pagina") == "parecer":
+
+    # ==============================================================================
+    # FUNÇÕES (mantidas exatamente como estavam)
+    # ==============================================================================
 
     @st.cache_data(show_spinner=True)
     def buscar_benchmark_ia_estrategico(cargo, funcao, objetivo, qualificacoes):
         try:
             client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"].strip())
-            
             contexto_resumido = f"{objetivo[:700]}... Qualificações: {qualificacoes[:300]}"
-            
-            # PROMPT DE OURO: ENGENHARIA DE PROCESSOS E CRONOANÁLISE FORENSE
             prompt = f"""
             Aja como um Engenheiro de Processos Sênior e Especialista em Cronoanálise Forense.
             Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA DE CARGA HORÁRIA para o cargo '{cargo}' com foco em '{funcao}'.
@@ -4591,468 +4589,39 @@ if st.session_state.get("pagina") == "parecer":
 
             Pense passo a passo: Identifique as rotinas críticas, calcule o tempo em alta performance e ajuste os pesos para totalizar 480min de impacto diário.
             """
-
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[{"role": "system", "content": "Você é um auditor forense de processos sênior."},
-                        {"role": "user", "content": prompt}],
-                response_format={ "type": "json_object" }
+                          {"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             st.error(f"Erro na Inteligência: {e}")
             return None
 
-    # ==============================================================================
-    # 🛡️ MOTOR DE AUDITORIA NETEXAME: TRÍPTICO PERICIAL
-    # ==============================================================================
-
     @st.cache_data(show_spinner="Analisando dados e economizando créditos...")
     def processar_parecer_com_cache(dados_json_str):
-        """
-        Se o JSON for o mesmo, o Streamlit retorna o laudo da memória.
-        Custo: 0 créditos nas repetições.
-        """
-        # CHAME AQUI A SUA FUNÇÃO QUE CONECTA COM A OPENAI
-        # Certifique-se de que 'realizar_pericia_direta' existe no seu script
         return realizar_pericia_direta(dados_json_str)
 
-    def mostrar_pagina_parecer():
-        st.title("📋 POP Padrão — Visualização e Análise")
-        st.markdown("---")
-        
-        caminho_dados = "dados"
-        if not os.path.exists(caminho_dados):
-            st.error("Pasta de 'dados' não encontrada.")
-            return
-
-        arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
-        
-        if arquivos:
-            # No local do erro (linha 5339 do seu analise_de_tarefas.py)
-            colaborador_file = st.selectbox(
-                "🎯 Selecione o Alvo da Auditoria:", 
-                arquivos, 
-                key="selectbox_auditoria_forense_unique" # Isso mata o erro de duplicidade
+    @st.cache_data(show_spinner=False)
+    def realizar_pericia_direta(dados_json_str):
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Você é um Perito Forense em RH. Gere um laudo técnico focado em PERFIL e NEXO CAUSAL."},
+                    {"role": "user", "content": f"Una o Perfil DISC, as competências técnicas e os POPs necessários para este colaborador. Retorne APENAS um JSON com 'analise_perfil_nexo' (texto) e 'pop_estrategico' (texto): {dados_json_str}"}
+                ],
+                response_format={"type": "json_object"}
             )
-            
-            if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
-                st.session_state["laudo_ativo"] = True
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            return {"error": str(e)}
 
-            if st.session_state.get("laudo_ativo"):
-
-                with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
-                    colab = json.load(f)
-
-                # Execução do Cérebro IA
-                pop_ia = buscar_benchmark_ia_estrategico(
-                    colab['campos'].get('cargo', 'N/A').upper(),
-                    colab['campos'].get('funcao', 'GESTÃO').upper(),
-                    colab['campos'].get('objetivo', ''),
-                    colab['campos'].get('cursos', '')
-                )
-
-                if pop_ia:
-
-                    st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
-
-                    # =========================
-                    # CONSTRUÇÃO DA BASE (SEMPRE FRESCA DA IA)
-                    # =========================
-                    dados_ia = []
-                    total_ia_diario = 0
-
-                    for ativ, info in pop_ia.items():
-                        t, f = info.get('tempo', 0.0), info.get('freq', '').upper()
-                        imp = t if "DIÁRIA" in f else (t/5 if "SEMANAL" in f else t/22)
-                        total_ia_diario += imp
-
-                        dados_ia.append({
-                            "Atividade": ativ,
-                            "Freq": f,
-                            "Tempo Base": f"{t}m",
-                            "Impacto Diário Convertido": f"{imp:.1f}m",
-                            "Eficiência vs 480m": f"{(imp/480)*100:.1f}%",
-                            "Meta Auditável": info.get('meta', 'Não informada')
-                        })
-
-                    base = pd.DataFrame(dados_ia)
-
-                    # =========================
-                    # 🔥 CHAVE DO COLABORADOR
-                    # =========================
-                    colab_key = colaborador_file
-
-                    # =========================
-                    # RESET AO TROCAR COLABORADOR
-                    # =========================
-                    if st.session_state.get("colab_key") != colab_key:
-
-                        st.session_state["colab_key"] = colab_key
-
-                        st.session_state["df_pop_ia"] = base.copy()
-                        st.session_state["df_pop_ia_original"] = base.copy()
-
-                        st.rerun()
-
-                    # =========================
-                    # GARANTIA DE EXISTÊNCIA
-                    # =========================
-                    if "df_pop_ia" not in st.session_state:
-                        st.session_state["df_pop_ia"] = base.copy()
-
-                    if "df_pop_ia_original" not in st.session_state:
-                        st.session_state["df_pop_ia_original"] = base.copy()
-
-                    # =========================
-                    # EDITOR
-                    # =========================
-                    df_editavel = st.data_editor(
-                        st.session_state["df_pop_ia"],
-                        use_container_width=True,
-                        num_rows="dynamic",
-                        height=400,
-                        key=f"ed_pop_ia_{colab_key}"
-                    )
-
-                    st.session_state["df_pop_ia"] = df_editavel
-
-                    # =========================
-                    # RECALCULO
-                    # =========================
-                    df_calc = st.session_state["df_pop_ia"].copy()
-
-                    df_calc["Impacto Diário Convertido"] = (
-                        df_calc["Impacto Diário Convertido"]
-                        .astype(str)
-                        .str.replace("m", "", regex=False)
-                        .astype(float)
-                    )
-
-                    total = df_calc["Impacto Diário Convertido"].sum()
-                    eficiencia = (total / 480) * 100
-
-                    # =========================
-                    # MÉTRICAS
-                    # =========================
-                    c1, c2, c3 = st.columns(3)
-
-                    with c1:
-                        st.metric("Carga Alvo", "480 min")
-
-                    with c2:
-                        st.metric("Ocupação POP IA", f"{total:.1f} min")
-
-                    with c3:
-                        st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
-
-                    # =========================
-                    # BOTÃO (FORÇA REFRESH)
-                    # =========================
-                    if st.button("📊 Recalcular Eficiência", key=f"btn_recalc_pop_{colab_key}"):
-                        st.rerun()    
-
-
-                    # --- GERADOR DE HTML PARA DOWNLOAD ---
-                    html_content = f"""
-                    <html>
-                        <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
-                        <body style="font-family: sans-serif; padding: 20px;">
-                            <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
-
-                            <table border="1" style="border-collapse: collapse; width: 100%;">
-                                <tr style="background-color: #f2f2f2;">
-                                    <th>Atividade</th>
-                                    <th>Freq</th>
-                                    <th>Tempo Base</th>
-                                    <th>Impacto Diário</th>
-                                    <th>Eficiência</th>
-                                    <th>Meta Auditável</th>
-                                </tr>
-                    """
-
-                    for d in st.session_state["df_pop_ia"].to_dict("records"):
-                        html_content += f"""
-                                <tr>
-                                    <td>{d['Atividade']}</td>
-                                    <td>{d['Freq']}</td>
-                                    <td>{d['Tempo Base']}</td>
-                                    <td>{d['Impacto Diário Convertido']}</td>
-                                    <td>{d['Eficiência vs 480m']}</td>
-                                    <td>{d['Meta Auditável']}</td>
-                                </tr>
-                        """
-
-                    df_html = st.session_state["df_pop_ia"].copy()
-
-                    df_html["Impacto Diário Convertido"] = (
-                        df_html["Impacto Diário Convertido"]
-                        .astype(str)
-                        .str.replace("m", "", regex=False)
-                        .astype(float)
-                    )
-
-                    total_ia_diario = df_html["Impacto Diário Convertido"].sum()
-
-                    html_content += f"""
-                            </table>
-
-                            <p>
-                                <strong>Carga Alvo:</strong> 480 min |
-                                <strong>Ocupação:</strong> {total_ia_diario:.1f} min |
-                                <strong>Eficiência:</strong> {(total_ia_diario/480)*100:.1f}%
-                            </p>
-                        </body>
-                    </html>
-                    """
-
-                    st.download_button(
-                        label="📥 Baixar POP em HTML",
-                        data=html_content,
-                        file_name="pop_ia_netexame.html",
-                        mime="text/html"
-                    )
-
-                    # --------------------------------------------------------------
-                    # BLOCO 2: O SER (ATIVIDADES REALMENTE LISTADAS)
-                    # --------------------------------------------------------------
-                    st.header("📝 [B] Realidade Relatada (Análise de Esforço)")
-                    atividades_relatadas = colab['tabelas'].get('alta', []) + \
-                                        colab['tabelas'].get('normal', []) + \
-                                        colab['tabelas'].get('baixa', [])
-                    
-                    dados_reais = []
-                    total_real_diario = 0
-                    for item in atividades_relatadas:
-                        h = int(str(item.get('Horas', '0')).split()[0])
-                        m = int(str(item.get('Minutos', '0')).split()[0])
-                        t_bruto = (h * 60) + m
-                        f_real = item.get('Frequência', '').upper()
-                        
-                        # Normalização de frequência para cálculo
-                        if "D" in f_real: imp = t_bruto
-                        elif "S" in f_real: imp = t_bruto / 5
-                        elif "M" in f_real: imp = t_bruto / 22
-                        elif "T" in f_real: imp = t_bruto / 66
-                        elif "A" in f_real: imp = t_bruto / 264
-                        else: imp = 0
-                        
-                        total_real_diario += imp
-                        dados_reais.append({
-                            "Atividade Listada": item.get('Atividade'),
-                            "Freq": f_real,
-                            "Tempo Bruto": f"{t_bruto}m",
-                            "Tempo Diário Convertido": f"{imp:.1f}m",
-                            "Peso na Jornada": f"{(imp/480)*100:.1f}%"
-                        })
-                    
-                    r1, r2, r3 = st.columns(3)
-                    r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
-                    r2.metric("Eficiência Diária Alvo", f"{(total_real_diario/480)*100:.1f}%")
-                    r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
-                    st.table(pd.DataFrame(dados_reais))
-
-                    # --------------------------------------------------------------
-                    # BLOCO 3: O CRUZAMENTO (CONFRONTO E NEXO CAUSAL)
-                    # --------------------------------------------------------------
-                    st.header("⚖️ [C] Cruzamento e Veredito Pericial")
-
-                    confronto = []
-                    mapeadas = set()
-
-                    # =========================
-                    # GARANTE BASE CORRETA DO POP
-                    # =========================
-                    df_pop = st.session_state["df_pop_ia"].copy()
-
-                    df_pop["Impacto Diário Convertido"] = (
-                        df_pop["Impacto Diário Convertido"]
-                        .astype(str)
-                        .str.replace("m", "", regex=False)
-                        .astype(float)
-                    )
-
-                    pop_dict = df_pop.to_dict("records")
-
-                    # =========================
-                    # NORMALIZA REAL
-                    # =========================
-                    total_real_diario = 0
-
-                    for ativ_ia in pop_dict:
-
-                        ativ_nome = str(ativ_ia["Atividade"]).upper()
-                        imp_ia = float(str(ativ_ia["Impacto Diário Convertido"]))
-
-                        imp_real_vinculado = 0
-                        status = "❌ AUSENTE"
-                        chave = ativ_nome.split()[0].upper()
-
-                        for item in atividades_relatadas:
-                            desc = str(item.get('Atividade', '')).upper()
-
-                            if chave in desc:
-
-                                h = int(str(item.get('Horas', '0')).split()[0])
-                                m = int(str(item.get('Minutos', '0')).split()[0])
-
-                                t_b = (h * 60) + m
-                                f_r = item.get('Frequência', '').upper()
-
-                                imp_v = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
-
-                                imp_real_vinculado += imp_v
-                                total_real_diario += imp_v
-
-                                status = "✅ IDENTIFICADO"
-                                mapeadas.add(desc)
-
-                        confronto.append({
-                            "Atividade": ativ_nome,
-                            "Origem": "POP PADRÃO",
-                            "Impacto POP": f"{imp_ia:.1f}m",
-                            "Impacto Real": f"{imp_real_vinculado:.1f}m",
-                            "Divergência": f"{imp_real_vinculado - imp_ia:+.1f}m",
-                            "Status": status
-                        })
-
-                    # =========================
-                    # DESVIOS
-                    # =========================
-                    for item in atividades_relatadas:
-
-                        desc = str(item.get('Atividade', '')).upper()
-
-                        if desc not in mapeadas:
-
-                            h = int(str(item.get('Horas', '0')).split()[0])
-                            m = int(str(item.get('Minutos', '0')).split()[0])
-
-                            t_b = (h * 60) + m
-                            f_r = item.get('Frequência', '').upper()
-
-                            imp_extra = t_b if "D" in f_r else (t_b/5 if "S" in f_r else t_b/22)
-
-                            total_real_diario += imp_extra
-
-                            confronto.append({
-                                "Atividade": desc,
-                                "Origem": "DESVIO",
-                                "Impacto POP": "0.0m",
-                                "Impacto Real": f"{imp_extra:.1f}m",
-                                "Divergência": f"+{imp_extra:.1f}m",
-                                "Status": "⚠️ FORA DO PADRÃO"
-                            })
-
-                    # =========================
-                    # MÉTRICAS FINAIS
-                    # =========================
-                    f1, f2, f3 = st.columns(3)
-
-                    f1.metric(
-                        "Aderência ao Cargo",
-                        f"{(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}%"
-                    )
-
-                    f2.metric(
-                        "Perda/Ganho Eficiência",
-                        f"{(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min"
-                    )
-
-                    f3.metric(
-                        "Risco Operacional",
-                        "ALTO" if total_real_diario > 480 else "BAIXO"
-                    )
-
-                    st.table(pd.DataFrame(confronto))
-
-                    if st.button("📥 Gerar Relatório HTML do Cruzamento"):
-
-                        html_df = pd.DataFrame(confronto)
-
-                        html_content = f"""
-                        <html>
-                            <head><meta charset="UTF-8"><title>Veredito Pericial</title></head>
-                            <body style="font-family: sans-serif; padding: 20px;">
-                                <h2>⚖️ Cruzamento e Veredito Pericial</h2>
-
-                                <table border="1" style="border-collapse: collapse; width: 100%;">
-                                    <tr>
-                                        <th>Atividade</th>
-                                        <th>Origem</th>
-                                        <th>Impacto POP</th>
-                                        <th>Impacto Real</th>
-                                        <th>Divergência</th>
-                                        <th>Status</th>
-                                    </tr>
-                        """
-
-                        for d in html_df.to_dict("records"):
-                            html_content += f"""
-                                    <tr>
-                                        <td>{d['Atividade']}</td>
-                                        <td>{d['Origem']}</td>
-                                        <td>{d['Impacto POP']}</td>
-                                        <td>{d['Impacto Real']}</td>
-                                        <td>{d['Divergência']}</td>
-                                        <td>{d['Status']}</td>
-                                    </tr>
-                            """
-
-                        html_content += f"""
-                                </table>
-
-                                <p>
-                                    <strong>Aderência:</strong> {(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}% |
-                                    <strong>Diferença:</strong> {(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min |
-                                    <strong>Risco:</strong> {"ALTO" if total_real_diario > 480 else "BAIXO"}
-                                </p>
-                            </body>
-                        </html>
-                        """
-
-                        st.download_button(
-                            label="📥 Baixar Veredito em HTML",
-                            data=html_content,
-                            file_name="veredito_pericial.html",
-                            mime="text/html"
-                        )
-
-
-    # --- INICIALIZAÇÃO ---
-    if 'pagina' not in st.session_state:
-        st.session_state.pagina = "parecer"
-
-    mostrar_pagina_parecer()
-
-
-
-    import streamlit as st
-    import pandas as pd
-    import base64
-    import json
-    from openai import OpenAI
-
-    # ==============================================================================
-    # 1. CONFIGURAÇÕES INICIAIS E SEGURANÇA
-    # ==============================================================================
-    # Certifique-se de ter a chave nas configurações do Streamlit Cloud (Secrets)
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-    # Inicializa as variáveis no estado da sessão para evitar NameError
-    if 'resultado_parecer_gpt' not in st.session_state:
-        st.session_state['resultado_parecer_gpt'] = "Aguardando processamento da análise pericial..."
-
-    if 'analise_concluida' not in st.session_state:
-        st.session_state['analise_concluida'] = False
-
-    # ==============================================================================
-    # 2. MOTOR DE INTELIGÊNCIA FORENSE (OPENAI)
-    # ==============================================================================
     def realizar_pericia_ia(nome_colaborador, cargo, atividades_relatadas):
-        """
-        Chama o GPT-4o-mini para analisar o nexo causal e gerar o POP Universal.
-        """
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
         prompt = f"""
         Aja como um Auditor Forense de Processos Sênior. 
         Analise o cargo '{cargo}' para o colaborador '{nome_colaborador}'.
@@ -5073,7 +4642,6 @@ if st.session_state.get("pagina") == "parecer":
             ]
         }}
         """
-        
         try:
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
@@ -5081,318 +4649,17 @@ if st.session_state.get("pagina") == "parecer":
                     {"role": "system", "content": "Você é um auditor especializado em eficiência operacional e cronoanálise."},
                     {"role": "user", "content": prompt}
                 ],
-                response_format={ "type": "json_object" }
+                response_format={"type": "json_object"}
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             st.error(f"Erro na API da OpenAI: {e}")
             return None
 
-
-    # ==============================================================================
-    # 3. GERADOR DE ARTEFATOS (HTMLS SEPARADOS)
-    # ==============================================================================
-
-    def gerar_html_laudo_puro(nome_colab, parecer_ia):
-        """Gera o HTML contendo APENAS o cabeçalho e o parecer técnico (sem a tabela)."""
-        html = f"""
-        <html>
-        <head><meta charset="utf-8"><style>
-            body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
-            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
-            .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
-            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
-            footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
-        </style></head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🛡️ NetExame: Parecer Pericial</h1>
-                    <p>Análise Forense de Processos | Colaborador: {nome_colab}</p>
-                </div>
-                <h3>🔍 Diagnóstico Técnico Pericial</h3>
-                <div class="parecer">{parecer_ia}</div>
-                <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
-            </div>
-        </body>
-        </html>
-        """
-        return html
-
-# ==============================================================================
-# ======================== FIM DO BLOC0 =====================================
-# ==============================================================================
-    import streamlit as st
-    import glob
-    import os
-    import json
-
-    # ==============================================================================
-    # 4. INTERFACE E EXECUÇÃO
-    # ==============================================================================
-    st.title("🧠 Diagnóstico de Performance Operacional")
-    st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
-
-    # Busca arquivos JSON
-    arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-
-    if not arquivos:
-        st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
-    else:
-        # Mapeia os arquivos para o selectbox
-        lista_colab = {os.path.basename(f): f for f in arquivos}
-        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()), key="selectbox_auditoria_colaborador")
-
-        caminho_arquivo = lista_colab[escolha]
-
-        # Lê os dados do arquivo selecionado diretamente no sistema
-        try:
-            with open(caminho_arquivo, 'r', encoding='utf-8') as f:
-                dados_json = json.load(f)
-                
-            nome_alvo = dados_json.get("colaborador", escolha.replace(".json", ""))
-            campos = dados_json.get("campos", {})
-            cargo_padrao = campos.get("cargo", "GESTOR DE DP")
-        except Exception:
-            nome_alvo = escolha.replace(".json", "")
-            cargo_padrao = "GESTOR DE DP"
-
-        st.write(f"**Colaborador:** {nome_alvo}")
-        cargo_alvo = st.text_input("Cargo", value=cargo_padrao)
-        relato_exemplo = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
-
-        if st.button("🚀 INICIAR PERÍCIA TÉCNICA"):
-            with st.spinner("IA analisando nexo causal e eficiência..."):
-                
-                # Certifique-se de que a função 'realizar_pericia_ia' está disponível no escopo
-                if "realizar_pericia_ia" in globals():
-                    resultado = realizar_pericia_ia(nome_alvo, cargo_alvo, relato_exemplo)
-                else:
-                    resultado = None
-                    st.error("Erro: função 'realizar_pericia_ia' não encontrada.")
-                
-                if resultado:
-                    # SALVA NO ESTADO DA SESSÃO
-                    st.session_state['resultado_parecer_gpt'] = resultado['parecer_pericial']
-                    st.session_state['pop_universal_ia'] = resultado['pop_universal']
-                    st.session_state['analise_concluida'] = True
-                    
-                    st.success("Análise Concluída!")
-
-        # Exibe o parecer fora do bloco do botão para torná-lo persistente
-        if st.session_state.get('analise_concluida', False):
-            st.markdown(f"**Parecer:** {st.session_state['resultado_parecer_gpt']}")
-
-    # --- SEÇÃO DE DOWNLOAD DO LAUDO ---
-    if st.session_state['analise_concluida']:
-        st.markdown("---")
-        st.subheader("🏁 Finalização e Entrega")
-        
-        col1, col2 = st.columns(2)
-
-        with col1:
-            if st.button("📥 BAIXAR LAUDO PERICIAL"):
-                # HTML SEM O POP (Apenas Parecer e Cabeçalho)
-                html_laudo = gerar_html_laudo_puro(
-                    nome_alvo, 
-                    st.session_state['resultado_parecer_gpt']
-                )
-                b64 = base64.b64encode(html_laudo.encode('utf-8')).decode()
-                href = f'<a href="data:text/html;base64,{b64}" download="LAUDO_{nome_alvo}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
-                st.markdown(href, unsafe_allow_html=True)
-
-
-
-
-    import streamlit as st
-    import json
-    import os
-    import glob
-    from openai import OpenAI
-
-    # 1. SETUP E CONEXÃO
-    st.set_page_config(page_title="IA Auditor Pro 360", layout="wide")
-
-    # Inicializa o cliente OpenAI (Certifique-se de configurar a chave no Streamlit Secrets ou env)
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
-    def solicitar_pericia_360(dados):
-        """
-        O Cérebro do Sistema: Envia o JSON e recebe o laudo estratégico.
-        """
-        prompt = f"""
-        ESTRUTURA DE DADOS BRUTOS:
-        {json.dumps(dados, indent=2, ensure_ascii=False)}
-
-        SUA MISSÃO: Realizar uma perícia técnica 360° (Consultor Sênior).
-        
-        CRUZAMENTOS OBRIGATÓRIOS:
-        1. FORMAÇÃO vs. OPERAÇÃO: O colaborador tem cursos de Pós e Especializações (ver em 'cursos') mas gasta tempo em tarefas de 'baixa' complexidade?
-        2. ANÁLISE DE CARGA (MATEMÁTICA): Some os tempos e frequências. Se ultrapassar 480 min/dia e ele disse 'nenhuma dificuldade', identifique o risco de Burnout Mascarado.
-        3. HIBRIDISMO DISC: Analise se o perfil é híbrido (ex: A com D). Explique como isso gera conflito entre 'entrega rápida' e 'perfeccionismo exagerado'.
-        4. ALINHAMENTO ESTRATÉGICO: O 'Objetivo' dele condiz com as tarefas de 'Alta' ou ele é um gestor sequestrado pelo operacional?
-        5. VEREDITO: O que ele deve DELEGAR, PARAR e FOCO IMEDIATO.
-
-        SAÍDA: Use Markdown, seja direto, crítico e focado em ROI humano.
-        """
-
-        response = client.chat.completions.create(
-            model="gpt-4o", # Ou gpt-4-turbo
-            messages=[
-                {"role": "system", "content": "Você é um Auditor Forense de Performance Humana."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.2
-        )
-        return response.choices[0].message.content
-
-    # 2. INTERFACE UNIVERSAL
-    def main():
-        st.title("📊 Diagnóstico de Performance 360°")
-        st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
-
-        # Busca arquivos JSON
-        arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-        
-        if not arquivos:
-            st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
-            return
-
-        lista_colab = {os.path.basename(f): f for f in arquivos}
-        escolha = st.selectbox("🎯 Selecione o Colaborador para Auditoria:", list(lista_colab.keys()))
-
-        if escolha:
-            with open(lista_colab[escolha], "r", encoding="utf-8") as f:
-                dados_lidos = json.load(f)
-                
-                # Layout de colunas para dados rápidos
-                c1, c2, c3 = st.columns(3)
-                c1.metric("Colaborador", dados_lidos.get('colaborador'))
-                c2.metric("Cargo", dados_lidos.get('campos', {}).get('cargo'))
-                c3.metric("Unidade", dados_lidos.get('campos', {}).get('unidade'))
-
-                if st.button("🚀 GERAR LAUDO FORENSE 360°"):
-                    with st.spinner("IA processando cruzamento de dados..."):
-                        laudo = solicitar_pericia_360(dados_lidos)
-                        st.divider()
-                        st.markdown(laudo)
-                        
-                        # 1. Botão Original (Markdown)
-                        st.download_button(
-                            "Exportar Laudo (.md)", 
-                            laudo, 
-                            file_name=f"pericia_{dados_lidos.get('colaborador')}.md"
-                        )
-
-                        # 2. SEU NOVO BOTÃO HTML (Agora protegido dentro do IF)
-                        html_template = f"""
-                        <!DOCTYPE html>
-                        <html lang="pt-BR">
-                        <head>
-                            <meta charset="UTF-8">
-                            <style>
-                                body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
-                                h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
-                                table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                                th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
-                                th {{ background-color: #ecf0f1; font-weight: bold; }}
-                                .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
-                            </style>
-                        </head>
-                        <body>
-                            {laudo.replace('\n', '<br>')}
-                            <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
-                        </body>
-                        </html>
-                        """
-                        
-                        st.download_button(
-                            label="🌐 Exportar em HTML (Visual Profissional)",
-                            data=html_template,
-                            file_name=f"pericia_{dados_lidos.get('colaborador', 'doc')}.html",
-                            mime="text/html",
-                            use_container_width=True
-                        )
-
-
-    if __name__ == "__main__":
-        main()
-
-                
-
-    # ==============================================================================
-    # 🧠 MOTOR DE INTELIGÊNCIA: PERÍCIA FORENSE 360° (NEXO CAUSAL TOTAL)
-    # ==============================================================================
-    @st.cache_data(show_spinner="Recuperando perícia do cache...")
-    def realizar_super_pericia_ia(dados):
-        """
-        Realiza a auditoria cruzada: JSON + Benchmark + Nexo Causal + DISC.
-        """
-        # Preparação dos dados para o Prompt
-        contexto_dados = json.dumps(dados, indent=2, ensure_ascii=False)
-        
-        prompt = f"""
-        Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
-        Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
-
-        DADOS BRUTOS DO ALVO:
-        {contexto_dados}
-
-        SUA AUDITORIA DEVE CRUZAR OBRIGATORIAMENTE:
-        1. NEXO CAUSAL: O Objetivo do cargo condiz com as tarefas de 'Alta' complexidade relatadas? 
-        2. CAPACIDADE vs. ENTREGA: O colaborador possui cursos de Pós/Especialização (ver em 'cursos') que estão sendo desperdiçados em tarefas operacionais?
-        3. HIBRIDISMO COMPORTAMENTAL: Analise o DISC. Como o perfil (Ex: Dominante/Conformidade) impacta a velocidade e a precisão nestas tarefas?
-        4. CRONOANÁLISE CRÍTICA: Se a soma das tarefas (D/S/M) converter para mais de 480min/dia, aponte risco de Burnout Mascarado e Erro Forense.
-        5. VEREDITO ESTRATÉGICO: O que ele deve PARAR de fazer, o que deve DELEGAR e onde deve ser o FOCO IMEDIATO.
-
-        FORMATO DE SAÍDA (ESTRITAMENTE JSON):
-        {{
-            "parecer_executivo": "Texto profundo, crítico e técnico (estilo consultoria sênior) detalhando os desvios e o nexo causal.",
-            "pop_benchmark": [
-                {{"Atividade": "Nome da Tarefa", "Freq": "D/S/M", "Tempo": "X min", "Meta": "KPI de Sucesso"}}
-            ],
-            "veredito_final": "Resumo executivo do plano de ação."
-        }}
-        """
-        
-        try:
-            client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "system", "content": "Você é um auditor sênior especializado em eficiência operacional e capital humano."},
-                    {"role": "user", "content": prompt}
-                ],
-                response_format={ "type": "json_object" },
-                temperature=0.3
-            )
-            return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            st.error(f"Erro na Perícia IA: {e}")
-            return None
-
-
-
-    import streamlit as st
-    import pandas as pd
-    import json
-    import os
-    import glob
-    import base64
-    from openai import OpenAI
-
-    # ==============================================================================
-    # 1. SETUP E MOTOR DE INTELIGÊNCIA (NEXO CAUSAL 360°)
-    # ==============================================================================
-    client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-
     @st.cache_data(show_spinner="Consultando base de dados e IA...", ttl=86400)
     def realizar_super_pericia_ia(dados):
-        """
-        O Cérebro do Sistema: Cruza JSON, Benchmark e Gera Parecer Forense.
-        """
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
         contexto_puro = json.dumps(dados, indent=2, ensure_ascii=False)
-        
         prompt = f"""
         Aja como um Perito Auditor Forense e Engenheiro de Processos Sênior. 
         Sua missão é realizar uma DECOMPOSIÇÃO ESTRATÉGICA E ANÁLISE DE NEXO CAUSAL.
@@ -5420,53 +4687,44 @@ if st.session_state.get("pagina") == "parecer":
             response = client.chat.completions.create(
                 model="gpt-4o",
                 messages=[{"role": "system", "content": "Você é um auditor sênior."},
-                        {"role": "user", "content": prompt}],
-                response_format={ "type": "json_object" }
+                          {"role": "user", "content": prompt}],
+                response_format={"type": "json_object"}
             )
             return json.loads(response.choices[0].message.content)
         except Exception as e:
             st.error(f"Erro na IA: {e}")
             return None
 
+    def gerar_html_laudo_puro(nome_colab, parecer_ia):
+        html = f"""
+        <html>
+        <head><meta charset="utf-8"><style>
+            body {{ font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 40px; color: #333; }}
+            .container {{ background: white; padding: 40px; border-radius: 15px; max-width: 900px; margin: auto; border-top: 10px solid #d90429; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }}
+            .header {{ background: #0d1b2a; color: white; padding: 20px; border-radius: 8px; margin-bottom: 30px; }}
+            .parecer {{ background: #fff5f5; border-left: 5px solid #d90429; padding: 25px; border-radius: 0 8px 8px 0; font-style: italic; line-height: 1.6; }}
+            footer {{ text-align: center; font-size: 11px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }}
+        </style></head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🛡️ NetExame: Parecer Pericial</h1>
+                    <p>Análise Forense de Processos | Colaborador: {nome_colab}</p>
+                </div>
+                <h3>🔍 Diagnóstico Técnico Pericial</h3>
+                <div class="parecer">{parecer_ia}</div>
+                <footer>Gerado por NetExame Auditoria & IA Forense 2026</footer>
+            </div>
+        </body>
+        </html>
+        """
+        return html
 
-
-    import streamlit as st
-    import json
-    import glob
-    import base64
-    from openai import OpenAI
-
-    # ==============================================================================
-    # 1. MOTOR DE PERÍCIA (RESILIENTE)
-    # ==============================================================================
-    @st.cache_data(show_spinner=False)
-    def realizar_pericia_direta(dados_json_str):
-        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
-        
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "Você é um Perito Forense em RH. Gere um laudo técnico focado em PERFIL e NEXO CAUSAL."},
-                    {"role": "user", "content": f"Una o Perfil DISC, as competências técnicas e os POPs necessários para este colaborador. Retorne APENAS um JSON com 'analise_perfil_nexo' (texto) e 'pop_estrategico' (texto): {dados_json_str}"}
-                ],
-                response_format={ "type": "json_object" }
-            )
-            return json.loads(response.choices[0].message.content)
-        except Exception as e:
-            return {"error": str(e)}
-
-    # ==============================================================================
-    # 2. GERADOR DE HTML (ESTRUTURA LIMPA)
-    # ==============================================================================
     def construir_html_pericial(dados, analise_ia):
         nome = dados.get('colaborador', 'N/A')
         cargo = dados.get('campos', {}).get('cargo', 'N/A').upper()
-        
-        # Pegando os textos da IA com proteção contra None
         corpo_laudo = analise_ia.get('analise_perfil_nexo', 'Dados de análise não disponíveis.')
         pop_texto = analise_ia.get('pop_estrategico', 'POP não definido.')
-
         return f"""
         <html>
         <head><meta charset="UTF-8">
@@ -5483,13 +4741,10 @@ if st.session_state.get("pagina") == "parecer":
             <div class="container">
                 <h1>LAUDO TÉCNICO: {nome}</h1>
                 <p><strong>CARGO:</strong> {cargo} | <strong>AUDITORIA DE PROCESSO</strong></p>
-                
                 <div class="section-title">I. ANÁLISE COMPORTAMENTAL E NEXO CAUSAL</div>
                 <div class="content">{corpo_laudo}</div>
-                
                 <div class="section-title">II. DIRETRIZES DE POP (PROCEDIMENTO OPERACIONAL PADRÃO)</div>
                 <div class="content">{pop_texto}</div>
-                
                 <div class="footer">Documento gerado para fins de auditoria interna e otimização de processos.</div>
             </div>
         </body>
@@ -5497,32 +4752,472 @@ if st.session_state.get("pagina") == "parecer":
         """
 
     # ==============================================================================
-    # 3. INTERFACE
+    # INICIALIZAÇÃO DE SESSION STATE
     # ==============================================================================
-    def main():
+    if 'resultado_parecer_gpt' not in st.session_state:
+        st.session_state['resultado_parecer_gpt'] = "Aguardando processamento da análise pericial..."
+    if 'analise_concluida' not in st.session_state:
+        st.session_state['analise_concluida'] = False
+
+    # ==============================================================================
+    # LAYOUT PRINCIPAL COM ABAS
+    # ==============================================================================
+    aba1, aba2, aba3, aba4 = st.tabs([
+        "📚 POP Padrão — Visualização e Análise",
+        "🧠 Diagnóstico de Performance Operacional",
+        "📊 Diagnóstico de Performance 360°",
+        "🔍 Análise de Perfil e Eficiência Operacional"
+    ])
+
+    # ==========================================================================
+    # ABA 1: POP Padrão — Visualização e Análise
+    # ==========================================================================
+    with aba1:
+        st.title("📋 POP Padrão — Visualização e Análise")
+        st.markdown("---")
+
+        caminho_dados = "dados"
+        if not os.path.exists(caminho_dados):
+            st.error("Pasta de 'dados' não encontrada.")
+        else:
+            arquivos = [f for f in os.listdir(caminho_dados) if f.endswith('.json')]
+
+            if arquivos:
+                colaborador_file = st.selectbox(
+                    "🎯 Selecione o Alvo da Auditoria:",
+                    arquivos,
+                    key="selectbox_auditoria_forense_unique"
+                )
+
+                if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
+                    st.session_state["laudo_ativo"] = True
+
+                if st.session_state.get("laudo_ativo"):
+                    with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
+                        colab = json.load(f)
+
+                    pop_ia = buscar_benchmark_ia_estrategico(
+                        colab['campos'].get('cargo', 'N/A').upper(),
+                        colab['campos'].get('funcao', 'GESTÃO').upper(),
+                        colab['campos'].get('objetivo', ''),
+                        colab['campos'].get('cursos', '')
+                    )
+
+                    if pop_ia:
+                        st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
+
+                        dados_ia = []
+                        total_ia_diario = 0
+
+                        for ativ, info in pop_ia.items():
+                            t, f = info.get('tempo', 0.0), info.get('freq', '').upper()
+                            imp = t if "DIÁRIA" in f else (t / 5 if "SEMANAL" in f else t / 22)
+                            total_ia_diario += imp
+                            dados_ia.append({
+                                "Atividade": ativ,
+                                "Freq": f,
+                                "Tempo Base": f"{t}m",
+                                "Impacto Diário Convertido": f"{imp:.1f}m",
+                                "Eficiência vs 480m": f"{(imp / 480) * 100:.1f}%",
+                                "Meta Auditável": info.get('meta', 'Não informada')
+                            })
+
+                        base = pd.DataFrame(dados_ia)
+                        colab_key = colaborador_file
+
+                        if st.session_state.get("colab_key") != colab_key:
+                            st.session_state["colab_key"] = colab_key
+                            st.session_state["df_pop_ia"] = base.copy()
+                            st.session_state["df_pop_ia_original"] = base.copy()
+                            st.rerun()
+
+                        if "df_pop_ia" not in st.session_state:
+                            st.session_state["df_pop_ia"] = base.copy()
+                        if "df_pop_ia_original" not in st.session_state:
+                            st.session_state["df_pop_ia_original"] = base.copy()
+
+                        df_editavel = st.data_editor(
+                            st.session_state["df_pop_ia"],
+                            use_container_width=True,
+                            num_rows="dynamic",
+                            height=400,
+                            key=f"ed_pop_ia_{colab_key}"
+                        )
+                        st.session_state["df_pop_ia"] = df_editavel
+
+                        df_calc = st.session_state["df_pop_ia"].copy()
+                        df_calc["Impacto Diário Convertido"] = (
+                            df_calc["Impacto Diário Convertido"]
+                            .astype(str)
+                            .str.replace("m", "", regex=False)
+                            .astype(float)
+                        )
+                        total = df_calc["Impacto Diário Convertido"].sum()
+                        eficiencia = (total / 480) * 100
+
+                        c1, c2, c3 = st.columns(3)
+                        with c1:
+                            st.metric("Carga Alvo", "480 min")
+                        with c2:
+                            st.metric("Ocupação POP IA", f"{total:.1f} min")
+                        with c3:
+                            st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
+
+                        if st.button("📊 Recalcular Eficiência", key=f"btn_recalc_pop_{colab_key}"):
+                            st.rerun()
+
+                        html_content = f"""
+                        <html>
+                            <head><meta charset="UTF-8"><title>POP Padrão IA</title></head>
+                            <body style="font-family: sans-serif; padding: 20px;">
+                                <h2>📚 [A] POP Padrão IA (Carga Diária 480m)</h2>
+                                <table border="1" style="border-collapse: collapse; width: 100%;">
+                                    <tr style="background-color: #f2f2f2;">
+                                        <th>Atividade</th><th>Freq</th><th>Tempo Base</th>
+                                        <th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
+                                    </tr>
+                        """
+                        for d in st.session_state["df_pop_ia"].to_dict("records"):
+                            html_content += f"""
+                                    <tr>
+                                        <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
+                                        <td>{d['Impacto Diário Convertido']}</td><td>{d['Eficiência vs 480m']}</td>
+                                        <td>{d['Meta Auditável']}</td>
+                                    </tr>
+                            """
+
+                        df_html = st.session_state["df_pop_ia"].copy()
+                        df_html["Impacto Diário Convertido"] = (
+                            df_html["Impacto Diário Convertido"]
+                            .astype(str).str.replace("m", "", regex=False).astype(float)
+                        )
+                        total_ia_diario = df_html["Impacto Diário Convertido"].sum()
+
+                        html_content += f"""
+                                </table>
+                                <p>
+                                    <strong>Carga Alvo:</strong> 480 min |
+                                    <strong>Ocupação:</strong> {total_ia_diario:.1f} min |
+                                    <strong>Eficiência:</strong> {(total_ia_diario / 480) * 100:.1f}%
+                                </p>
+                            </body>
+                        </html>
+                        """
+                        st.download_button(
+                            label="📥 Baixar POP em HTML",
+                            data=html_content,
+                            file_name="pop_ia_netexame.html",
+                            mime="text/html"
+                        )
+
+                        st.header("📝 [B] Realidade Relatada (Análise de Esforço)")
+                        atividades_relatadas = (
+                            colab['tabelas'].get('alta', []) +
+                            colab['tabelas'].get('normal', []) +
+                            colab['tabelas'].get('baixa', [])
+                        )
+
+                        dados_reais = []
+                        total_real_diario = 0
+                        for item in atividades_relatadas:
+                            h = int(str(item.get('Horas', '0')).split()[0])
+                            m = int(str(item.get('Minutos', '0')).split()[0])
+                            t_bruto = (h * 60) + m
+                            f_real = item.get('Frequência', '').upper()
+
+                            if "D" in f_real: imp = t_bruto
+                            elif "S" in f_real: imp = t_bruto / 5
+                            elif "M" in f_real: imp = t_bruto / 22
+                            elif "T" in f_real: imp = t_bruto / 66
+                            elif "A" in f_real: imp = t_bruto / 264
+                            else: imp = 0
+
+                            total_real_diario += imp
+                            dados_reais.append({
+                                "Atividade Listada": item.get('Atividade'),
+                                "Freq": f_real,
+                                "Tempo Bruto": f"{t_bruto}m",
+                                "Tempo Diário Convertido": f"{imp:.1f}m",
+                                "Peso na Jornada": f"{(imp / 480) * 100:.1f}%"
+                            })
+
+                        r1, r2, r3 = st.columns(3)
+                        r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
+                        r2.metric("Eficiência Diária Alvo", f"{(total_real_diario / 480) * 100:.1f}%")
+                        r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
+                        st.table(pd.DataFrame(dados_reais))
+
+                        st.header("⚖️ [C] Cruzamento e Veredito Pericial")
+
+                        confronto = []
+                        mapeadas = set()
+
+                        df_pop = st.session_state["df_pop_ia"].copy()
+                        df_pop["Impacto Diário Convertido"] = (
+                            df_pop["Impacto Diário Convertido"]
+                            .astype(str).str.replace("m", "", regex=False).astype(float)
+                        )
+                        pop_dict = df_pop.to_dict("records")
+
+                        total_real_diario = 0
+                        for ativ_ia in pop_dict:
+                            ativ_nome = str(ativ_ia["Atividade"]).upper()
+                            imp_ia = float(str(ativ_ia["Impacto Diário Convertido"]))
+                            imp_real_vinculado = 0
+                            status = "❌ AUSENTE"
+                            chave = ativ_nome.split()[0].upper()
+
+                            for item in atividades_relatadas:
+                                desc = str(item.get('Atividade', '')).upper()
+                                if chave in desc:
+                                    h = int(str(item.get('Horas', '0')).split()[0])
+                                    m = int(str(item.get('Minutos', '0')).split()[0])
+                                    t_b = (h * 60) + m
+                                    f_r = item.get('Frequência', '').upper()
+                                    imp_v = t_b if "D" in f_r else (t_b / 5 if "S" in f_r else t_b / 22)
+                                    imp_real_vinculado += imp_v
+                                    total_real_diario += imp_v
+                                    status = "✅ IDENTIFICADO"
+                                    mapeadas.add(desc)
+
+                            confronto.append({
+                                "Atividade": ativ_nome,
+                                "Origem": "POP PADRÃO",
+                                "Impacto POP": f"{imp_ia:.1f}m",
+                                "Impacto Real": f"{imp_real_vinculado:.1f}m",
+                                "Divergência": f"{imp_real_vinculado - imp_ia:+.1f}m",
+                                "Status": status
+                            })
+
+                        for item in atividades_relatadas:
+                            desc = str(item.get('Atividade', '')).upper()
+                            if desc not in mapeadas:
+                                h = int(str(item.get('Horas', '0')).split()[0])
+                                m = int(str(item.get('Minutos', '0')).split()[0])
+                                t_b = (h * 60) + m
+                                f_r = item.get('Frequência', '').upper()
+                                imp_extra = t_b if "D" in f_r else (t_b / 5 if "S" in f_r else t_b / 22)
+                                total_real_diario += imp_extra
+                                confronto.append({
+                                    "Atividade": desc,
+                                    "Origem": "DESVIO",
+                                    "Impacto POP": "0.0m",
+                                    "Impacto Real": f"{imp_extra:.1f}m",
+                                    "Divergência": f"+{imp_extra:.1f}m",
+                                    "Status": "⚠️ FORA DO PADRÃO"
+                                })
+
+                        f1, f2, f3 = st.columns(3)
+                        f1.metric(
+                            "Aderência ao Cargo",
+                            f"{(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}%"
+                        )
+                        f2.metric(
+                            "Perda/Ganho Eficiência",
+                            f"{(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min"
+                        )
+                        f3.metric(
+                            "Risco Operacional",
+                            "ALTO" if total_real_diario > 480 else "BAIXO"
+                        )
+                        st.table(pd.DataFrame(confronto))
+
+                        if st.button("📥 Gerar Relatório HTML do Cruzamento"):
+                            html_df = pd.DataFrame(confronto)
+                            html_content = f"""
+                            <html>
+                                <head><meta charset="UTF-8"><title>Veredito Pericial</title></head>
+                                <body style="font-family: sans-serif; padding: 20px;">
+                                    <h2>⚖️ Cruzamento e Veredito Pericial</h2>
+                                    <table border="1" style="border-collapse: collapse; width: 100%;">
+                                        <tr>
+                                            <th>Atividade</th><th>Origem</th><th>Impacto POP</th>
+                                            <th>Impacto Real</th><th>Divergência</th><th>Status</th>
+                                        </tr>
+                            """
+                            for d in html_df.to_dict("records"):
+                                html_content += f"""
+                                        <tr>
+                                            <td>{d['Atividade']}</td><td>{d['Origem']}</td>
+                                            <td>{d['Impacto POP']}</td><td>{d['Impacto Real']}</td>
+                                            <td>{d['Divergência']}</td><td>{d['Status']}</td>
+                                        </tr>
+                                """
+                            html_content += f"""
+                                    </table>
+                                    <p>
+                                        <strong>Aderência:</strong> {(df_pop['Impacto Diário Convertido'].sum() / total_real_diario * 100) if total_real_diario > 0 else 0:.1f}% |
+                                        <strong>Diferença:</strong> {(df_pop['Impacto Diário Convertido'].sum() - total_real_diario):+.1f} min |
+                                        <strong>Risco:</strong> {"ALTO" if total_real_diario > 480 else "BAIXO"}
+                                    </p>
+                                </body>
+                            </html>
+                            """
+                            st.download_button(
+                                label="📥 Baixar Veredito em HTML",
+                                data=html_content,
+                                file_name="veredito_pericial.html",
+                                mime="text/html"
+                            )
+
+    # ==========================================================================
+    # ABA 2: Diagnóstico de Performance Operacional
+    # ==========================================================================
+    with aba2:
+        st.title("🧠 Diagnóstico de Performance Operacional")
+        st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
+
+        arquivos_op = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+
+        if not arquivos_op:
+            st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
+        else:
+            lista_colab_op = {os.path.basename(f): f for f in arquivos_op}
+            escolha_op = st.selectbox(
+                "🎯 Selecione o Colaborador para Auditoria:",
+                list(lista_colab_op.keys()),
+                key="selectbox_auditoria_colaborador"
+            )
+            caminho_arquivo_op = lista_colab_op[escolha_op]
+
+            try:
+                with open(caminho_arquivo_op, 'r', encoding='utf-8') as f:
+                    dados_json_op = json.load(f)
+                nome_alvo_op = dados_json_op.get("colaborador", escolha_op.replace(".json", ""))
+                campos_op = dados_json_op.get("campos", {})
+                cargo_padrao_op = campos_op.get("cargo", "GESTOR DE DP")
+            except Exception:
+                nome_alvo_op = escolha_op.replace(".json", "")
+                cargo_padrao_op = "GESTOR DE DP"
+
+            st.write(f"**Colaborador:** {nome_alvo_op}")
+            cargo_alvo_op = st.text_input("Cargo", value=cargo_padrao_op, key="cargo_input_op")
+            relato_exemplo_op = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
+
+            if st.button("🚀 INICIAR PERÍCIA TÉCNICA", key="btn_pericia_op"):
+                with st.spinner("IA analisando nexo causal e eficiência..."):
+                    resultado_op = realizar_pericia_ia(nome_alvo_op, cargo_alvo_op, relato_exemplo_op)
+                    if resultado_op:
+                        st.session_state['resultado_parecer_gpt'] = resultado_op['parecer_pericial']
+                        st.session_state['pop_universal_ia'] = resultado_op['pop_universal']
+                        st.session_state['analise_concluida'] = True
+                        st.success("Análise Concluída!")
+
+            if st.session_state.get('analise_concluida', False):
+                st.markdown(f"**Parecer:** {st.session_state['resultado_parecer_gpt']}")
+                st.markdown("---")
+                st.subheader("🏁 Finalização e Entrega")
+
+                if st.button("📥 BAIXAR LAUDO PERICIAL", key="btn_download_op"):
+                    html_laudo_op = gerar_html_laudo_puro(nome_alvo_op, st.session_state['resultado_parecer_gpt'])
+                    b64_op = base64.b64encode(html_laudo_op.encode('utf-8')).decode()
+                    href_op = f'<a href="data:text/html;base64,{b64_op}" download="LAUDO_{nome_alvo_op}.html" style="text-decoration:none;"><button style="background-color:#d90429;color:white;padding:15px;border:none;border-radius:10px;cursor:pointer;font-weight:bold;width:100%;">📄 BAIXAR PARECER</button></a>'
+                    st.markdown(href_op, unsafe_allow_html=True)
+
+    # ==========================================================================
+    # ABA 3: Diagnóstico de Performance 360°
+    # ==========================================================================
+    with aba3:
+        st.title("📊 Diagnóstico de Performance 360°")
+        st.info("Este sistema analisa o DNA do colaborador: Formação, Tempo, Objetivo e Comportamento.")
+
+        arquivos_360 = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+
+        if not arquivos_360:
+            st.warning("📂 Nenhum JSON encontrado. Salve os dados na pasta /dados.")
+        else:
+            lista_colab_360 = {os.path.basename(f): f for f in arquivos_360}
+            escolha_360 = st.selectbox(
+                "🎯 Selecione o Colaborador para Auditoria:",
+                list(lista_colab_360.keys()),
+                key="selectbox_360"
+            )
+
+            if escolha_360:
+                with open(lista_colab_360[escolha_360], "r", encoding="utf-8") as f:
+                    dados_360 = json.load(f)
+
+                c1, c2, c3 = st.columns(3)
+                c1.metric("Colaborador", dados_360.get('colaborador'))
+                c2.metric("Cargo", dados_360.get('campos', {}).get('cargo'))
+                c3.metric("Unidade", dados_360.get('campos', {}).get('unidade'))
+
+                if st.button("🚀 GERAR LAUDO FORENSE 360°", key="btn_360"):
+                    with st.spinner("IA processando cruzamento de dados..."):
+                        resultado_360 = realizar_super_pericia_ia(dados_360)
+                        if resultado_360:
+                            laudo_360 = resultado_360.get('parecer_executivo', '')
+                            st.divider()
+                            st.markdown(laudo_360)
+
+                            st.download_button(
+                                "Exportar Laudo (.md)",
+                                laudo_360,
+                                file_name=f"pericia_{dados_360.get('colaborador')}.md",
+                                key="dl_md_360"
+                            )
+
+                            html_template_360 = f"""
+                            <!DOCTYPE html>
+                            <html lang="pt-BR">
+                            <head>
+                                <meta charset="UTF-8">
+                                <style>
+                                    body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
+                                    h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
+                                    table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                                    th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
+                                    th {{ background-color: #ecf0f1; font-weight: bold; }}
+                                    .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
+                                </style>
+                            </head>
+                            <body>
+                                {laudo_360.replace(chr(10), '<br>')}
+                                <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
+                            </body>
+                            </html>
+                            """
+
+                            st.download_button(
+                                label="🌐 Exportar em HTML (Visual Profissional)",
+                                data=html_template_360,
+                                file_name=f"pericia_{dados_360.get('colaborador', 'doc')}.html",
+                                mime="text/html",
+                                use_container_width=True,
+                                key="dl_html_360"
+                            )
+
+    # ==========================================================================
+    # ABA 4: Análise de Perfil e Eficiência Operacional
+    # ==========================================================================
+    with aba4:
         st.title("📊 Análise de Perfil e Eficiência Operacional")
-        
-        arquivos = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
-        escolha = st.selectbox("🎯 Selecionar Perfil:", arquivos)
 
-        if escolha:
-            with open(escolha, 'r', encoding='utf-8') as f:
-                dados_alvo = json.load(f)
+        arquivos_perfil = glob.glob("**/dados/*.json", recursive=True) + glob.glob("*.json")
+        escolha_perfil = st.selectbox(
+            "🎯 Selecionar Perfil:",
+            arquivos_perfil,
+            key="selectbox_perfil"
+        )
 
-            if st.button("🚀 GERAR PERÍCIA TÉCNICA", use_container_width=True):
-                dados_str = json.dumps(dados_alvo, ensure_ascii=False)
-                
+        if escolha_perfil:
+            with open(escolha_perfil, 'r', encoding='utf-8') as f:
+                dados_perfil = json.load(f)
+
+            if st.button("🚀 GERAR PERÍCIA TÉCNICA", use_container_width=True, key="btn_perfil"):
+                dados_str_perfil = json.dumps(dados_perfil, ensure_ascii=False)
+
                 with st.spinner("Correlacionando Perfil e Processos..."):
-                    resultado = realizar_pericia_direta(dados_str)
-                    
-                    if "error" not in resultado:
-                        html_final = construir_html_pericial(dados_alvo, resultado)
-                        b64 = base64.b64encode(html_final.encode('utf-8')).decode()
-                        nome_colab = dados_alvo.get('colaborador')
-                        
+                    resultado_perfil = realizar_pericia_direta(dados_str_perfil)
+
+                    if "error" not in resultado_perfil:
+                        html_final_perfil = construir_html_pericial(dados_perfil, resultado_perfil)
+                        b64_perfil = base64.b64encode(html_final_perfil.encode('utf-8')).decode()
+                        nome_colab_perfil = dados_perfil.get('colaborador')
+
                         st.markdown(f'''
                             <div style="text-align:center; margin-top:20px;">
-                                <a href="data:text/html;base64,{b64}" download="PERICIA_{nome_colab}.html">
+                                <a href="data:text/html;base64,{b64_perfil}" download="PERICIA_{nome_colab_perfil}.html">
                                     <button style="background:#d90429; color:white; padding:20px; border-radius:12px; cursor:pointer; width:100%; font-weight:bold; border:none; font-size:18px;">
                                         📥 BAIXAR LAUDO TÉCNICO (HTML)
                                     </button>
@@ -5531,8 +5226,13 @@ if st.session_state.get("pagina") == "parecer":
                         ''', unsafe_allow_html=True)
                         st.success("Perícia concluída com foco em Nexo e POP!")
 
-    if __name__ == "__main__":
-        main()
+    # ==============================================================================
+    # INICIALIZAÇÃO
+    # ==============================================================================
+    if 'pagina' not in st.session_state:
+        st.session_state.pagina = "parecer"
+
+
 
 
 import streamlit as st
