@@ -6424,15 +6424,13 @@ if st.session_state.pagina == "comparar":
 if st.session_state.pagina == "tutorial":
     st.title("🎓 Tutorial do Sistema")
     st.markdown("---")
-    
-    import base64
 
-    with open("Tutorial_Sistema_Analise_Tarefas.pdf", "rb") as f:  
+    with open("Tutorial_Sistema_Analise_Tarefas.pdf", "rb") as f:
         pdf_bytes = f.read()
 
-    b64 = base64.b64encode(pdf_bytes).decode()
-    st.markdown(
-        f'<iframe src="data:application/pdf;base64,{b64}" '
-        f'width="100%" height="800px" type="application/pdf"></iframe>',
-        unsafe_allow_html=True
+    st.download_button(
+        label="📖 Clique para abrir o Tutorial",
+        data=pdf_bytes,
+        file_name="Tutorial_Sistema_Analise_Tarefas.pdf",
+        mime="application/pdf"
     )
