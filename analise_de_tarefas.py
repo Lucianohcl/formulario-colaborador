@@ -1,4 +1,4 @@
-  # ============================================================
+# ============================================================
 # IMPORTS
 # ============================================================
 
@@ -6421,14 +6421,13 @@ if st.session_state.pagina == "comparar":
         st.error(f"Erro geral ao inicializar o comparador: {e}")
 
 
-
 if st.session_state.pagina == "tutorial":
     st.title("🎓 Tutorial do Sistema")
     st.markdown("---")
     
     import base64
 
-    with open("Tutorial_Sistema_Analise_Tarefas.pdf", "rb") as f:
+    with open("Tutorial_Sistema_Analise_Tarefas.pdf", "rb") as f:  
         pdf_bytes = f.read()
 
     b64 = base64.b64encode(pdf_bytes).decode()
@@ -6437,13 +6436,3 @@ if st.session_state.pagina == "tutorial":
         f'width="100%" height="800px" type="application/pdf"></iframe>',
         unsafe_allow_html=True
     )
-
-    st.download_button(
-        label="⬇️ Baixar Tutorial em PDF",
-        data=pdf_bytes,
-        file_name="Tutorial_Sistema_Analise_Tarefas.pdf",
-        mime="application/pdf"
-    )
-
-
-        
