@@ -5093,7 +5093,8 @@ if st.session_state.get("pagina") == "parecer":
                 cargo_padrao_op = "GESTOR DE DP"
 
             st.write(f"**Colaborador:** {nome_alvo_op}")
-            cargo_alvo_op = st.text_input("Cargo", value=cargo_padrao_op, key="cargo_input_op")
+            st.write(f"**Cargo:** {cargo_padrao_op}")
+            cargo_alvo_op = cargo_padrao_op
             relato_exemplo_op = "Atendimento a clientes, auditoria de folha, suporte técnico, organizar arquivos, etc."
 
             if st.button("🚀 INICIAR PERÍCIA TÉCNICA", key="btn_pericia_op"):
