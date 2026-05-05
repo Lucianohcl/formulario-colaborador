@@ -5980,7 +5980,7 @@ def gerar_evidencias(kpi, relato, gaps_lista):
         prompt = f"""
 Você é um especialista em auditoria e controle de processos.
 
-Gere exatamente 3 evidências documentais com base nos gaps.
+Gere exatamente 2 evidências documentais com base nos gaps.
 
 REGRAS:
 - Não genérico
@@ -6004,8 +6004,6 @@ Descrição: objetiva
 2. Nome do documento
 Descrição: objetiva
 
-3. Nome do documento
-Descrição: objetiva
 """
 
 
