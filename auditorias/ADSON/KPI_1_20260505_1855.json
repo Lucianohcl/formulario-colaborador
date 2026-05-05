@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 66,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação analisada está parcialmente de acordo com o exigido para o KPI de Conformidade Legislativa. O documento simulado do eSocial não contém todas as informações necessárias para validar a conformidade legislativa de todo o ciclo operacional analisado. Embora os relatórios exibam consistência entre os valores do sistema e do eSocial, faltam evidências de verificação de todos os eventos relevantes e de que qualquer obrigação acessória foi cumprida integralmente.",
+    "gap_de_conformidade": [
+        "Documento não cobre todos os eventos obrigatórios (ex.: S-2230)",
+        "Ausência de prova de conciliação com o financeiro",
+        "Falta de evidências de auditoria completa sobre todas as obrigações acessórias"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
