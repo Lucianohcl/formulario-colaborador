@@ -5982,27 +5982,26 @@ Sua tarefa tem DUAS ETAPAS obrigatórias.
 ═══════════════════════════════════════
 ETAPA 1 — RASTREAMENTO (interno, não exibir)
 ═══════════════════════════════════════
-Liste mentalmente TODOS os documentos que poderiam provar ou refutar os gaps.
-Considere o tipo de cargo e processo descrito no relato:
-- Administrativo/Contábil: guias, protocolos, recibos de entrega, extratos, declarações
-- Comercial/Vendas: pedidos, contratos, notas fiscais, propostas assinadas, e-mails de confirmação
-- Operacional: ordens de serviço, checklists, registros de produção, laudos
-- RH/DP: folha de ponto, holerites, recibos de férias, contratos, eSocial
-- TI/Sistemas: logs de acesso, backups, tickets de suporte, relatórios de disponibilidade
-Avalie cada candidato por: especificidade, rastreabilidade e facilidade de obtenção.
-Selecione os 2 MAIS IMPORTANTES — os que sozinhos provam ou refutam os gaps com maior precisão.
+Leia o relato e os gaps. Identifique o tipo de trabalho descrito.
+Liste mentalmente todos os documentos que já existem nesse tipo de processo
+e que poderiam provar ou refutar cada gap.
+Avalie cada um por: especificidade, rastreabilidade e facilidade de obtenção.
+Prefira documentos consolidados do período — nunca registros isolados ou pontuais.
+Selecione os 2 que sozinhos provam ou refutam os gaps com maior precisão.
 
 ═══════════════════════════════════════
 ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
 ═══════════════════════════════════════
 
 REGRAS ABSOLUTAS:
-- Nomeie o documento EXATO como ele existe (ex: "Protocolo de entrega SPED Fiscal", "Recibo de férias assinado", "NF-e de venda nº XXXXX")
-- PROIBIDO: "Documento que...", "Relatório que...", "Planilha de controle", "Laudo que comprova"
-- PROIBIDO sugerir documentos que precisam ser criados do zero
-- Em "Como obter": diga se é gerado pelo sistema, solicitado ao gestor, extraído de e-mail, emitido pelo cliente, etc.
-- Use os termos e sistemas citados no relato. Se não houver sistema citado, infira pelo tipo de processo.
-- Seja cirúrgico: o colaborador deve ler e saber exatamente o que fazer, sem dúvida.
+- Nome do documento: exatamente como o colaborador o encontra no sistema, e-mail ou pasta
+- PROIBIDO inventar títulos: "Relatório de Conformidade", "Laudo de Conciliação", "Documento Comprobatório"
+- PROIBIDO registros isolados: sempre o conjunto consolidado do período
+- PROIBIDO documentos que precisam ser criados do zero
+- PROIBIDO: "Documento que...", "Relatório que...", "Planilha de controle"
+- Se o relato citar sistema: use o relatório nativo desse sistema
+- Se não citar sistema: infira pelo processo descrito no relato
+- Vale para qualquer cargo: assistente, vendedor, operador, técnico, gestor, contador
 
 KPI: {kpi}
 
@@ -6012,20 +6011,20 @@ RELATO DO AUDITOR:
 GAPS IDENTIFICADOS:
 - {gaps}
 
-FORMATO OBRIGATÓRIO — siga exatamente, sem alterar os rótulos:
-1. [Nome exato do documento]
+FORMATO OBRIGATÓRIO:
+1. [Nome do documento consolidado do período — como o colaborador o encontra]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
-   Como validar: [o que cruzar ou comparar para confirmar que foi feito]
-   Consistência de valores: [qual valor comparar com qual | qual tolerância aceitável | o que indica erro]
-   O que confirma: [em uma frase direta: qual gap este documento fecha]
+   Como obter: [onde buscar — sistema, gestor, e-mail, cliente, pasta compartilhada]
+   Como validar: [o que cruzar ou comparar para confirmar que foi executado]
+   Consistência de valores: [qual valor vs. qual referência | tolerância aceitável | o que indica erro]
+   O que confirma: [em uma frase: qual gap este documento fecha]
 
-2. [Nome exato do documento]
+2. [Nome do documento consolidado do período — como o colaborador o encontra]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
-   Como validar: [o que cruzar ou comparar para confirmar que foi feito]
-   Consistência de valores: [qual valor comparar com qual | qual tolerância aceitável | o que indica erro]
-   O que confirma: [em uma frase direta: qual gap este documento fecha]
+   Como obter: [onde buscar — sistema, gestor, e-mail, cliente, pasta compartilhada]
+   Como validar: [o que cruzar ou comparar para confirmar que foi executado]
+   Consistência de valores: [qual valor vs. qual referência | tolerância aceitável | o que indica erro]
+   O que confirma: [em uma frase: qual gap este documento fecha]
 """
         r = client.chat.completions.create(
             model="gpt-4o",
@@ -6033,7 +6032,7 @@ FORMATO OBRIGATÓRIO — siga exatamente, sem alterar os rótulos:
         )
         return r.choices[0].message.content
     except Exception as e:
-        return f"Erro IA: {e}"    
+        return f"Erro IA: {e}"  
 
 # -------------------------------
 # UI
