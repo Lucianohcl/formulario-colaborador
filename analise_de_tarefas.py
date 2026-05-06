@@ -5976,27 +5976,33 @@ def gerar_evidencias(kpi, relato, gaps_lista):
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
         prompt = f"""
-Você é um auditor sênior. Sua tarefa tem DUAS ETAPAS obrigatórias.
+Você é um auditor sênior com 20 anos de experiência em controle interno e conformidade.
+Sua tarefa tem DUAS ETAPAS obrigatórias.
 
 ═══════════════════════════════════════
 ETAPA 1 — RASTREAMENTO (interno, não exibir)
 ═══════════════════════════════════════
-Liste mentalmente TODOS os arquivos que poderiam evidenciar os gaps abaixo.
-Considere: registros de sistema, exportações, recibos, extratos, prints, logs, relatórios nativos.
-Avalie cada um por: especificidade, rastreabilidade e facilidade de obtenção.
-Selecione os 2 MAIS IMPORTANTES — aqueles que, sozinhos, provam ou refutam os gaps com maior precisão.
+Liste mentalmente TODOS os documentos que poderiam provar ou refutar os gaps.
+Considere o tipo de cargo e processo descrito no relato:
+- Administrativo/Contábil: guias, protocolos, recibos de entrega, extratos, declarações
+- Comercial/Vendas: pedidos, contratos, notas fiscais, propostas assinadas, e-mails de confirmação
+- Operacional: ordens de serviço, checklists, registros de produção, laudos
+- RH/DP: folha de ponto, holerites, recibos de férias, contratos, eSocial
+- TI/Sistemas: logs de acesso, backups, tickets de suporte, relatórios de disponibilidade
+Avalie cada candidato por: especificidade, rastreabilidade e facilidade de obtenção.
+Selecione os 2 MAIS IMPORTANTES — os que sozinhos provam ou refutam os gaps com maior precisão.
 
 ═══════════════════════════════════════
 ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
 ═══════════════════════════════════════
-Apresente somente as 2 evidências selecionadas.
 
 REGRAS ABSOLUTAS:
-- Nomeie o arquivo como ele aparece no sistema (ex: "XML S-1200", "Recibo DCTFWeb", "Espelho de Folha")
-- PROIBIDO: "Documento que...", "Relatório que...", "Laudo que...", "Planilha de controle"
-- PROIBIDO sugerir arquivos que precisam ser criados — só arquivos que JÁ EXISTEM no sistema
-- Use APENAS sistemas e termos citados no relato
-- Se o relato não citar sistema, infira pelo tipo de KPI (RH → eSocial/TOTVS, Fiscal → SPED/e-CAC, etc.)
+- Nomeie o documento EXATO como ele existe (ex: "Protocolo de entrega SPED Fiscal", "Recibo de férias assinado", "NF-e de venda nº XXXXX")
+- PROIBIDO: "Documento que...", "Relatório que...", "Planilha de controle", "Laudo que comprova"
+- PROIBIDO sugerir documentos que precisam ser criados do zero
+- Em "Como obter": diga se é gerado pelo sistema, solicitado ao gestor, extraído de e-mail, emitido pelo cliente, etc.
+- Use os termos e sistemas citados no relato. Se não houver sistema citado, infira pelo tipo de processo.
+- Seja cirúrgico: o colaborador deve ler e saber exatamente o que fazer, sem dúvida.
 
 KPI: {kpi}
 
@@ -6006,20 +6012,20 @@ RELATO DO AUDITOR:
 GAPS IDENTIFICADOS:
 - {gaps}
 
-FORMATO OBRIGATÓRIO — siga exatamente:
-1. [Nome do arquivo como aparece no sistema]
-   Formato: PDF | XML | Excel | Print
-   Periodicidade: [Mensal | Trimestral | Anual | Por evento | Sob demanda]
-   Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
-   Gap endereçado: [qual gap este arquivo responde]
-   O que conferir: [campo ou valor específico no arquivo]
+FORMATO OBRIGATÓRIO — siga exatamente, sem alterar os rótulos:
+1. [Nome exato do documento]
+   Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
+   Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
+   Como validar: [o que cruzar ou comparar para confirmar que foi feito — ex: lista de clientes vs protocolos emitidos]
+   Consistência de valores: [qual valor comparar com qual | qual tolerância é aceitável | o que indica erro]
+   O que confirma: [em uma frase direta: qual gap este documento fecha]
 
-2. [Nome do arquivo como aparece no sistema]
-   Formato: PDF | XML | Excel | Print
-   Periodicidade: [Mensal | Trimestral | Anual | Por evento | Sob demanda]
-   Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
-   Gap endereçado: [qual gap este arquivo responde]
-   O que conferir: [campo ou valor específico no arquivo]
+2. [Nome exato do documento]
+   Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
+   Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
+   Como validar: [o que cruzar ou comparar para confirmar que foi feito]
+   Consistência de valores: [qual valor comparar com qual | qual tolerância é aceitável | o que indica erro]
+   O que confirma: [em uma frase direta: qual gap este documento fecha]
 """
         r = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -6027,7 +6033,7 @@ FORMATO OBRIGATÓRIO — siga exatamente:
         )
         return r.choices[0].message.content
     except Exception as e:
-        return f"Erro IA: {e}"     
+        return f"Erro IA: {e}"    
 
 # -------------------------------
 # UI
