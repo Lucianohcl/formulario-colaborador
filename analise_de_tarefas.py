@@ -3591,8 +3591,8 @@ if st.session_state.pagina == "analise":
             ranking_dados.append({"Colaborador": n_r, "Sug.": len(s_r), "Economia": horas_colaborador})
 
         if ranking_dados:
-            # Valor hora técnica unificado em R$ 65,00
-            total_financeiro = total_geral_ano_horas * 65.0
+            # Valor hora técnica unificado em R$ 35,00
+            total_financeiro = total_geral_ano_horas * 35.0
             
             col_c1, col_c2, col_c3 = st.columns(3)
             
@@ -3608,7 +3608,7 @@ if st.session_state.pagina == "analise":
                     label="💰 ROI Projetado (EBITDA)", 
                     value=f"R$ {total_financeiro:,.2f}",
                     delta="Expectativa Bruta",
-                    help="Valor total anualizado (R$ 65,00/h)."
+                    help="Valor total anualizado (R$ 35,00/h)."
                 )
                 
             with col_c3:
@@ -3662,7 +3662,7 @@ if st.session_state.pagina == "analise":
                         h_ano_poupada = h_ano_bruto * potencial
                         
                         t_h_poupadas += h_ano_poupada
-                        t_rs_recuperavel += (h_ano_poupada * 65.0)
+                        t_rs_recuperavel += (h_ano_poupada * 35.0)
                     except:
                         continue
                 
@@ -3700,7 +3700,7 @@ if st.session_state.pagina == "analise":
 
             # --- LEGENDA TÉCNICA ATUALIZADA ---
             st.caption("""
-            🔬 **Metodologia de Auditoria Pericial:** Projeções fundamentadas no Custo Total de Ocupação (R$ 65,00/h). 
+            🔬 **Metodologia de Auditoria Pericial:** Projeções fundamentadas no Custo Total de Ocupação (R$ 35,00/h). 
             O sistema aplica Ponderação Dinâmica: 🤖 Transformação Digital (85%), 📈 Otimização (45%) 
             ou 💡 Incremental (20%), garantindo que o ROI reflita a complexidade técnica da entrega.
             """)
@@ -4129,7 +4129,7 @@ def motor_pericia_ultra(tabelas, dificuldades, sugestoes):
         mult = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(freq, 1)
         h_ano_atual = (tempo_min_atual * mult) / 60
         h_poupadas = h_ano_atual * potencial
-        valor_financeiro = h_poupadas * 65.0 
+        valor_financeiro = h_poupadas * 35.0 
  
         analise_detalhada.append({
             "ESTRATEGIA": categoria,
@@ -4201,8 +4201,8 @@ if st.session_state.get("pagina") == "analise":
                                 f_tipo = str(s.get('Frequência', 'M')).upper().strip()
                                 m_anual = {'D': 220, 'S': 48, 'M': 12, 'T': 4, 'A': 1}.get(f_tipo, 12)
                                 
-                                # Soma no Bruto (R$ 65/hora)
-                                v_bruto_final += ((h_limpo + (m_limpo / 60)) * m_anual * 65.0)
+                                # Soma no Bruto (R$ 35/hora)
+                                v_bruto_final += ((h_limpo + (m_limpo / 60)) * m_anual * 35.0)
                             except:
                                 continue
 
@@ -4234,7 +4234,7 @@ if st.session_state.get("pagina") == "analise":
                         else:
                             st.error("📉 **VIABILIDADE CRÍTICA:** Muitas tarefas operacionais de baixo valor agregado. Foco deve ser em eliminar a tarefa, não em automatizar.")
 
-                        st.info(f"💡 **Nota do Perito:** Aplicado multiplicador de frequência dinâmico e custo técnico de R$ 65,00/h.")
+                        st.info(f"💡 **Nota do Perito:** Aplicado multiplicador de frequência dinâmico e custo técnico de R$ 35,00/h.")
 
                         # --- TABELA FINAL ---
                         st.markdown("### 📋 Detalhamento das Oportunidades")
@@ -5972,52 +5972,48 @@ def carregar_jsons(colaborador):
 # IA (COM PROTEÇÃO)
 # -------------------------------
 def gerar_evidencias(kpi, relato, gaps_lista):
-
     try:
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
-
         prompt = f"""
-Você é um especialista em auditoria e controle de processos.
-
-Gere exatamente 2 evidências documentais com base nos gaps.
+Você é um auditor sênior especializado em controle interno e conformidade.
+Com base no KPI, relato e gaps abaixo, indique exatamente quais arquivos o colaborador deve ANEXAR como evidência.
 
 REGRAS:
-- Não genérico
-- Não repetir
-- Auditável
-- Conectar com os gaps
+- Indique o ARQUIVO REAL que já existe no sistema (não um relatório a ser criado do zero)
+- Use os nomes de sistemas, processos e termos que aparecem no próprio relato
+- Especifique o FORMATO do arquivo (PDF, XML, Excel, print de tela)
+- Indique o CAMINHO ou MENU exato de onde exportar
+- O colaborador deve conseguir localizar e enviar o arquivo sem dúvida
+- Nunca use termos genéricos como "planilha de controle" ou "documento comprobatório"
+- Cada evidência deve endereçar ao menos um gap específico listado abaixo
 
 KPI: {kpi}
 
-RELATO:
+RELATO DO AUDITOR:
 {relato}
 
 GAPS IDENTIFICADOS:
 - {gaps}
 
-FORMATO:
+FORMATO OBRIGATÓRIO:
+1. [Nome exato do arquivo a ser enviado]
+   Formato: PDF / XML / Excel / Print
+   Como exportar: [menu ou caminho exato no sistema citado no relato]
+   O que deve aparecer: [campo, valor ou informação específica que comprova o gap]
 
-1. Nome do documento
-Descrição: objetiva
-
-2. Nome do documento
-Descrição: objetiva
-
+2. [Nome exato do arquivo a ser enviado]
+   Formato: PDF / XML / Excel / Print
+   Como exportar: [menu ou caminho exato no sistema citado no relato]
+   O que deve aparecer: [campo, valor ou informação específica que comprova o gap]
 """
-
-
-
         r = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
-        )    
-
+        )
         return r.choices[0].message.content
-
     except Exception as e:
-        return f"Erro IA: {e}"
-
+        return f"Erro IA: {e}"     
 
 # -------------------------------
 # UI
