@@ -5976,17 +5976,15 @@ def gerar_evidencias(kpi, relato, gaps_lista):
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
         prompt = f"""
-Você é um auditor sênior especializado em controle interno e conformidade.
-Com base no KPI, relato e gaps abaixo, indique exatamente quais arquivos o colaborador deve ANEXAR como evidência.
+Você é um auditor sênior. Sua tarefa é indicar EXATAMENTE quais arquivos o colaborador deve baixar e anexar como evidência.
 
-REGRAS:
-- Indique o ARQUIVO REAL que já existe no sistema (não um relatório a ser criado do zero)
-- Use os nomes de sistemas, processos e termos que aparecem no próprio relato
-- Especifique o FORMATO do arquivo (PDF, XML, Excel, print de tela)
-- Indique o CAMINHO ou MENU exato de onde exportar
-- O colaborador deve conseguir localizar e enviar o arquivo sem dúvida
-- Nunca use termos genéricos como "planilha de controle" ou "documento comprobatório"
-- Cada evidência deve endereçar ao menos um gap específico listado abaixo
+REGRAS ABSOLUTAS:
+- Nomeie o arquivo como ele aparece no sistema (ex: "XML S-1200", "Recibo DCTFWeb", "Espelho de Folha", "Extrato FGTS Digital")
+- PROIBIDO: "Documento que...", "Relatório que...", "Laudo que...", "Planilha de controle"
+- PROIBIDO criar ou sugerir documentos que precisam ser elaborados — só arquivos que JÁ EXISTEM no sistema
+- Use APENAS os sistemas, nomes e termos que aparecem no relato abaixo
+- Se o relato não citar sistema, infira pelo tipo de KPI (RH → eSocial/TOTVS, Fiscal → SPED/e-CAC, etc.)
+- O colaborador deve: abrir o sistema → seguir o caminho → baixar o arquivo. Sem criar nada.
 
 KPI: {kpi}
 
@@ -5996,16 +5994,18 @@ RELATO DO AUDITOR:
 GAPS IDENTIFICADOS:
 - {gaps}
 
-FORMATO OBRIGATÓRIO:
-1. [Nome exato do arquivo a ser enviado]
-   Formato: PDF / XML / Excel / Print
-   Como exportar: [menu ou caminho exato no sistema citado no relato]
-   O que deve aparecer: [campo, valor ou informação específica que comprova o gap]
+FORMATO — siga exatamente:
+1. [Nome do arquivo como aparece no sistema]
+   Formato: PDF | XML | Excel | Print
+   Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
+   Gap endereçado: [qual gap acima este arquivo responde]
+   O que conferir: [campo ou valor específico no arquivo]
 
-2. [Nome exato do arquivo a ser enviado]
-   Formato: PDF / XML / Excel / Print
-   Como exportar: [menu ou caminho exato no sistema citado no relato]
-   O que deve aparecer: [campo, valor ou informação específica que comprova o gap]
+2. [Nome do arquivo como aparece no sistema]
+   Formato: PDF | XML | Excel | Print
+   Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
+   Gap endereçado: [qual gap acima este arquivo responde]
+   O que conferir: [campo ou valor específico no arquivo]
 """
         r = client.chat.completions.create(
             model="gpt-4o-mini",
