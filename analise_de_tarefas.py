@@ -5976,15 +5976,27 @@ def gerar_evidencias(kpi, relato, gaps_lista):
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
         prompt = f"""
-Você é um auditor sênior. Sua tarefa é indicar EXATAMENTE quais arquivos o colaborador deve baixar e anexar como evidência.
+Você é um auditor sênior. Sua tarefa tem DUAS ETAPAS obrigatórias.
+
+═══════════════════════════════════════
+ETAPA 1 — RASTREAMENTO (interno, não exibir)
+═══════════════════════════════════════
+Liste mentalmente TODOS os arquivos que poderiam evidenciar os gaps abaixo.
+Considere: registros de sistema, exportações, recibos, extratos, prints, logs, relatórios nativos.
+Avalie cada um por: especificidade, rastreabilidade e facilidade de obtenção.
+Selecione os 2 MAIS IMPORTANTES — aqueles que, sozinhos, provam ou refutam os gaps com maior precisão.
+
+═══════════════════════════════════════
+ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
+═══════════════════════════════════════
+Apresente somente as 2 evidências selecionadas.
 
 REGRAS ABSOLUTAS:
-- Nomeie o arquivo como ele aparece no sistema (ex: "XML S-1200", "Recibo DCTFWeb", "Espelho de Folha", "Extrato FGTS Digital")
+- Nomeie o arquivo como ele aparece no sistema (ex: "XML S-1200", "Recibo DCTFWeb", "Espelho de Folha")
 - PROIBIDO: "Documento que...", "Relatório que...", "Laudo que...", "Planilha de controle"
-- PROIBIDO criar ou sugerir documentos que precisam ser elaborados — só arquivos que JÁ EXISTEM no sistema
-- Use APENAS os sistemas, nomes e termos que aparecem no relato abaixo
+- PROIBIDO sugerir arquivos que precisam ser criados — só arquivos que JÁ EXISTEM no sistema
+- Use APENAS sistemas e termos citados no relato
 - Se o relato não citar sistema, infira pelo tipo de KPI (RH → eSocial/TOTVS, Fiscal → SPED/e-CAC, etc.)
-- O colaborador deve: abrir o sistema → seguir o caminho → baixar o arquivo. Sem criar nada.
 
 KPI: {kpi}
 
@@ -5994,17 +6006,19 @@ RELATO DO AUDITOR:
 GAPS IDENTIFICADOS:
 - {gaps}
 
-FORMATO — siga exatamente:
+FORMATO OBRIGATÓRIO — siga exatamente:
 1. [Nome do arquivo como aparece no sistema]
    Formato: PDF | XML | Excel | Print
+   Periodicidade: [Mensal | Trimestral | Anual | Por evento | Sob demanda]
    Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
-   Gap endereçado: [qual gap acima este arquivo responde]
+   Gap endereçado: [qual gap este arquivo responde]
    O que conferir: [campo ou valor específico no arquivo]
 
 2. [Nome do arquivo como aparece no sistema]
    Formato: PDF | XML | Excel | Print
+   Periodicidade: [Mensal | Trimestral | Anual | Por evento | Sob demanda]
    Onde extrair: [Sistema] → [Menu] → [Submenu] → [Botão/Ação]
-   Gap endereçado: [qual gap acima este arquivo responde]
+   Gap endereçado: [qual gap este arquivo responde]
    O que conferir: [campo ou valor específico no arquivo]
 """
         r = client.chat.completions.create(
