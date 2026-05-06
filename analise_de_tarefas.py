@@ -6016,19 +6016,19 @@ FORMATO OBRIGATÓRIO — siga exatamente, sem alterar os rótulos:
 1. [Nome exato do documento]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
    Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
-   Como validar: [o que cruzar ou comparar para confirmar que foi feito — ex: lista de clientes vs protocolos emitidos]
-   Consistência de valores: [qual valor comparar com qual | qual tolerância é aceitável | o que indica erro]
+   Como validar: [o que cruzar ou comparar para confirmar que foi feito]
+   Consistência de valores: [qual valor comparar com qual | qual tolerância aceitável | o que indica erro]
    O que confirma: [em uma frase direta: qual gap este documento fecha]
 
 2. [Nome exato do documento]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
    Como obter: [gerado pelo sistema X | solicitado ao gestor | extraído do e-mail | emitido pelo cliente | etc.]
    Como validar: [o que cruzar ou comparar para confirmar que foi feito]
-   Consistência de valores: [qual valor comparar com qual | qual tolerância é aceitável | o que indica erro]
+   Consistência de valores: [qual valor comparar com qual | qual tolerância aceitável | o que indica erro]
    O que confirma: [em uma frase direta: qual gap este documento fecha]
 """
         r = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[{"role": "user", "content": prompt}]
         )
         return r.choices[0].message.content
