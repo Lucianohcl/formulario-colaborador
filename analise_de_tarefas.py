@@ -5621,6 +5621,7 @@ def aba_produtividade_inteligente():
                     relato_salvo = ""
                     try:
                         url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab.replace(' ', '_')}"
+                        st.caption(f"🔍 URL: {url_audit}")
                         res_audit = requests.get(url_audit, headers=HEADERS)
                         if res_audit.status_code == 200:
                             arquivos = [a for a in res_audit.json() if a.get("type") == "file" and a["name"].endswith(".json")]
