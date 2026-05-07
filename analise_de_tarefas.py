@@ -4832,7 +4832,7 @@ if st.session_state.get("pagina") == "parecer":
 
                 # carrega do GitHub se não estiver na sessão
                 if not st.session_state.get(chave_pop):
-                    salvo = carregar_evidencias_salvas(f"pop_{colaborador_file}")
+                    salvo = carregar_evidencias_salvas(colaborador_file)
                     if salvo:
                         st.session_state[chave_pop] = salvo
                         st.session_state["df_pop_ia"] = pd.DataFrame(salvo)
@@ -4845,7 +4845,7 @@ if st.session_state.get("pagina") == "parecer":
                         st.session_state["laudo_ativo"] = True
 
                 if st.button("🔄 Resetar POP"):
-                    salvar_evidencias(f"pop_{colaborador_file}", [])
+                    salvar_evidencias(colaborador_file, [])
                     st.session_state[chave_pop] = []
                     st.session_state["df_pop_ia"] = None
                     st.session_state["laudo_ativo"] = False
@@ -4928,7 +4928,7 @@ if st.session_state.get("pagina") == "parecer":
 
                         if st.button("💾 Salvar POP", key=f"btn_salvar_pop_{colab_key}"):
                             dados_salvar = st.session_state["df_pop_ia"].to_dict(orient="records")
-                            salvar_evidencias(f"pop_{colaborador_file}", dados_salvar)
+                            salvar_evidencias(colaborador_file, dados_salvar)
                             st.session_state[chave_pop] = dados_salvar
                             st.success("✅ POP salvo com sucesso!")
 
