@@ -1,10 +1,10 @@
 [
   {
     "kpi": "Conformidade Legislativa",
-    "evidencias": "1. Portal eSocial → Consulta de Eventos → competência → Export PDF  \n   Periodicidade: Mensal  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  \n2. Portal e-CAC → DCTFWeb → competência → Download PDF  \n   Periodicidade: Mensal  \n   Como obter: Portal e-CAC → DCTFWeb → competência → Download PDF  "
+    "evidencias": "1. Portal eSocial → Consulta de Eventos → competência → Export PDF  \n   Periodicidade: Mensal | Trimestral | Anual | Por evento  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  \n\n2. Portal e-CAC → DCTFWeb → competência → Download PDF  \n   Periodicidade: Mensal | Trimestral | Anual | Por evento  \n   Como obter: Portal e-CAC → DCTFWeb → competência → Download PDF\n"
   },
   {
     "kpi": "Eficácia da Auditoria Interna",
-    "evidencias": "1. Relatório de Conformidade de Folha de Pagamento  \n   Periodicidade: Semanal  \n   Como obter: ERP → Relatórios → Folha de Pagamento → Export  \n\n2. Portal e-CAC → DCTFWeb → competência → Download PDF  \n   Periodicidade: Mensal  \n   Como obter: Portal e-CAC → DCTFWeb → competência → Download PDF  "
+    "evidencias": "1. Relatório de Conformidade Semanal\n   Periodicidade: Semanal | \n   Como obter: [Sistema Interno → Relatórios → Exportar PDF]\n\n2. Comparativo de Erros de Folha de Pagamento\n   Periodicidade: Mensal | \n   Como obter: [ERP → Folha de Pagamento → Relatórios → Exportar PDF]\n"
   }
 ]
