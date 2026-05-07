@@ -1,0 +1,90 @@
+[
+  {
+    "Atividade": "ANÁLISE DE\nCONFORMIDADE\nLEGISLATIVA\n",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Revisar e garantir a\nconformidade com a\nlegislação trabalhista\nvigente, com indicadores\nmensais de não\nconformidade menores\nque 2%"
+  },
+  {
+    "Atividade": "AUDITORIA INTERNA\nDE PROCESSOS ",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "40m",
+    "Impacto Diário Convertido": "40.0m",
+    "Eficiência vs 480m": "8.3%",
+    "Meta Auditável": "Implementar auditorias\ncontínuas em processos\nde folha de pagamento,\ncom relatórios semanais\nde conformidade e\ncontrole de erros\nreduzidos em 15%"
+  },
+  {
+    "Atividade": "REVISÃO E VALIDAÇÃO\nDE FOLHA DE\nPAGAMENTO",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "70m",
+    "Impacto Diário Convertido": "70.0m",
+    "Eficiência vs 480m": "14.6%",
+    "Meta Auditável": "Conferir e validar a folha\nde pagamento antes da\naprovação mensal,\nassegurando zero erros\nna entrega e na geração\nde encargos"
+  },
+  {
+    "Atividade": "TREINAMENTO DE\nEQUIPE",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Realizar treinamentos\nmensais com 100% da\nequipe para atualização\nsobre eSocial, EFD-Reinf\ne legislação, medindo a\neficácia através de\navaliações com nota\nmédia acima de 80%"
+  },
+  {
+    "Atividade": "PLANEJAMENTO\nESTRATÉGICO DO DP",
+    "Freq": "MENSAL",
+    "Tempo Base": "50m",
+    "Impacto Diário Convertido": "2.3m",
+    "Eficiência vs 480m": "0.5%",
+    "Meta Auditável": "Definir e revisar o\nplanejamento estratégico\ndo Departamento Pessoal,\nestabelecendo 5\niniciativas de melhoria\ncontínua com resultados\nmensuráveis\n"
+  },
+  {
+    "Atividade": "GERENCIAMENTO DE\nRISCOS\nTRABALHISTAS E\nPREVIDENCIÁRIOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "50m",
+    "Impacto Diário Convertido": "2.3m",
+    "Eficiência vs 480m": "0.5%",
+    "Meta Auditável": "Avaliar e mitigar riscos\ntrabalhistas e\nprevidenciários,\nreportando 100% das\ncontingências com planos\nde ação corretivos em\nmenos de 30 dias\n"
+  },
+  {
+    "Atividade": "REUNIÕES DE\nACOMPANHAMENTO\n",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Realizar reuniões\nsemanais para\nacompanhar o\ndesempenho do DP e\nalinhar entregas, com 80%\nde participação da equipe\ne feedbacks positivos\n"
+  },
+  {
+    "Atividade": "ANÁLISE DE KPIs DE\nDEPARTAMENTO\nPESSOAL",
+    "Freq": "SEMANAL",
+    "Tempo Base": "50m",
+    "Impacto Diário Convertido": "10.0m",
+    "Eficiência vs 480m": "2.1%",
+    "Meta Auditável": "Analisar e reportar KPIs\ndo Departamento Pessoal\nsemanalmente, com\nindicadores de\ndesempenho em pelo\nmenos 90% dos objetivos\nbatidos"
+  },
+  {
+    "Atividade": "DOCUMENTAÇÃO E\nTRAMITAÇÃO DE\nOBRIGAÇÕES\nACESSÓRIAS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Garantir que todas as\nobrigações acessórias\nsejam documentadas e\nenviadas dentro dos\nprazos exigidos, com\níndice de compliance igual\nou superior a 98%"
+  },
+  {
+    "Atividade": "PLANEJAMENTO DE\nTRANSMISSÕES AO\neSOCIAL\n",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Planejar e monitorar as\ntransmissões mensais\nobrigatórias ao eSocial,\ngarantindo 100% de\nentregas no prazo\nestabelecido\n"
+  },
+  {
+    "Atividade": null,
+    "Freq": null,
+    "Tempo Base": null,
+    "Impacto Diário Convertido": null,
+    "Eficiência vs 480m": null,
+    "Meta Auditável": null
+  }
+]
