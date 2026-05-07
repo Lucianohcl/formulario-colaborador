@@ -5971,84 +5971,57 @@ def carregar_jsons(colaborador):
 # -------------------------------
 # IA (COM PROTEÇÃO)
 # -------------------------------
-def gerar_evidencias(kpi, relato, gaps_lista,
-                     nota=None, status="", analise="",
-                     periodo="período auditado",
-                     tendencia="estável", historico=None):
+# -------------------------------
+# IA (COM PROTEÇÃO)
+# -------------------------------
+def gerar_evidencias(kpi, relato, gaps_lista, analise="", historico=None):
     try:
         gaps = "\n- ".join(list(dict.fromkeys(gaps_lista)))
-        relato = relato.replace("[Mês/Ano]", periodo)
-
-        bloco_contexto = f"""
-CONTEXTO DO KPI:
-- Período: {periodo}
-- Status pericial: {status}
-- Tendência histórica: {tendencia}
-- Análise crítica: {analise}
-"""
+        relato = relato.replace("[Mês/Ano]", "período auditado")
 
         bloco_historico = ""
         if historico:
             bloco_historico = f"""
-HISTÓRICO COMPLETO DE AUDITORIAS ANTERIORES (mesmo KPI):
+HISTÓRICO:
 {historico}
-INSTRUÇÃO:
-1. Identifique documentos já enviados e REJEITADOS — não os repita
-2. Identifique gaps que aparecem em MÚLTIPLOS períodos — são prioritários
-3. Identifique o que NUNCA foi apresentado — esses são os que realmente faltam
 """
 
         prompt = f"""
-Você é um auditor sênior de controle interno corporativo.
-Contexto: auditoria interna empresarial — uso exclusivo para gestão de pessoas e processos.
+Você é um auditor sênior. Responda APENAS o que foi pedido, sem explicações.
 
-OBJETIVO: com base no histórico completo, identificar exatamente quais documentos
-estão FALTANDO ou foram REJEITADOS e o que o colaborador precisa apresentar
-para fechar cada gap de uma vez por todas.
+Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colaborador
+DEVE apresentar para provar conformidade.
 
-ETAPA 1 — ANÁLISE (interno, não exibir)
-Leia todo o histórico. Para cada gap reincidente, identifique:
-- O documento foi enviado antes? Se sim, por que foi rejeitado?
-- O documento correto já existe no processo ou precisa ser criado?
-- Se precisa ser criado: quais colunas e campos são necessários?
-Escolha os 2 documentos cuja ausência causa maior risco ao processo.
-
-ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
-
-REGRAS ABSOLUTAS:
-- Nome EXPLÍCITO: sistema + tipo + período (ex: "Extrato eSocial — {periodo}")
-- PROIBIDO: "Relatório de Conformidade", "Laudo de Conciliação", "Documento Comprobatório"
-- PROIBIDO: registros isolados — sempre consolidado do período
-- PROIBIDO: sugerir documento já rejeitado no histórico
-- PROIBIDO: mencionar metas ou percentuais de eficiência
-- PROIBIDO: inventar métricas ou números que não estejam no histórico
-- Consistência de valores: descreva APENAS o cruzamento de dois campos reais — nunca invente valores
-- Se CRIAR: especificar exatamente colunas, campos e quem preenche
-- Uma linha por campo — sem parágrafos
+REGRAS:
+- Nome do documento: específico e real — nunca genérico
+- Se não existe: dizer exatamente como criar (colunas + responsável)
+- Se existe: dizer exatamente onde buscar
+- PROIBIDO: metas, percentuais, benchmarks, números inventados
+- PROIBIDO: "Relatório de Conformidade", "Laudo", "Documento Comprobatório"
+- PROIBIDO: repetir documento já rejeitado no histórico
 
 KPI: {kpi}
 RELATO: {relato}
 GAPS:
 - {gaps}
-{bloco_contexto}
+ANÁLISE DO AUDITOR: {analise}
 {bloco_historico}
 
-FORMATO:
-1. [Nome explícito — sistema + tipo + período]
-   Status: ✅ Já existe | 🔨 Criar
-   Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter ou criar: [sistema → ação → formato] OU [colunas exatas + quem preenche]
-   Como validar: [uma ação — ex: "cruzar coluna X com coluna Y"]
-   Consistência de valores: [campo A vs. campo B | tolerância | o que indica falha]
-   O que confirma: [máximo 8 palavras — qual gap fecha]
+RESPONDA APENAS NESTE FORMATO:
 
-2. [Nome explícito — sistema + tipo + período]
+1. [Nome exato do documento]
    Status: ✅ Já existe | 🔨 Criar
-   Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter ou criar: [sistema → ação → formato] OU [colunas exatas + quem preenche]
-   Como validar: [uma ação — ex: "cruzar coluna X com coluna Y"]
-   Consistência de valores: [campo A vs. campo B | tolerância | o que indica falha]
-   O que confirma: [máximo 8 palavras — qual gap fecha]
+   Periodicidade: Mensal | Trimestral | Anual | Por evento
+   Como obter ou criar: [uma linha]
+   Como validar: [uma linha]
+   O que confirma: [máximo 8 palavras]
+
+2. [Nome exato do documento]
+   Status: ✅ Já existe | 🔨 Criar
+   Periodicidade: Mensal | Trimestral | Anual | Por evento
+   Como obter ou criar: [uma linha]
+   Como validar: [uma linha]
+   O que confirma: [máximo 8 palavras]
 """
         r = client.chat.completions.create(
             model="gpt-4o-mini",
@@ -6089,32 +6062,14 @@ if st.session_state.pagina == "evidencias":
 
         for kpi, grupo in df.groupby("kpi_nome"):
             try:
-                # ── todos os relatos e gaps do KPI ──
-                relato = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
-                gaps   = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
-
-                # ── dados do último registro ──
-                ultimo  = grupo.iloc[-1]
-                nota    = ultimo.get("percentual_alcance", None)
-                status  = ultimo.get("status_pericial", "")
-                analise = ultimo.get("analise_critica", "")
-                periodo = ultimo.get("periodo", "período auditado")
-
-                # ── tendência histórica ──
-                historico_notas = grupo["percentual_alcance"].dropna().tolist()
-                tendencia = "estável"
-                if len(historico_notas) >= 2:
-                    if historico_notas[-1] > historico_notas[-2]:
-                        tendencia = "melhora"
-                    elif historico_notas[-1] < historico_notas[-2]:
-                        tendencia = "piora"
+                relato  = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
+                gaps    = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
+                analise = grupo.iloc[-1].get("analise_critica", "")
 
                 # ── histórico completo linha por linha ──
                 historico_linhas = []
                 for _, row in grupo.iterrows():
-                    linha  = f"[{row.get('periodo', 'sem período')}] "
-                    linha += f"Nota: {row.get('percentual_alcance', '?')}% | "
-                    linha += f"Status: {row.get('status_pericial', '?')} | "
+                    linha  = f"Status: {row.get('status_pericial', '?')} | "
                     linha += f"Análise: {row.get('analise_critica', '')} | "
                     linha += f"Gaps: {', '.join(row.get('gap_de_conformidade', []))}"
                     historico_linhas.append(linha)
@@ -6125,11 +6080,7 @@ if st.session_state.pagina == "evidencias":
                     kpi        = kpi,
                     relato     = relato,
                     gaps_lista = gaps,
-                    nota       = nota,
-                    status     = status,
                     analise    = analise,
-                    periodo    = periodo,
-                    tendencia  = tendencia,
                     historico  = historico
                 )
 
