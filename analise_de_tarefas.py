@@ -6077,6 +6077,9 @@ if st.session_state.pagina == "evidencias":
                 value=r["evidencias"],
                 height=200
             )
+        if st.button("💾 Salvar Edições"):
+            st.session_state[chave] = st.session_state[chave]
+            st.success("✅ Edições salvas com sucesso!")
     # -------------------------------
     # HTML
     # -------------------------------
