@@ -4762,7 +4762,7 @@ if st.session_state.get("pagina") == "parecer":
 
     def carregar_evidencias_salvas(nome):
         try:
-            path = f"evidencias/{nome}.json"
+            path = f"pop/{nome}.json"
             url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
             res  = requests.get(url, headers=HEADERS)
             if res.status_code == 200:
@@ -4774,13 +4774,13 @@ if st.session_state.get("pagina") == "parecer":
 
     def salvar_evidencias(nome, resultados):
         try:
-            path = f"evidencias/{nome}.json"
+            path = f"pop/{nome}.json"
             url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
             conteudo = json.dumps(resultados, ensure_ascii=False, indent=2)
             encoded  = base64.b64encode(conteudo.encode()).decode()
             res = requests.get(url, headers=HEADERS)
             payload = {
-                "message": f"evidencias: {nome}",
+                "message": f"pop: {nome}",
                 "content": encoded
             }
             if res.status_code == 200:
