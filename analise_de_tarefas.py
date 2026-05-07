@@ -5544,7 +5544,7 @@ def aba_produtividade_inteligente():
     # 3. ABA DE PERÍCIA (TUDO QUE DEPENDE DE t1)
     with t1:
         st.subheader("📁 POP de Referência (GitHub)")
-        nome_pop = colaborador_file.replace(".json", "")
+        nome_pop = colaborador_file
 
         def carregar_evidencias_salvas(nome):
             try:
