@@ -4551,7 +4551,13 @@ import json
 import os
 import glob
 import base64
+import requests
 from openai import OpenAI
+
+
+GITHUB_TOKEN = st.secrets["DB_TOKEN"]
+REPO = "lucianohcl/formulario-colaborador"
+HEADERS = {"Authorization": f"token {GITHUB_TOKEN}"}
 
 if st.session_state.get("pagina") == "parecer":
 
