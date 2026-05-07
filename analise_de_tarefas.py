@@ -5573,10 +5573,12 @@ def aba_produtividade_inteligente():
             nome_pop = colaborador_file
 
             if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != nome_pop:
-
                 if 'kpis_sessao' in st.session_state:
                     del st.session_state.kpis_sessao
-
+                # limpa relatos anteriores
+                for k in list(st.session_state.keys()):
+                    if k.startswith("rel_"):
+                        del st.session_state[k]
                 st.session_state.ultimo_pop = nome_pop
 
             # Exibição da Tabela de Eficiência
