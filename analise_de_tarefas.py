@@ -5612,29 +5612,26 @@ def aba_produtividade_inteligente():
             if 'kpis_sessao' not in st.session_state:
                 st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
 
+            # pré-carrega todos os relatos antes do loop
+            relatos_salvos = {}
+            try:
+                url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab.replace(' ', '_')}"
+                res_audit = requests.get(url_audit, headers=HEADERS)
+                if res_audit.status_code == 200:
+                    arquivos = [a for a in res_audit.json() if a.get("type") == "file" and a["name"].endswith(".json")]
+                    for arq in arquivos:
+                        dado = requests.get(arq["download_url"]).json()
+                        kpi_nome_dado = dado.get("kpi_nome", "").strip().upper()
+                        if kpi_nome_dado:
+                            relatos_salvos[kpi_nome_dado] = dado.get("relato_do_auditor", "")
+            except:
+                pass
+
             for i, kpi in enumerate(st.session_state.kpis_sessao):
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
-                    
-                    # busca relato salvo no histórico
-                    relato_salvo = ""
-                    try:
-                        url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab.replace(' ', '_')}"
-                        st.caption(f"🔍 URL: {url_audit} | KPI buscado: '{kpi['nome']}'")
-                        res_audit = requests.get(url_audit, headers=HEADERS)
-                        if res_audit.status_code == 200:
-                            arquivos = [a for a in res_audit.json() if a.get("type") == "file" and a["name"].endswith(".json")]
-                            for arq in arquivos:
-                                dado = requests.get(arq["download_url"]).json()
-                                kpi_nome_dado = dado.get("kpi_nome", "").strip().upper()
-                                kpi_nome_atual = kpi['nome'].strip().upper()
-                                st.caption(f"📄 arquivo: {arq['name']} | kpi_dado: '{kpi_nome_dado}' | kpi_atual: '{kpi_nome_atual}'")
-                                if kpi_nome_dado == kpi_nome_atual:
-                                    relato_salvo = dado.get("relato_do_auditor", "")
-                                    break
-                    except Exception as e:
-                        st.caption(f"debug: {e}")
+                    relato_salvo = relatos_salvos.get(kpi['nome'].strip().upper(), "")
                     relato = st.text_area("Relato da conformidade:", value=relato_salvo, key=f"rel_{i}")
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
