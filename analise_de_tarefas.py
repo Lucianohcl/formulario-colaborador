@@ -6028,8 +6028,10 @@ if st.session_state.pagina == "evidencias":
     # -------------------------------
     # GERAR
     # -------------------------------
+    chave = f"res_{colaborador}"
+
     if st.button("🚀 Gerar Evidências"):
-        if st.session_state.get("res"):
+        if st.session_state.get(chave):
             st.info("ℹ️ Evidências já geradas. Clique em Resetar para gerar novamente.")
         else:
             dados = carregar_jsons(colaborador)
@@ -6060,11 +6062,11 @@ if st.session_state.pagina == "evidencias":
                     resultados.append({"kpi": kpi, "evidencias": evidencias})
                 except Exception as e:
                     st.error(f"Erro no item: {e}")
-            st.session_state["res"] = resultados
+            st.session_state[chave] = resultados
             st.info("ℹ️ A IA gera evidências na maioria dos casos sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
 
     if st.button("🔄 Resetar Evidências"):
-        st.session_state["res"] = []
+        st.session_state[chave] = []
         st.rerun()
 
     # -------------------------------
