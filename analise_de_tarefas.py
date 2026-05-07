@@ -4829,13 +4829,14 @@ if st.session_state.get("pagina") == "parecer":
                 )
 
                 chave_pop = f"pop_{colaborador_file}"
+                chave_df  = f"df_pop_ia_{colaborador_file}"
 
                 # carrega do GitHub se não estiver na sessão
                 if not st.session_state.get(chave_pop):
                     salvo = carregar_evidencias_salvas(colaborador_file)
                     if salvo:
                         st.session_state[chave_pop] = salvo
-                        st.session_state["df_pop_ia"] = pd.DataFrame(salvo)
+                        st.session_state[chave_df] = pd.DataFrame(salvo)
                         st.session_state["colab_key"] = colaborador_file
 
                 if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
@@ -4847,7 +4848,7 @@ if st.session_state.get("pagina") == "parecer":
                 if st.button("🔄 Resetar POP"):
                     salvar_evidencias(colaborador_file, [])
                     st.session_state[chave_pop] = []
-                    st.session_state["df_pop_ia"] = None
+                    st.session_state[chave_df] = None
                     st.session_state["laudo_ativo"] = False
                     st.rerun()
 
@@ -4889,26 +4890,26 @@ if st.session_state.get("pagina") == "parecer":
 
                             if st.session_state.get("colab_key") != colab_key:
                                 st.session_state["colab_key"] = colab_key
-                                st.session_state["df_pop_ia"] = base.copy()
+                                st.session_state[chave_df] = base.copy()
                                 st.session_state["df_pop_ia_original"] = base.copy()
                                 st.session_state[chave_pop] = dados_ia
                                 st.rerun()
 
-                            if "df_pop_ia" not in st.session_state:
-                                st.session_state["df_pop_ia"] = base.copy()
+                            if chave_df not in st.session_state:
+                                st.session_state[chave_df] = base.copy()
                             if "df_pop_ia_original" not in st.session_state:
                                 st.session_state["df_pop_ia_original"] = base.copy()
 
                         df_editavel = st.data_editor(
-                            st.session_state["df_pop_ia"],
+                            st.session_state[chave_df],
                             use_container_width=True,
                             num_rows="dynamic",
                             height=400,
                             key=f"ed_pop_ia_{colab_key}"
                         )
-                        st.session_state["df_pop_ia"] = df_editavel
+                        st.session_state[chave_df] = df_editavel
 
-                        df_calc = st.session_state["df_pop_ia"].copy()
+                        df_calc = st.session_state[chave_df].copy()
                         df_calc["Impacto Diário Convertido"] = (
                             df_calc["Impacto Diário Convertido"]
                             .astype(str)
@@ -4927,7 +4928,7 @@ if st.session_state.get("pagina") == "parecer":
                             st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
 
                         if st.button("💾 Salvar POP", key=f"btn_salvar_pop_{colab_key}"):
-                            dados_salvar = st.session_state["df_pop_ia"].to_dict(orient="records")
+                            dados_salvar = st.session_state[chave_df].to_dict(orient="records")
                             salvar_evidencias(colaborador_file, dados_salvar)
                             st.session_state[chave_pop] = dados_salvar
                             st.success("✅ POP salvo com sucesso!")
