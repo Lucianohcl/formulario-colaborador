@@ -5991,7 +5991,7 @@ DEVE apresentar para provar conformidade.
 
 REGRAS ABSOLUTAS:
 - Antes de sugerir CRIAR: verifique se o documento já existe em algum sistema citado no relato
-- Se o sistema foi citado no relato (ex: eSocial, SAP, TOTVS, ERP, CRM): o documento JÁ EXISTE — indique onde buscar
+- Se o sistema foi citado no relato (ex: eSocial, ERP, CRM, sistema interno): o documento JÁ EXISTE — indique onde buscar
 - Só marcar 🔨 Criar quando o documento realmente não existe em nenhum sistema do processo
 - Nome ESPECÍFICO: use o nome real do documento no sistema (ex: "Extrato de Transmissões eSocial", "Espelho de Folha", "NF-e emitidas")
 - PROIBIDO: nomes genéricos como "Relatório de Verificação", "Relatório de Conformidade", "Laudo"
