@@ -5990,11 +5990,15 @@ Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colabo
 DEVE apresentar para provar conformidade.
 
 REGRAS ABSOLUTAS:
-- Nome ESPECÍFICO: use o nome real do documento no sistema (ex: "Extrato de Transmissões eSocial", "Espelho de Folha", "NF-e emitidas")
-- PROIBIDO: nomes genéricos como "Relatório de Auditoria", "Relatório de Conformidade", "Laudo"
+- Nome ESPECÍFICO: inclua obrigatoriamente o sistema de origem no nome (ex: "Extrato de Transmissões eSocial", "Recibo DCTFWeb", "Espelho de Folha ERP")
+- PROIBIDO: nomes sem sistema de origem como "Malha Fiscal", "Relatório de Auditoria", "Relatório de Conformidade", "Laudo"
+- PROIBIDO: placeholders como "[sistema → menu → relatórios]" — preencha com o sistema REAL citado no relato
+- Se o relato citar eSocial: use "Portal eSocial → Consulta de Eventos → competência → Export PDF"
+- Se o relato citar DCTFWeb: use "Portal e-CAC → DCTFWeb → competência → Download PDF"
+- Se o relato citar ERP ou sistema interno: use "ERP → [módulo correspondente] → competência → Export"
 - PROIBIDO: metas, percentuais, benchmarks, números inventados
 - PROIBIDO: repetir documento já rejeitado no histórico
-- Se o sistema foi citado no relato: use o nome do documento nativo desse sistema
+- Como validar: descrever o cruzamento EXATO entre dois campos reais — nunca genérico
 
 KPI: {kpi}
 RELATO: {relato}
@@ -6005,16 +6009,16 @@ ANÁLISE DO AUDITOR: {analise}
 
 RESPONDA APENAS NESTE FORMATO:
 
-1. [Nome exato do documento como aparece no sistema]
+1. [Nome exato do documento — obrigatoriamente com sistema de origem]
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter: [sistema → menu → formato]
-   Como validar: [cruzar campo A com campo B]
+   Como obter: [sistema real → menu real → formato]
+   Como validar: [cruzar campo A do documento com campo B da fonte — descreva os dois campos]
    O que confirma: [máximo 8 palavras]
 
-2. [Nome exato do documento como aparece no sistema]
+2. [Nome exato do documento — obrigatoriamente com sistema de origem]
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter: [sistema → menu → formato]
-   Como validar: [cruzar campo A com campo B]
+   Como obter: [sistema real → menu real → formato]
+   Como validar: [cruzar campo A do documento com campo B da fonte — descreva os dois campos]
    O que confirma: [máximo 8 palavras]
 """
         r = client.chat.completions.create(
