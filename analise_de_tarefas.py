@@ -6029,37 +6029,43 @@ if st.session_state.pagina == "evidencias":
     # GERAR
     # -------------------------------
     if st.button("🚀 Gerar Evidências"):
-        dados = carregar_jsons(colaborador)
-        if not dados:
-            st.warning("Nenhum JSON encontrado")
-            st.stop()
-        resultados = []
-        df = pd.DataFrame(dados)
-        for kpi, grupo in df.groupby("kpi_nome"):
-            try:
-                relato  = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
-                gaps    = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
-                analise = grupo.iloc[-1].get("analise_critica", "")
-                # ── histórico completo linha por linha ──
-                historico_linhas = []
-                for _, row in grupo.iterrows():
-                    linha  = f"Status: {row.get('status_pericial', '?')} | "
-                    linha += f"Análise: {row.get('analise_critica', '')} | "
-                    linha += f"Gaps: {', '.join(row.get('gap_de_conformidade', []))}"
-                    historico_linhas.append(linha)
-                historico = "\n".join(historico_linhas)
-                evidencias = gerar_evidencias(
-                    kpi        = kpi,
-                    relato     = relato,
-                    gaps_lista = gaps,
-                    analise    = analise,
-                    historico  = historico
-                )
-                resultados.append({"kpi": kpi, "evidencias": evidencias})
-            except Exception as e:
-                st.error(f"Erro no item: {e}")
-        st.session_state["res"] = resultados
-        st.info("ℹ️ A IA gera evidências sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
+        if st.session_state.get("res"):
+            st.info("ℹ️ Evidências já geradas. Clique em Resetar para gerar novamente.")
+        else:
+            dados = carregar_jsons(colaborador)
+            if not dados:
+                st.warning("Nenhum JSON encontrado")
+                st.stop()
+            resultados = []
+            df = pd.DataFrame(dados)
+            for kpi, grupo in df.groupby("kpi_nome"):
+                try:
+                    relato  = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
+                    gaps    = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
+                    analise = grupo.iloc[-1].get("analise_critica", "")
+                    historico_linhas = []
+                    for _, row in grupo.iterrows():
+                        linha  = f"Status: {row.get('status_pericial', '?')} | "
+                        linha += f"Análise: {row.get('analise_critica', '')} | "
+                        linha += f"Gaps: {', '.join(row.get('gap_de_conformidade', []))}"
+                        historico_linhas.append(linha)
+                    historico = "\n".join(historico_linhas)
+                    evidencias = gerar_evidencias(
+                        kpi        = kpi,
+                        relato     = relato,
+                        gaps_lista = gaps,
+                        analise    = analise,
+                        historico  = historico
+                    )
+                    resultados.append({"kpi": kpi, "evidencias": evidencias})
+                except Exception as e:
+                    st.error(f"Erro no item: {e}")
+            st.session_state["res"] = resultados
+            st.info("ℹ️ A IA gera evidências na maioria dos casos sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
+
+    if st.button("🔄 Resetar Evidências"):
+        st.session_state["res"] = []
+        st.rerun()
 
     # -------------------------------
     # EXIBIR
