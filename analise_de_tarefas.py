@@ -5881,6 +5881,7 @@ def aba_produtividade_inteligente():
                         with c1:
                             st.write("**Veredito Técnico:**")
                             st.write(f"Status: `{dados_kpi['status_pericial']}`")
+
                         with c2:
                             st.write("**Análise do Auditor (IA):**")
                             st.info(dados_kpi['analise_critica'])
@@ -5888,6 +5889,28 @@ def aba_produtividade_inteligente():
                                 st.warning("**O que faltou para 100%:**")
                                 for item in dados_kpi['gap_de_conformidade']:
                                     st.write(f"• {item}")
+                        
+                        st.markdown("---")
+                        colab_slug = dados_kpi['colaborador'].replace(" ", "_")
+                        kpi_slug = kpi.upper().replace(" ", "_").replace("/", "_")
+                        url_pasta = f"https://api.github.com/repos/{REPO}/contents/auditorias/{colab_slug}"
+                        if st.button(f"🗑️ Excluir auditoria: {kpi}", key=f"del_{kpi}"):
+                            try:
+                                res_pasta = requests.get(url_pasta, headers=HEADERS)
+                                if res_pasta.status_code == 200:
+                                    for arq in res_pasta.json():
+                                        if arq.get("type") == "file" and arq["name"].endswith(".json"):
+                                            dado = requests.get(arq["download_url"]).json()
+                                            if dado.get("kpi_nome", "").strip().upper() == kpi.strip().upper():
+                                                requests.delete(
+                                                    f"https://api.github.com/repos/{REPO}/contents/{arq['path']}",
+                                                    headers=HEADERS,
+                                                    json={"message": f"delete: {kpi}", "sha": arq["sha"]}
+                                                )
+                                    st.success(f"✅ Auditoria '{kpi}' excluída!")
+                                    st.rerun()
+                            except Exception as ex:
+                                st.error(f"Erro ao excluir: {ex}")
 
             else:
                 st.info("Sincronize os dados para carregar o dashboard.")
