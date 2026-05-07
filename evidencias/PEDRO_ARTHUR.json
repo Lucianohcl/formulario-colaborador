@@ -1,6 +1,6 @@
 [
   {
     "kpi": "Eficiência no Atendimento ao Usuário",
-    "evidencias": "1. Relatório Semanal de Conformidade  \n   Periodicidade: Semanal  \n   Como obter: [Sistema interno → Relatórios → Exportar PDF]  \n2. Extrato de Chamados do Sistema de Suporte  \n   Periodicidade: Mensal  \n   Como obter: [Sistema de Suporte → Relatórios → Exportar PDF]"
+    "evidencias": "1. Relatório de Atendimento ao Usuário  \n   Periodicidade: Semanal  \n   Como obter: Sistema de Atendimento → Relatórios → Export PDF  \n\n2. Registro de Chamadas e Resoluções\n   Periodicidade: Mensal\n   Como obter: Sistema de Suporte → Relatórios → Exportar PDF\n"
   }
 ]
