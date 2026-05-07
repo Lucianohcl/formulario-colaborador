@@ -5612,7 +5612,7 @@ def aba_produtividade_inteligente():
             st.subheader("🕵️ Iniciar Perícia por KPI")
             
             if 'kpis_sessao' not in st.session_state:
-                st.session_state.kpis_sessao = gerar_5_kpis_periciais(pop_data['atividades'])['kpis']
+                st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
 
             for i, kpi in enumerate(st.session_state.kpis_sessao):
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
