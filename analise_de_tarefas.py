@@ -5543,64 +5543,16 @@ def aba_produtividade_inteligente():
 
     # 3. ABA DE PERÍCIA (TUDO QUE DEPENDE DE t1)
     with t1:
-        st.subheader("📁 POP de Referência (PDF)")
-        # =========================
-        # 📁 ORIGEM DO POP
-        # =========================
-        origem_pop = st.radio(
-            "📌 Origem do POP:",
-            ["📤 Upload do PC", "💻 Arquivo local", "☁️ Banco (GitHub)"],
-            key="origem_pop"
-        )
-
-        arquivo_pop = None
-
-        # =========================
-        # 📤 UPLOAD DO PC
-        # =========================
-        if origem_pop == "📤 Upload do PC":
-
-            arquivo_pop = st.file_uploader(
-                "Upload do POP oficial para extração de metas:",
-                type=["pdf"],
-                key="pop_mestre"
-            )
-
-        # =========================
-        # 💻 ARQUIVO LOCAL
-        # =========================
-        elif origem_pop == "💻 Arquivo local":
-
-            pasta = "documentos/pop"
-
-            if os.path.exists(pasta):
-                arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
-            else:
-                arquivos = []
-
-            if arquivos:
-                selecionado = st.selectbox("Selecionar POP local:", arquivos)
-                arquivo_pop = os.path.join(pasta, selecionado)
-            else:
-                st.warning("Nenhum POP encontrado na pasta local.")
-
-        # =========================
-        # ☁️ BANCO (GITHUB)
-        # =========================
-        elif origem_pop == "☁️ Banco (GitHub)":
-
-            pasta = "documentos/empresa_x/adson"
-
-            if os.path.exists(pasta):
-                arquivos = [f for f in os.listdir(pasta) if f.endswith(".pdf")]
-            else:
-                arquivos = []
-
-            if arquivos:
-                selecionado = st.selectbox("Selecionar POP do banco:", arquivos)
-                arquivo_pop = os.path.join(pasta, selecionado)
-            else:
-                st.warning("Nenhum POP encontrado no banco.")
+        st.subheader("📁 POP de Referência (GitHub)")
+        nome_pop = colaborador_file.replace(".json", "")
+        pop_referencia = carregar_evidencias_salvas(nome_pop)
+        if pop_referencia:
+            df_pop_ref = pd.DataFrame(pop_referencia)
+            st.dataframe(df_pop_ref, use_container_width=True)
+            arquivo_pop = pop_referencia
+        else:
+            st.warning("Nenhum POP encontrado no banco para este colaborador.")
+            arquivo_pop = None
 
         # =========================
         # 🔥 CONTROLE DE TROCA DE POP
