@@ -4793,52 +4793,76 @@ if st.session_state.get("pagina") == "parecer":
                     key="selectbox_auditoria_forense_unique"
                 )
 
-                if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
-                    st.session_state["laudo_ativo"] = True
+                chave_pop = f"pop_{colaborador_file}"
 
-                if st.session_state.get("laudo_ativo"):
+                # carrega do GitHub se não estiver na sessão
+                if not st.session_state.get(chave_pop):
+                    salvo = carregar_evidencias_salvas(f"pop_{colaborador_file}")
+                    if salvo:
+                        st.session_state[chave_pop] = salvo
+                        st.session_state["df_pop_ia"] = pd.DataFrame(salvo)
+                        st.session_state["colab_key"] = colaborador_file
+
+                if st.button("🚀 Gerar Laudo de Eficiência Avançado"):
+                    if st.session_state.get(chave_pop):
+                        st.info("ℹ️ POP já gerado. Clique em Resetar para gerar novamente.")
+                    else:
+                        st.session_state["laudo_ativo"] = True
+
+                if st.button("🔄 Resetar POP"):
+                    salvar_evidencias(f"pop_{colaborador_file}", [])
+                    st.session_state[chave_pop] = []
+                    st.session_state["df_pop_ia"] = None
+                    st.session_state["laudo_ativo"] = False
+                    st.rerun()
+
+                if st.session_state.get("laudo_ativo") or st.session_state.get(chave_pop):
                     with open(os.path.join(caminho_dados, colaborador_file), 'r', encoding='utf-8') as f:
                         colab = json.load(f)
 
-                    pop_ia = buscar_benchmark_ia_estrategico(
-                        colab['campos'].get('cargo', 'N/A').upper(),
-                        colab['campos'].get('funcao', 'GESTÃO').upper(),
-                        colab['campos'].get('objetivo', ''),
-                        colab['campos'].get('cursos', '')
-                    )
+                    if not st.session_state.get(chave_pop):
+                        pop_ia = buscar_benchmark_ia_estrategico(
+                            colab['campos'].get('cargo', 'N/A').upper(),
+                            colab['campos'].get('funcao', 'GESTÃO').upper(),
+                            colab['campos'].get('objetivo', ''),
+                            colab['campos'].get('cursos', '')
+                        )
+                    else:
+                        pop_ia = None
 
-                    if pop_ia:
+                    if pop_ia or st.session_state.get(chave_pop):
                         st.header("📚 [A] POP Padrão IA (Carga Diária 480m)")
 
-                        dados_ia = []
-                        total_ia_diario = 0
-
-                        for ativ, info in pop_ia.items():
-                            t, f = info.get('tempo', 0.0), info.get('freq', '').upper()
-                            imp = t if "DIÁRIA" in f else (t / 5 if "SEMANAL" in f else t / 22)
-                            total_ia_diario += imp
-                            dados_ia.append({
-                                "Atividade": ativ,
-                                "Freq": f,
-                                "Tempo Base": f"{t}m",
-                                "Impacto Diário Convertido": f"{imp:.1f}m",
-                                "Eficiência vs 480m": f"{(imp / 480) * 100:.1f}%",
-                                "Meta Auditável": info.get('meta', 'Não informada')
-                            })
-
-                        base = pd.DataFrame(dados_ia)
                         colab_key = colaborador_file
 
-                        if st.session_state.get("colab_key") != colab_key:
-                            st.session_state["colab_key"] = colab_key
-                            st.session_state["df_pop_ia"] = base.copy()
-                            st.session_state["df_pop_ia_original"] = base.copy()
-                            st.rerun()
+                        if pop_ia:
+                            dados_ia = []
+                            total_ia_diario = 0
+                            for ativ, info in pop_ia.items():
+                                t, f = info.get('tempo', 0.0), info.get('freq', '').upper()
+                                imp = t if "DIÁRIA" in f else (t / 5 if "SEMANAL" in f else t / 22)
+                                total_ia_diario += imp
+                                dados_ia.append({
+                                    "Atividade": ativ,
+                                    "Freq": f,
+                                    "Tempo Base": f"{t}m",
+                                    "Impacto Diário Convertido": f"{imp:.1f}m",
+                                    "Eficiência vs 480m": f"{(imp / 480) * 100:.1f}%",
+                                    "Meta Auditável": info.get('meta', 'Não informada')
+                                })
+                            base = pd.DataFrame(dados_ia)
 
-                        if "df_pop_ia" not in st.session_state:
-                            st.session_state["df_pop_ia"] = base.copy()
-                        if "df_pop_ia_original" not in st.session_state:
-                            st.session_state["df_pop_ia_original"] = base.copy()
+                            if st.session_state.get("colab_key") != colab_key:
+                                st.session_state["colab_key"] = colab_key
+                                st.session_state["df_pop_ia"] = base.copy()
+                                st.session_state["df_pop_ia_original"] = base.copy()
+                                st.session_state[chave_pop] = dados_ia
+                                st.rerun()
+
+                            if "df_pop_ia" not in st.session_state:
+                                st.session_state["df_pop_ia"] = base.copy()
+                            if "df_pop_ia_original" not in st.session_state:
+                                st.session_state["df_pop_ia_original"] = base.copy()
 
                         df_editavel = st.data_editor(
                             st.session_state["df_pop_ia"],
@@ -4866,6 +4890,12 @@ if st.session_state.get("pagina") == "parecer":
                             st.metric("Ocupação POP IA", f"{total:.1f} min")
                         with c3:
                             st.metric("Eficiência Teórica", f"{eficiencia:.1f}%")
+
+                        if st.button("💾 Salvar POP", key=f"btn_salvar_pop_{colab_key}"):
+                            dados_salvar = st.session_state["df_pop_ia"].to_dict(orient="records")
+                            salvar_evidencias(f"pop_{colaborador_file}", dados_salvar)
+                            st.session_state[chave_pop] = dados_salvar
+                            st.success("✅ POP salvo com sucesso!")
 
                         if st.button("📊 Recalcular Eficiência", key=f"btn_recalc_pop_{colab_key}"):
                             st.rerun()
