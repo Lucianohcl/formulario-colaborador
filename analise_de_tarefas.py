@@ -6058,6 +6058,7 @@ FORMATO:
     except Exception as e:
         return f"Erro IA: {e}"
 
+
 # -------------------------------
 # UI
 # -------------------------------
@@ -6093,13 +6094,11 @@ if st.session_state.pagina == "evidencias":
                 gaps   = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
 
                 # ── dados do último registro ──
-                ultimo    = grupo.iloc[-1]
-                nota      = ultimo.get("percentual_alcance", None)
-                status    = ultimo.get("status_pericial", "")
-                analise   = ultimo.get("analise_critica", "")
-                meta      = ultimo.get("meta", "")
-                realizado = ultimo.get("realizado", "")
-                periodo   = ultimo.get("periodo", "período auditado")
+                ultimo  = grupo.iloc[-1]
+                nota    = ultimo.get("percentual_alcance", None)
+                status  = ultimo.get("status_pericial", "")
+                analise = ultimo.get("analise_critica", "")
+                periodo = ultimo.get("periodo", "período auditado")
 
                 # ── tendência histórica ──
                 historico_notas = grupo["percentual_alcance"].dropna().tolist()
@@ -6110,7 +6109,7 @@ if st.session_state.pagina == "evidencias":
                     elif historico_notas[-1] < historico_notas[-2]:
                         tendencia = "piora"
 
-                # ── histórico completo linha por linha com campos reais do JSON ──
+                # ── histórico completo linha por linha ──
                 historico_linhas = []
                 for _, row in grupo.iterrows():
                     linha  = f"[{row.get('periodo', 'sem período')}] "
@@ -6129,8 +6128,6 @@ if st.session_state.pagina == "evidencias":
                     nota       = nota,
                     status     = status,
                     analise    = analise,
-                    meta       = meta,
-                    realizado  = realizado,
                     periodo    = periodo,
                     tendencia  = tendencia,
                     historico  = historico
