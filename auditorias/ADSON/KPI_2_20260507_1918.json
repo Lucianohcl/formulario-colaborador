@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 49.5,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A análise das evidências demonstra que apenas parte dos objetivos do KPI foram atendidos. O relatório de auditoria interna e relatórios de não conformidades foram apresentados. Identificaram-se erros críticos como horas extras incorretas, descontos indevidos e cadastro duplicado de colaborador. No entanto, não há prova clara e direta nos documentos que indique uma redução consistente de 15% nos erros conforme requerido pelo KPI. A data do relatório é atual, contudo, faltam evidências suficientes para comprovar melhorias na taxa de erros e relatórios de conformidade.",
+    "gap_de_conformidade": [
+        "Provas específicas sobre a redução de 15% dos erros",
+        "Mais exemplos de relatórios semanais de conformidade ao longo do período",
+        "Evidências numéricas ou indicadores que demonstrem melhoria da acurácia"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 8
+    },
+    "kpi_nome": "Eficiência da Auditoria Interna",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Verificar relatórios semanais de conformidade  para evidenciar redução consistente das não conformidades relacionadas à folha de pagamento, com melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos, indicando eficácia das rotinas de auditoria contínua."
+}
