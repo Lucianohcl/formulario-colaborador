@@ -6059,7 +6059,7 @@ if st.session_state.pagina == "evidencias":
             except Exception as e:
                 st.error(f"Erro no item: {e}")
         st.session_state["res"] = resultados
-        st.info("ℹ️ A IA gera as evidências corretas — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
+        st.info("ℹ️ A IA gera as evidências sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
 
     # -------------------------------
     # EXIBIR
