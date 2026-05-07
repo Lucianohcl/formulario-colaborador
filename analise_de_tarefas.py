@@ -5990,11 +5990,13 @@ Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colabo
 DEVE apresentar para provar conformidade.
 
 REGRAS ABSOLUTAS:
-- Antes de sugerir CRIAR: verifique se o documento já existe em algum sistema citado no relato
-- Se o sistema foi citado no relato (ex: eSocial, ERP, CRM, sistema interno): o documento JÁ EXISTE — indique onde buscar
-- Só marcar 🔨 Criar quando o documento realmente não existe em nenhum sistema do processo
-- Nome ESPECÍFICO: use o nome real do documento no sistema (ex: "Extrato de Transmissões eSocial", "Espelho de Folha", "NF-e emitidas")
-- PROIBIDO: nomes genéricos como "Relatório de Verificação", "Relatório de Conformidade", "Laudo"
+- Só marcar ✅ Já existe se o documento é gerado AUTOMATICAMENTE pelo sistema (ex: extrato, recibo, comprovante de transmissão, espelho)
+- Marcar 🔨 Criar se o documento exige consolidação manual, cruzamento de dados ou montagem pelo colaborador
+- NUNCA marcar ✅ Já existe para relatórios de análise, conformidade ou tendência — esses sempre precisam ser criados
+- Exemplos ✅ Já existe: "Extrato eSocial", "Recibo DCTFWeb", "Espelho de Folha", "NF-e emitida", "Comprovante de pagamento"
+- Exemplos 🔨 Criar: qualquer relatório de conformidade, análise, cruzamento ou conciliação manual
+- Nome ESPECÍFICO: use o nome real do documento no sistema — nunca genérico
+- PROIBIDO: "Relatório de Verificação", "Relatório de Conformidade", "Laudo", "Relatório de Tendências"
 - PROIBIDO: metas, percentuais, benchmarks, números inventados
 - PROIBIDO: repetir documento já rejeitado no histórico
 - Se CRIAR: colunas exatas + quem preenche — uma linha só
