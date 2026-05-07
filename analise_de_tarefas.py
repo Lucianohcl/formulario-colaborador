@@ -5967,6 +5967,35 @@ def carregar_jsons(colaborador):
         st.error(f"Erro carregar_jsons: {e}")
         return []
 
+def salvar_evidencias(colaborador, resultados):
+    try:
+        path = f"evidencias/{colaborador}.json"
+        url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
+        conteudo = json.dumps(resultados, ensure_ascii=False, indent=2)
+        encoded  = base64.b64encode(conteudo.encode()).decode()
+        res = requests.get(url, headers=HEADERS)
+        payload = {
+            "message": f"evidencias: {colaborador}",
+            "content": encoded
+        }
+        if res.status_code == 200:
+            payload["sha"] = res.json()["sha"]
+        requests.put(url, headers=HEADERS, json=payload)
+    except Exception as e:
+        st.error(f"Erro ao salvar evidências: {e}")
+
+def carregar_evidencias_salvas(colaborador):
+    try:
+        path = f"evidencias/{colaborador}.json"
+        url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
+        res  = requests.get(url, headers=HEADERS)
+        if res.status_code == 200:
+            conteudo = base64.b64decode(res.json()["content"]).decode()
+            return json.loads(conteudo)
+        return None
+    except Exception as e:
+        return None    
+
 
 # -------------------------------
 # IA (COM PROTEÇÃO)
@@ -6029,6 +6058,13 @@ if st.session_state.pagina == "evidencias":
     # GERAR
     # -------------------------------
     chave = f"res_{colaborador}"
+
+    # carrega do GitHub se não estiver na sessão
+    if not st.session_state.get(chave):
+        salvo = carregar_evidencias_salvas(colaborador)
+        if salvo:
+            st.session_state[chave] = salvo
+
     if st.button("🚀 Gerar Evidências"):
         if st.session_state.get(chave):
             st.info("ℹ️ Evidências já geradas. Clique em Resetar para gerar novamente.")
@@ -6062,8 +6098,10 @@ if st.session_state.pagina == "evidencias":
                 except Exception as e:
                     st.error(f"Erro no item: {e}")
             st.session_state[chave] = resultados
+            salvar_evidencias(colaborador, resultados)
             st.info("ℹ️ A IA gera evidências na maioria dos casos sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
     if st.button("🔄 Resetar Evidências"):
+        salvar_evidencias(colaborador, [])
         st.session_state[chave] = []
         st.rerun()
     # -------------------------------
@@ -6078,7 +6116,7 @@ if st.session_state.pagina == "evidencias":
                 height=200
             )
         if st.button("💾 Salvar Edições"):
-            st.session_state[chave] = st.session_state[chave]
+            salvar_evidencias(colaborador, st.session_state[chave])
             st.success("✅ Edições salvas com sucesso!")
     # -------------------------------
     # HTML
