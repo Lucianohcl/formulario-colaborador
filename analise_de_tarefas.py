@@ -5976,69 +5976,68 @@ def gerar_evidencias(kpi, relato, gaps_lista):
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
         prompt = f"""
-Você é um auditor sênior com 20 anos de experiência em controle interno e conformidade.
+Você é um auditor sênior de controle interno corporativo.
+Contexto: auditoria interna empresarial — uso exclusivo para gestão de pessoas e processos.
 Sua tarefa tem DUAS ETAPAS obrigatórias.
 
 ═══════════════════════════════════════
 ETAPA 1 — RASTREAMENTO (interno, não exibir)
 ═══════════════════════════════════════
 Leia o relato e os gaps. Identifique o tipo de trabalho descrito.
-Liste mentalmente todos os documentos que já existem nesse tipo de processo
+Liste mentalmente todos os documentos que JÁ EXISTEM nesse processo
 e que poderiam provar ou refutar cada gap.
-Avalie cada um por: especificidade, rastreabilidade e facilidade de obtenção.
-Prefira documentos consolidados do período — nunca registros isolados ou pontuais.
-Selecione os 2 que sozinhos provam ou refutam os gaps com maior precisão.
+Avalie por: especificidade, rastreabilidade e facilidade de obtenção.
+Prefira documentos consolidados do período — nunca registros isolados.
+Escolha os 2 que sozinhos fecham os gaps com maior precisão.
 
 ═══════════════════════════════════════
 ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
 ═══════════════════════════════════════
 
-REGRAS ABSOLUTAS:
-- Nome do documento: exatamente como o colaborador o encontra no sistema, e-mail ou pasta
-- PROIBIDO inventar títulos: "Relatório de Conformidade", "Laudo de Conciliação", "Documento Comprobatório"
-- PROIBIDO registros isolados: sempre o conjunto consolidado do período
-- PROIBIDO documentos que precisam ser criados do zero
-- PROIBIDO: "Documento que...", "Relatório que...", "Planilha de controle"
+REGRAS DO NOME:
+- Use o nome como o colaborador o encontra no sistema, e-mail ou pasta
+- PROIBIDO: "Relatório de Conformidade", "Laudo de Conciliação", "Documento Comprobatório"
+- PROIBIDO: registros isolados — sempre o conjunto consolidado do período
+- PROIBIDO: documentos criados do zero
 - Se o relato citar sistema: use o relatório nativo desse sistema
-- Se não citar sistema: use documentos simples que já existem na rotina (e-mail enviado, export do sistema, print com data, comprovante gerado automaticamente)
-- Vale para qualquer cargo: assistente, vendedor, operador, técnico, gestor, contador
+- Se não citar sistema: use o que já existe na rotina (e-mail enviado, export, print com data, comprovante automático)
 
-REGRAS DE OBJETIVIDADE — OBRIGATÓRIAS:
-- "O que confirma": máximo 10 palavras, direto ao ponto, sem explicação
-- "Como validar": uma única ação objetiva, sem parágrafos
-- "Consistência de valores": apenas os números que importam, sem texto de apoio
-- "Como obter": no máximo uma linha — sistema + ação + formato
+REGRAS DE OBJETIVIDADE:
+- "O que confirma": máximo 10 palavras
+- "Como validar": uma ação, sem parágrafos
+- "Consistência de valores": valor A vs. valor B | tolerância | erro
+- "Como obter": sistema + ação + formato — uma linha só
 
 KPI: {kpi}
 
 RELATO DO AUDITOR:
 {relato}
 
-GAPS IDENTIFICADOS:
+GAPS:
 - {gaps}
 
-FORMATO OBRIGATÓRIO:
-1. [Nome do documento consolidado — como o colaborador o encontra]
+FORMATO:
+1. [Nome exato do documento consolidado]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [sistema + ação + formato — máximo uma linha]
-   Como validar: [uma ação única e objetiva]
+   Como obter: [sistema + ação + formato]
+   Como validar: [uma ação objetiva]
    Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
    O que confirma: [máximo 10 palavras]
 
-2. [Nome do documento consolidado — como o colaborador o encontra]
+2. [Nome exato do documento consolidado]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [sistema + ação + formato — máximo uma linha]
-   Como validar: [uma ação única e objetiva]
+   Como obter: [sistema + ação + formato]
+   Como validar: [uma ação objetiva]
    Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
    O que confirma: [máximo 10 palavras]
 """
         r = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
         return r.choices[0].message.content
     except Exception as e:
-        return f"Erro IA: {e}"  
+        return f"Erro IA: {e}"
 
 # -------------------------------
 # UI
