@@ -5971,10 +5971,22 @@ def carregar_jsons(colaborador):
 # -------------------------------
 # IA (COM PROTEÇÃO)
 # -------------------------------
-def gerar_evidencias(kpi, relato, gaps_lista):
+# -------------------------------
+# IA (COM PROTEÇÃO)
+# -------------------------------
+def gerar_evidencias(kpi, relato, gaps_lista, historico=None):
     try:
         gaps = "\n- ".join(gaps_lista)
         relato = relato.replace("[Mês/Ano]", "período analisado")
+
+        bloco_historico = ""
+        if historico:
+            bloco_historico = f"""
+HISTÓRICO DE AUDITORIAS ANTERIORES (mesmo KPI):
+{historico}
+Use o histórico para identificar reincidências e ajustar a evidência ao padrão real do processo.
+"""
+
         prompt = f"""
 Você é um auditor sênior de controle interno corporativo.
 Contexto: auditoria interna empresarial — uso exclusivo para gestão de pessoas e processos.
@@ -5983,10 +5995,11 @@ Sua tarefa tem DUAS ETAPAS obrigatórias.
 ═══════════════════════════════════════
 ETAPA 1 — RASTREAMENTO (interno, não exibir)
 ═══════════════════════════════════════
-Leia o relato e os gaps. Identifique o tipo de trabalho descrito.
-Liste mentalmente todos os documentos que JÁ EXISTEM nesse processo
-e que poderiam provar ou refutar cada gap.
-Avalie por: especificidade, rastreabilidade e facilidade de obtenção.
+Leia o relato, os gaps e o histórico.
+Identifique o tipo de processo e cargo descrito.
+Decida para cada evidência: o documento JÁ EXISTE ou PRECISA SER CRIADO?
+- Se JÁ EXISTE: nomeie exatamente como o colaborador o encontra no sistema, e-mail ou pasta
+- Se PRECISA SER CRIADO: descreva exatamente o que criar, de forma simples e objetiva
 Prefira documentos consolidados do período — nunca registros isolados.
 Escolha os 2 que sozinhos fecham os gaps com maior precisão.
 
@@ -5995,18 +6008,16 @@ ETAPA 2 — RESPOSTA FINAL (exibir apenas isso)
 ═══════════════════════════════════════
 
 REGRAS DO NOME:
-- Use o nome como o colaborador o encontra no sistema, e-mail ou pasta
 - PROIBIDO: "Relatório de Conformidade", "Laudo de Conciliação", "Documento Comprobatório"
-- PROIBIDO: registros isolados — sempre o conjunto consolidado do período
-- PROIBIDO: documentos criados do zero
+- PROIBIDO: registros isolados — sempre consolidado do período
 - Se o relato citar sistema: use o relatório nativo desse sistema
-- Se não citar sistema: use o que já existe na rotina (e-mail enviado, export, print com data, comprovante automático)
+- Se não citar sistema: infira pelo tipo de processo descrito no relato
 
 REGRAS DE OBJETIVIDADE:
 - "O que confirma": máximo 10 palavras
-- "Como validar": uma ação, sem parágrafos
-- "Consistência de valores": valor A vs. valor B | tolerância | erro
-- "Como obter": sistema + ação + formato — uma linha só
+- "Como obter ou criar": uma linha só
+- "Como validar": uma ação objetiva
+- "Consistência de valores": valor A vs. valor B | tolerância | o que indica erro
 
 KPI: {kpi}
 
@@ -6015,18 +6026,21 @@ RELATO DO AUDITOR:
 
 GAPS:
 - {gaps}
+{bloco_historico}
 
 FORMATO:
-1. [Nome exato do documento consolidado]
+1. [Nome exato do documento]
+   Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [sistema + ação + formato]
+   Como obter ou criar: [sistema + ação + formato OU o que criar e como]
    Como validar: [uma ação objetiva]
    Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
    O que confirma: [máximo 10 palavras]
 
-2. [Nome exato do documento consolidado]
+2. [Nome exato do documento]
+   Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [sistema + ação + formato]
+   Como obter ou criar: [sistema + ação + formato OU o que criar e como]
    Como validar: [uma ação objetiva]
    Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
    O que confirma: [máximo 10 palavras]
@@ -6038,6 +6052,7 @@ FORMATO:
         return r.choices[0].message.content
     except Exception as e:
         return f"Erro IA: {e}"
+
 
 # -------------------------------
 # UI
@@ -6066,8 +6081,6 @@ if st.session_state.pagina == "evidencias":
 
         resultados = []
 
-        
-
         df = pd.DataFrame(dados)
 
         for kpi, grupo in df.groupby("kpi_nome"):
@@ -6075,7 +6088,14 @@ if st.session_state.pagina == "evidencias":
                 relato = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
                 gaps = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
 
-                evidencias = gerar_evidencias(kpi, relato, gaps)
+                # Monta histórico de auditorias anteriores do mesmo KPI
+                historico = ""
+                if "auditoria_anterior" in grupo.columns:
+                    historico = " | ".join(grupo["auditoria_anterior"].dropna().astype(str))
+                elif "historico" in grupo.columns:
+                    historico = " | ".join(grupo["historico"].dropna().astype(str))
+
+                evidencias = gerar_evidencias(kpi, relato, gaps, historico=historico)
 
                 resultados.append({
                     "kpi": kpi,
