@@ -4950,7 +4950,7 @@ if st.session_state.get("pagina") == "parecer":
                                         <th>Impacto Diário</th><th>Eficiência</th><th>Meta Auditável</th>
                                     </tr>
                         """
-                        for d in st.session_state["df_pop_ia"].to_dict("records"):
+                        for d in st.session_state[chave_df].to_dict("records"):
                             html_content += f"""
                                     <tr>
                                         <td>{d['Atividade']}</td><td>{d['Freq']}</td><td>{d['Tempo Base']}</td>
@@ -4959,7 +4959,7 @@ if st.session_state.get("pagina") == "parecer":
                                     </tr>
                             """
 
-                        df_html = st.session_state["df_pop_ia"].copy()
+                        df_html = st.session_state[chave_df].copy()
                         df_html["Impacto Diário Convertido"] = (
                             df_html["Impacto Diário Convertido"]
                             .astype(str).str.replace("m", "", regex=False).astype(float)
