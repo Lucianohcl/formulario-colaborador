@@ -4900,6 +4900,9 @@ if st.session_state.get("pagina") == "parecer":
                             if "df_pop_ia_original" not in st.session_state:
                                 st.session_state["df_pop_ia_original"] = base.copy()
 
+                        if chave_df not in st.session_state:
+                            st.session_state[chave_df] = pd.DataFrame(st.session_state[chave_pop])
+
                         df_editavel = st.data_editor(
                             st.session_state[chave_df],
                             use_container_width=True,
