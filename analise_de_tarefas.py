@@ -5632,7 +5632,10 @@ def aba_produtividade_inteligente():
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
                     relato_salvo = relatos_salvos.get(kpi['nome'].strip().upper(), "")
-                    relato = st.text_area("Relato da conformidade:", value=relato_salvo, key=f"rel_{i}")
+                    chave_relato = f"rel_{i}"
+                    if chave_relato not in st.session_state:
+                        st.session_state[chave_relato] = relato_salvo
+                    relato = st.text_area("Relato da conformidade:", key=chave_relato)
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
                     # =========================
