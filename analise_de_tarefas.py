@@ -5638,6 +5638,10 @@ def aba_produtividade_inteligente():
                     if chave_relato not in st.session_state:
                         st.session_state[chave_relato] = relato_salvo
                     relato = st.text_area("Relato da conformidade:", key=chave_relato)
+
+                    if st.button("🗑️ Limpar Análise", key=f"limpar_{i}"):
+                        st.session_state[chave_relato] = ""
+                        st.rerun()
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
                     # =========================
