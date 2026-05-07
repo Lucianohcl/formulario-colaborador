@@ -5025,7 +5025,7 @@ if st.session_state.get("pagina") == "parecer":
                         confronto = []
                         mapeadas = set()
 
-                        df_pop = st.session_state["df_pop_ia"].copy()
+                        df_pop = st.session_state[chave_df].copy()
                         df_pop["Impacto Diário Convertido"] = (
                             df_pop["Impacto Diário Convertido"]
                             .astype(str).str.replace("m", "", regex=False).astype(float)
