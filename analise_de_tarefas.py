@@ -5990,16 +5990,11 @@ Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colabo
 DEVE apresentar para provar conformidade.
 
 REGRAS ABSOLUTAS:
-- Só marcar ✅ Já existe se o documento é gerado AUTOMATICAMENTE pelo sistema (ex: extrato, recibo, comprovante de transmissão, espelho)
-- Marcar 🔨 Criar se o documento exige consolidação manual, cruzamento de dados ou montagem pelo colaborador
-- NUNCA marcar ✅ Já existe para relatórios de análise, conformidade ou tendência — esses sempre precisam ser criados
-- Exemplos ✅ Já existe: "Extrato eSocial", "Recibo DCTFWeb", "Espelho de Folha", "NF-e emitida", "Comprovante de pagamento"
-- Exemplos 🔨 Criar: qualquer relatório de conformidade, análise, cruzamento ou conciliação manual
-- Nome ESPECÍFICO: use o nome real do documento no sistema — nunca genérico
-- PROIBIDO: "Relatório de Verificação", "Relatório de Conformidade", "Laudo", "Relatório de Tendências"
+- Nome ESPECÍFICO: use o nome real do documento no sistema (ex: "Extrato de Transmissões eSocial", "Espelho de Folha", "NF-e emitidas")
+- PROIBIDO: nomes genéricos como "Relatório de Auditoria", "Relatório de Conformidade", "Laudo"
 - PROIBIDO: metas, percentuais, benchmarks, números inventados
 - PROIBIDO: repetir documento já rejeitado no histórico
-- Se CRIAR: colunas exatas + quem preenche — uma linha só
+- Se o sistema foi citado no relato: use o nome do documento nativo desse sistema
 
 KPI: {kpi}
 RELATO: {relato}
@@ -6011,16 +6006,14 @@ ANÁLISE DO AUDITOR: {analise}
 RESPONDA APENAS NESTE FORMATO:
 
 1. [Nome exato do documento como aparece no sistema]
-   Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter ou criar: [sistema → menu → formato] OU [colunas: X, Y, Z + responsável]
+   Como obter: [sistema → menu → formato]
    Como validar: [cruzar campo A com campo B]
    O que confirma: [máximo 8 palavras]
 
 2. [Nome exato do documento como aparece no sistema]
-   Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter ou criar: [sistema → menu → formato] OU [colunas: X, Y, Z + responsável]
+   Como obter: [sistema → menu → formato]
    Como validar: [cruzar campo A com campo B]
    O que confirma: [máximo 8 palavras]
 """
