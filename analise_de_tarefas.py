@@ -5572,7 +5572,7 @@ def aba_produtividade_inteligente():
         # =========================
         if arquivo_pop:
 
-            nome_pop = arquivo_pop.name if hasattr(arquivo_pop, "name") else os.path.basename(arquivo_pop)
+            nome_pop = colaborador_file
 
             if "ultimo_pop" not in st.session_state or st.session_state.ultimo_pop != nome_pop:
 
