@@ -5971,15 +5971,12 @@ def carregar_jsons(colaborador):
 # -------------------------------
 # IA (COM PROTEÇÃO)
 # -------------------------------
-# -------------------------------
-# IA (COM PROTEÇÃO)
-# -------------------------------
 def gerar_evidencias(kpi, relato, gaps_lista,
                      nota=None, status="", analise="",
-                     meta="", realizado="", periodo="período auditado",
+                     periodo="período auditado",
                      tendencia="estável", historico=None):
     try:
-        gaps = "\n- ".join(list(dict.fromkeys(gaps_lista)))  # remove duplicatas
+        gaps = "\n- ".join(list(dict.fromkeys(gaps_lista)))
         relato = relato.replace("[Mês/Ano]", periodo)
 
         bloco_contexto = f"""
@@ -6024,6 +6021,8 @@ REGRAS ABSOLUTAS:
 - PROIBIDO: registros isolados — sempre consolidado do período
 - PROIBIDO: sugerir documento já rejeitado no histórico
 - PROIBIDO: mencionar metas ou percentuais de eficiência
+- PROIBIDO: inventar métricas ou números que não estejam no histórico
+- Consistência de valores: descreva APENAS o cruzamento de dois campos reais — nunca invente valores
 - Se CRIAR: especificar exatamente colunas, campos e quem preenche
 - Uma linha por campo — sem parágrafos
 
@@ -6058,7 +6057,6 @@ FORMATO:
         return r.choices[0].message.content
     except Exception as e:
         return f"Erro IA: {e}"
-
 
 # -------------------------------
 # UI
