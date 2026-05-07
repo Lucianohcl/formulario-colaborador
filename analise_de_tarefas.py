@@ -5623,14 +5623,16 @@ def aba_produtividade_inteligente():
                         url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab.replace(' ', '_')}"
                         res_audit = requests.get(url_audit, headers=HEADERS)
                         if res_audit.status_code == 200:
-                            for arq in res_audit.json():
-                                if arq["name"].endswith(".json"):
-                                    dado = requests.get(arq["download_url"]).json()
-                                    if dado.get("kpi_nome") == kpi['nome']:
-                                        relato_salvo = dado.get("relato_do_auditor", "")
-                                        break
-                    except:
-                        pass
+                            arquivos = [a for a in res_audit.json() if a.get("type") == "file" and a["name"].endswith(".json")]
+                            for arq in arquivos:
+                                dado = requests.get(arq["download_url"]).json()
+                                kpi_nome_dado = dado.get("kpi_nome", "").strip().upper()
+                                kpi_nome_atual = kpi['nome'].strip().upper()
+                                if kpi_nome_dado == kpi_nome_atual:
+                                    relato_salvo = dado.get("relato_do_auditor", "")
+                                    break
+                    except Exception as e:
+                        st.caption(f"debug: {e}")
                     relato = st.text_area("Relato da conformidade:", value=relato_salvo, key=f"rel_{i}")
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
