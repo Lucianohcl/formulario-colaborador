@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 46,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação comprova parcialmente a conformidade com os requisitos estabelecidos. No entanto, faltam evidências concretas sobre a realização da auditoria preventiva de compliance detalhada no relato do funcionário. A ausência de provas específicas que demonstrem a conferência da Malha Fiscal Trabalhista, bem como o cruzamento detalhado dos dados de proventos da Folha com as transmissões do eSocial, prejudica a integridade e completude da prova. Além disso, o documento de compliance tributária não é suficiente para cobrir todos os aspectos de conformidade legislativa, como os eventos de afastamento e desligamento.",
+    "gap_de_conformidade": [
+        "Ausência de comprovação detalhada sobre a auditoria mencionada.",
+        "Falta de evidências sobre conferência da Malha Fiscal Trabalhista.",
+        "Não há documentação sobre o cruzamento detalhado de proventos com eSocial."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 15,
+        "integridade": 10,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
