@@ -5545,6 +5545,19 @@ def aba_produtividade_inteligente():
     with t1:
         st.subheader("📁 POP de Referência (GitHub)")
         nome_pop = colaborador_file.replace(".json", "")
+
+        def carregar_evidencias_salvas(nome):
+            try:
+                path = f"pop/{nome}.json"
+                url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
+                res  = requests.get(url, headers=HEADERS)
+                if res.status_code == 200:
+                    conteudo = base64.b64decode(res.json()["content"]).decode()
+                    return json.loads(conteudo)
+                return None
+            except Exception:
+                return None
+
         pop_referencia = carregar_evidencias_salvas(nome_pop)
         if pop_referencia:
             df_pop_ref = pd.DataFrame(pop_referencia)
