@@ -6000,8 +6000,14 @@ REGRAS ABSOLUTAS:
 - PROIBIDO documentos que precisam ser criados do zero
 - PROIBIDO: "Documento que...", "Relatório que...", "Planilha de controle"
 - Se o relato citar sistema: use o relatório nativo desse sistema
-- Se não citar sistema: infira pelo processo descrito no relato
+- Se não citar sistema: use documentos simples que já existem na rotina (e-mail enviado, export do sistema, print com data, comprovante gerado automaticamente)
 - Vale para qualquer cargo: assistente, vendedor, operador, técnico, gestor, contador
+
+REGRAS DE OBJETIVIDADE — OBRIGATÓRIAS:
+- "O que confirma": máximo 10 palavras, direto ao ponto, sem explicação
+- "Como validar": uma única ação objetiva, sem parágrafos
+- "Consistência de valores": apenas os números que importam, sem texto de apoio
+- "Como obter": no máximo uma linha — sistema + ação + formato
 
 KPI: {kpi}
 
@@ -6012,19 +6018,19 @@ GAPS IDENTIFICADOS:
 - {gaps}
 
 FORMATO OBRIGATÓRIO:
-1. [Nome do documento consolidado do período — como o colaborador o encontra]
+1. [Nome do documento consolidado — como o colaborador o encontra]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [onde buscar — sistema, gestor, e-mail, cliente, pasta compartilhada]
-   Como validar: [o que cruzar ou comparar para confirmar que foi executado]
-   Consistência de valores: [qual valor vs. qual referência | tolerância aceitável | o que indica erro]
-   O que confirma: [em uma frase: qual gap este documento fecha]
+   Como obter: [sistema + ação + formato — máximo uma linha]
+   Como validar: [uma ação única e objetiva]
+   Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
+   O que confirma: [máximo 10 palavras]
 
-2. [Nome do documento consolidado do período — como o colaborador o encontra]
+2. [Nome do documento consolidado — como o colaborador o encontra]
    Periodicidade: Mensal | Trimestral | Anual | Por evento | Sob demanda
-   Como obter: [onde buscar — sistema, gestor, e-mail, cliente, pasta compartilhada]
-   Como validar: [o que cruzar ou comparar para confirmar que foi executado]
-   Consistência de valores: [qual valor vs. qual referência | tolerância aceitável | o que indica erro]
-   O que confirma: [em uma frase: qual gap este documento fecha]
+   Como obter: [sistema + ação + formato — máximo uma linha]
+   Como validar: [uma ação única e objetiva]
+   Consistência de valores: [valor A vs. valor B | tolerância | o que indica erro]
+   O que confirma: [máximo 10 palavras]
 """
         r = client.chat.completions.create(
             model="gpt-4o",
