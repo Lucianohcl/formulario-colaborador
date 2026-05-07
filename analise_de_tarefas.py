@@ -6029,7 +6029,6 @@ if st.session_state.pagina == "evidencias":
     # GERAR
     # -------------------------------
     chave = f"res_{colaborador}"
-
     if st.button("🚀 Gerar Evidências"):
         if st.session_state.get(chave):
             st.info("ℹ️ Evidências já geradas. Clique em Resetar para gerar novamente.")
@@ -6064,34 +6063,28 @@ if st.session_state.pagina == "evidencias":
                     st.error(f"Erro no item: {e}")
             st.session_state[chave] = resultados
             st.info("ℹ️ A IA gera evidências na maioria dos casos sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
-
     if st.button("🔄 Resetar Evidências"):
         st.session_state[chave] = []
         st.rerun()
-
     # -------------------------------
     # EXIBIR
     # -------------------------------
-    if "res" in st.session_state:
-        for r in st.session_state["res"]:
+    if st.session_state.get(chave):
+        for r in st.session_state[chave]:
             st.subheader(r["kpi"])
             r["evidencias"] = st.text_area(
                 f"Editar evidências - {r['kpi']}",
                 value=r["evidencias"],
                 height=200
             )
-
-
     # -------------------------------
     # HTML
     # -------------------------------
-    if "res" in st.session_state:
+    if st.session_state.get(chave):
         if st.button("📄 Gerar HTML"):
             html = f"<h1>Relatório - {colaborador}</h1>"
-
-            for r in st.session_state["res"]:
+            for r in st.session_state[chave]:
                 html += f"<h2>{r['kpi']}</h2><pre>{r['evidencias']}</pre>"
-
             st.download_button(
                 "⬇️ Baixar HTML",
                 html,
