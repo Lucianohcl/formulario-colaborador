@@ -5581,22 +5581,24 @@ def aba_produtividade_inteligente():
 
                 st.session_state.ultimo_pop = nome_pop
 
-            # Processamento do POP
-            texto_pdf = extrair_texto_pdf(arquivo_pop)
-            pop_data = estruturar_pop_completo_ia(texto_pdf)
-            
             # Exibição da Tabela de Eficiência
-            st.subheader("📚 Quadro de Eficiência (Baseado no PDF)")
+            st.subheader("📚 Quadro de Eficiência (Baseado no POP)")
             lista_tabela = []
             total_m = 0
-            for item in pop_data['atividades']:
-                t, f = item['tempo'], item['freq'].upper()
-                imp = t if "DIÁR" in f else (t/5 if "SEMAN" in f else t/22)
+            for item in arquivo_pop:
+                imp_str = str(item.get("Impacto Diário Convertido", "0m")).replace("m", "")
+                try:
+                    imp = float(imp_str)
+                except:
+                    imp = 0.0
                 total_m += imp
                 lista_tabela.append({
-                    "Atividade": item['nome'], "Freq": f, "Tempo": f"{t}m", 
-                    "Impacto": f"{imp:.1f}m", "Meta": item['meta']
-                })
+                    "Atividade": item.get("Atividade", ""),
+                    "Freq": item.get("Freq", ""),
+                    "Tempo": item.get("Tempo Base", ""),
+                    "Impacto": item.get("Impacto Diário Convertido", ""),
+                    "Meta": item.get("Meta Auditável", "")
+                })  
             
             c1, c2, c3 = st.columns(3)
             c1.metric("Carga Alvo", "480 min")
