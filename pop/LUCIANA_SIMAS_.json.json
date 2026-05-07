@@ -1,0 +1,58 @@
+[
+  {
+    "Atividade": "CÁLCULO_DE_TRIBUTOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "120.0m",
+    "Eficiência vs 480m": "25.0%",
+    "Meta Auditável": "Calcular e registrar os tributos devidos, assegurando menos de 5% de erro nas declarações."
+  },
+  {
+    "Atividade": "ANÁLISE_DE_CONFORMIDADE",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Verificação dos processos e práticas contábeis em relação às normas legais vigentes, com relatório semanal de não conformidades."
+  },
+  {
+    "Atividade": "PREPARAÇÃO_DE_RELATÓRIOS_FINANCEIROS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Elaboração de relatórios gerenciais mensais com base nas informações financeiras, visando uma apresentação clara e com insights estratégicos."
+  },
+  {
+    "Atividade": "AUDITORIA_INTERNA",
+    "Freq": "SEMANAL",
+    "Tempo Base": "40m",
+    "Impacto Diário Convertido": "8.0m",
+    "Eficiência vs 480m": "1.7%",
+    "Meta Auditável": "Realizar auditorias semanais em fluxos contábeis, com um mínimo de 2 áreas auditadas por semana."
+  },
+  {
+    "Atividade": "TREINAMENTO_E_DEVOLUTIVA_COM_A_EQUIPES",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Conduzir sessões de treinamento sobre normativas contábeis e melhores práticas, com participação mínima de 80% da equipe."
+  },
+  {
+    "Atividade": "ANÁLISE_DE_DESVIOS_FINANCEIROS",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Análise detalhada de desvios financeiros mensais, apresentando relatório de causas e ações corretivas em até 5 dias após o fechamento."
+  },
+  {
+    "Atividade": "RELATÓRIOS_DE_PERFOMANCE_DE_CUSTO",
+    "Freq": "MENSAL",
+    "Tempo Base": "40m",
+    "Impacto Diário Convertido": "1.8m",
+    "Eficiência vs 480m": "0.4%",
+    "Meta Auditável": "Preparar e revisar relatórios que analisem o desempenho de custos em relação ao orçamento, com apresentação para a diretoria."
+  }
+]
