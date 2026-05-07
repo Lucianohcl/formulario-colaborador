@@ -5971,9 +5971,6 @@ def carregar_jsons(colaborador):
 # -------------------------------
 # IA (COM PROTEÇÃO)
 # -------------------------------
-# -------------------------------
-# IA (COM PROTEÇÃO)
-# -------------------------------
 def gerar_evidencias(kpi, relato, gaps_lista, analise="", historico=None):
     try:
         gaps = "\n- ".join(list(dict.fromkeys(gaps_lista)))
@@ -5992,13 +5989,15 @@ Você é um auditor sênior. Responda APENAS o que foi pedido, sem explicações
 Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colaborador
 DEVE apresentar para provar conformidade.
 
-REGRAS:
-- Nome do documento: específico e real — nunca genérico
-- Se não existe: dizer exatamente como criar (colunas + responsável)
-- Se existe: dizer exatamente onde buscar
+REGRAS ABSOLUTAS:
+- Antes de sugerir CRIAR: verifique se o documento já existe em algum sistema citado no relato
+- Se o sistema foi citado no relato (ex: eSocial, SAP, TOTVS, ERP, CRM): o documento JÁ EXISTE — indique onde buscar
+- Só marcar 🔨 Criar quando o documento realmente não existe em nenhum sistema do processo
+- Nome ESPECÍFICO: use o nome real do documento no sistema (ex: "Extrato de Transmissões eSocial", "Espelho de Folha", "NF-e emitidas")
+- PROIBIDO: nomes genéricos como "Relatório de Verificação", "Relatório de Conformidade", "Laudo"
 - PROIBIDO: metas, percentuais, benchmarks, números inventados
-- PROIBIDO: "Relatório de Conformidade", "Laudo", "Documento Comprobatório"
 - PROIBIDO: repetir documento já rejeitado no histórico
+- Se CRIAR: colunas exatas + quem preenche — uma linha só
 
 KPI: {kpi}
 RELATO: {relato}
@@ -6009,18 +6008,18 @@ ANÁLISE DO AUDITOR: {analise}
 
 RESPONDA APENAS NESTE FORMATO:
 
-1. [Nome exato do documento]
+1. [Nome exato do documento como aparece no sistema]
    Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter ou criar: [uma linha]
-   Como validar: [uma linha]
+   Como obter ou criar: [sistema → menu → formato] OU [colunas: X, Y, Z + responsável]
+   Como validar: [cruzar campo A com campo B]
    O que confirma: [máximo 8 palavras]
 
-2. [Nome exato do documento]
+2. [Nome exato do documento como aparece no sistema]
    Status: ✅ Já existe | 🔨 Criar
    Periodicidade: Mensal | Trimestral | Anual | Por evento
-   Como obter ou criar: [uma linha]
-   Como validar: [uma linha]
+   Como obter ou criar: [sistema → menu → formato] OU [colunas: X, Y, Z + responsável]
+   Como validar: [cruzar campo A com campo B]
    O que confirma: [máximo 8 palavras]
 """
         r = client.chat.completions.create(
