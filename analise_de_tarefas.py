@@ -5975,20 +5975,16 @@ def gerar_evidencias(kpi, relato, gaps_lista, analise="", historico=None):
     try:
         gaps = "\n- ".join(list(dict.fromkeys(gaps_lista)))
         relato = relato.replace("[Mês/Ano]", "período auditado")
-
         bloco_historico = ""
         if historico:
             bloco_historico = f"""
 HISTÓRICO:
 {historico}
 """
-
         prompt = f"""
 Você é um auditor sênior. Responda APENAS o que foi pedido, sem explicações.
-
 Com base no KPI, relato, gaps e histórico, indique os 2 documentos que o colaborador
 DEVE apresentar para provar conformidade.
-
 REGRAS ABSOLUTAS:
 - Nome ESPECÍFICO com sistema de origem (ex: "Extrato de Transmissões eSocial", "Recibo DCTFWeb", "Espelho de Folha ERP")
 - PROIBIDO: "Malha Fiscal", "Relatório de Auditoria", "Relatório de Conformidade", "Laudo"
@@ -5998,20 +5994,16 @@ REGRAS ABSOLUTAS:
 - Se citou ERP: "ERP → [módulo] → competência → Export"
 - PROIBIDO: metas, percentuais, benchmarks, números inventados
 - PROIBIDO: repetir documento já rejeitado no histórico
-
 KPI: {kpi}
 RELATO: {relato}
 GAPS:
 - {gaps}
 ANÁLISE DO AUDITOR: {analise}
 {bloco_historico}
-
 RESPONDA APENAS NESTE FORMATO:
-
 1. [Nome exato do documento com sistema de origem]
    Periodicidade: Mensal | Trimestral | Anual | Por evento
    Como obter: [sistema → menu → formato]
-
 2. [Nome exato do documento com sistema de origem]
    Periodicidade: Mensal | Trimestral | Anual | Por evento
    Como obter: [sistema → menu → formato]
@@ -6023,42 +6015,31 @@ RESPONDA APENAS NESTE FORMATO:
         return r.choices[0].message.content
     except Exception as e:
         return f"Erro IA: {e}"
-
-
 # -------------------------------
 # UI
 # -------------------------------
 if st.session_state.pagina == "evidencias":
-
     st.title("📊 Evidências por KPI")
-
     colaboradores = listar_colaboradores()
-
     if not colaboradores:
         st.warning("Nenhum colaborador encontrado")
         st.stop()
-
     colaborador = st.selectbox("Selecione o colaborador", colaboradores)
-
     # -------------------------------
     # GERAR
     # -------------------------------
     if st.button("🚀 Gerar Evidências"):
         dados = carregar_jsons(colaborador)
-
         if not dados:
             st.warning("Nenhum JSON encontrado")
             st.stop()
-
         resultados = []
         df = pd.DataFrame(dados)
-
         for kpi, grupo in df.groupby("kpi_nome"):
             try:
                 relato  = " ".join(grupo["relato_do_auditor"].dropna().astype(str))
                 gaps    = sum(grupo["gap_de_conformidade"].dropna().tolist(), [])
                 analise = grupo.iloc[-1].get("analise_critica", "")
-
                 # ── histórico completo linha por linha ──
                 historico_linhas = []
                 for _, row in grupo.iterrows():
@@ -6066,9 +6047,7 @@ if st.session_state.pagina == "evidencias":
                     linha += f"Análise: {row.get('analise_critica', '')} | "
                     linha += f"Gaps: {', '.join(row.get('gap_de_conformidade', []))}"
                     historico_linhas.append(linha)
-
                 historico = "\n".join(historico_linhas)
-
                 evidencias = gerar_evidencias(
                     kpi        = kpi,
                     relato     = relato,
@@ -6076,13 +6055,11 @@ if st.session_state.pagina == "evidencias":
                     analise    = analise,
                     historico  = historico
                 )
-
                 resultados.append({"kpi": kpi, "evidencias": evidencias})
-
             except Exception as e:
                 st.error(f"Erro no item: {e}")
-
         st.session_state["res"] = resultados
+        st.info("ℹ️ A IA gera as evidências corretas — documento certo, periodicidade certa, lógica certa. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
 
     # -------------------------------
     # EXIBIR
