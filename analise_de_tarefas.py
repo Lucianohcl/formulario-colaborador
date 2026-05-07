@@ -5560,8 +5560,6 @@ def aba_produtividade_inteligente():
 
         pop_referencia = carregar_evidencias_salvas(nome_pop)
         if pop_referencia:
-            df_pop_ref = pd.DataFrame(pop_referencia)
-            st.dataframe(df_pop_ref, use_container_width=True)
             arquivo_pop = pop_referencia
         else:
             st.warning("Nenhum POP encontrado no banco para este colaborador.")
