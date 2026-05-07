@@ -5,6 +5,6 @@
   },
   {
     "kpi": "Eficácia da Auditoria Interna",
-    "evidencias": "1. Relatório de Conformidade Semanal\n   Periodicidade: Semanal | \n   Como obter: [Sistema Interno → Relatórios → Exportar PDF]\n\n2. Comparativo de Erros de Folha de Pagamento\n   Periodicidade: Mensal | \n   Como obter: [ERP → Folha de Pagamento → Relatórios → Exportar PDF]\n"
+    "evidencias": "1. Relatório de Conformidade Semanal\n   Periodicidade: Semanal | \n   Como obter: [Sistema Interno → Relatórios → Exportar PDF]\n\n2. Comparativo de Erros de Folha de Pagamento\n   Periodicidade: Mensal | \n   Como obter: [ERP → Folha de Pagamento → Relatórios → Exportar PDF]\n\n3. Histórico de Não Conformidades — Sistema Interno\nPeriodicidade: Mensal\nComo obter: Sistema Interno → Auditoria → Histórico de Erros → competência → Export PDF\n\n4. Relatório Comparativo de Acurácia de Lançamentos\nPeriodicidade: Mensal\nComo obter: ERP → Folha de Pagamento → Comparativo → período anterior x atual → Export PDF\n"
   }
 ]
