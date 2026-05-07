@@ -4754,6 +4754,35 @@ if st.session_state.get("pagina") == "parecer":
         </html>
         """
 
+    def carregar_evidencias_salvas(nome):
+        try:
+            path = f"evidencias/{nome}.json"
+            url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
+            res  = requests.get(url, headers=HEADERS)
+            if res.status_code == 200:
+                conteudo = base64.b64decode(res.json()["content"]).decode()
+                return json.loads(conteudo)
+            return None
+        except Exception:
+            return None
+
+    def salvar_evidencias(nome, resultados):
+        try:
+            path = f"evidencias/{nome}.json"
+            url  = f"https://api.github.com/repos/{REPO}/contents/{path}"
+            conteudo = json.dumps(resultados, ensure_ascii=False, indent=2)
+            encoded  = base64.b64encode(conteudo.encode()).decode()
+            res = requests.get(url, headers=HEADERS)
+            payload = {
+                "message": f"evidencias: {nome}",
+                "content": encoded
+            }
+            if res.status_code == 200:
+                payload["sha"] = res.json()["sha"]
+            requests.put(url, headers=HEADERS, json=payload)
+        except Exception as e:
+            st.error(f"Erro ao salvar: {e}")
+
     # ==============================================================================
     # INICIALIZAÇÃO DE SESSION STATE
     # ==============================================================================
