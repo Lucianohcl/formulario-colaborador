@@ -5620,7 +5620,7 @@ def aba_produtividade_inteligente():
                     # busca relato salvo no histórico
                     relato_salvo = ""
                     try:
-                        url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab}"
+                        url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab.replace(' ', '_')}"
                         res_audit = requests.get(url_audit, headers=HEADERS)
                         if res_audit.status_code == 200:
                             for arq in res_audit.json():
