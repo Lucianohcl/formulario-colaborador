@@ -5617,7 +5617,21 @@ def aba_produtividade_inteligente():
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
                     
-                    relato = st.text_area("Relato da conformidade:", key=f"rel_{i}")
+                    # busca relato salvo no histórico
+                    relato_salvo = ""
+                    try:
+                        url_audit = f"https://api.github.com/repos/{REPO}/contents/auditorias/{nome_colab}"
+                        res_audit = requests.get(url_audit, headers=HEADERS)
+                        if res_audit.status_code == 200:
+                            for arq in res_audit.json():
+                                if arq["name"].endswith(".json"):
+                                    dado = requests.get(arq["download_url"]).json()
+                                    if dado.get("kpi_nome") == kpi['nome']:
+                                        relato_salvo = dado.get("relato_do_auditor", "")
+                                        break
+                    except:
+                        pass
+                    relato = st.text_area("Relato da conformidade:", value=relato_salvo, key=f"rel_{i}")
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
                     # =========================
