@@ -934,7 +934,7 @@ btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
 btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
 btn_produtividade = st.sidebar.button("🚀 Produtividade")
 btn_gerar_evidencias = st.sidebar.button("✨ Gerar Evidências")
-
+btn_central = st.sidebar.button("🧠 Central de Inteligência")
 
 st.sidebar.markdown("---")
 
@@ -960,6 +960,8 @@ elif btn_produtividade:
     st.session_state.pagina = "produtividade"
 elif btn_gerar_evidencias:
     st.session_state.pagina = "evidencias"
+elif btn_central:
+    st.session_state.pagina = "central_inteligencia"
 # O elif abaixo verifica a URL sem precisar de botão
 elif st.session_state.pagina == "formulario":
     pass # Este comando é obrigatório para não dar erro de sintaxe
@@ -6450,4 +6452,857 @@ if st.session_state.pagina == "tutorial":
         data=pdf_bytes,
         file_name="Tutorial_Sistema_Analise_Tarefas.pdf",
         mime="application/pdf"
+    )
+
+
+
+# ============================================================
+# CENTRAL DE INTELIGÊNCIA NETEXAME — VERSÃO REVISADA
+# ============================================================
+#
+# CHECKLIST DE INSTALAÇÃO (faça antes de colar):    
+#
+# 1. IMPORTS — verifique se esses já estão no topo do seu app:
+#    import streamlit as st
+#    import pandas as pd
+#    import json
+#    from datetime import datetime
+#    from github import Github
+#    from openai import OpenAI
+#
+# 2. VARIÁVEL repo — o seu app já tem isso em algum lugar:
+#    g = Github(st.secrets["DB_TOKEN"])
+#    repo = g.get_repo("lucianohcl/formulario-colaborador")
+#    As funções abaixo usam a variável global 'repo'.
+#    Se no seu app o repo é sempre recriado localmente,
+#    substitua 'repo' por st.session_state.get('repo_conectado')
+#    em cada função (já tratado no bloco da página).
+#
+# 3. SIDEBAR — adicione estas linhas no bloco do sidebar:
+#    btn_central = st.sidebar.button("🧠 Central de Inteligência")
+#
+# 4. ROTEADOR — adicione este elif junto dos outros:
+#    elif btn_central:
+#        st.session_state.pagina = "central_inteligencia"
+#
+# 5. COLAR — cole este arquivo inteiro no FINAL do seu app,
+#    depois de todos os outros blocos if/elif de página.
+# ============================================================
+
+
+# ============================================================
+# BLOCO 1 — FUNÇÕES GLOBAIS
+# Cole estas funções junto das outras funções globais do app
+# (perto de salvar_no_github, calcular_disc, etc.)
+# Se preferir, pode deixar aqui mesmo no final — funciona.
+# ============================================================
+
+def salvar_master(nome_colaborador, novos_dados):
+    """
+    Salva ou atualiza /master/NOME.json com merge inteligente.
+    Preserva dados anteriores e adiciona/sobrescreve apenas as chaves novas.
+    """
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+
+        nome_limpo = str(nome_colaborador).strip().replace(" ", "_").upper()
+        caminho    = f"master/{nome_limpo}.json"
+
+        # Tenta carregar o master existente para fazer merge
+        try:
+            arq   = _repo.get_contents(caminho)
+            atual = json.loads(arq.decoded_content.decode())
+        except Exception:
+            atual = {
+                "colaborador": nome_colaborador,
+                "criado_em":   datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            }
+
+        # Merge: preserva tudo e adiciona/atualiza as chaves novas
+        atual.update(novos_dados)
+        atual["ultima_atualizacao"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        conteudo = json.dumps(atual, indent=4, ensure_ascii=False)
+
+        # Tenta atualizar; se não existir, cria
+        try:
+            f = _repo.get_contents(caminho)
+            _repo.update_file(
+                f.path,
+                f"master update: {nome_colaborador}",
+                conteudo,
+                f.sha
+            )
+        except Exception:
+            _repo.create_file(
+                caminho,
+                f"master novo: {nome_colaborador}",
+                conteudo
+            )
+
+        return True
+
+    except Exception as e:
+        st.toast(f"⚠️ Master não salvo: {e}", icon="⚠️")
+        return False
+
+
+def carregar_master(nome_colaborador):
+    """
+    Carrega /master/NOME.json.
+    Retorna dicionário vazio se não existir.
+    """
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+
+        nome_limpo = str(nome_colaborador).strip().replace(" ", "_").upper()
+        arq = _repo.get_contents(f"master/{nome_limpo}.json")
+        return json.loads(arq.decoded_content.decode())
+
+    except Exception:
+        return {}
+
+
+def salvar_master_equipe(novos_dados):
+    """
+    Salva /master/_EQUIPE.json com merge.
+    Contém o panorama coletivo da equipe.
+    """
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+
+        caminho = "master/_EQUIPE.json"
+
+        try:
+            arq   = _repo.get_contents(caminho)
+            atual = json.loads(arq.decoded_content.decode())
+        except Exception:
+            atual = {
+                "tipo":      "panorama_equipe",
+                "criado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            }
+
+        atual.update(novos_dados)
+        atual["ultima_atualizacao"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+
+        conteudo = json.dumps(atual, indent=4, ensure_ascii=False)
+
+        try:
+            f = _repo.get_contents(caminho)
+            _repo.update_file(f.path, "equipe master update", conteudo, f.sha)
+        except Exception:
+            _repo.create_file(caminho, "equipe master novo", conteudo)
+
+        return True
+
+    except Exception as e:
+        st.toast(f"⚠️ Master equipe não salvo: {e}", icon="⚠️")
+        return False
+
+
+def carregar_master_equipe():
+    """Carrega /master/_EQUIPE.json. Retorna {} se não existir."""
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+
+        arq = _repo.get_contents("master/_EQUIPE.json")
+        return json.loads(arq.decoded_content.decode())
+
+    except Exception:
+        return {}
+
+
+def listar_masters_individuais():
+    """
+    Lista e carrega todos os JSONs em /master/
+    exceto _EQUIPE.json.
+    Retorna lista de dicionários.
+    """
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+
+        arquivos = _repo.get_contents("master")
+
+        resultado = []
+        for a in arquivos:
+            if a.name.endswith(".json") and a.name != "_EQUIPE.json":
+                try:
+                    dados = json.loads(a.decoded_content.decode())
+                    resultado.append(dados)
+                except Exception:
+                    continue  # ignora JSONs corrompidos sem travar tudo
+
+        return resultado
+
+    except Exception:
+        return []
+
+
+# ============================================================
+# BLOCO 2 — FUNÇÕES DE IA
+# ============================================================
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def gerar_laudo_individual_ia(dados_json_str):
+    """
+    Gera laudo pericial completo individual via GPT-4o-mini.
+    Cache de 24h — não regenera se os dados não mudaram.
+    """
+    try:
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        prompt = f"""
+Você é um perito auditor sênior da NetExame Auditoria Estratégica.
+
+Com base no JSON de auditoria completa abaixo, gere um LAUDO PERICIAL INDIVIDUAL
+completo, técnico e executivo.
+
+Estruture o laudo EXATAMENTE nestes blocos:
+
+## 1. IDENTIDADE OPERACIONAL
+Nome, cargo, perfil DISC dominante, status de carga horária.
+
+## 2. DIAGNÓSTICO DE EFICIÊNCIA
+ROI auditado em R$, horas recuperáveis, ganho de capacidade em dias.
+Explique de onde vem cada número.
+
+## 3. ANÁLISE COMPORTAMENTAL
+Perfil DISC, aderência ao cargo, pontos fortes e riscos comportamentais.
+Conecte o perfil às atividades relatadas.
+
+## 4. AUDITORIA DE PROCESSOS
+Aderência ao POP, nexo causal, principais desvios encontrados.
+Cite atividades específicas se disponíveis.
+
+## 5. PRODUTIVIDADE E KPIs
+Score por KPI auditado, KPI crítico, gaps de conformidade.
+
+## 6. VEREDITO PERICIAL
+- O que PARAR imediatamente (com justificativa)
+- O que DELEGAR (para quem, baseado no DISC)
+- Onde FOCAR (maior impacto financeiro)
+
+## 7. PLANO DE AÇÃO INDIVIDUAL (3 ações)
+Para cada ação:
+- Título
+- Prazo: [15/30/60/90 dias]
+- Impacto financeiro estimado: R$ X
+- Responsável: [baseado no perfil DISC]
+
+Use linguagem executiva. Seja específico com números.
+Não invente dados — use apenas o que está no JSON.
+Se um campo estiver vazio ou ausente, sinalize como "Dados não disponíveis".
+
+JSON DO COLABORADOR:
+{dados_json_str}
+"""
+        resp = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role":    "system",
+                    "content": "Você é um perito auditor sênior. Seja técnico, direto e quantificado."
+                },
+                {
+                    "role":    "user",
+                    "content": prompt
+                }
+            ],
+            max_tokens=2500,
+            temperature=0.2
+        )
+        return resp.choices[0].message.content
+
+    except Exception as e:
+        return f"❌ Erro ao gerar laudo: {e}"
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def gerar_parecer_executivo_equipe_ia(dados_json_str):
+    """
+    Gera parecer executivo coletivo + plano de ação com cronograma via GPT-4o.
+    Cache de 24h.
+    """
+    try:
+        client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+        prompt = f"""
+Você é um consultor sênior de RH e auditoria estratégica da NetExame.
+
+Com base nos dados consolidados da equipe abaixo, gere um PARECER EXECUTIVO COLETIVO
+e um PLANO DE AÇÃO ESTRATÉGICO com cronograma e resultados financeiros quantificados.
+
+Estruture EXATAMENTE assim:
+
+## PARECER EXECUTIVO DA EQUIPE
+
+### Resumo Estratégico
+2 parágrafos executivos sobre o estado da equipe.
+Inclua os números consolidados de ROI, horas e cultura DISC.
+
+### Diagnóstico Coletivo
+- Cultura dominante e o que ela significa para a empresa
+- Distribuição de perfis DISC e gaps de cobertura
+- Colaboradores em sobrecarga vs subutilizados
+- Alinhamentos e desalinhamentos cargo x perfil
+
+### Riscos Identificados
+Liste os 3 principais riscos operacionais com impacto financeiro estimado.
+
+### Oportunidades Imediatas
+Liste as 3 maiores oportunidades de ganho com valor em R$/ano.
+
+---
+
+## PLANO DE AÇÃO ESTRATÉGICO
+
+### CRONOGRAMA DE IMPLEMENTAÇÃO
+
+**FASE 1 — AÇÕES IMEDIATAS (0 a 30 dias)**
+Para cada ação:
+- [ ] Ação: [título objetivo]
+- Responsável: [cargo/perfil DISC ideal]
+- Impacto: R$ X/ano ou X horas recuperadas
+- Como medir: [métrica concreta]
+
+**FASE 2 — AÇÕES ESTRUTURAIS (30 a 90 dias)**
+[mesmo formato]
+
+**FASE 3 — AÇÕES ESTRATÉGICAS (90 a 180 dias)**
+[mesmo formato]
+
+---
+
+## RESULTADO FINANCEIRO PROJETADO
+
+| Fase | Investimento | Retorno Esperado | ROI |
+|------|-------------|-----------------|-----|
+| Fase 1 | [estimativa] | R$ X | X% |
+| Fase 2 | [estimativa] | R$ X | X% |
+| Fase 3 | [estimativa] | R$ X | X% |
+| **TOTAL** | | **R$ X/ano** | **X%** |
+
+**Payback estimado:** X meses
+
+---
+
+Use apenas os dados fornecidos. Seja específico com nomes quando relevante.
+Linguagem de boardroom — sem jargão de RH.
+Se um campo estiver ausente, sinalize como indisponível e prossiga.
+
+DADOS CONSOLIDADOS DA EQUIPE:
+{dados_json_str}
+"""
+        resp = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role":    "system",
+                    "content": "Você é um consultor estratégico sênior. Seja executivo, quantificado e acionável."
+                },
+                {
+                    "role":    "user",
+                    "content": prompt
+                }
+            ],
+            max_tokens=4000,
+            temperature=0.2
+        )
+        return resp.choices[0].message.content
+
+    except Exception as e:
+        return f"❌ Erro ao gerar parecer: {e}"
+
+
+# ============================================================
+# BLOCO 3 — HELPERS DE EXPORTAÇÃO HTML
+# ============================================================
+
+def html_laudo_individual(master, laudo_texto):
+    """Gera HTML do laudo individual para download."""
+
+    nome  = master.get("colaborador", "Colaborador")
+    cargo = (master.get("campos") or {}).get("cargo", "N/A")
+    roi   = master.get("roi",  {}).get("auditado", 0)
+    disc  = master.get("disc", {}).get("perfil_dominante", "N/A")
+    efic  = master.get("produtividade", {}).get("eficiencia_real_pct", 0)
+
+    # Conversão básica de markdown para HTML
+    corpo = (
+        laudo_texto
+        .replace("## ",  "<h2>")
+        .replace("### ", "<h3>")
+        .replace("\n- ", "<br>• ")
+        .replace("**",   "<strong>")
+        .replace("\n",   "<br>")
+    )
+
+    data_geracao = datetime.now().strftime("%d/%m/%Y")
+
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+  body{{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f9;padding:40px;color:#2c3e50}}
+  .page{{background:white;max-width:920px;margin:auto;padding:50px;border-radius:12px;
+         box-shadow:0 8px 24px rgba(0,0,0,0.08);border-top:10px solid #1B1E5D}}
+  .hdr{{text-align:center;padding-bottom:24px;border-bottom:2px solid #ecf0f1;margin-bottom:32px}}
+  .hdr h1{{color:#1B1E5D;font-size:24px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px}}
+  .hdr p{{color:#7f8c8d;margin:0;font-size:13px}}
+  .metrics{{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:28px 0}}
+  .metric{{background:#f8f9fb;border:1px solid #e8ecf0;border-radius:10px;padding:14px;
+           text-align:center;border-bottom:4px solid #1B1E5D}}
+  .metric label{{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#95a5a6;
+                 font-weight:700;display:block;margin-bottom:5px}}
+  .metric span{{font-size:18px;font-weight:800;color:#1B1E5D}}
+  h2{{background:#1B1E5D;color:white;padding:10px 18px;border-radius:8px;
+      margin-top:32px;font-size:14px;text-transform:uppercase}}
+  h3{{color:#1B1E5D;border-left:4px solid #1B1E5D;padding-left:12px;
+      margin-top:20px;font-size:15px}}
+  .content{{line-height:1.8;font-size:13px;color:#34495e;margin-top:12px}}
+  strong{{color:#2c3e50}}
+  .footer{{text-align:center;margin-top:48px;padding-top:24px;
+           border-top:1px solid #ecf0f1;font-size:11px;color:#bdc3c7}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Laudo Pericial Individual</h1>
+    <p>NetExame Auditoria Estratégica &nbsp;·&nbsp; {data_geracao} &nbsp;·&nbsp; CONFIDENCIAL</p>
+  </div>
+  <div class="metrics">
+    <div class="metric"><label>Colaborador</label><span>{nome}</span></div>
+    <div class="metric"><label>ROI Auditado</label><span>R$&nbsp;{roi:,.0f}</span></div>
+    <div class="metric"><label>Perfil DISC</label><span>{disc}</span></div>
+    <div class="metric"><label>Eficiência KPI</label><span>{efic:.0f}%</span></div>
+  </div>
+  <div class="content">{corpo}</div>
+  <div class="footer">NETEXAME AUDITORIA ESTRATÉGICA &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; CONFIDENCIAL</div>
+</div>
+</body>
+</html>"""
+
+
+def html_parecer_equipe(masters, parecer_texto, roi_total, horas_total, total_colab, cultura):
+    """Gera HTML do parecer executivo da equipe para download."""
+
+    # Conversão básica de markdown para HTML
+    corpo = (
+        parecer_texto
+        .replace("## ",     "<h2>")
+        .replace("### ",    "<h3>")
+        .replace("\n- [ ] ","<br>☐ ")
+        .replace("\n- ",    "<br>• ")
+        .replace("**",      "<strong>")
+        .replace("\n",      "<br>")
+    )
+
+    # Monta linhas da tabela de colaboradores
+    linhas_tab = ""
+    for m in masters:
+        n  = m.get("colaborador", "N/A")
+        c  = (m.get("campos") or {}).get("cargo", "N/A")
+        d  = m.get("disc",  {}).get("perfil_dominante", "N/A")
+        r  = m.get("roi",   {}).get("auditado", 0)
+        ef = m.get("produtividade", {}).get("eficiencia_real_pct", 0)
+        nc = m.get("nexo_causal",   {}).get("status", "N/A")
+        linhas_tab += f"""<tr>
+          <td>{n}</td>
+          <td>{c}</td>
+          <td style='text-align:center;font-weight:700'>{d}</td>
+          <td style='text-align:center'>{nc}</td>
+          <td style='text-align:right'>{ef:.0f}%</td>
+          <td style='text-align:right;font-weight:700'>R$&nbsp;{r:,.0f}</td>
+        </tr>"""
+
+    data_geracao = datetime.now().strftime("%d/%m/%Y")
+    dias_ganho   = horas_total / 8 if horas_total else 0
+
+    return f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+  body{{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f9;padding:40px;color:#2c3e50}}
+  .page{{background:white;max-width:960px;margin:auto;padding:50px;border-radius:12px;
+         box-shadow:0 8px 24px rgba(0,0,0,0.08);border-top:10px solid #1B1E5D}}
+  .hdr{{text-align:center;padding-bottom:24px;border-bottom:2px solid #ecf0f1;margin-bottom:32px}}
+  .hdr h1{{color:#1B1E5D;font-size:24px;margin:0 0 6px;text-transform:uppercase;letter-spacing:1px}}
+  .hdr p{{color:#7f8c8d;margin:0;font-size:13px}}
+  .metrics{{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:28px 0}}
+  .metric{{background:#f8f9fb;border:1px solid #e8ecf0;border-radius:10px;padding:14px;
+           text-align:center;border-bottom:4px solid #1B1E5D}}
+  .metric label{{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#95a5a6;
+                 font-weight:700;display:block;margin-bottom:5px}}
+  .metric span{{font-size:16px;font-weight:800;color:#1B1E5D}}
+  h2{{background:#1B1E5D;color:white;padding:10px 18px;border-radius:8px;
+      margin-top:32px;font-size:14px;text-transform:uppercase}}
+  h3{{color:#1B1E5D;border-left:4px solid #1B1E5D;padding-left:12px;
+      margin-top:20px;font-size:15px}}
+  table{{width:100%;border-collapse:collapse;margin:16px 0}}
+  th{{background:#eef0f4;padding:10px;text-align:left;
+      border-bottom:2px solid #1B1E5D;font-size:11px;
+      text-transform:uppercase;letter-spacing:1px;color:#7f8c8d}}
+  td{{padding:10px;border-bottom:1px solid #ecf0f1;font-size:12px}}
+  .content{{line-height:1.8;font-size:13px;color:#34495e;margin-top:12px}}
+  strong{{color:#2c3e50}}
+  .footer{{text-align:center;margin-top:48px;padding-top:24px;
+           border-top:1px solid #ecf0f1;font-size:11px;color:#bdc3c7}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <h1>Parecer Executivo da Equipe + Plano de Ação</h1>
+    <p>NetExame Auditoria Estratégica &nbsp;·&nbsp; {data_geracao} &nbsp;·&nbsp; CONFIDENCIAL DIRETORIA</p>
+  </div>
+  <div class="metrics">
+    <div class="metric"><label>Colaboradores</label><span>{total_colab}</span></div>
+    <div class="metric"><label>ROI Total Auditado</label><span>R$&nbsp;{roi_total:,.0f}</span></div>
+    <div class="metric"><label>Horas Recuperáveis</label><span>{horas_total:.0f}&nbsp;h/ano</span></div>
+    <div class="metric"><label>Ganho Capacidade</label><span>{dias_ganho:.0f}&nbsp;dias</span></div>
+    <div class="metric"><label>Cultura Dominante</label><span>{cultura}</span></div>
+  </div>
+
+  <h2>Colaboradores Auditados</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Colaborador</th>
+        <th>Cargo</th>
+        <th style='text-align:center'>DISC</th>
+        <th style='text-align:center'>Status Carga</th>
+        <th style='text-align:right'>Eficiência</th>
+        <th style='text-align:right'>ROI Auditado</th>
+      </tr>
+    </thead>
+    <tbody>{linhas_tab}</tbody>
+  </table>
+
+  <div class="content">{corpo}</div>
+
+  <div class="footer">
+    NETEXAME AUDITORIA ESTRATÉGICA &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; DOCUMENTO CONFIDENCIAL DIRETORIA
+  </div>
+</div>
+</body>
+</html>"""
+
+
+# ============================================================
+# BLOCO 4 — PÁGINA CENTRAL DE INTELIGÊNCIA
+# ============================================================
+
+if st.session_state.get("pagina") == "central_inteligencia":
+
+    # ── 1. Conexão garantida ────────────────────────────────
+    try:
+        _repo = st.session_state.get("repo_conectado")
+        if _repo is None:
+            _g    = Github(st.secrets["DB_TOKEN"])
+            _repo = _g.get_repo("lucianohcl/formulario-colaborador")
+            st.session_state.repo_conectado = _repo
+    except Exception as e:
+        st.error(f"❌ Erro de conexão com GitHub: {e}")
+        st.stop()
+
+    # ── 2. Carrega dados ────────────────────────────────────
+    with st.spinner("🔄 Carregando dados da equipe..."):
+        masters       = listar_masters_individuais()
+        master_equipe = carregar_master_equipe()
+
+    # ── 3. Cabeçalho ────────────────────────────────────────
+    st.markdown("""
+    <div style='background:linear-gradient(135deg,#1B1E5D,#2d3a8c);
+                padding:28px 32px;border-radius:14px;margin-bottom:20px;'>
+      <h1 style='color:white;margin:0;font-size:26px;
+                 font-family:sans-serif;letter-spacing:1px;font-weight:800;'>
+        🧠 Central de Inteligência
+      </h1>
+      <p style='color:rgba(255,255,255,0.6);margin:8px 0 0;font-size:13px;'>
+        NetExame Auditoria Estratégica &nbsp;·&nbsp;
+        Laudo Pericial Individual + Parecer Executivo da Equipe
+      </p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── 4. Sem dados — instrução ao usuário ─────────────────
+    if not masters:
+        st.warning("⚠️ Nenhum dado de auditoria encontrado na pasta /master/")
+        st.info("""
+**Para popular a Central de Inteligência:**
+
+1. Acesse **Análise Inteligente** → selecione um colaborador → rode a auditoria
+2. Acesse **Perfil DISC** → selecione o mesmo colaborador → clique em *Gerar análise DISC*
+3. Os dados são salvos automaticamente em `/master/NOME.json`
+4. Volte aqui e clique em *Gerar Laudo Completo*
+        """)
+        st.stop()
+
+    # ── 5. Métricas globais ─────────────────────────────────
+    roi_total   = sum(m.get("roi", {}).get("auditado",           0) for m in masters)
+    horas_total = sum(m.get("roi", {}).get("horas_recuperaveis", 0) for m in masters)
+    total_colab = len(masters)
+    cultura     = master_equipe.get("disc_coletivo", {}).get("cultura_dominante", "N/A")
+    sobrecargas = sum(
+        1 for m in masters
+        if m.get("nexo_causal", {}).get("status") == "sobrecarga"
+    )
+
+    mc1, mc2, mc3, mc4, mc5 = st.columns(5)
+    mc1.metric("👥 Auditados",           total_colab)
+    mc2.metric("💰 ROI Total",           f"R$ {roi_total:,.2f}")
+    mc3.metric("⚡ Horas Recuperáveis",  f"{horas_total:.0f} h/ano")
+    mc4.metric("📅 Ganho Capacidade",    f"{horas_total/8:.0f} dias")
+    mc5.metric("🚨 Em Sobrecarga",       sobrecargas)
+
+    st.markdown("---")
+
+    # ── 6. Layout: duas colunas ─────────────────────────────
+    col_ind, col_eq = st.columns([1, 1], gap="large")
+
+
+    # ════════════════════════════════════════════════════════
+    # COLUNA ESQUERDA — LAUDO INDIVIDUAL
+    # ════════════════════════════════════════════════════════
+    with col_ind:
+
+        st.markdown("### 👤 Laudo Pericial Individual")
+
+        # Selectbox — lista colaboradores disponíveis no master
+        nomes_disponiveis = [
+            m.get("colaborador", f"Colaborador {i+1}")
+            for i, m in enumerate(masters)
+        ]
+
+        colab_sel = st.selectbox(
+            "Selecione o colaborador:",
+            options=nomes_disponiveis,
+            key="sel_central_ind"
+        )
+
+        # Busca o master do colaborador selecionado
+        master_sel = next(
+            (m for m in masters if m.get("colaborador") == colab_sel),
+            {}
+        )
+
+        # ── Preview do colaborador selecionado ──────────────
+        if master_sel:
+            roi_ind   = master_sel.get("roi",  {}).get("auditado",           0)
+            disc_ind  = master_sel.get("disc", {}).get("perfil_dominante", "N/A")
+            ader_ind  = master_sel.get("disc", {}).get("veredito_aderencia","N/A")
+            efic_ind  = master_sel.get("produtividade", {}).get("eficiencia_real_pct", 0)
+            nc_ind    = master_sel.get("nexo_causal",   {}).get("status",    "N/A")
+            cargo_ind = (master_sel.get("campos") or {}).get("cargo",        "N/A")
+
+            pi1, pi2, pi3 = st.columns(3)
+            pi1.metric("ROI Auditado", f"R$ {roi_ind:,.2f}")
+            pi2.metric("Perfil DISC",  disc_ind)
+            pi3.metric("Eficiência",   f"{efic_ind:.0f}%" if efic_ind else "N/A")
+
+            pi4, pi5, pi6 = st.columns(3)
+            pi4.metric("Cargo",        cargo_ind)
+            pi5.metric("Aderência",    ader_ind)
+            pi6.metric("Carga",        nc_ind.capitalize() if nc_ind else "N/A")
+
+        st.write("")
+
+        # ── Botão gerar laudo ───────────────────────────────
+        if st.button(
+            "🔬 Gerar Laudo Completo",
+            type="primary",
+            use_container_width=True,
+            key="btn_laudo_ind"
+        ):
+            if not master_sel:
+                st.error("Colaborador não encontrado no master.")
+            else:
+                with st.spinner(f"🧠 Gerando laudo de {colab_sel}... (pode levar 20-40s)"):
+                    dados_str = json.dumps(master_sel, indent=2, ensure_ascii=False)
+                    laudo     = gerar_laudo_individual_ia(dados_str)
+
+                    # Persiste no master para não precisar regerar
+                    salvar_master(colab_sel, {
+                        "laudo_central": {
+                            "texto":      laudo,
+                            "gerado_em":  datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                        }
+                    })
+                    st.session_state[f"laudo_ind_{colab_sel}"] = laudo
+                    st.success("✅ Laudo gerado e salvo!")
+
+        # ── Exibe laudo (atual ou do cache) ─────────────────
+        laudo_exibir = (
+            st.session_state.get(f"laudo_ind_{colab_sel}") or
+            master_sel.get("laudo_central", {}).get("texto", "")
+        )
+
+        if laudo_exibir:
+            gerado_em_ind = master_sel.get("laudo_central", {}).get("gerado_em", "")
+            if gerado_em_ind:
+                st.caption(f"⏱ Gerado em: {gerado_em_ind} · cache 24h")
+
+            with st.expander("📄 Ver Laudo Completo", expanded=True):
+                st.markdown(laudo_exibir)
+
+            # Download HTML
+            html_ind = html_laudo_individual(master_sel, laudo_exibir)
+            nome_arq = colab_sel.replace(" ", "_").upper()
+
+            st.download_button(
+                label=f"📥 Baixar Laudo — {colab_sel}",
+                data=html_ind,
+                file_name=f"Laudo_Pericial_{nome_arq}.html",
+                mime="text/html",
+                use_container_width=True,
+                key="btn_dl_laudo_ind"
+            )
+
+
+    # ════════════════════════════════════════════════════════
+    # COLUNA DIREITA — PARECER EXECUTIVO DA EQUIPE
+    # ════════════════════════════════════════════════════════
+    with col_eq:
+
+        st.markdown("### 🏢 Parecer Executivo da Equipe")
+
+        # ── Box de contexto ─────────────────────────────────
+        st.markdown(f"""
+        <div style='background:rgba(27,30,93,0.06);
+                    border:1px solid rgba(27,30,93,0.2);
+                    border-radius:10px;padding:14px 16px;margin-bottom:14px;'>
+          <span style='font-size:13px;color:#555;'>
+            <b>Base de análise:</b> {total_colab} colaboradores auditados &nbsp;|&nbsp;
+            Cultura dominante: <b>{cultura}</b> &nbsp;|&nbsp;
+            ROI consolidado: <b style='color:#27ae60'>R$ {roi_total:,.2f}</b>
+          </span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── Tabela resumo da equipe ──────────────────────────
+        dados_resumo = []
+        for m in masters:
+            dados_resumo.append({
+                "Colaborador": m.get("colaborador", "N/A"),
+                "DISC":        m.get("disc", {}).get("perfil_dominante", "N/A"),
+                "ROI":         f"R$ {m.get('roi', {}).get('auditado', 0):,.0f}",
+                "Eficiência":  f"{m.get('produtividade', {}).get('eficiencia_real_pct', 0):.0f}%",
+                "Carga":       m.get("nexo_causal", {}).get("status", "N/A").capitalize()
+            })
+
+        st.dataframe(
+            pd.DataFrame(dados_resumo),
+            hide_index=True,
+            use_container_width=True,
+            height=min(200, 40 + len(dados_resumo) * 35)  # altura dinâmica
+        )
+
+        st.write("")
+
+        # ── Botão gerar parecer ─────────────────────────────
+        if st.button(
+            "🚀 Gerar Parecer Executivo + Plano",
+            type="primary",
+            use_container_width=True,
+            key="btn_parecer_equipe"
+        ):
+            with st.spinner("🧠 Analisando equipe... (pode levar 30-60s — usa GPT-4o)"):
+
+                # Monta contexto consolidado para o GPT
+                resumo_eq = {
+                    "total_colaboradores": total_colab,
+                    "roi_total_auditado":  round(roi_total,   2),
+                    "horas_recuperaveis":  round(horas_total, 2),
+                    "ganho_dias":          round(horas_total / 8, 1) if horas_total else 0,
+                    "cultura_dominante":   cultura,
+                    "em_sobrecarga":       sobrecargas,
+                    "colaboradores": [
+                        {
+                            "nome":            m.get("colaborador"),
+                            "cargo":           (m.get("campos") or {}).get("cargo", "N/A"),
+                            "disc":            m.get("disc",  {}).get("perfil_dominante",  "N/A"),
+                            "aderencia_cargo": m.get("disc",  {}).get("veredito_aderencia","N/A"),
+                            "roi_auditado":    m.get("roi",   {}).get("auditado",           0),
+                            "horas_recup":     m.get("roi",   {}).get("horas_recuperaveis", 0),
+                            "nexo_status":     m.get("nexo_causal", {}).get("status",       "N/A"),
+                            "horas_dia":       m.get("nexo_causal", {}).get("horas_dia",     0),
+                            "eficiencia_pct":  m.get("produtividade", {}).get("eficiencia_real_pct", 0),
+                            "kpi_critico":     m.get("produtividade", {}).get("kpi_critico","N/A"),
+                            "veredito_pop":    m.get("parecer_360",   {}).get("veredito_final",""),
+                        }
+                        for m in masters
+                    ]
+                }
+
+                dados_str_eq = json.dumps(resumo_eq, indent=2, ensure_ascii=False)
+                parecer      = gerar_parecer_executivo_equipe_ia(dados_str_eq)
+
+                # Persiste no master da equipe
+                salvar_master_equipe({
+                    "parecer_executivo": {
+                        "texto":     parecer,
+                        "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    }
+                })
+                st.session_state["parecer_equipe_central"] = parecer
+                st.success("✅ Parecer gerado e salvo!")
+
+        # ── Exibe parecer (atual ou do cache) ───────────────
+        parecer_exibir = (
+            st.session_state.get("parecer_equipe_central") or
+            master_equipe.get("parecer_executivo", {}).get("texto", "")
+        )
+
+        if parecer_exibir:
+            gerado_em_eq = master_equipe.get("parecer_executivo", {}).get("gerado_em", "")
+            if gerado_em_eq:
+                st.caption(f"⏱ Gerado em: {gerado_em_eq} · cache 24h")
+
+            with st.expander("📊 Ver Parecer + Plano Completo", expanded=True):
+                st.markdown(parecer_exibir)
+
+            # Download HTML versão diretoria
+            html_eq = html_parecer_equipe(
+                masters, parecer_exibir,
+                roi_total, horas_total, total_colab, cultura
+            )
+
+            st.download_button(
+                label="📥 Baixar Parecer Executivo — Versão Diretoria",
+                data=html_eq,
+                file_name=f"Parecer_Executivo_Equipe_{datetime.now().strftime('%d%m%Y')}.html",
+                mime="text/html",
+                use_container_width=True,
+                key="btn_dl_parecer_eq"
+            )
+
+    # ── Rodapé ──────────────────────────────────────────────
+    st.markdown("---")
+    st.markdown(
+        "<p style='text-align:center;color:#94a3b8;font-size:11px;'>"
+        "NETEXAME AUDITORIA ESTRATÉGICA &nbsp;·&nbsp; "
+        "Central de Inteligência &nbsp;·&nbsp; 2026"
+        "</p>",
+        unsafe_allow_html=True
     )
