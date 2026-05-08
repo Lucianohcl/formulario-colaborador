@@ -1,0 +1,30 @@
+{
+    "colaborador": "COLABORADOR TESTE",
+    "criado_em": "09/05/2026 09:00:00",
+    "campos": {
+        "cargo": "Analista DP"
+    },
+    "roi": {
+        "auditado": 15337.15,
+        "horas_recuperaveis": 438.2,
+        "ganho_dias": 102.9,
+        "bruto": 28813.75
+    },
+    "nexo_causal": {
+        "score": 72.4,
+        "horas_dia": 9.2,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "perfil_dominante": "C",
+        "score_intensidade": 68,
+        "amplitude": 23.0,
+        "is_equilibrado": false,
+        "veredito_aderencia": "Alta Aderencia",
+        "score_alinhamento_cargo": 80
+    },
+    "produtividade": {
+        "eficiencia_real_pct": 74.0,
+        "kpi_critico": "Treinamento e Onboarding"
+    }
+}
