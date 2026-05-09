@@ -1,8 +1,7 @@
 {
     "colaborador": "ANA PAULA COSTA",
     "criado_em": "09/05/2026 09:00:00",
-    "ultima_atualizacao": "09/05/2026 14:30:00",
-
+    "ultima_atualizacao": "09/05/2026 10:32:59",
     "campos": {
         "cargo": "Analista DP Senior",
         "dep": "Departamento Pessoal",
@@ -14,23 +13,25 @@
         "cursos": "eSocial, DCTFWeb, Folha de Pagamento, Admissao e Demissao",
         "objetivo": "Garantir a conformidade legal dos processos de DP, auditar folha e eSocial, reduzir erros operacionais e implementar melhorias de eficiencia no setor."
     },
-
     "roi": {
-        "auditado": 18420.50,
-        "bruto": 29680.00,
+        "auditado": 18420.5,
+        "bruto": 29680.0,
         "horas_recuperaveis": 526.3,
         "ganho_dias": 65.8,
         "custo_hora": 35.0
     },
-
     "nexo_causal": {
         "score": 31.6,
         "horas_dia": 11.4,
         "status": "sobrecarga"
     },
-
     "disc": {
-        "percentuais": {"D": 18, "I": 12, "S": 28, "C": 42},
+        "percentuais": {
+            "D": 18,
+            "I": 12,
+            "S": 28,
+            "C": 42
+        },
         "perfil_dominante": "C/S",
         "score_intensidade": 68,
         "amplitude": 30.0,
@@ -41,7 +42,6 @@
         "benchmark_cargo": "Analitico (C-S)",
         "veredito_aderencia": "Alta Aderencia"
     },
-
     "sugestoes_auditadas": [
         {
             "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
@@ -62,7 +62,6 @@
             "VALOR RECUPERAVEL": "R$ 2.219,00"
         }
     ],
-
     "gargalos": [
         {
             "Status": "✅",
@@ -86,7 +85,6 @@
             "Analise do Perito": "Falso Alerta de Acumulo — este atendimento deveria ser delegado a assistente"
         }
     ],
-
     "auditoria_atividades": [
         {
             "Status": "✅",
@@ -119,22 +117,98 @@
             "Analise Critica": "Coerente — alta complexidade, perfil C ideal para esta tarefa"
         }
     ],
-
     "parecer": {
         "pop_padrao_ia": [
-            {"Atividade": "Conferencia Folha Pagamento", "Freq": "MENSAL", "Tempo Base": "180m", "Impacto Diario Convertido": "8.2m", "Eficiencia vs 480m": "1.7%", "Meta Auditavel": "Zero divergencias na folha apos conferencia"},
-            {"Atividade": "Apuracao eSocial", "Freq": "MENSAL", "Tempo Base": "120m", "Impacto Diario Convertido": "5.5m", "Eficiencia vs 480m": "1.1%", "Meta Auditavel": "Transmissao sem erros ate dia 7"},
-            {"Atividade": "Homologacao Rescisoes", "Freq": "SEMANAL", "Tempo Base": "90m", "Impacto Diario Convertido": "18.0m", "Eficiencia vs 480m": "3.8%", "Meta Auditavel": "100% das rescisoes homologadas no prazo legal"},
-            {"Atividade": "Admissao e Cadastro", "Freq": "SEMANAL", "Tempo Base": "60m", "Impacto Diario Convertido": "12.0m", "Eficiencia vs 480m": "2.5%", "Meta Auditavel": "Admissao registrada em ate 24h apos contratacao"},
-            {"Atividade": "Auditoria Inconsistencias", "Freq": "DIARIA", "Tempo Base": "45m", "Impacto Diario Convertido": "45.0m", "Eficiencia vs 480m": "9.4%", "Meta Auditavel": "Zero inconsistencias nao tratadas por mais de 48h"}
+            {
+                "Atividade": "Conferencia Folha Pagamento",
+                "Freq": "MENSAL",
+                "Tempo Base": "180m",
+                "Impacto Diario Convertido": "8.2m",
+                "Eficiencia vs 480m": "1.7%",
+                "Meta Auditavel": "Zero divergencias na folha apos conferencia"
+            },
+            {
+                "Atividade": "Apuracao eSocial",
+                "Freq": "MENSAL",
+                "Tempo Base": "120m",
+                "Impacto Diario Convertido": "5.5m",
+                "Eficiencia vs 480m": "1.1%",
+                "Meta Auditavel": "Transmissao sem erros ate dia 7"
+            },
+            {
+                "Atividade": "Homologacao Rescisoes",
+                "Freq": "SEMANAL",
+                "Tempo Base": "90m",
+                "Impacto Diario Convertido": "18.0m",
+                "Eficiencia vs 480m": "3.8%",
+                "Meta Auditavel": "100% das rescisoes homologadas no prazo legal"
+            },
+            {
+                "Atividade": "Admissao e Cadastro",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diario Convertido": "12.0m",
+                "Eficiencia vs 480m": "2.5%",
+                "Meta Auditavel": "Admissao registrada em ate 24h apos contratacao"
+            },
+            {
+                "Atividade": "Auditoria Inconsistencias",
+                "Freq": "DIARIA",
+                "Tempo Base": "45m",
+                "Impacto Diario Convertido": "45.0m",
+                "Eficiencia vs 480m": "9.4%",
+                "Meta Auditavel": "Zero inconsistencias nao tratadas por mais de 48h"
+            }
         ],
         "confronto_pericial": [
-            {"Atividade": "CONFERENCIA FOLHA PAGAMENTO", "Origem": "POP PADRAO", "Impacto POP": "8.2m", "Impacto Real": "27.0m", "Divergencia": "+18.8m", "Status": "⚠️ FORA DO PADRAO"},
-            {"Atividade": "APURACAO ESOCIAL", "Origem": "POP PADRAO", "Impacto POP": "5.5m", "Impacto Real": "19.2m", "Divergencia": "+13.7m", "Status": "✅ IDENTIFICADO"},
-            {"Atividade": "HOMOLOGACAO RESCISOES", "Origem": "POP PADRAO", "Impacto POP": "18.0m", "Impacto Real": "8.4m", "Divergencia": "-9.6m", "Status": "⚠️ FORA DO PADRAO"},
-            {"Atividade": "ADMISSAO E CADASTRO", "Origem": "POP PADRAO", "Impacto POP": "12.0m", "Impacto Real": "0.0m", "Divergencia": "-12.0m", "Status": "❌ AUSENTE"},
-            {"Atividade": "AUDITORIA INCONSISTENCIAS", "Origem": "POP PADRAO", "Impacto POP": "45.0m", "Impacto Real": "34.8m", "Divergencia": "-10.2m", "Status": "✅ IDENTIFICADO"},
-            {"Atividade": "ATENDIMENTO DUVIDAS HOLERITE", "Origem": "DESVIO", "Impacto POP": "0.0m", "Impacto Real": "72.0m", "Divergencia": "+72.0m", "Status": "⚠️ FORA DO PADRAO"}
+            {
+                "Atividade": "CONFERENCIA FOLHA PAGAMENTO",
+                "Origem": "POP PADRAO",
+                "Impacto POP": "8.2m",
+                "Impacto Real": "27.0m",
+                "Divergencia": "+18.8m",
+                "Status": "⚠️ FORA DO PADRAO"
+            },
+            {
+                "Atividade": "APURACAO ESOCIAL",
+                "Origem": "POP PADRAO",
+                "Impacto POP": "5.5m",
+                "Impacto Real": "19.2m",
+                "Divergencia": "+13.7m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "HOMOLOGACAO RESCISOES",
+                "Origem": "POP PADRAO",
+                "Impacto POP": "18.0m",
+                "Impacto Real": "8.4m",
+                "Divergencia": "-9.6m",
+                "Status": "⚠️ FORA DO PADRAO"
+            },
+            {
+                "Atividade": "ADMISSAO E CADASTRO",
+                "Origem": "POP PADRAO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergencia": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA INCONSISTENCIAS",
+                "Origem": "POP PADRAO",
+                "Impacto POP": "45.0m",
+                "Impacto Real": "34.8m",
+                "Divergencia": "-10.2m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "ATENDIMENTO DUVIDAS HOLERITE",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "72.0m",
+                "Divergencia": "+72.0m",
+                "Status": "⚠️ FORA DO PADRAO"
+            }
         ],
         "aderencia_cargo_pct": 71.4,
         "total_pop_min": 88.7,
@@ -143,26 +217,44 @@
         "cargo_auditado": "Analista DP Senior",
         "gerado_em": "09/05/2026 10:00:00"
     },
-
     "parecer_360": {
         "parecer_executivo": "Ana Paula Costa apresenta um perfil tecnico solido (C/S) com alta aderencia ao cargo de Analista DP Senior. Porem, a carga horaria de 11,4h/dia configura sobrecarga matematica comprovada. O principal vetor de ineficiencia e o atendimento operacional de duvidas sobre holerite, que consome 1,2h/dia de uma profissional cujo valor agregado esta na auditoria e conformidade legal. A sugestao de automacao da integracao eSocial-ERP, se implementada, representa R$ 11.340/ano de eficiencia recuperavel com baixo risco tecnico.",
         "pop_benchmark": [
-            {"Atividade": "Auditoria Folha e eSocial", "Freq": "D", "Tempo": "120 min", "Meta": "Zero divergencias — 100% conformidade legal"},
-            {"Atividade": "Gestao de Admissoes e Demissoes", "Freq": "S", "Tempo": "90 min", "Meta": "Prazo legal cumprido em 100% dos casos"},
-            {"Atividade": "Treinamento e Onboarding", "Freq": "M", "Tempo": "60 min", "Meta": "NPS interno acima de 8,0"}
+            {
+                "Atividade": "Auditoria Folha e eSocial",
+                "Freq": "D",
+                "Tempo": "120 min",
+                "Meta": "Zero divergencias — 100% conformidade legal"
+            },
+            {
+                "Atividade": "Gestao de Admissoes e Demissoes",
+                "Freq": "S",
+                "Tempo": "90 min",
+                "Meta": "Prazo legal cumprido em 100% dos casos"
+            },
+            {
+                "Atividade": "Treinamento e Onboarding",
+                "Freq": "M",
+                "Tempo": "60 min",
+                "Meta": "NPS interno acima de 8,0"
+            }
         ],
         "veredito_final": "PARAR: atendimento operacional de holerite — delegar para assistente. DELEGAR: cadastros rotineiros de admissao — perfil S/I da equipe. FOCAR: automacao eSocial-ERP e auditoria de inconsistencias — maximo ROI com minimo esforco para perfil C.",
         "cargo_auditado": "Analista DP Senior",
         "gerado_em": "09/05/2026 10:30:00"
     },
-
     "kpis_auditados": {
         "Conformidade eSocial": {
             "percentual_alcance": 88,
             "status_pericial": "CONFORME",
             "analise_critica": "Transmissoes realizadas no prazo com extrato comprobatorio. Nenhuma inconsistencia pendente no periodo auditado.",
             "gap_de_conformidade": [],
-            "ponderacao": {"aderencia": 22, "integridade": 23, "tempestividade": 22, "completude": 21},
+            "ponderacao": {
+                "aderencia": 22,
+                "integridade": 23,
+                "tempestividade": 22,
+                "completude": 21
+            },
             "relato_auditor": "Apresentou extrato de transmissoes do portal eSocial com todas as competencias do trimestre.",
             "auditado_em": "09/05/2026 11:00:00"
         },
@@ -170,8 +262,15 @@
             "percentual_alcance": 76,
             "status_pericial": "CONFORME",
             "analise_critica": "Folha conferida e aprovada. Pequenas divergencias em verbas variaveis foram corrigidas antes do fechamento.",
-            "gap_de_conformidade": ["Comprovante de correcao de verbas variaveis nao anexado"],
-            "ponderacao": {"aderencia": 20, "integridade": 19, "tempestividade": 20, "completude": 17},
+            "gap_de_conformidade": [
+                "Comprovante de correcao de verbas variaveis nao anexado"
+            ],
+            "ponderacao": {
+                "aderencia": 20,
+                "integridade": 19,
+                "tempestividade": 20,
+                "completude": 17
+            },
             "relato_auditor": "Enviou espelho de folha do ERP com assinatura do gestor.",
             "auditado_em": "09/05/2026 11:15:00"
         },
@@ -180,7 +279,12 @@
             "status_pericial": "CONFORME",
             "analise_critica": "Todos os prazos legais cumpridos no periodo. DCTFWeb transmitida antes do vencimento.",
             "gap_de_conformidade": [],
-            "ponderacao": {"aderencia": 24, "integridade": 23, "tempestividade": 24, "completude": 21},
+            "ponderacao": {
+                "aderencia": 24,
+                "integridade": 23,
+                "tempestividade": 24,
+                "completude": 21
+            },
             "relato_auditor": "Apresentou recibo de transmissao DCTFWeb e protocolo de homologacoes.",
             "auditado_em": "09/05/2026 11:30:00"
         },
@@ -192,7 +296,12 @@
                 "Comprovante de homologacao sindical ausente em 2 rescisoes",
                 "TRCT nao assinado pelo colaborador em 1 caso"
             ],
-            "ponderacao": {"aderencia": 18, "integridade": 14, "tempestividade": 15, "completude": 11},
+            "ponderacao": {
+                "aderencia": 18,
+                "integridade": 14,
+                "tempestividade": 15,
+                "completude": 11
+            },
             "relato_auditor": "Enviou TRCT mas sem todos os comprovantes de homologacao.",
             "auditado_em": "09/05/2026 11:45:00"
         },
@@ -206,27 +315,45 @@
                 "Material didatico nao documentado",
                 "Avaliacao de aprendizagem nao realizada"
             ],
-            "ponderacao": {"aderencia": 10, "integridade": 8, "tempestividade": 8, "completude": 8},
+            "ponderacao": {
+                "aderencia": 10,
+                "integridade": 8,
+                "tempestividade": 8,
+                "completude": 8
+            },
             "relato_auditor": "Nao apresentou evidencias de treinamento no periodo.",
             "auditado_em": "09/05/2026 12:00:00"
         }
     },
-
     "produtividade": {
         "eficiencia_real_pct": 74.0,
         "kpis_auditados_total": 5,
         "kpi_critico": "Treinamento e Onboarding",
         "kpi_critico_score": 34.0,
         "kpis_detalhados": {
-            "Conformidade eSocial":        {"percentual_alcance": 88, "status_pericial": "CONFORME"},
-            "Integridade da Folha":        {"percentual_alcance": 76, "status_pericial": "CONFORME"},
-            "Cumprimento de Prazos Legais":{"percentual_alcance": 92, "status_pericial": "CONFORME"},
-            "Documentacao de Rescisoes":   {"percentual_alcance": 58, "status_pericial": "PARCIAL"},
-            "Treinamento e Onboarding":    {"percentual_alcance": 34, "status_pericial": "NAO CONFORME"}
+            "Conformidade eSocial": {
+                "percentual_alcance": 88,
+                "status_pericial": "CONFORME"
+            },
+            "Integridade da Folha": {
+                "percentual_alcance": 76,
+                "status_pericial": "CONFORME"
+            },
+            "Cumprimento de Prazos Legais": {
+                "percentual_alcance": 92,
+                "status_pericial": "CONFORME"
+            },
+            "Documentacao de Rescisoes": {
+                "percentual_alcance": 58,
+                "status_pericial": "PARCIAL"
+            },
+            "Treinamento e Onboarding": {
+                "percentual_alcance": 34,
+                "status_pericial": "NAO CONFORME"
+            }
         },
         "consolidado_em": "09/05/2026 12:30:00"
     },
-
     "evidencias_kpi": {
         "documentos_por_kpi": {
             "Conformidade eSocial": "1. Extrato de Transmissoes eSocial\n   Periodicidade: Mensal\n   Como obter: Portal eSocial → Consulta de Eventos → competencia → Export PDF\n\n2. Recibo de Transmissao DCTFWeb\n   Periodicidade: Mensal\n   Como obter: Portal e-CAC → DCTFWeb → competencia → Download PDF",
@@ -238,7 +365,6 @@
         "total_kpis": 5,
         "gerado_em": "09/05/2026 13:00:00"
     },
-
     "comparativo_cargo": {
         "cargo": "Analista DP Senior",
         "cargo_normalizado": "ANALISTA DP SENIOR",
@@ -246,15 +372,23 @@
         "posicao_ranking": 2,
         "total_no_cargo": 3,
         "ranking_completo": [
-            {"Colaborador": "MARCOS OLIVEIRA", "Eficiencia (%)": "81.0%"},
-            {"Colaborador": "ANA PAULA COSTA", "Eficiencia (%)": "74.0%"},
-            {"Colaborador": "JULIANA MARTINS", "Eficiencia (%)": "58.0%"}
+            {
+                "Colaborador": "MARCOS OLIVEIRA",
+                "Eficiencia (%)": "81.0%"
+            },
+            {
+                "Colaborador": "ANA PAULA COSTA",
+                "Eficiencia (%)": "74.0%"
+            },
+            {
+                "Colaborador": "JULIANA MARTINS",
+                "Eficiencia (%)": "58.0%"
+            }
         ],
         "comparado_em": "09/05/2026 13:30:00"
     },
-
     "laudo_central": {
-        "texto": "",
-        "gerado_em": ""
+        "texto": "# LAUDO PERICIAL INDIVIDUAL\n\n## 1. IDENTIDADE OPERACIONAL\n**Nome:** Ana Paula Costa  \n**Cargo:** Analista DP Senior  \n**Perfil DISC Dominante:** C/S  \n**Status de Carga Horária:** Sobrecarga (11,4 horas/dia)\n\n## 2. DIAGNÓSTICO DE EFICIÊNCIA\n**ROI Auditado:** R$ 18.420,50  \n**Horas Recuperáveis:** 526,3 horas  \n**Ganho em Dias:** 65,8 dias  \n**Explicação:** O ROI auditado representa a eficiência financeira da colaboradora, com um total de horas recuperáveis que, se convertidas em dias, indicam uma significativa oportunidade de melhoria na gestão do tempo e processos.\n\n## 3. ANÁLISE COMPORTAMENTAL\n**Perfil DISC:** C/S  \n**Aderência ao Cargo:** Alta Aderência (80%)  \n**Pontos Fortes:** Alta capacidade analítica e atenção aos detalhes, essenciais para auditoria e conformidade legal.  \n**Riscos:** Sobrecarga de trabalho, especialmente em atividades operacionais que não são adequadas ao seu perfil técnico. \n\n## 4. AUDITORIA DE PROCESSOS\n**Aderência ao POP:** Alta, com algumas divergências em atividades específicas.  \n**Nexo Causal:** Confirmado em atividades como a conferência de folha e apuração de eSocial.  \n**Desvios:**  \n- **Homologação de Rescisões:** Frequência inadequada (deveria ser por evento, não mensal).  \n- **Atendimento de Dúvidas sobre Holerite:** Consome tempo excessivo (1,2h/dia) e deveria ser delegado.\n\n## 5. PRODUTIVIDADE E KPIs\n**Score por KPI:**  \n- Conformidade eSocial: 88% (Conforme)  \n- Integridade da Folha: 76% (Conforme)  \n- Cumprimento de Prazos Legais: 92% (Conforme)  \n- Documentação de Rescisões: 58% (Parcial)  \n- Treinamento e Onboarding: 34% (Não Conforme)  \n**KPI Crítico:** Treinamento e Onboarding (34% de eficiência)  \n**Gaps de Conformidade:** Documentação de homologação ausente e falta de registros de treinamento.\n\n## 6. VEREDITO PERICIAL\n- **PARAR:** Atendimento operacional de dúvidas sobre holerite — deve ser delegado a assistente para otimizar o tempo da colaboradora.\n- **DELEGAR:** Cadastros rotineiros de admissão — para assistente com perfil S/I, que pode lidar com tarefas operacionais.\n- **FOCAR:** Automação da integração eSocial-ERP e auditoria de inconsistências — maior impacto financeiro com menor esforço.\n\n## 7. PLANO DE AÇÃO (3 ações)\n**Título:** Automação da Integração eSocial-ERP | **Prazo:** 30 dias | **Impacto R$:** R$ 11.340,00 | **Responsável:** Carlos Mendes (perfil D)  \n**Título:** Padronização do Checklist de Admissão | **Prazo:** 45 dias | **Impacto R$:** R$ 4.861,50 | **Responsável:** Carlos Mendes (perfil D)  \n**Título:** Melhoria do Controle de Ponto Manual | **Prazo:** 60 dias | **Impacto R$:** R$ 2.219,00 | **Responsável:** Carlos Mendes (perfil D)  ",
+        "gerado_em": "09/05/2026 10:32:59"
     }
 }
