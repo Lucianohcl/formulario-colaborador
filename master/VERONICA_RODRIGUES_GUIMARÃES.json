@@ -13,7 +13,7 @@
     },
     "roi": {
         "auditado": 5712.0,
-        "bruto": 6720.0,
+        "bruto": 0,
         "horas_recuperaveis": 163.2,
         "ganho_dias": 20.4,
         "custo_hora": 35.0
@@ -43,62 +43,56 @@
     "sugestoes_auditadas": [
         {
             "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
-            "SUGESTAO ANALISADA": "NÃO USEI TODOS OS CONTROLES EXISTENTES NA JV, ENTÃO NÃO SEI DIZER SE EXISTE ALGO FEITO O QUE VOU SUGERIR:   INICIALMENTE",
+            "SUGESTAO ANALISADA": "NÃO USEI TODOS OS CONTROLES EXISTENTES NA JV, ENTÃO NÃO SEI DIZER SE EXISTE ALGO FEITO O QUE VOU SUGERIR:   INICIALMENTE, TOMANDO COMO BASE OS CHECK LIST'S QUE ENVIAMOS AOS CLIENTES TODO INÍCIO DE MÊS, DÁ PARA LEVANTARMOS QUAIS SÃO OS QUE ENVIAM TUDO E OS QUE SÃO MAIS DIFÍCEIS, E SÓ ENVIAM ALGO QUANDO SÃO COBRADOS.\nDE POSSE DESSA INFORMAÇÃO, PODEMOS CRIAR UM CONTROLE DE COBRANÇA, QUE A MEU VER, SE ESTIVER CORRETAMENTE PREENCHIDO, AGORA QUE A EQUIPE ESTÁ AUMENTANDO, OU UM ESTAGIÁRIO CONTÁBIL, OU ALGUÉM DE FORA DA EQUIPE, QUE NÃO SEI SE ESSA ATIVIDADE SERIA PERTINENTE A ESTA PESSOA DE FORA, POIS NÃO SEI O ESCOPO DE SEU TRABALHO E DE SUAS ATIVIDADES, QUE SERIA ISABELLA, PODERIA NOS AJUDAR COM ESTA COBRANÇA.    ESCREVI ISSO TUDO, PARA SUGERIR QUE TENHAMOS UM SETOR DE COBRANÇA DE DOCUMENTOS, QUE O FAÇA NÃO APENAS NO INÍCIO DO MÊS, MAS DURANTE O MÊS.  POR SER UMA SUGESTÃO, NÃO FAÇO IDEIA DE QUANTO TEMPO ISSO DEMANDARIA, MAS VOU SUGERIR O TEMPO GASTO DIÁRIO PARA ESTA ATIVIDADE, QUE A MEU VER, ENVOLVE NÃO SOMENTE UM E-MAIL E MENSAGEM POR WHATSAPP, MAS LIGAÇÃO PARA CONVERSAR COM O RESPONSÁVEL DO SETOR FINANCEIRO DAS EMPRESAS, PARA ENTENDER O PORQUÊ DELES NÃO ENVIAREM TUDO EM TEMPO HÁBIL E DA FORMA ADEQUADA.\nFAZEMOS ISSO PONTUALMENTE NO INÍCIO DO MÊS, MAS PENSO QUE PODE SER INTENSIFICADO. EXEMPLO: UMA EMPRESA QUE NÃO ENVIA TODAS AS INFORMAÇÕES E PRECISA, PARA ONTEM, DO BALANÇO FECHADO.  MENSALMENTE SÓ FAZEMOS A COBRANÇA DO CHECK LIST, QUE É UMA VEZ NO INÍCIO DO MÊS E DEPOIS SÓ FALAMOS NISSO UM MÊS DEPOIS. COM ESSE TRABALHO DE COBRANÇA, CONSIDERANDO QUE ELA SERIA PERIÓDICA, POR EXEMPLO, 3X NO MÊS, SEM CONSIDERAR O CHECK LIST, ACHO QUE PODEMOS TER UM RESULTADO MELHOR, PORQUE ACREDITO QUE O CLIENTE ESTÁ ACOSTUMADO COM O CHECK LIST",
             "ECONOMIA PROJETADA": "- 163.2 h/ano",
             "VALOR RECUPERAVEL": "R$ 5,712.00"
         }
     ],
     "gargalos": [
         {
-            "Status": "✅",
+            "Status": "🚩",
             "Setor": "SETOR FINANCEIRO DO CLIENTE",
-            "Dificuldade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas preciso evidenciar.  Saber que é assim, me faz ter ",
-            "Impacto Diario": "0.4 h/dia",
-            "Analise do Perito": "Aguardando auditoria de nexo causal"
+            "Dificuldade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas preciso evidenciar.  Saber que é assim, me faz ter mais paciência, mas continuo precisando da informação.   Há clientes que não enviam as informações; as enviam parcialmente;  enviam total, mas com históricos incompletos ou que não possuem informação que agregue ao nosso trabalho de conciliação; e, há os que enviam tudo certinho (aparentemente a minoria manda tudo e com os históricos trabalháveis). - Outra atividade difícil de mensurar tempo, porque isso se aplica a várias empresas e tem a ver com a cultura dela. É meio que um trabalho de formiguinha ajudar o cliente a aperfeiçoar sua forma de trabalhar....",
+            "Impacto Diário": "0.400 h/dia",
+            "Análise do Perito": "Desconexão: Esta dificuldade não possui correlação técnica com as tarefas listadas."
         }
     ],
     "auditoria_atividades": [
         {
-            "Status": "✅",
-            "Atividade": "Confeccionar demonstrativos urgentes, para empresas que não estão com a escrituração contábil em dia",
+            "Status": "❌",
+            "Atividade": "Confeccionar demonstrativos urgentes, para empresas que não estão com a escrituração contábil em dia - que estão com os fechamentos mensais atrasados. A complexidade não tem relação com dificuldade, tem relação com o volume de análise em atraso, para colocar em dia num prazo, que mesmo que não tenha sido mensurado, eu sei que tem urgência.  Então, mensurar o tempo que eu gasto nessas atividades, é complicado, pois iniciamos uma, paramos; pegamos outra, paramos; voltamos à anterior - e por aí vai. Sei que essa é a rotina num escritório e também sei que agora é que está chegando mais gente à equipe, mas como preciso descrever algo, isso é o que considero como \"alta complexidade\", devido à urgência num prazo relativamente curto.   Preencherei o campo \"tempo\" porque precisa ser preenchido, mas cada empresa dessa tem um tempo diferente - então colocarei o máximo permitido, mas com certeza para esse tipo de situação, preciso tentar cronometrar cada empresa feita.",
             "Impacto": "0.104 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Classificada como 'Alta', mas o impacto é de tarefa de suporte."
         },
         {
             "Status": "✅",
             "Atividade": "Fechar balancetes mensais de lucro real - empresa com pouco movimento (ex.: Auto Posto)",
             "Impacto": "0.600 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Coerente"
         },
         {
             "Status": "✅",
-            "Atividade": "Fechar balancetes mensais de lucro real -  empresa com movimento médio e quantidade de análises mode",
+            "Atividade": "Fechar balancetes mensais de lucro real -  empresa com movimento médio e quantidade de análises moderadas, pois requer mais conciliações que uma de menor movimento ou com contas básicas e poucas para conciliar (ex.: Ativa Comércio- aumentou o nível de análise depois que passamos a importar os pagamentos com cartão de crédito).",
             "Impacto": "1.200 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Coerente"
         },
         {
             "Status": "✅",
-            "Atividade": "Confeccionar Balanços de empresas que estão com a escrituração contábil em dia - para essas empresas",
+            "Atividade": "Confeccionar Balanços de empresas que estão com a escrituração contábil em dia - para essas empresas ainda não consegui perceber qual a periodicidade, então colocarei anual",
             "Impacto": "0.013 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Coerente"
         },
         {
             "Status": "✅",
-            "Atividade": "Escutar e orientar meus colegas, de acordo com o que eles sinalizarem que é sua dificuldade ou dúvid",
+            "Atividade": "Escutar e orientar meus colegas, de acordo com o que eles sinalizarem que é sua dificuldade ou dúvida sobre determinada atividade. Vale ressaltar, que por mais que seja de baixa complexidade, demanda tempo. Requer parar várias vezes o que eu estiver fazendo, para atendê-los.  E não posso deixar para atendê-los depois, pois na maioria das vezes eles precisam desse retorno para dar continuidade ao que estão fazendo.  O único momento em que eu não paro, é se eu estiver em uma ligação.  Exceto por isso, paro sim, porque entendo que é necessário - para isso, hoje eu sinto que é difícil mensurar tempo, pois acabamos de admitir uma analista e ela tem conhecimento, talvez intermediário e precisa de bastante orientação. Então o tempo gasto com ela, mesmo considerando que ela assistiu alguns vídeos, com certeza é maior do que alguém que tem mais experiência. E parei diversas vezes, tanto para explicar, como para fazer com ela e depois e conferir, para ela corrigir o que precisava.  Difícil mensurar tempo, porque também varia.",
             "Impacto": "5.000 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Coerente"
         },
         {
-            "Status": "✅",
-            "Atividade": "Atender às ligações e ligar para os clientes:  o tempo para isso é relativo.  Enquanto não colocarmo",
+            "Status": "❌",
+            "Atividade": "Atender às ligações e ligar para os clientes:  o tempo para isso é relativo.  Enquanto não colocarmos as empresas em dia, para conseguirmos repassar relatórios e marcar com os clientes para discutir seus números, hoje as ligações são para tirar dúvidas ou solicitar documentos.  Então, entendo que hoje o tempo gasto com ligações é bem pouco.",
             "Impacto": "0.200 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
-        },
-        {
-            "Status": "✅",
-            "Atividade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas p",
-            "Impacto": "0.400 h/dia",
-            "Analise Critica": "Aguardando auditoria — dados do formulário"
+            "Análise Crítica": "Lançamento Padronizado (1h): Indica falta de precisão no preenchimento."
         }
     ],
     "parecer": {},
@@ -116,5 +110,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "09/05/2026 12:00:29"
 }
