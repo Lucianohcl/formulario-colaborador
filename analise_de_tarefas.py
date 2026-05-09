@@ -5856,26 +5856,26 @@ def aba_produtividade_inteligente():
                                 url_git = salvar_pericia_no_github(nome_colab, kpi, resultado, relato)
                                 if url_git:
                                     st.success("✅ Registro imortalizado no GitHub!")
-                                    
-                                    # === SALVA KPI NO JSON MESTRE ===
-                                    try:
-                                        _master_kpi = carregar_master(nome_colab)
-                                        _kpis_atual = _master_kpi.get("kpis_auditados", {})
-                                        _kpis_atual[kpi['nome']] = {
-                                            "percentual_alcance":  resultado.get('percentual_alcance',  0),
-                                            "status_pericial":     resultado.get('status_pericial',     ''),
-                                            "analise_critica":     resultado.get('analise_critica',     ''),
-                                            "gap_de_conformidade": resultado.get('gap_de_conformidade', []),
-                                            "ponderacao":          resultado.get('ponderacao_detalhada',{}),
-                                            "relato_auditor":      relato,
-                                            "auditado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                                        }
-                                        salvar_master(nome_colab, {
-                                            "kpis_auditados": _kpis_atual
-                                        })
-                                    except Exception as _e:
-                                        st.toast(f"⚠️ Master não salvo (KPI): {_e}", icon="⚠️")
-                                    # === FIM PATCH 6 ===
+
+                                # === SALVA KPI NO JSON MESTRE ===
+                                try:
+                                    _master_kpi = carregar_master(nome_colab)
+                                    _kpis_atual = _master_kpi.get("kpis_auditados", {})
+                                    _kpis_atual[kpi['nome']] = {
+                                        "percentual_alcance":  resultado.get('percentual_alcance',  0),
+                                        "status_pericial":     resultado.get('status_pericial',     ''),
+                                        "analise_critica":     resultado.get('analise_critica',     ''),
+                                        "gap_de_conformidade": resultado.get('gap_de_conformidade', []),
+                                        "ponderacao":          resultado.get('ponderacao_detalhada',{}),
+                                        "relato_auditor":      relato,
+                                        "auditado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                    }
+                                    salvar_master(nome_colab, {
+                                        "kpis_auditados": _kpis_atual
+                                    })
+                                except Exception as _e:
+                                    st.toast(f"⚠️ Master não salvo (KPI): {_e}", icon="⚠️")
+                                # === FIM PATCH 6 ===
 
                                     st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
                         else:
