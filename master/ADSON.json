@@ -345,10 +345,22 @@
         "kpi_critico_score": 0
     },
     "evidencias_kpi": {},
-    "comparativo_cargo": {},
+    "comparativo_cargo": {
+        "cargo": "GESTOR DE DP",
+        "eficiencia_pct": 0.0,
+        "posicao_ranking": 1,
+        "total_no_cargo": 1,
+        "ranking_completo": [
+            {
+                "Colaborador": "ADSON",
+                "Eficiência (%)": "22.4%"
+            }
+        ],
+        "comparado_em": "09/05/2026 16:53:07"
+    },
     "laudo_central": {
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "09/05/2026 16:53:08"
 }
