@@ -6659,7 +6659,6 @@ def listar_masters_individuais():
 # FUNÇÕES DE IA
 # ============================================================
 
-@st.cache_data(ttl=86400, show_spinner=False)
 def gerar_laudo_individual_ia(dados_json_str):
     try:
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
@@ -6671,8 +6670,18 @@ Use markdown. Estruture EXATAMENTE assim:
 ## 1. IDENTIDADE OPERACIONAL
 Nome, cargo, perfil DISC dominante, status de carga horária.
 
-## 2. DIAGNÓSTICO DE EFICIÊNCIA
-ROI auditado em R$, horas recuperáveis, ganho em dias. Explique os números.
+## 2. DIAGNÓSTICO DE ROI AUDITADO
+ROI auditado em R$, horas recuperáveis, ganho em dias.
+Explique OBRIGATORIAMENTE a metodologia de auditoria pericial:
+- O ROI auditado é resultado de perícia técnica sobre as sugestões do colaborador
+- Cada sugestão é classificada em 3 categorias com ponderação diferente:
+  Transformação Digital (automação, IA, sistemas, integração) — 85% do potencial
+  Otimização de Processo (padronização, POP, checklist, treinamento) — 45% do potencial
+  Melhoria Incremental (demais melhorias operacionais) — 20% do potencial
+- Base de cálculo: Custo Total de Ocupação de R$ 35,00/hora
+- Fórmula: Horas declaradas x Frequência anual x Fator de ponderação x R$ 35,00
+- O ROI auditado é MENOR que o bruto porque aplica rigor técnico
+Cite as sugestões reais do colaborador e a categoria em que cada uma foi classificada.
 
 ## 3. ANÁLISE COMPORTAMENTAL
 Perfil DISC, aderência ao cargo, pontos fortes e riscos. Conecte ao cargo e atividades.
