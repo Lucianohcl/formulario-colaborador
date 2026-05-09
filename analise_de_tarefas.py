@@ -6722,8 +6722,13 @@ Cite as sugestões reais do colaborador e a categoria em que cada uma foi classi
 ## 3. ANÁLISE COMPORTAMENTAL
 Perfil DISC, aderência ao cargo, pontos fortes e riscos. Conecte ao cargo e atividades.
 
-## 4. AUDITORIA DE PROCESSOS
-Aderência ao POP, nexo causal, desvios. Cite atividades específicas se disponíveis.
+## 4. AUDITORIA DE PROCESSOS E NEXO CAUSAL
+- Nexo Causal: informe o score, as horas/dia relatadas, o desvio em relação à jornada de 8h e o status (sobrecarga/adequado/subutilizado)
+- Aderência ao POP: use os dados de parecer.aderencia_cargo_pct, parecer.total_pop_min e parecer.total_real_min para calcular e informar o percentual. Informe o risco_operacional.
+- Atividades FORA DO PADRÃO: liste todas do parecer.confronto_pericial com Status ⚠️, citando a divergência em minutos
+- Atividades AUSENTES: liste todas do parecer.confronto_pericial com Status ❌
+- Veredito 360°: cite o parecer_360.veredito_final completo dividido em PARAR, DELEGAR e FOCAR
+- Gargalos: cite cada item de gargalos com seu impacto diário
 
 ## 5. PRODUTIVIDADE E KPIs
 Score por KPI, KPI crítico, gaps de conformidade.
