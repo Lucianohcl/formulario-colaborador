@@ -1,0 +1,50 @@
+[
+  {
+    "Atividade": "SUPORTE_TECNICO",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "120.0m",
+    "Eficiência vs 480m": "25.0%",
+    "Meta Auditável": "Prestar suporte a 100% dos usuários em tempo hábil, medido por taxa de resolução de chamados acima de 90%"
+  },
+  {
+    "Atividade": "MONITORAMENTO_DE_INFRAESTRUTURA",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Realizar verificações diárias para garantir 99% de uptime da infraestrutura. Registro em relatório"
+  },
+  {
+    "Atividade": "INOVAÇÕES_TECNOLOGICAS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Propor 2 inovações tecnológicas por semana que possam melhorar a eficiência do escritório, documentadas em relatório"
+  },
+  {
+    "Atividade": "TREINAMENTO_DE_COLABORADORES",
+    "Freq": "SEMANAL",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "18.0m",
+    "Eficiência vs 480m": "3.8%",
+    "Meta Auditável": "Treinar 100% dos colaboradores em novos sistemas e tecnologias, medido por feedback positivo em pesquisa"
+  },
+  {
+    "Atividade": "ANALISE_DE_DADOS_DE_USO",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Elaborar uma análise com base no uso de tecnologias em 100% das áreas do escritório, apresentando índices de eficiência"
+  },
+  {
+    "Atividade": "REVISAO_DE_COMPLIANCE",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Realizar uma revisão de compliance em relação à infraestrutura e sistemas, com 100% de conformidade a normativas internas e externas"
+  }
+]
