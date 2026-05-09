@@ -1,0 +1,194 @@
+{
+    "colaborador": "GILBERSON FERREIRA",
+    "criado_em": "15/04/2026 20:31:42",
+    "campos": {
+        "cargo": "Analista",
+        "dep": "Fiscal",
+        "setor": "Fiscal",
+        "chefe": "Tulio ",
+        "unidade": "Jv contabilidade ",
+        "escolaridade": "Superior completo ",
+        "cursos": "Computação Gráfica \nCiências Contabeis \nPlanejamento tributario \nInglês intermediario \n",
+        "objetivo": "Emissão de notas, analise e apuração de impostos estaduais, municipais e federais do lucro simples, presumido e real. Elaboração e entrega de  declarações mensais e relatorios. Execução de rotinas fiscais contábeis"
+    },
+    "roi": {
+        "auditado": 0.0,
+        "bruto": 0.0,
+        "horas_recuperaveis": 0.0,
+        "ganho_dias": 0,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 65.1,
+        "horas_dia": 2.19,
+        "status": "subutilizado"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 12,
+            "I": 33,
+            "S": 12,
+            "C": 42
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 30,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "IMPORTAÇÃO DE NOTAS SEFAZ/SISTEMA",
+            "ECONOMIA PROJETADA": "- 0.0 h/ano",
+            "VALOR RECUPERAVEL": "R$ 0.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "FISCAL",
+            "Dificuldade": "IMPORTAÇÃO DE NOTAS",
+            "Impacto Diario": "0.008 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "FISCAL",
+            "Dificuldade": "ERRO AO GERAR ARQUIVO EFD",
+            "Impacto Diario": "0.008 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "FISCAL",
+            "Dificuldade": "ENTREGA DE RELATORIOS DOS CLIENTES",
+            "Impacto Diario": "0.008 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Retidos federais ",
+            "Impacto": "0.100 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apuração de ICMS",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ICMS FRONTEIRAS ",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apuração trimestral IRPJ E CSLL ",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apuração PIS  e COFINS Presumido",
+            "Impacto": "0.150 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apuração Pis e COFINS Real  ",
+            "Impacto": "0.150 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Emissão de Notas ",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Tributação fiscal grupo Marfim ",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "SPED ICMS ",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "SPED EFD PIS E COFINS",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "DMS ",
+            "Impacto": "0.013 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ISS ",
+            "Impacto": "0.025 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ISS RETIDO ",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "MIT",
+            "Impacto": "0.025 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "IMPORTAÇÃO DE NOTAS ",
+            "Impacto": "0.008 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ERRO AO GERAR ARQUIVO EFD ",
+            "Impacto": "0.008 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ENTREGA DE RELATORIOS DOS CLIENTES ",
+            "Impacto": "0.008 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

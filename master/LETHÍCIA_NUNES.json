@@ -1,0 +1,102 @@
+{
+    "colaborador": "LETHÍCIA NUNES",
+    "criado_em": "19/04/2026 03:59:28",
+    "campos": {
+        "cargo": "ANALISTA CONTÁBIL JÚNIOR",
+        "dep": "CONTÁBIL",
+        "setor": "CONTABILIDADE",
+        "chefe": "THALITA",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "SUPERIOR COMPLETO",
+        "cursos": "Bacharelado em ciências contábeis \nCRC ativo\n",
+        "objetivo": "Conciliação e análise de balancetes"
+    },
+    "roi": {
+        "auditado": 0.0,
+        "bruto": 0.0,
+        "horas_recuperaveis": 0.0,
+        "ganho_dias": 0,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 84.4,
+        "horas_dia": 5.4,
+        "status": "adequado"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 29,
+            "I": 21,
+            "S": 33,
+            "C": 17
+        },
+        "perfil_dominante": "S",
+        "score_intensidade": 0,
+        "amplitude": 16,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "DEVIDO AO POUCO TEMPO QUE TENHO NA EMPRESA AINDA NÃO POSSUO SUGESTÕES.",
+            "ECONOMIA PROJETADA": "- 0.0 h/ano",
+            "VALOR RECUPERAVEL": "R$ 0.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "FINANCEIRO DO CLIENTE",
+            "Dificuldade": "Envio de informações do cliente em prazo hábil",
+            "Impacto Diario": "1.0 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Fechamento de empresas que não estão atualizadas em um curto prazo. Devido a falta de informações no",
+            "Impacto": "1.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Fechamento das demonstrações contábeis (Estou a pouco tempo na empresa para determinar um prazo exat",
+            "Impacto": "1.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Conciliações (Estou a pouco tempo na empresa para determinar um prazo exato)",
+            "Impacto": "2.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Envio de informações do cliente em prazo hábil",
+            "Impacto": "1.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

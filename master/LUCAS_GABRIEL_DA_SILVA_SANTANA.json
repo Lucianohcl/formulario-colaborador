@@ -1,0 +1,156 @@
+{
+    "colaborador": "LUCAS GABRIEL DA SILVA SANTANA",
+    "criado_em": "19/04/2026 04:53:09",
+    "campos": {
+        "cargo": "ANALISTA DE DEPARTAMENTO PESSOAL",
+        "dep": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "DADO CORROMPIDO",
+        "cursos": "DADOS CORROMPIDOS",
+        "objetivo": "DADOS CORROMPIDOS"
+    },
+    "roi": {
+        "auditado": 1800.17,
+        "bruto": 9000.83,
+        "horas_recuperaveis": 51.43,
+        "ganho_dias": 6.4,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 61.9,
+        "horas_dia": 1.65,
+        "status": "subutilizado"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 33,
+            "I": 17,
+            "S": 29,
+            "C": 21
+        },
+        "perfil_dominante": "D",
+        "score_intensidade": 0,
+        "amplitude": 16,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "ONECODE/ MOSTRAR O CONTATO QUE FOI MENCIONADO (IGUAL WPP)",
+            "ECONOMIA PROJETADA": "- 51.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,796.67"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "AUTOMATIZAR PARA QUE A MENSAGEM DE ESCOLHA DO SETOR, APAREÇA  UMA VEZ APENAS",
+            "ECONOMIA PROJETADA": "- 0.1 h/ano",
+            "VALOR RECUPERAVEL": "R$ 3.50"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "DEPARTAMENTO PESSOAL",
+            "Dificuldade": "IDENTIFICAÇÃO DE MENÇÃO NO GRUPO PELO ONECODE",
+            "Impacto Diario": "0.083 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": " ADMISSÃO",
+            "Impacto": "0.067 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "RESCISÃO",
+            "Impacto": "0.067 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FECHAMENTO DE FOLHA MENSAL",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FÉRIAS",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FECHAMENTO DE FOLHA QUINZENAL",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ATENDIMENTO AO CLIENTE ONECODE",
+            "Impacto": "1.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "E-MAIL",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ATENDIMENTO TELEFONICO",
+            "Impacto": "0.083 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "EMISSÃO DE DOCUMENTAÇÃO DE ADMISSAO",
+            "Impacto": "0.017 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "LANÇAMENTO DE ATESTADO",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "EMISSAO DE PLANILHA PELO BI",
+            "Impacto": "0.017 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "IDENTIFICAÇÃO DE MENÇÃO NO GRUPO PELO ONECODE",
+            "Impacto": "0.083 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

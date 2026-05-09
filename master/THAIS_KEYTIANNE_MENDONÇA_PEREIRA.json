@@ -1,0 +1,169 @@
+{
+    "colaborador": "THAIS KEYTIANNE MENDONÇA PEREIRA",
+    "criado_em": "19/04/2026 05:10:19",
+    "campos": {
+        "cargo": "ANALISTA DEPARTAMENTO PESSOAL",
+        "dep": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "DADOS CORROMPIDOS",
+        "cursos": "DADOS CORROMPIDOS",
+        "objetivo": "DADOS CORROMPIDOS"
+    },
+    "roi": {
+        "auditado": 84.0,
+        "bruto": 420.0,
+        "horas_recuperaveis": 2.4,
+        "ganho_dias": 0.3,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 58.0,
+        "horas_dia": 1.0,
+        "status": "subutilizado"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 21,
+            "I": 8,
+            "S": 21,
+            "C": 50
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 42,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "CURSOS DE ATUALIZACAO",
+            "ECONOMIA PROJETADA": "- 2.4 h/ano",
+            "VALOR RECUPERAVEL": "R$ 84.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "FECHAMENTO E REABERTURA DE FOLHA NO SISTEMA ESOCIAL",
+            "Impacto Diario": "0.033 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "GOV",
+            "Dificuldade": "ENVIO DE RESCISAO - CONECTIVIDADE, MTE",
+            "Impacto Diario": "0.05 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "INFORME DE RENDIMENTOS SOCIOS - 2025",
+            "Impacto": "0.100 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "SIMULAÇÃO DE RESCISÃO",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FECHAMENTO DE FOLHA EMPRESA FILIAL",
+            "Impacto": "0.067 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "RESCISÃO PEDIDO",
+            "Impacto": "0.083 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "RECIBO DE FERIAS",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ADMISSÃO",
+            "Impacto": "0.100 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FECHAMENTO DE FOLHA EMPRESA PEQUENA",
+            "Impacto": "0.037 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "RESCISAO DEMISSAO",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "CONSULTA FGTS",
+            "Impacto": "0.008 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "CONSULTA ECAC",
+            "Impacto": "0.008 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "AVISO DE FERIAS",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ATESTADOS",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "FECHAMENTO E REABERTURA DE FOLHA NO SISTEMA ESOCIAL",
+            "Impacto": "0.033 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "ENVIO DE RESCISAO - CONECTIVIDADE, MTE",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

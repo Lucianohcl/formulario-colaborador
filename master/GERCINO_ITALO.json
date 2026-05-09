@@ -1,0 +1,186 @@
+{
+    "colaborador": "GERCINO ITALO",
+    "criado_em": "19/04/2026 04:12:41",
+    "campos": {
+        "cargo": "Auxiliar Contábil",
+        "dep": "Contábil",
+        "setor": "Contábil",
+        "chefe": "Thalita",
+        "unidade": "Jv contabilidade Ltda ",
+        "escolaridade": "Ensino superior em andamento",
+        "cursos": "Ciências contábil",
+        "objetivo": "Auxiliar nas demandas diárias ( operacional, analise, relatórios, tratativa com clientes, urgências)"
+    },
+    "roi": {
+        "auditado": 1934.48,
+        "bruto": 4202.92,
+        "horas_recuperaveis": 55.27,
+        "ganho_dias": 6.9,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 7.3,
+        "horas_dia": 23.45,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 17,
+            "I": 0,
+            "S": 25,
+            "C": 58
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 58,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "CONVERSÃO POR PARTE DA EMPRESAS, INFLUENCIADA/DIRENCIONADA POR NÓS, E PARA AS QUE TÊM ESTRUTURA, AO DRIVE, ANEXAR OS ARQ",
+            "ECONOMIA PROJETADA": "- 40.8 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,428.00"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "CURSOS DE ATUALIZAÇÃO CONTÁBIL/FISCAL EX. REFORMA TRIBUTÁRIA  - SEM TEMPO PARA MENSURAR",
+            "ECONOMIA PROJETADA": "- 0.1 h/ano",
+            "VALOR RECUPERAVEL": "R$ 2.48"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "INTEGRAÇÃO DP X CONTÁBIL",
+            "ECONOMIA PROJETADA": "- 14.4 h/ano",
+            "VALOR RECUPERAVEL": "R$ 504.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "CONTABIL",
+            "Dificuldade": "Dificuldades específicas de cada empresa (falta de documentação, demora para retornar,  particularidades especificas de empresas que ainda não tinha f",
+            "Impacto Diario": "0.6 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Balancete urgente de empresa sem atualização contábil no ano todo",
+            "Impacto": "4.800 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Balancete urgente de empresas grandes com atualização mas sem analise contabil no ano",
+            "Impacto": "4.800 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Relatórios urgentes ( faturamento para banco, distribuição de lucros, razões de contas contábeis)",
+            "Impacto": "0.050 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Relatórios gerenciais de apontamentos para o cliente",
+            "Impacto": "0.600 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Análise/atualização de empresas com o movimento 100% fisico",
+            "Impacto": "6.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "cobranças de documento ao cliente ",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "analise de balancete não urgente ",
+            "Impacto": "1.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Salvar/responder emails corriqueiros",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Lançamentos para atualizações das empresas ( folha, notas fiscais, provisões, financeiro, impostos, ",
+            "Impacto": "3.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "auxiliar parceiros de equipe",
+            "Impacto": "0.400 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "separação de documentação fisica ( notas de energia/ notas de serviços para o fiscal, arquivamento d",
+            "Impacto": "0.100 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "demandas diversas (salvar um arquivo, preencher algo, verificar recebimento, verificar resposta)",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "auxiliar parceiros de equipe",
+            "Impacto": "0.400 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "separação de documentação fisica ( notas de energia/ notas de serviços para o fiscal, arquivamento d",
+            "Impacto": "0.100 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "demandas diversas (salvar um arquivo, preencher algo, verificar recebimento, verificar resposta)",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Dificuldades específicas de cada empresa (falta de documentação, demora para retornar,  particularid",
+            "Impacto": "0.600 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

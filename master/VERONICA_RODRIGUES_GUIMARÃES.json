@@ -1,0 +1,120 @@
+{
+    "colaborador": "VERONICA RODRIGUES GUIMARÃES",
+    "criado_em": "19/04/2026 03:55:10",
+    "campos": {
+        "cargo": "Analista Contábil Sênior",
+        "dep": "Contábil",
+        "setor": "Contabilidade",
+        "chefe": "Thalita Gusmão",
+        "unidade": "JV Contabillidade",
+        "escolaridade": "Superior Completo",
+        "cursos": "Bacharelado em Ciências Contábeis (com CRC Ativo) / Excel intermediário / Conhecimento básico em relatórios gerenciais e financeiros",
+        "objetivo": "Objetivo/atividades: fechar/entregar balanços, demais demonstrativos e relatórios devidamente conferidos , além de assistir aos clientes e colegas de equipe, garantindo que ambos sejam atendidos, cada qual em sua necessidade. Preciso garantir que o cliente tenha sua informação clara e completa, sobre o serviço que nos propomos fazer/entregar.  E sobre a equipe, preciso me certificar  que nossos colegas estão sendo escutados, orientados, capacitados e monitorados, para que possam entregar seu melhor resultado.  Escutar é imprescindível para conseguir atendê-los da melhor forma e dentro das condições possíveis, assim como, para aprender com eles."
+    },
+    "roi": {
+        "auditado": 5712.0,
+        "bruto": 6720.0,
+        "horas_recuperaveis": 163.2,
+        "ganho_dias": 20.4,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 97.1,
+        "horas_dia": 7.52,
+        "status": "adequado"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 21,
+            "I": 21,
+            "S": 12,
+            "C": 46
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 34,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "NÃO USEI TODOS OS CONTROLES EXISTENTES NA JV, ENTÃO NÃO SEI DIZER SE EXISTE ALGO FEITO O QUE VOU SUGERIR:   INICIALMENTE",
+            "ECONOMIA PROJETADA": "- 163.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 5,712.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "SETOR FINANCEIRO DO CLIENTE",
+            "Dificuldade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas preciso evidenciar.  Saber que é assim, me faz ter ",
+            "Impacto Diario": "0.4 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Confeccionar demonstrativos urgentes, para empresas que não estão com a escrituração contábil em dia",
+            "Impacto": "0.104 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Fechar balancetes mensais de lucro real - empresa com pouco movimento (ex.: Auto Posto)",
+            "Impacto": "0.600 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Fechar balancetes mensais de lucro real -  empresa com movimento médio e quantidade de análises mode",
+            "Impacto": "1.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Confeccionar Balanços de empresas que estão com a escrituração contábil em dia - para essas empresas",
+            "Impacto": "0.013 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Escutar e orientar meus colegas, de acordo com o que eles sinalizarem que é sua dificuldade ou dúvid",
+            "Impacto": "5.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Atender às ligações e ligar para os clientes:  o tempo para isso é relativo.  Enquanto não colocarmo",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Clientes : o gargalo é a qualidade das informações e/ou a falta delas. Também sei que é assim, mas p",
+            "Impacto": "0.400 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

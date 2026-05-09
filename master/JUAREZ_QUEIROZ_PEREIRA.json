@@ -1,0 +1,404 @@
+{
+    "colaborador": "JUAREZ QUEIROZ PEREIRA",
+    "criado_em": "19/04/2026 03:28:55",
+    "campos": {
+        "cargo": "ANALISTA DEPARTAMENTO PESSOAL",
+        "dep": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "NÍVEL SUPERIOR COMPLETO",
+        "cursos": "Ciências Contábeis, Pacote Office Avançado, Sistemas Folhas Pagamento: RM Sistema Totvs, ERP/RM,\\n Questor, Alterdata, Domínios, GCI, RH3, RH3 Ponto, Ferramenta Pontomais, RH3 Benefícios, RH3 Gerador de\\nRelatórios, EBS Cordilheira, Microsiga, Rubi, Ponto Eletrônico Radar, Chronos Labore e Honda Portaria 1510,\\nAtualizado com o E-SOCIAL, FGTS Digital, Power BI, Curso SENAI Competências Transversais em Legislação\\nTrabalhista, Financeiro SAP, Windows, Word, Excel Avançado.",
+        "objetivo": "Meu trabalho no Departamento Pessoal (DP) consiste em cuidar de toda a parte administrativa e legal relacionada aos colaboradores de uma empresa e clientes. Isso envolve garantir que a relação entre empresa e funcionário esteja sempre de acordo com a legislação trabalhista.\\nAdmissão e demissão de funcionários, Controle de ponto (horas trabalhadas, atrasos, faltas, Processamento da folha de pagamento, Cálculo de férias, 13º salário e rescisões\\nGestão de benefícios (vale-transporte, vale alimentação, Envio de obrigações legais ao governo como e Social.\\nAssegurar que todos os direitos e deveres trabalhistas sejam cumpridos corretamente, tanto para a empresa quanto para os colaboradores.\\nAlém disso, o DP busca:\\nEvitar problemas legais e trabalhistas , manter a organização e transparência nos processos internos, garantir que os funcionários recebam corretamente seus pagamentos e benefícios.\\nResumindo: o Departamento Pessoal é essencial para manter a empresa regularizada, organizada e justa nas relações de trabalho."
+    },
+    "roi": {
+        "auditado": 6224.17,
+        "bruto": 12833.33,
+        "horas_recuperaveis": 177.83,
+        "ganho_dias": 22.2,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 61.0,
+        "horas_dia": 14.5,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 42,
+            "I": 8,
+            "S": 21,
+            "C": 29
+        },
+        "perfil_dominante": "D",
+        "score_intensidade": 0,
+        "amplitude": 34,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "IMPLANTAÇÃO DE PROCESSOS PADRONIZADOS PARA ROTINAS DE ADMISSÃO, DEMISSÃO E FECHAMENTO DE FOLHA, REDUZINDO ERROS E RETRAB",
+            "ECONOMIA PROJETADA": "- 7.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 256.67"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "CRIAÇÃO DE UM CRONOGRAMA MENSAL INTEGRADO COM TODOS OS SETORES, GARANTINDO O ENVIO DE INFORMAÇÕES DENTRO DOS PRAZOS",
+            "ECONOMIA PROJETADA": "- 31.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,090.83"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "INVESTIMENTO EM AUTOMAÇÃO DE PROCESSOS (SISTEMAS DE FOLHA E PONTO), VISANDO MAIOR AGILIDADE E CONFIABILIDADE NOS DADOS",
+            "ECONOMIA PROJETADA": "- 31.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,090.83"
+        },
+        {
+            "ESTRATEGIA": "OTIMIZACAO DE PROCESSO",
+            "SUGESTAO ANALISADA": "REALIZAÇÃO DE TREINAMENTOS PERIÓDICOS PARA GESTORES E COLABORADORES SOBRE ROTINAS TRABALHISTAS E USO CORRETO DO PONTO EL",
+            "ECONOMIA PROJETADA": "- 16.5 h/ano",
+            "VALOR RECUPERAVEL": "R$ 577.50"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "MELHORIA NA INTEGRAÇÃO ENTRE OS SISTEMAS (FOLHA, PONTO E BENEFÍCIOS), EVITANDO DIVERGÊNCIAS DE INFORMAÇÕES",
+            "ECONOMIA PROJETADA": "- 31.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,090.83"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "DESENVOLVIMENTO DE INDICADORES (KPIS) PARA ACOMPANHAMENTO DE ERROS, RETRABALHO E CUMPRIMENTO DE PRAZOS",
+            "ECONOMIA PROJETADA": "- 7.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 256.67"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "CENTRALIZAÇÃO E DIGITALIZAÇÃO DE DOCUMENTOS, FACILITANDO O ACESSO E REDUZINDO PERDAS DE INFORMAÇÃO",
+            "ECONOMIA PROJETADA": "- 7.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 256.67"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "CRIAÇÃO DE CANAIS DE COMUNICAÇÃO MAIS CLAROS COM COLABORADORES PARA ESCLARECIMENTO DE DÚVIDAS SOBRE FOLHA, BENEFÍCIOS E ",
+            "ECONOMIA PROJETADA": "- 31.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,090.83"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "REVISÃO CONTÍNUA DOS PROCESSOS INTERNOS PARA ADEQUAÇÃO ÀS MUDANÇAS NA LEGISLAÇÃO TRABALHISTA",
+            "ECONOMIA PROJETADA": "- 7.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 256.67"
+        },
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "REDUÇÃO DE ATIVIDADES OPERACIONAIS POR MEIO DE DELEGAÇÃO OU AUTOMAÇÃO, PERMITINDO MAIOR FOCO EM ANÁLISES ESTRATÉGICAS",
+            "ECONOMIA PROJETADA": "- 7.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 256.67"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Dependência de informações de outros setores (gestores, ponto, RH) para execução correta das rotinas",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Frequentes alterações na legislação trabalhista e fiscal, exigindo atualização constante",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Inconsistências em registros de ponto e dados cadastrais dos colaboradores",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Ocorrência de retrabalho devido a informações incompletas ou enviadas fora do prazo",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Limitações e instabilidades nos sistemas (folha, ponto, eSocial), principalmente em períodos críticos",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Dificuldade na padronização de processos e fluxos internos",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Acúmulo de atividades operacionais que reduz o tempo disponível para análises estratégicas",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Necessidade constante de conferência detalhada para evitar erros com impacto legal e financeiro",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        },
+        {
+            "Status": "✅",
+            "Setor": "DP",
+            "Dificuldade": "Comunicação desafiadora em relação a descontos, benefícios e regras trabalhistas",
+            "Impacto Diario": "0.583 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Fechamento da folha de pagamento (cálculo de salários, encargos, benefícios)",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apuração e conferência de encargos trabalhistas (INSS, FGTS, IRRF) ",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Envio de obrigações acessórias (eSocial, DCTFWeb, SEFIP) ",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Controle e gestão de admissões e demissões (rescisões, homologações) ",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Interpretação e aplicação da legislação trabalhista e convenções coletivas ",
+            "Impacto": "0.417 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Atendimento internas e externas ",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Análise de inconsistências na folha e correção de divergências ",
+            "Impacto": "0.500 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Gestão de benefícios (vale-transporte, vale-alimentação, plano de saúde) ",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": " Lançamento de informações para folha de pagamento (horas extras, faltas, adicionais) ",
+            "Impacto": "0.417 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Controle de ponto eletrônico e tratamento de inconsistências",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Administração de férias (programação, cálculo e controle)",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Cadastro e atualização de dados de colaboradores no sistema",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Controle de afastamentos (INSS, atestados médicos, licenças)",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Atendimento a colaboradores para esclarecimento de dúvidas trabalhistas",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Organização e conferência de documentação admissional e demissional",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apoio no processo de admissão e integração de novos colaboradores ",
+            "Impacto": "0.667 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Emissão de relatórios operacionais (folha, ponto, benefícios)",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Controle de benefícios (inclusão, exclusão e ajustes) ",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Arquivamento e organização de documentos físicos e digitais ",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Digitalização de documentos de colaboradores ",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Atualização simples de planilhas de controle ",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Conferência básica de documentos (checklist admissional/demissional)",
+            "Impacto": "0.333 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Emissão de documentos padronizados (declarações, comprovantes)",
+            "Impacto": "0.417 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Apoio no envio de comunicados internos",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Separação de documentos para processos internos ",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Atualização de cadastros simples no sistema",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Controle de recebimento de documentos pendentes",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Dependência de informações de outros setores (gestores, ponto, RH) para execução correta das rotinas",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Frequentes alterações na legislação trabalhista e fiscal, exigindo atualização constante",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Inconsistências em registros de ponto e dados cadastrais dos colaboradores",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Ocorrência de retrabalho devido a informações incompletas ou enviadas fora do prazo",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Limitações e instabilidades nos sistemas (folha, ponto, eSocial), principalmente em períodos crítico",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Dificuldade na padronização de processos e fluxos internos",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Acúmulo de atividades operacionais que reduz o tempo disponível para análises estratégicas",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Necessidade constante de conferência detalhada para evitar erros com impacto legal e financeiro",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Comunicação desafiadora em relação a descontos, benefícios e regras trabalhistas",
+            "Impacto": "0.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

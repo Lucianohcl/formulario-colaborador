@@ -1,0 +1,108 @@
+{
+    "colaborador": "LUCIANA SIMAS",
+    "criado_em": "14/04/2026 11:30:08",
+    "campos": {
+        "cargo": "Assistente ",
+        "dep": "Fiscal ",
+        "setor": "Fiscal ",
+        "chefe": "Túlio ",
+        "unidade": "JV contabilidade ",
+        "escolaridade": "Eu não o superior ",
+        "cursos": "Ciências contábeis ",
+        "objetivo": "Calcular tributos e executar minhas tarefas com excelência "
+    },
+    "roi": {
+        "auditado": 9240.0,
+        "bruto": 46200.0,
+        "horas_recuperaveis": 264.0,
+        "ganho_dias": 33.0,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 43.0,
+        "horas_dia": 17.5,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 29,
+            "I": 12,
+            "S": 42,
+            "C": 17
+        },
+        "perfil_dominante": "S",
+        "score_intensidade": 0,
+        "amplitude": 30,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "PRECISAMOS DE UM ESTAGIÁRIO NO SETOR ",
+            "ECONOMIA PROJETADA": "- 264.0 h/ano",
+            "VALOR RECUPERAVEL": "R$ 9,240.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "N/A",
+            "Dificuldade": "N/A",
+            "Impacto Diario": "0.0 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Apuração de impostos",
+            "Impacto": "8.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Simples nacional ",
+            "Impacto": "8.583 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Emitir faturamento ",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "A missão de nota fiscal ",
+            "Impacto": "0.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "N/A",
+            "Impacto": "0.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

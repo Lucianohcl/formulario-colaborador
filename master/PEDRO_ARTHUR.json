@@ -1,0 +1,144 @@
+{
+    "colaborador": "PEDRO ARTHUR",
+    "criado_em": "13/04/2026 14:54:57",
+    "campos": {
+        "cargo": "Auxiliar",
+        "dep": "T.I",
+        "setor": "T.I",
+        "chefe": "Júlio/Rafael",
+        "unidade": "JV Contabilidade",
+        "escolaridade": "Bacharelado",
+        "cursos": "Uso de inteligência artificial, implementações de melhorias de Infraestrutura (inclusive no ramo contábil).\nArquitetura e gestão de Infraestrutura e datacenters\nLinguagem inglesa",
+        "objetivo": "Manter toda infraestrutura, sistemas e equipamentos voltados para tecnologia do escritório 100% funcional, prestar suporte para todos os usuários, elaborar e estudar inovações que possam melhorar a tecnologia no ramo contábil, tanto para o escritório, tanto para os colaboradores."
+    },
+    "roi": {
+        "auditado": 9432.5,
+        "bruto": 17966.67,
+        "horas_recuperaveis": 269.5,
+        "ganho_dias": 33.7,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 78.0,
+        "horas_dia": 11.67,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 8,
+            "I": 12,
+            "S": 29,
+            "C": 50
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 42,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "AUTOMAÇÕES QUE ECONOMIZEM TEMPO E TRABALHO.",
+            "ECONOMIA PROJETADA": "- 51.3 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,796.67"
+        },
+        {
+            "ESTRATEGIA": "TRANSFORMACAO DIGITAL",
+            "SUGESTAO ANALISADA": "SISTEMAS FOCADO NA ORGANIZAÇÃO E SIMPLICIDADE PARA O USUÁRIO.",
+            "ECONOMIA PROJETADA": "- 218.2 h/ano",
+            "VALOR RECUPERAVEL": "R$ 7,635.83"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "GERAL",
+            "Dificuldade": "Ás vezes ocorre de ter muitas requisições de chamados, talvez alguns levem um pouco mais de tempo.",
+            "Impacto Diario": "1.167 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Implementação de infraestrutura completa",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Integração de sistemas contábeis",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Gestão de segurança da informação",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Gerenciamento de usuários e permissões",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Monitoramento e manutenção preventiva",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Configuração e atualização de softwares",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Suporte básico ao usuário",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Organização de equipamentos e estações de trabalho",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Execução de rotinas simples de backup e verificação de funcionamento.",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Ás vezes ocorre de ter muitas requisições de chamados, talvez alguns levem um pouco mais de tempo.",
+            "Impacto": "1.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}

@@ -1,0 +1,126 @@
+{
+    "colaborador": "MOACIR JÚNIOR",
+    "criado_em": "20/04/2026 20:17:19",
+    "campos": {
+        "cargo": "ANALISTA DEPARTAMENTO PESSOAL",
+        "dep": "DP",
+        "setor": "DP",
+        "chefe": "ADSON",
+        "unidade": "JV CONTABILIDADE",
+        "escolaridade": "DADOS CORRROMPIDOS",
+        "cursos": "DADOS CORRROMPIDOS",
+        "objetivo": "DADOS CORRROMPIDOS"
+    },
+    "roi": {
+        "auditado": 1540.0,
+        "bruto": 7700.0,
+        "horas_recuperaveis": 44.0,
+        "ganho_dias": 5.5,
+        "custo_hora": 35.0
+    },
+    "nexo_causal": {
+        "score": 80.3,
+        "horas_dia": 11.28,
+        "status": "sobrecarga"
+    },
+    "disc": {
+        "percentuais": {
+            "D": 29,
+            "I": 8,
+            "S": 29,
+            "C": 33
+        },
+        "perfil_dominante": "C",
+        "score_intensidade": 0,
+        "amplitude": 25,
+        "is_equilibrado": false,
+        "perfil_exigido_tarefas": "N/A",
+        "compatibilidade_pct": "N/A",
+        "score_alinhamento_cargo": 0,
+        "benchmark_cargo": "N/A",
+        "veredito_aderencia": "Aguardando análise DISC completa"
+    },
+    "sugestoes_auditadas": [
+        {
+            "ESTRATEGIA": "MELHORIA INCREMENTAL",
+            "SUGESTAO ANALISADA": "MAIS COMUNICAÇÃO DOS SETORES",
+            "ECONOMIA PROJETADA": "- 44.0 h/ano",
+            "VALOR RECUPERAVEL": "R$ 1,540.00"
+        }
+    ],
+    "gargalos": [
+        {
+            "Status": "✅",
+            "Setor": "PROCESSOS",
+            "Dificuldade": "Certificados e senhas",
+            "Impacto Diario": "2.0 h/dia",
+            "Analise do Perito": "Aguardando auditoria de nexo causal"
+        }
+    ],
+    "auditoria_atividades": [
+        {
+            "Status": "✅",
+            "Atividade": "Fechamento de folha",
+            "Impacto": "4.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Rescisões",
+            "Impacto": "2.167 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Cálculos de encargos trabalhistas",
+            "Impacto": "2.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Admissão",
+            "Impacto": "0.200 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Férias",
+            "Impacto": "0.233 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Cálculo da quinzena",
+            "Impacto": "0.250 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Recalculos",
+            "Impacto": "0.433 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        },
+        {
+            "Status": "✅",
+            "Atividade": "Certificados e senhas",
+            "Impacto": "2.000 h/dia",
+            "Analise Critica": "Aguardando auditoria — dados do formulário"
+        }
+    ],
+    "parecer": {},
+    "parecer_360": {},
+    "kpis_auditados": {},
+    "produtividade": {
+        "eficiencia_real_pct": 0,
+        "kpis_auditados_total": 0,
+        "kpi_critico": "Aguardando auditoria de KPIs",
+        "kpi_critico_score": 0
+    },
+    "evidencias_kpi": {},
+    "comparativo_cargo": {},
+    "laudo_central": {
+        "texto": "",
+        "gerado_em": ""
+    },
+    "ultima_atualizacao": ""
+}
