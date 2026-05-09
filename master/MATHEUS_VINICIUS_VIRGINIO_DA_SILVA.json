@@ -34,11 +34,11 @@
         "score_intensidade": 0,
         "amplitude": 21,
         "is_equilibrado": false,
-        "perfil_exigido_tarefas": "N/A",
+        "perfil_exigido_tarefas": "C-S",
         "compatibilidade_pct": "N/A",
-        "score_alinhamento_cargo": 0,
-        "benchmark_cargo": "N/A",
-        "veredito_aderencia": "Aguardando análise DISC completa"
+        "score_alinhamento_cargo": 30,
+        "benchmark_cargo": "C-S",
+        "veredito_aderencia": "Baixa Aderencia"
     },
     "sugestoes_auditadas": [
         {

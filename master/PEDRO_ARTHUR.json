@@ -34,11 +34,11 @@
         "score_intensidade": 0,
         "amplitude": 42,
         "is_equilibrado": false,
-        "perfil_exigido_tarefas": "N/A",
+        "perfil_exigido_tarefas": "S-C",
         "compatibilidade_pct": "N/A",
-        "score_alinhamento_cargo": 0,
-        "benchmark_cargo": "N/A",
-        "veredito_aderencia": "Aguardando análise DISC completa"
+        "score_alinhamento_cargo": 55,
+        "benchmark_cargo": "S-C",
+        "veredito_aderencia": "Aderencia Moderada"
     },
     "sugestoes_auditadas": [
         {
@@ -137,8 +137,8 @@
     "evidencias_kpi": {},
     "comparativo_cargo": {},
     "laudo_central": {
-        "texto": "# LAUDO PERICIAL INDIVIDUAL\n\n## 1. IDENTIDADE OPERACIONAL\n- **Nome:** PEDRO ARTHUR  \n- **Cargo:** Auxiliar  \n- **Perfil DISC Dominante:** C  \n- **Status de Carga Horária:** Sobrecarga (11.67 horas/dia)\n\n## 2. DIAGNÓSTICO DE ROI AUDITADO\n- **ROI Auditado:** R$ 514.50  \n- **Horas Recuperáveis:** 14.7 horas  \n- **Ganho em Dias:** 1.8 dias  \n\n**Explicação:** O ROI auditado de R$ 514.50 representa o retorno financeiro obtido através da eficiência nas atividades desempenhadas. As 14.7 horas recuperáveis indicam a possibilidade de otimização do tempo, resultando em um ganho de 1.8 dias úteis.\n\n**Metodologia de Auditoria Pericial:**\n- O ROI auditado é resultado de perícia técnica sobre as sugestões do colaborador.\n- Cada sugestão é classificada em 3 categorias com ponderação diferente:\n  - **Transformação Digital** (automação, IA, sistemas, integração) — 85% do potencial\n  - **Otimização de Processo** (padronização, POP, checklist, treinamento) — 45% do potencial\n  - **Melhoria Incremental** (demais melhorias operacionais) — 20% do potencial\n- Base de cálculo: Custo Total de Ocupação de R$ 35,00/hora\n- Fórmula: Horas declaradas x Frequência anual x Fator de ponderação x R$ 35,00\n- O ROI auditado é MENOR que o bruto porque aplica rigor técnico.\n\n**Sugestões Auditadas:**\n1. **Sugestão:** Automações que economizem tempo e trabalho.  \n   **Categoria:** Melhoria Incremental  \n   **Valor Recuperável:** R$ 98.00  \n   **Economia Projetada:** - 2.8 h/ano  \n   \n2. **Sugestão:** Sistemas focados na organização e simplicidade para o usuário.  \n   **Categoria:** Transformação Digital  \n   **Valor Recuperável:** R$ 416.50  \n   **Economia Projetada:** - 11.9 h/ano  \n\n## 3. ANÁLISE COMPORTAMENTAL\n- **Perfil DISC:** C (Conformidade)  \n- **Aderência ao Cargo:** Aguardando análise DISC completa  \n- **Pontos Fortes:** Atenção aos detalhes, organização e capacidade analítica.  \n- **Riscos:** Possível resistência a mudanças e dificuldade em lidar com situações de alta pressão.  \n\n**Conexão ao Cargo e Atividades:** O perfil C é adequado para atividades que exigem precisão e conformidade, como a gestão de segurança da informação e a implementação de infraestrutura.\n\n## 4. AUDITORIA DE PROCESSOS\n- **Aderência ao POP:** Aguardando auditoria  \n- **Nexo Causal:** Aguardando auditoria de nexo causal  \n- **Desvios:** A análise crítica das atividades indica que há uma sobrecarga de requisições, o que pode impactar a eficiência.  \n\n**Atividades Específicas:** \n- Implementação de infraestrutura completa\n- Integração de sistemas contábeis\n- Gestão de segurança da informação\n- Gerenciamento de usuários e permissões\n- Monitoramento e manutenção preventiva\n- Configuração e atualização de softwares\n- Suporte básico ao usuário\n- Organização de equipamentos e estações de trabalho\n- Execução de rotinas simples de backup e verificação de funcionamento\n\n## 5. PRODUTIVIDADE E KPIs\n- **Score por KPI:** Aguardando auditoria de KPIs  \n- **KPI Crítico:** Aguardando auditoria de KPIs  \n- **Gaps de Conformidade:** Dados não disponíveis.\n\n## 6. VEREDITO PERICIAL\n- **PARAR:** Aguardar auditoria de nexo causal para identificar atividades que podem ser descontinuadas.  \n- **DELEGAR:** Delegar atividades de suporte básico ao usuário para um colaborador com perfil I (Influência), que pode lidar melhor com interações frequentes.  \n- **FOCAR:** Focar na implementação de automações que economizem tempo e trabalho, com maior impacto financeiro.\n\n## 7. PLANO DE AÇÃO (3 ações)\n| Título                                               | Prazo     | Impacto R$ | Responsável (perfil DISC) |\n|-----------------------------------------------------|-----------|-------------|----------------------------|\n| Implementação de automações                          | 3 meses   | R$ 98.00    | C                          |\n| Desenvolvimento de sistemas focados na organização   | 6 meses   | R$ 416.50   | C                          |\n| Treinamento em gestão de tempo e prioridades        | 1 mês     | R$ 514.50   | I                          |",
-        "gerado_em": "09/05/2026 13:16:22"
+        "texto": "",
+        "gerado_em": ""
     },
-    "ultima_atualizacao": "09/05/2026 13:16:22"
+    "ultima_atualizacao": ""
 }

@@ -157,6 +157,48 @@ def processar_colaborador(caminho):
         amplitude  = 0.0
         equilibrado = True
 
+    # ── BENCHMARK E ADERÊNCIA POR CARGO ───────────────────────
+    cargo_lower = str(campos.get("cargo", "")).lower()
+    benchmarks = {
+        "gestor":              {"perfis": "D/I",  "letras": ["D","I"]},
+        "vendas":              {"perfis": "I-D",  "letras": ["I","D"]},
+        "analista":            {"perfis": "C-S",  "letras": ["C","S"]},
+        "auxiliar":            {"perfis": "S-C",  "letras": ["S","C"]},
+        "assistente":          {"perfis": "S-C",  "letras": ["S","C"]},
+        "coordenador":         {"perfis": "D-C",  "letras": ["D","C"]},
+        "supervisor":          {"perfis": "D-S",  "letras": ["D","S"]},
+        "rh":                  {"perfis": "S-I",  "letras": ["S","I"]},
+        "ti":                  {"perfis": "C-D",  "letras": ["C","D"]},
+        "financeiro":          {"perfis": "C-S",  "letras": ["C","S"]},
+        "contabil":            {"perfis": "C-S",  "letras": ["C","S"]},
+        "dp":                  {"perfis": "C-S",  "letras": ["C","S"]},
+        "departamento pessoal":{"perfis": "C-S",  "letras": ["C","S"]},
+        "operacional":         {"perfis": "S-D",  "letras": ["S","D"]},
+        "comercial":           {"perfis": "D-I",  "letras": ["D","I"]},
+        "juridico":            {"perfis": "C-S",  "letras": ["C","S"]},
+        "fiscal":              {"perfis": "C-S",  "letras": ["C","S"]},
+    }
+    benchmark_cargo    = "N/A"
+    veredito_aderencia = "Aguardando analise DISC completa"
+    score_alinhamento  = 0
+    perfil_exigido     = "N/A"
+    for chave, bench in benchmarks.items():
+        if chave in cargo_lower:
+            benchmark_cargo  = bench["perfis"]
+            perfil_exigido   = bench["perfis"]
+            letras_esperadas = bench["letras"]
+            letra_principal  = dominante[0] if dominante and dominante != "N/A" else ""
+            if letra_principal in letras_esperadas[:1]:
+                veredito_aderencia = "Alta Aderencia"
+                score_alinhamento  = 80
+            elif letra_principal in letras_esperadas:
+                veredito_aderencia = "Aderencia Moderada"
+                score_alinhamento  = 55
+            else:
+                veredito_aderencia = "Baixa Aderencia"
+                score_alinhamento  = 30
+            break
+
     # ── GARGALOS ───────────────────────────────────────────────
     gargalos = []
     for d in tabelas.get("dificuldades", []):
@@ -208,11 +250,11 @@ def processar_colaborador(caminho):
             "score_intensidade":      0,
             "amplitude":              amplitude,
             "is_equilibrado":         equilibrado,
-            "perfil_exigido_tarefas": "N/A",
-            "compatibilidade_pct":    "N/A",
-            "score_alinhamento_cargo": 0,
-            "benchmark_cargo":        "N/A",
-            "veredito_aderencia":     "Aguardando análise DISC completa"
+            "perfil_exigido_tarefas":  perfil_exigido,
+            "compatibilidade_pct":     "N/A",
+            "score_alinhamento_cargo": score_alinhamento,
+            "benchmark_cargo":         benchmark_cargo,
+            "veredito_aderencia":      veredito_aderencia
         },
         "sugestoes_auditadas":   sugs_aud,
         "gargalos":              gargalos,
