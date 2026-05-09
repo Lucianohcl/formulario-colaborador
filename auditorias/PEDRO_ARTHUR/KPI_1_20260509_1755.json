@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 57.75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento fornecido apresenta parte das evidências necessárias, mas não todas. A aderência é evidente, pois o documento é o solicitado. A integridade é razoável, uma vez que os dados do PDF confirmam parcialmente o relato, mas não atingem totalmente a taxa de resolução esperada. A tempestividade é adequada, considerando que os documentos são recentes e referentes ao ciclo reportado. No entanto, a completude é insuficiente, uma vez que o índice de resolução no prazo está abaixo dos 90% esperados, atingindo apenas 87.8%. Assim, a meta de garantir que 100% dos usuários recebam suporte em tempo hábil com resolução acima de 90% não foi atingida.",
+    "gap_de_conformidade": [
+        "Atingir pelo menos 90% de resolução no prazo para todos os chamados",
+        "Prover uma análise ou discussão sobre ações corretivas sobre os chamados fora do prazo"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Taxa de Resolução de Chamados",
+    "colaborador": "PEDRO ARTHUR",
+    "relato_do_auditor": "Verificar os relatórios semanais de conformidade para evidenciar a redução consistente das não conformidades relacionadas ao suporte ao usuário. O processo visa demonstrar a melhoria na acurácia dos registros, a aderência aos procedimentos normativos internos (POP) e a eficácia das rotinas de auditoria contínua sobre o tempo de atendimento"
+}
