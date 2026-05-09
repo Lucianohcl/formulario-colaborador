@@ -12,10 +12,10 @@
         "objetivo": "Manter toda infraestrutura, sistemas e equipamentos voltados para tecnologia do escritório 100% funcional, prestar suporte para todos os usuários, elaborar e estudar inovações que possam melhorar a tecnologia no ramo contábil, tanto para o escritório, tanto para os colaboradores."
     },
     "roi": {
-        "auditado": 42.88,
-        "bruto": 0,
-        "horas_recuperaveis": 1.23,
-        "ganho_dias": 0.2,
+        "auditado": 514.5,
+        "bruto": 980.0,
+        "horas_recuperaveis": 14.7,
+        "ganho_dias": 1.8,
         "custo_hora": 35.0
     },
     "nexo_causal": {
