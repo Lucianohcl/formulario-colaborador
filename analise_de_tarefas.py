@@ -5188,6 +5188,26 @@ if st.session_state.get("pagina") == "parecer":
                         )
                         st.table(pd.DataFrame(confronto))
 
+                        # === SALVA PARECER ABA1 NO JSON MESTRE ===
+                        try:
+                            _nome_pop = colab.get('colaborador', colaborador_file.replace('.json',''))
+                            _total_pop = df_pop['Impacto Diário Convertido'].sum() if 'df_pop' in locals() else 0
+                            _ader = round((_total_pop / total_real_diario * 100), 1) if 'total_real_diario' in locals() and total_real_diario > 0 else 0
+                            salvar_master(_nome_pop, {
+                                "parecer": {
+                                    "pop_padrao_ia":       st.session_state.get(chave_pop, []),
+                                    "confronto_pericial":  confronto if 'confronto' in locals() else [],
+                                    "aderencia_cargo_pct": _ader,
+                                    "total_pop_min":       round(_total_pop, 1),
+                                    "total_real_min":      round(total_real_diario, 1) if 'total_real_diario' in locals() else 0,
+                                    "risco_operacional":   "ALTO" if 'total_real_diario' in locals() and total_real_diario > 480 else "BAIXO",
+                                    "cargo_auditado":      colab.get('campos', {}).get('cargo', 'N/A'),
+                                    "gerado_em":           datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                }
+                            })
+                        except Exception as _e:
+                            st.toast(f"⚠️ Master não salvo (parecer aba1): {_e}", icon="⚠️")
+                        # === FIM PATCH 4 ===
                         if st.button("📥 Gerar Relatório HTML do Cruzamento"):
                             html_df = pd.DataFrame(confronto)
                             html_content = f"""
@@ -5355,6 +5375,22 @@ if st.session_state.get("pagina") == "parecer":
                                 use_container_width=True,
                                 key="dl_html_360"
                             )
+
+                            # === SALVA PARECER 360 NO JSON MESTRE ===
+                            try:
+                                _nome_360 = dados_360.get('colaborador', escolha_360.replace('.json',''))
+                                salvar_master(_nome_360, {
+                                    "parecer_360": {
+                                        "parecer_executivo": resultado_360.get('parecer_executivo', ''),
+                                        "pop_benchmark":     resultado_360.get('pop_benchmark', []),
+                                        "veredito_final":    resultado_360.get('veredito_final', ''),
+                                        "cargo_auditado":    dados_360.get('campos', {}).get('cargo', 'N/A'),
+                                        "gerado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                    }
+                                })
+                            except Exception as _e:
+                                st.toast(f"⚠️ Master não salvo (360): {_e}", icon="⚠️")
+                            # === FIM PATCH 5 ===    
 
     # ==========================================================================
     # ABA 4: Análise de Perfil e Eficiência Operacional
