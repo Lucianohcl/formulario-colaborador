@@ -4176,6 +4176,40 @@ if st.session_state.get("pagina") == "analise":
                         # PERSISTÊNCIA NA SESSÃO (PARA O CARD FINAL)
                         st.session_state['v_audit_final'] = total_valor
                         st.session_state['h_audit_final'] = total_h_ano
+                        
+                        # === SALVA NO JSON MESTRE ===
+                        try:
+                            salvar_master(colab_alvo, {
+                                "colaborador": colab_alvo,
+                                "roi": {
+                                    "auditado":           round(total_valor, 2),
+                                    "bruto":              round(v_bruto_final, 2) if 'v_bruto_final' in locals() else 0,
+                                    "horas_recuperaveis": round(total_h_ano, 2),
+                                    "ganho_dias":         round(total_h_ano / 8, 1),
+                                    "custo_hora":         35.0
+                                },
+                                "nexo_causal": {
+                                    "score":     round(score, 1) if 'score' in locals() else 0,
+                                    "horas_dia": round(h_total, 2) if 'h_total' in locals() else 0,
+                                    "status": (
+                                        "sobrecarga"    if 'h_total' in locals() and h_total > 9
+                                        else "subutilizado" if 'h_total' in locals() and h_total < 6
+                                        else "adequado"
+                                    )
+                                },
+                                "sugestoes_auditadas": (
+                                    df_analise[['ESTRATEGIA','SUGESTAO ANALISADA',
+                                                'ECONOMIA PROJETADA','VALOR RECUPERAVEL']]
+                                    .to_dict("records")
+                                    if 'df_analise' in locals() and not df_analise.empty else []
+                                ),
+                                "gargalos":             res_dificuldades if 'res_dificuldades' in locals() else [],
+                                "auditoria_atividades": res_final        if 'res_final'        in locals() else [],
+                            })
+                        except Exception as _e:
+                            st.toast(f"⚠️ Master não salvo: {_e}", icon="⚠️")
+                        # === FIM PATCH 1 ===
+
  
                         # metricas principais
                         c1, c2, c3 = st.columns(3)
