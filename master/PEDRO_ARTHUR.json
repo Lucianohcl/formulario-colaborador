@@ -119,7 +119,186 @@
             "Análise Crítica": "Coerente"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "SUPORTE_TECNICO",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "120.0m",
+                "Eficiência vs 480m": "25.0%",
+                "Meta Auditável": "Prestar suporte a 100% dos usuários em tempo hábil, medido por taxa de resolução de chamados acima de 90%"
+            },
+            {
+                "Atividade": "MONITORAMENTO_DE_INFRAESTRUTURA",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Realizar verificações diárias para garantir 99% de uptime da infraestrutura. Registro em relatório"
+            },
+            {
+                "Atividade": "INOVAÇÕES_TECNOLOGICAS",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Propor 2 inovações tecnológicas por semana que possam melhorar a eficiência do escritório, documentadas em relatório"
+            },
+            {
+                "Atividade": "TREINAMENTO_DE_COLABORADORES",
+                "Freq": "SEMANAL",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "18.0m",
+                "Eficiência vs 480m": "3.8%",
+                "Meta Auditável": "Treinar 100% dos colaboradores em novos sistemas e tecnologias, medido por feedback positivo em pesquisa"
+            },
+            {
+                "Atividade": "ANALISE_DE_DADOS_DE_USO",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Elaborar uma análise com base no uso de tecnologias em 100% das áreas do escritório, apresentando índices de eficiência"
+            },
+            {
+                "Atividade": "REVISAO_DE_COMPLIANCE",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Realizar uma revisão de compliance em relação à infraestrutura e sistemas, com 100% de conformidade a normativas internas e externas"
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "SUPORTE_TECNICO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "120.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-120.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "MONITORAMENTO_DE_INFRAESTRUTURA",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "INOVAÇÕES_TECNOLOGICAS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_DE_COLABORADORES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "18.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-18.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANALISE_DE_DADOS_DE_USO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REVISAO_DE_COMPLIANCE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "IMPLEMENTAÇÃO DE INFRAESTRUTURA COMPLETA",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "INTEGRAÇÃO DE SISTEMAS CONTÁBEIS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "GESTÃO DE SEGURANÇA DA INFORMAÇÃO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "GERENCIAMENTO DE USUÁRIOS E PERMISSÕES",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "MONITORAMENTO E MANUTENÇÃO PREVENTIVA",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONFIGURAÇÃO E ATUALIZAÇÃO DE SOFTWARES",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SUPORTE BÁSICO AO USUÁRIO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ORGANIZAÇÃO DE EQUIPAMENTOS E ESTAÇÕES DE TRABALHO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EXECUÇÃO DE ROTINAS SIMPLES DE BACKUP E VERIFICAÇÃO DE FUNCIONAMENTO.",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "70.0m",
+                "Divergência": "+70.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 34.0,
+        "total_pop_min": 214.1,
+        "total_real_min": 630,
+        "risco_operacional": "ALTO",
+        "cargo_auditado": "Auxiliar",
+        "gerado_em": "09/05/2026 16:46:15"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -134,5 +313,5 @@
         "texto": "# LAUDO PERICIAL INDIVIDUAL\n\n## 1. IDENTIDADE OPERACIONAL\n- **Nome:** PEDRO ARTHUR  \n- **Cargo:** Auxiliar  \n- **Perfil DISC Dominante:** C  \n- **Status de Carga Horária:** Dados não disponíveis  \n\n## 2. DIAGNÓSTICO DE ROI AUDITADO\n- **ROI Auditado:** R$ 514,50  \n- **Horas Recuperáveis:** 14,7  \n- **Ganho em Dias:** 1,8  \n\nA metodologia de auditoria pericial aplicada considera as sugestões do colaborador, classificadas em três categorias com diferentes ponderações:\n- **Transformação Digital (automação, IA, sistemas, integração):** 85% do potencial\n- **Otimização de Processo (padronização, POP, checklist, treinamento):** 45% do potencial\n- **Melhoria Incremental (demais melhorias operacionais):** 20% do potencial\n\nA base de cálculo utilizada foi o Custo Total de Ocupação de R$ 35,00/hora, e a fórmula aplicada foi:  \n**Horas declaradas x Frequência anual x Fator de ponderação x R$ 35,00**.  \n\nO ROI auditado é menor que o bruto devido à aplicação de rigor técnico.  \n\n### Sugestões Reais do Colaborador:\n1. **Sugestão:** AUTOMAÇÕES QUE ECONOMIZEM TEMPO E TRABALHO.  \n   **Categoria:** Melhoria Incremental  \n   **Valor Recuperável:** R$ 98,00  \n   **Economia Projetada:** - 2,8 h/ano  \n\n2. **Sugestão:** SISTEMAS FOCADO NA ORGANIZAÇÃO E SIMPLICIDADE PARA O USUÁRIO.  \n   **Categoria:** Transformação Digital  \n   **Valor Recuperável:** R$ 416,50  \n   **Economia Projetada:** - 11,9 h/ano  \n\n## 3. ANÁLISE COMPORTAMENTAL\n- **Perfil DISC:** C  \n- **Aderência ao Cargo:** Aderência Moderada  \n- **Pontos Fortes:** Organização, atenção aos detalhes, capacidade analítica.  \n- **Riscos:** Possível resistência a mudanças e dificuldade em lidar com pressão.  \n\nEssas características se conectam ao cargo de Auxiliar, onde a precisão e a organização são fundamentais para a execução das atividades.\n\n## 4. AUDITORIA DE PROCESSOS E NEXO CAUSAL\n### Nexo Causal:\n- **Score:** 78,0  \n- **Horas por Dia:** 11,67  \n- **Status:** Sobrecarga  \n\n**Cálculo do Desvio:**  \nDesvio: 11,67h - 8h = 3,67h  \n**Impacto:** A sobrecarga de horas pode comprometer a eficiência e a qualidade do trabalho, aumentando o risco de erros e desgaste do colaborador.\n\n### Aderência ao POP:\n- **Percentual de Aderência ao Cargo:** Dados não disponíveis  \n- **Total POP Mínimo vs Total Real Mínimo:** Dados não disponíveis  \n- **Risco Operacional:** Dados não disponíveis  \n\n### Confronto Pericial:\n- **Entradas com Status ❌ AUSENTE:** Dados não disponíveis  \n- **Entradas com Status ⚠️ FORA DO PADRÃO:** Dados não disponíveis  \n\n### Veredito 360°:\n- **PARAR:** Dados não disponíveis  \n- **DELEGAR:** Dados não disponíveis  \n- **FOCAR:** Dados não disponíveis  \n\n### Gargalos:\n- **Setor:** GERAL  \n- **Dificuldade:** Às vezes ocorre de ter muitas requisições de chamados, talvez alguns levem um pouco mais de tempo.  \n- **Impacto Diário:** 1,167 h/dia  \n\n## 5. PRODUTIVIDADE E KPIs\n- **Score por KPI:** Dados não disponíveis  \n- **KPI Crítico:** Aguardando auditoria de KPIs  \n- **Gaps de Conformidade:** Dados não disponíveis  \n\n## 6. VEREDITO PERICIAL\n- **PARAR:** Dados não disponíveis  \n- **DELEGAR:** Dados não disponíveis  \n- **FOCAR:** Dados não disponíveis  \n\n## 7. PLANO DE AÇÃO (3 ações)\n| Título | Prazo | Impacto R$ | Responsável (perfil DISC) |\n|--------|-------|-------------|---------------------------|\n| Dados não disponíveis | Dados não disponíveis | Dados não disponíveis | Dados não disponíveis |\n| Dados não disponíveis | Dados não disponíveis | Dados não disponíveis | Dados não disponíveis |\n| Dados não disponíveis | Dados não disponíveis | Dados não disponíveis | Dados não disponíveis |  \n\n**Observação:** Alguns dados não estão disponíveis no JSON fornecido, o que limita a completude do laudo.",
         "gerado_em": "09/05/2026 15:59:34"
     },
-    "ultima_atualizacao": "09/05/2026 16:45:00"
+    "ultima_atualizacao": "09/05/2026 16:46:15"
 }
