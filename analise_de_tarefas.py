@@ -5859,19 +5859,19 @@ def aba_produtividade_inteligente():
                                     
                                     # === SALVA KPI NO JSON MESTRE ===
                                     try:
+                                        _master_kpi = carregar_master(nome_colab)
+                                        _kpis_atual = _master_kpi.get("kpis_auditados", {})
+                                        _kpis_atual[kpi['nome']] = {
+                                            "percentual_alcance":  resultado.get('percentual_alcance',  0),
+                                            "status_pericial":     resultado.get('status_pericial',     ''),
+                                            "analise_critica":     resultado.get('analise_critica',     ''),
+                                            "gap_de_conformidade": resultado.get('gap_de_conformidade', []),
+                                            "ponderacao":          resultado.get('ponderacao_detalhada',{}),
+                                            "relato_auditor":      relato,
+                                            "auditado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                        }
                                         salvar_master(nome_colab, {
-                                            "colaborador": nome_colab,
-                                            "kpis_auditados": {
-                                                kpi['nome']: {
-                                                    "percentual_alcance":  resultado.get('percentual_alcance',  0),
-                                                    "status_pericial":     resultado.get('status_pericial',     ''),
-                                                    "analise_critica":     resultado.get('analise_critica',     ''),
-                                                    "gap_de_conformidade": resultado.get('gap_de_conformidade', []),
-                                                    "ponderacao":          resultado.get('ponderacao_detalhada',{}),
-                                                    "relato_auditor":      relato,
-                                                    "auditado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                                                }
-                                            }
+                                            "kpis_auditados": _kpis_atual
                                         })
                                     except Exception as _e:
                                         st.toast(f"⚠️ Master não salvo (KPI): {_e}", icon="⚠️")
