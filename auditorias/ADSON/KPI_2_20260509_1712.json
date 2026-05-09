@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 60,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento fornecido é parcialmente aderente à tarefa, já que foram verificadas discussões relacionadas à redução de erros na folha de pagamento e as deliberações para melhorias, porém, falta evidenciar diretamente a redução de 15% dos erros. Os dados fornecidos nos anexos não confirmam explicitamente uma redução mensal de 15%, faltando uma análise quantitativa contínua e comparativa. As datas dos documentos são adequadas, porém, não há comprovação suficiente de que foi alcançado o objetivo integral estabelecido de redução de 15% dos erros através das auditorias contínuas.",
+    "gap_de_conformidade": [
+        "Faltam dados comprobatórios que demonstrem a redução de 15% nos erros da folha de pagamento.",
+        "Relatórios semanais consistentes com análise de melhoria contínua nos processos não foram apresentados.",
+        "Falta de prova de aderência definitiva aos procedimentos normativos internos para cada ciclo de auditoria."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Eficiência na Auditoria de Processos",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Verificar relatórios semanais de conformidade  para evidenciar redução consistente das não conformidades relacionadas à folha de pagamento, com melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos, indicando eficácia das rotinas de auditoria contínua."
+}
