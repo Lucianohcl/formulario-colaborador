@@ -803,7 +803,14 @@
         "kpi_critico": "Aguardando auditoria de KPIs",
         "kpi_critico_score": 0
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Conformidade Legislativa": "1. Portal eSocial → Consulta de Eventos → competência → Export PDF  \n   Periodicidade: Mensal | Trimestral | Anual | Por evento  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  \n\n2. Portal e-CAC → DCTFWeb → competência → Download PDF  \n   Periodicidade: Mensal | Trimestral | Anual | Por evento  \n   Como obter: Portal e-CAC → DCTFWeb → competência → Download PDF\n\n3. Relatório de Malha Fiscal Trabalhista — ERP\nPeriodicidade: Mensal\nComo obter: ERP → Folha de Pagamento → Malha Fiscal → competência → Export PDF\n\n4.Relatório de Conciliação FGTS Digital — Portal FGTS Digital\nPeriodicidade: Mensal\nComo obter: Portal FGTS Digital → Extrato de Recolhimento → competência → Download PDF\n",
+            "Eficácia da Auditoria Interna": "1. Relatório de Conformidade Semanal\n   Periodicidade: Semanal | \n   Como obter: [Sistema Interno → Relatórios → Exportar PDF]\n\n2. Comparativo de Erros de Folha de Pagamento\n   Periodicidade: Mensal | \n   Como obter: [ERP → Folha de Pagamento → Relatórios → Exportar PDF]\n\n3. Histórico de Não Conformidades — Sistema Interno\nPeriodicidade: Mensal\nComo obter: Sistema Interno → Auditoria → Histórico de Erros → competência → Export PDF\n\n4. Relatório Comparativo de Acurácia de Lançamentos\nPeriodicidade: Mensal\nComo obter: ERP → Folha de Pagamento → Comparativo → período anterior x atual → Export PDF\n"
+        },
+        "total_kpis": 2,
+        "gerado_em": "09/05/2026 18:30:00"
+    },
     "comparativo_cargo": {
         "cargo": "GESTOR DE DP",
         "eficiencia_pct": 0.0,

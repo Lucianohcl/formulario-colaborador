@@ -146,7 +146,13 @@
         "kpi_critico": "Aguardando auditoria de KPIs",
         "kpi_critico_score": 0
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Conformidade Tributária das Notas Fiscais": "1. Espelho de Notas Fiscais ERP  \n   Periodicidade: Mensal  \n   Como obter: ERP → Notas Fiscais → competência → Export  \n\n2. Relatório de Apuração ICMS/PIS/COFINS — ERP\n   Periodicidade: Mensal\n   Como obter: ERP → Fiscal → Apuração → competência → Export PDF\n"
+        },
+        "total_kpis": 1,
+        "gerado_em": "09/05/2026 18:30:00"
+    },
     "comparativo_cargo": {},
     "laudo_central": {
         "texto": "",

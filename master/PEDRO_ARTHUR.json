@@ -390,7 +390,13 @@
         },
         "consolidado_em": "09/05/2026 18:02:56"
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Eficiência no Atendimento ao Usuário": "1. Relatório de Atendimento ao Usuário  \n   Periodicidade: Semanal  \n   Como obter: Sistema de Atendimento → Relatórios → Export PDF  \n\n2. Registro de Chamadas e Resoluções\n   Periodicidade: Mensal\n   Como obter: Sistema de Suporte → Relatórios → Exportar PDF\n"
+        },
+        "total_kpis": 1,
+        "gerado_em": "09/05/2026 18:30:00"
+    },
     "comparativo_cargo": {
         "cargo": "Auxiliar",
         "eficiencia_pct": 0.0,
