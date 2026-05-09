@@ -5859,8 +5859,18 @@ def aba_produtividade_inteligente():
 
                                 # === SALVA KPI NO JSON MESTRE ===
                                 try:
-                                    _master_kpi = carregar_master(nome_colab)
+                                    _repo_kpi = st.session_state.get("repo_conectado")
+                                    if _repo_kpi is None:
+                                        _repo_kpi = Github(st.secrets["DB_TOKEN"]).get_repo("lucianohcl/formulario-colaborador")
+                                        st.session_state.repo_conectado = _repo_kpi
+                                    _nome_kpi = str(nome_colab).strip().replace(" ","_").upper()
+                                    try:
+                                        _arq_kpi = _repo_kpi.get_contents(f"master/{_nome_kpi}.json")
+                                        _master_kpi = json.loads(_arq_kpi.decoded_content.decode())
+                                    except:
+                                        _master_kpi = {}
                                     _kpis_atual = _master_kpi.get("kpis_auditados", {})
+                                    
                                     _kpis_atual[kpi['nome']] = {
                                         "percentual_alcance":  resultado.get('percentual_alcance',  0),
                                         "status_pericial":     resultado.get('status_pericial',     ''),
