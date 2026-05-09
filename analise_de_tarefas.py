@@ -6723,12 +6723,27 @@ Cite as sugestões reais do colaborador e a categoria em que cada uma foi classi
 Perfil DISC, aderência ao cargo, pontos fortes e riscos. Conecte ao cargo e atividades.
 
 ## 4. AUDITORIA DE PROCESSOS E NEXO CAUSAL
-- Nexo Causal: informe o score, as horas/dia relatadas, o desvio em relação à jornada de 8h e o status (sobrecarga/adequado/subutilizado)
-- Aderência ao POP: use os dados de parecer.aderencia_cargo_pct, parecer.total_pop_min e parecer.total_real_min para calcular e informar o percentual. Informe o risco_operacional.
-- Atividades FORA DO PADRÃO: liste todas do parecer.confronto_pericial com Status ⚠️, citando a divergência em minutos
-- Atividades AUSENTES: liste todas do parecer.confronto_pericial com Status ❌
-- Veredito 360°: cite o parecer_360.veredito_final completo dividido em PARAR, DELEGAR e FOCAR
-- Gargalos: cite cada item de gargalos com seu impacto diário
+Leia OBRIGATORIAMENTE os seguintes campos do JSON e cite os valores exatos:
+
+NEXO CAUSAL:
+- nexo_causal.score, nexo_causal.horas_dia, nexo_causal.status
+- Calcule o desvio: horas_dia - 8h e explique o impacto
+
+ADERÊNCIA AO POP:
+- parecer.aderencia_cargo_pct → informe o percentual
+- parecer.total_pop_min vs parecer.total_real_min → compare os valores
+- parecer.risco_operacional → informe o risco
+
+CONFRONTO PERICIAL (leia parecer.confronto_pericial):
+- Liste TODAS as entradas com Status ❌ AUSENTE
+- Liste TODAS as entradas com Status ⚠️ FORA DO PADRÃO
+- Para cada uma cite: Atividade, Impacto POP, Impacto Real, Divergência
+
+VEREDITO 360° (leia parecer_360.veredito_final):
+- Reproduza o veredito completo dividido em PARAR, DELEGAR e FOCAR
+
+GARGALOS (leia gargalos):
+- Liste cada gargalo com Setor, Dificuldade e Impacto Diario
 
 ## 5. PRODUTIVIDADE E KPIs
 Score por KPI, KPI crítico, gaps de conformidade.
