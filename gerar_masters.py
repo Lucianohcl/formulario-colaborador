@@ -218,6 +218,15 @@ def processar_colaborador(caminho):
             "Analise do Perito": "Aguardando auditoria de nexo causal"
         })
 
+    # ── CARREGA MASTER EXISTENTE PARA MERGE ───────────────────
+    nome_limpo_tmp = str(nome).upper().strip().replace(" ", "_").replace("/", "_")
+    destino_tmp    = os.path.join(PASTA_MASTER, f"{nome_limpo_tmp}.json")
+    if os.path.exists(destino_tmp):
+        with open(destino_tmp, encoding="utf-8") as f_ex:
+            master_existente = json.load(f_ex)
+    else:
+        master_existente = {}
+
     # ── MONTA O MASTER ─────────────────────────────────────────
     master = {
         "colaborador": str(nome).upper().strip(),
@@ -259,21 +268,21 @@ def processar_colaborador(caminho):
         "sugestoes_auditadas":   sugs_aud,
         "gargalos":              gargalos,
         "auditoria_atividades":  atividades_audit,
-        "parecer":               {},
-        "parecer_360":           {},
-        "kpis_auditados":        {},
-        "produtividade": {
+        "parecer":               master_existente.get("parecer", {}),
+        "parecer_360":           master_existente.get("parecer_360", {}),
+        "kpis_auditados":        master_existente.get("kpis_auditados", {}),
+        "produtividade":         master_existente.get("produtividade", {
             "eficiencia_real_pct":  0,
             "kpis_auditados_total": 0,
             "kpi_critico":          "Aguardando auditoria de KPIs",
             "kpi_critico_score":    0
-        },
-        "evidencias_kpi":    {},
-        "comparativo_cargo": {},
-        "laudo_central": {
+        }),
+        "evidencias_kpi":        master_existente.get("evidencias_kpi", {}),
+        "comparativo_cargo":     master_existente.get("comparativo_cargo", {}),
+        "laudo_central":         master_existente.get("laudo_central", {
             "texto":     "",
             "gerado_em": ""
-        },
+        }),
         "ultima_atualizacao": ""
     }
 
