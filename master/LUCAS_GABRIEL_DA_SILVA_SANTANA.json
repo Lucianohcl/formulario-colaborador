@@ -12,10 +12,10 @@
         "objetivo": "DADOS CORROMPIDOS"
     },
     "roi": {
-        "auditado": 1800.17,
-        "bruto": 9000.83,
-        "horas_recuperaveis": 51.43,
-        "ganho_dias": 6.4,
+        "auditado": 101.5,
+        "bruto": 507.5,
+        "horas_recuperaveis": 2.9,
+        "ganho_dias": 0.4,
         "custo_hora": 35.0
     },
     "nexo_causal": {
@@ -44,8 +44,8 @@
         {
             "ESTRATEGIA": "MELHORIA INCREMENTAL",
             "SUGESTAO ANALISADA": "ONECODE/ MOSTRAR O CONTATO QUE FOI MENCIONADO (IGUAL WPP)",
-            "ECONOMIA PROJETADA": "- 51.3 h/ano",
-            "VALOR RECUPERAVEL": "R$ 1,796.67"
+            "ECONOMIA PROJETADA": "- 2.8 h/ano",
+            "VALOR RECUPERAVEL": "R$ 98.00"
         },
         {
             "ESTRATEGIA": "MELHORIA INCREMENTAL",
