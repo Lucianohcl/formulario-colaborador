@@ -7622,6 +7622,8 @@ if st.session_state.get("pagina") == "central_inteligencia":
                     st.success("✅ Parecer gerado!")
                     st.rerun()
 
+    ctrl4, ctrl5, ctrl6 = st.columns(3)
+
     with ctrl4:
         if st.button("🚀 Gerar Parecer", use_container_width=True, key="ctrl_btn_parecer2"):
             with st.spinner("🧠 Gerando parecer... (30-60s)"):
@@ -7656,6 +7658,7 @@ if st.session_state.get("pagina") == "central_inteligencia":
                 st.success("✅ Parecer gerado!")
                 st.rerun()
 
+    with ctrl5:
         if laudo_exibir:
             st.download_button(
                 "📥 Baixar Laudo",
@@ -7666,7 +7669,7 @@ if st.session_state.get("pagina") == "central_inteligencia":
                 key="ctrl_dl_laudo"
             )
 
-    with ctrl5:
+    with ctrl6:
         if parecer_exibir:
             st.download_button(
                 "📥 Baixar Parecer",
