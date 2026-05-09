@@ -110,7 +110,7 @@ def listar_masters_individuais():
 # FUNÇÕES DE IA
 # ============================================================
 
-@st.cache_data(ttl=1, show_spinner=False)
+
 def gerar_laudo_individual_ia(dados_json_str):
     try:
         client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
