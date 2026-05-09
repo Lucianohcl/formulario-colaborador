@@ -6838,18 +6838,44 @@ GARGALOS (leia gargalos):
 - Liste cada gargalo com Setor, Dificuldade e Impacto Diario
 
 ## 5. PRODUTIVIDADE E KPIs
-Score por KPI, KPI crítico, gaps de conformidade.
+Leia OBRIGATORIAMENTE os campos abaixo do JSON e cite os valores exatos:
+
+- kpis_auditados: liste CADA KPI com seu nome, percentual_alcance, status_pericial e analise_critica
+- produtividade.kpi_critico: informe o KPI crítico e seu score
+- produtividade.eficiencia_real_pct: informe a eficiência real em %
+- Para cada KPI liste também os gap_de_conformidade
+- evidencias_kpi.documentos_por_kpi: liste os documentos exigidos por KPI
 
 ## 6. VEREDITO PERICIAL
 - **PARAR:** o que parar com justificativa
 - **DELEGAR:** para quem, baseado no DISC
 - **FOCAR:** onde, maior impacto financeiro
 
-## 7. PLANO DE AÇÃO (3 ações)
-Título | Prazo | Impacto R$ | Responsável (perfil DISC)
+## 7. PLANO DE AÇÃO ESTRATÉGICO
+Com base nas sugestões auditadas do campo sugestoes_auditadas, monte um plano de ação que:
+- Use EXATAMENTE as sugestões reais do colaborador como base de cada ação
+- Para cada sugestão, crie uma ação com cronograma de implementação
+- Calcule o impacto financeiro real usando o VALOR RECUPERAVEL de cada sugestão
+- Ordene da maior para menor impacto financeiro
+
+Para cada ação use este formato:
+
+### Ação X: [Nome da sugestão]
+- **Categoria:** [Transformação Digital / Otimização / Melhoria Incremental]
+- **Impacto Financeiro:** R$ [VALOR RECUPERAVEL da sugestão]
+- **Horas Recuperáveis:** [ECONOMIA PROJETADA da sugestão]
+- **Cronograma:**
+  - Semana 1-2: [etapa de planejamento]
+  - Semana 3-4: [etapa de execução]
+  - Mês 2: [etapa de validação]
+  - Mês 3: [etapa de consolidação]
+- **Responsável:** [baseado no perfil DISC]
+- **Como medir:** [métrica concreta e auditável]
+- **ROI acumulado ao final:** R$ [valor]
 
 Linguagem executiva. Números específicos. Só use dados do JSON.
 Se campo ausente: "Dados não disponíveis".
+Não inclua observações finais sobre dados ausentes ou limitações do laudo.
 
 JSON:
 {dados_json_str}
