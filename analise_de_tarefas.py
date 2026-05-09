@@ -2512,15 +2512,68 @@ if st.session_state.get("pagina") == "formulario":
             st.error(f"❌ Erro ao conectar com o GitHub: {e}")
             return False
 
+    
     # =========================================================
     # 3. INTERFACE E LÓGICA DO FORMULÁRIO
     # =========================================================
-
-
     from github import Github
     import json
     import streamlit as st
 
+    def salvar_master(nome_colaborador, novos_dados):
+        try:
+            _repo = st.session_state.get("repo_conectado")
+            if _repo is None:
+                _repo = Github(st.secrets["DB_TOKEN"]).get_repo("lucianohcl/formulario-colaborador")
+                st.session_state.repo_conectado = _repo
+            nome_limpo = str(nome_colaborador).strip().replace(" ", "_").upper()
+            caminho = f"master/{nome_limpo}.json"
+            try:
+                arq = _repo.get_contents(caminho)
+                atual = json.loads(arq.decoded_content.decode())
+            except:
+                atual = {"colaborador": nome_colaborador,
+                         "criado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+            atual.update(novos_dados)
+            atual["ultima_atualizacao"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            conteudo = json.dumps(atual, indent=4, ensure_ascii=False)
+            try:
+                f = _repo.get_contents(caminho)
+                _repo.update_file(f.path, f"master update: {nome_colaborador}", conteudo, f.sha)
+            except:
+                _repo.create_file(caminho, f"master novo: {nome_colaborador}", conteudo)
+            return True
+        except Exception as e:
+            st.toast(f"⚠️ Master não salvo: {e}", icon="⚠️")
+            return False
+
+    def salvar_master_equipe(novos_dados):
+        try:
+            _repo = st.session_state.get("repo_conectado")
+            if _repo is None:
+                _repo = Github(st.secrets["DB_TOKEN"]).get_repo("lucianohcl/formulario-colaborador")
+                st.session_state.repo_conectado = _repo
+            caminho = "master/_EQUIPE.json"
+            try:
+                arq = _repo.get_contents(caminho)
+                atual = json.loads(arq.decoded_content.decode())
+            except:
+                atual = {"tipo": "panorama_equipe",
+                         "criado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+            atual.update(novos_dados)
+            atual["ultima_atualizacao"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            conteudo = json.dumps(atual, indent=4, ensure_ascii=False)
+            try:
+                f = _repo.get_contents(caminho)
+                _repo.update_file(f.path, "equipe master update", conteudo, f.sha)
+            except:
+                _repo.create_file(caminho, "equipe master novo", conteudo)
+            return True
+        except Exception as e:
+            st.toast(f"⚠️ Master equipe não salvo: {e}", icon="⚠️")
+            return False
+
+    
     def salvar_no_github(conteudo_dict, nome_arquivo):
         try:
             g = Github(st.secrets["DB_TOKEN"])
