@@ -5856,6 +5856,27 @@ def aba_produtividade_inteligente():
                                 url_git = salvar_pericia_no_github(nome_colab, kpi, resultado, relato)
                                 if url_git:
                                     st.success("✅ Registro imortalizado no GitHub!")
+                                    
+                                    # === SALVA KPI NO JSON MESTRE ===
+                                    try:
+                                        salvar_master(nome_colab, {
+                                            "colaborador": nome_colab,
+                                            "kpis_auditados": {
+                                                kpi['nome']: {
+                                                    "percentual_alcance":  resultado.get('percentual_alcance',  0),
+                                                    "status_pericial":     resultado.get('status_pericial',     ''),
+                                                    "analise_critica":     resultado.get('analise_critica',     ''),
+                                                    "gap_de_conformidade": resultado.get('gap_de_conformidade', []),
+                                                    "ponderacao":          resultado.get('ponderacao_detalhada',{}),
+                                                    "relato_auditor":      relato,
+                                                    "auditado_em":         datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                                                }
+                                            }
+                                        })
+                                    except Exception as _e:
+                                        st.toast(f"⚠️ Master não salvo (KPI): {_e}", icon="⚠️")
+                                    # === FIM PATCH 6 ===
+
                                     st.session_state[f"score_{i}"] = {"KPI": kpi['nome'], "Nota": resultado['percentual_alcance']}
                         else:
                             st.warning("⚠️ O relato e os arquivos PDF são obrigatórios.")
@@ -5915,7 +5936,33 @@ def aba_produtividade_inteligente():
                 # Identifica qual KPI precisa de mais atenção (menor média)
                 pior_kpi_serie = df_ultimos.groupby("kpi_nome")["percentual_alcance"].mean()
                 pior_kpi_nome = pior_kpi_serie.idxmin()
-                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")              
+                m3.metric("KPI Crítico", pior_kpi_nome, f"{pior_kpi_serie.min():.1f}%", delta_color="inverse")
+
+                
+                # === SALVA DASHBOARD NO JSON MESTRE ===
+                if filtro_colab != "Todos":
+                    try:
+                        _kpis_det = {}
+                        for _, _row in df_ultimos.iterrows():
+                            _kpis_det[_row['kpi_nome']] = {
+                                "percentual_alcance":  _row.get('percentual_alcance', 0),
+                                "status_pericial":     _row.get('status_pericial',    ''),
+                                "analise_critica":     _row.get('analise_critica',    ''),
+                                "gap_de_conformidade": _row.get('gap_de_conformidade',[]),
+                            }
+                        salvar_master(filtro_colab, {
+                            "produtividade": {
+                                "eficiencia_real_pct":  round(eficiencia_sistematica, 1),
+                                "kpis_auditados_total": qtd_kpis,
+                                "kpi_critico":          pior_kpi_nome,
+                                "kpi_critico_score":    round(pior_kpi_serie.min(), 1),
+                                "kpis_detalhados":      _kpis_det,
+                                "consolidado_em":       datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                            }
+                        })
+                    except Exception as _e:
+                        st.toast(f"⚠️ Master não salvo (dashboard): {_e}", icon="⚠️")
+                # === FIM PATCH 7 ===              
 
                 st.divider()
 
@@ -6309,6 +6356,20 @@ if st.session_state.pagina == "evidencias":
                     st.error(f"Erro no item: {e}")
             st.session_state[chave] = resultados
             salvar_evidencias(colaborador, resultados)
+            
+            # === SALVA EVIDÊNCIAS NO JSON MESTRE ===
+            try:
+                _ev_dict = {r['kpi']: r['evidencias'] for r in resultados}
+                salvar_master(colaborador, {
+                    "evidencias_kpi": {
+                        "documentos_por_kpi": _ev_dict,
+                        "total_kpis":         len(resultados),
+                        "gerado_em":          datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    }
+                })
+            except Exception as _e:
+                st.toast(f"⚠️ Master não salvo (evidências): {_e}", icon="⚠️")
+            # === FIM PATCH 8 ===
             st.info("ℹ️ A IA gera evidências na maioria dos casos sustentáveis — documentação, periodicidade e lógica coerentes segundo critérios. O caminho de obtenção pode precisar de ajuste pontual pelo auditor, pois depende de sistemas específicos de cada empresa para cada situação.")
     if st.button("🔄 Resetar Evidências"):
         salvar_evidencias(colaborador, [])
@@ -6543,8 +6604,29 @@ def comparador_produtividade_por_cargo(df_dash):
     df_rank = pd.DataFrame(ranking).sort_values("valor_float", ascending=False).reset_index(drop=True)
     df_rank_display = df_rank[["Colaborador", "Eficiência (%)"]]
 
+    
+
     st.subheader("📊 Ranking por Cargo")
     st.dataframe(df_rank_display, use_container_width=True, hide_index=True)
+
+    
+    # === SALVA COMPARATIVO NO JSON MESTRE ===
+    try:
+        _pos  = int(df_rank[df_rank['Colaborador'] == colab_base].index[0]) + 1 if not df_rank.empty else 0
+        _efic = float(str(eficiencia_base).replace('%','').replace(',','.')) if 'eficiencia_base' in locals() else 0.0
+        salvar_master(colab_base, {
+            "comparativo_cargo": {
+                "cargo":             cargo_base,
+                "eficiencia_pct":    _efic,
+                "posicao_ranking":   _pos,
+                "total_no_cargo":    len(df_rank),
+                "ranking_completo":  df_rank[['Colaborador','Eficiência (%)']].to_dict('records'),
+                "comparado_em":      datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            }
+        })
+    except Exception as _e:
+        st.toast(f"⚠️ Master não salvo (comparar): {_e}", icon="⚠️")
+    # === FIM PATCH 9 ===
 
     sel = df_rank[df_rank["Colaborador"] == colab_base]
     eficiencia_base = sel.iloc[0]["Eficiência (%)"] if not sel.empty else "0.0%"
