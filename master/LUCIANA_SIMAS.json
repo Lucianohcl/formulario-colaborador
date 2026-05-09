@@ -89,7 +89,162 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "CÁLCULO_DE_TRIBUTOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "120.0m",
+                "Eficiência vs 480m": "25.0%",
+                "Meta Auditável": "Calcular e registrar os tributos devidos, assegurando menos de 5% de erro nas declarações."
+            },
+            {
+                "Atividade": "ANÁLISE_DE_CONFORMIDADE",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Verificação dos processos e práticas contábeis em relação às normas legais vigentes, com relatório semanal de não conformidades."
+            },
+            {
+                "Atividade": "PREPARAÇÃO_DE_RELATÓRIOS_FINANCEIROS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Elaboração de relatórios gerenciais mensais com base nas informações financeiras, visando uma apresentação clara e com insights estratégicos."
+            },
+            {
+                "Atividade": "AUDITORIA_INTERNA",
+                "Freq": "SEMANAL",
+                "Tempo Base": "40m",
+                "Impacto Diário Convertido": "8.0m",
+                "Eficiência vs 480m": "1.7%",
+                "Meta Auditável": "Realizar auditorias semanais em fluxos contábeis, com um mínimo de 2 áreas auditadas por semana."
+            },
+            {
+                "Atividade": "TREINAMENTO_E_DEVOLUTIVA_COM_A_EQUIPES",
+                "Freq": "SEMANAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "6.0m",
+                "Eficiência vs 480m": "1.2%",
+                "Meta Auditável": "Conduzir sessões de treinamento sobre normativas contábeis e melhores práticas, com participação mínima de 80% da equipe."
+            },
+            {
+                "Atividade": "ANÁLISE_DE_DESVIOS_FINANCEIROS",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Análise detalhada de desvios financeiros mensais, apresentando relatório de causas e ações corretivas em até 5 dias após o fechamento."
+            },
+            {
+                "Atividade": "RELATÓRIOS_DE_PERFOMANCE_DE_CUSTO",
+                "Freq": "MENSAL",
+                "Tempo Base": "40m",
+                "Impacto Diário Convertido": "1.8m",
+                "Eficiência vs 480m": "0.4%",
+                "Meta Auditável": "Preparar e revisar relatórios que analisem o desempenho de custos em relação ao orçamento, com apresentação para a diretoria."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "CÁLCULO_DE_TRIBUTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "120.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-120.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_CONFORMIDADE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PREPARAÇÃO_DE_RELATÓRIOS_FINANCEIROS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA_INTERNA",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "8.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-8.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_E_DEVOLUTIVA_COM_A_EQUIPES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "6.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-6.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_DESVIOS_FINANCEIROS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "RELATÓRIOS_DE_PERFOMANCE_DE_CUSTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.8m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.8m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "APURAÇÃO DE IMPOSTOS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "515.0m",
+                "Divergência": "+515.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SIMPLES NACIONAL ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "515.0m",
+                "Divergência": "+515.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMITIR FATURAMENTO ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "A MISSÃO DE NOTA FISCAL ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 27.5,
+        "total_pop_min": 288.5,
+        "total_real_min": 1050,
+        "risco_operacional": "ALTO",
+        "cargo_auditado": "Assistente ",
+        "gerado_em": "09/05/2026 16:45:56"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -104,5 +259,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "09/05/2026 16:45:56"
 }
