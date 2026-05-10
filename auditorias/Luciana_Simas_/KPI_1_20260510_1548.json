@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 77,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O relatório fornece uma análise dos tributos calculados e recolhidos durante o período auditado, relatando uma divergência que foi corrigida. A aderência está conforme o esperado, pois o documento entregou um relatório de conferência tributária, confirmando os dados descritos no relato sobre o cálculo e recolhimento de tributos. No entanto, a integridade é questionada por conta da taxa de erro inicial ser de 6,6%, ligeiramente maior que a margem aceitável de 5%, mesmo que após correção a taxa tenha sido ajustada para 0%. A tempestividade é adequada, pois os dados apresentados estão dentro do prazo e os erros foram corrigidos antes do fechamento. A completude é insuficiente pois, apesar de ter corrigido o problema relatado, a evidência de que a questão foi abordada efetivamente está baseada em uma taxa de erro inicialmente alta.",
+    "gap_de_conformidade": [
+        "Demonstração de taxa de erro inicialmente abaixo de 5%, conforme objetivo esperado."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 20,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Precisão dos Cálculos de Tributos",
+    "colaborador": "Luciana Simas ",
+    "relato_do_auditor": "Conferir e validar os cálculos de tributos mensais (INSS, IRRF, FGTS e contribuições previdenciárias) referentes ao trimestre auditado, por meio de amostragem de 100% das guias geradas, comparando valores declarados aos recebidos e assegurando conformidade com as normativas legais vigentes, com taxa de erro abaixo de 5%."
+}
