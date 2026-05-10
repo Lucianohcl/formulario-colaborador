@@ -356,11 +356,17 @@
         },
         "consolidado_em": "10/05/2026 19:32:26"
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Conformidade dos Balanços": "1. Balanço Patrimonial ERP  \n   Periodicidade: Trimestral  \n   Como obter: ERP → Módulo Financeiro → Competência → Export  \n\n2. DRE (Demonstrativo de Resultados do Exercício) ERP  \n   Periodicidade: Trimestral  \n   Como obter: ERP → Módulo Financeiro → Competência → Export  "
+        },
+        "total_kpis": 1,
+        "gerado_em": "10/05/2026 19:34:16"
+    },
     "comparativo_cargo": {},
     "laudo_central": {
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:32:26"
+    "ultima_atualizacao": "10/05/2026 19:34:16"
 }
