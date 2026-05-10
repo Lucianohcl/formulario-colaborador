@@ -432,10 +432,21 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 15.0,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Eficiência na Análise de Demandas",
+        "kpi_critico_score": 75.0,
+        "kpis_detalhados": {
+            "Eficiência na Análise de Demandas": {
+                "percentual_alcance": 75.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O documento apresentado atende parcialmente aos requisitos para avaliação do KPI de Eficiência na Análise de Demandas. Embora o funcionário tenha demonstrado consistência no registro e priorização das demandas, refletido em uma aderência adequada e integridade das informações, a completude das evidências apresentadas deixa a desejar. Há presença de uma ocorrência de registro parcial, o que, mesmo com justificativa e correção subsequente, impede que o objetivo de 100% de dias com 5 prioridades plenamente documentadas seja atingido.",
+                "gap_de_conformidade": [
+                    "Ausência de 100% de dias com 5 prioridades documentadas"
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 17:36:08"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -443,5 +454,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 17:32:42"
+    "ultima_atualizacao": "10/05/2026 17:36:08"
 }
