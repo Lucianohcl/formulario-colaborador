@@ -357,7 +357,26 @@
         "cargo_auditado": "Analista Fiscal",
         "gerado_em": "10/05/2026 18:31:24"
     },
-    "kpis_auditados": {},
+    "kpis_auditados": {
+        "Conformidade na Análise de Notas Fiscais": {
+            "percentual_alcance": 30,
+            "status_pericial": "NÃO CONFORME",
+            "analise_critica": "As provas apresentadas no dashboard KPI não foram suficientes para confirmar que 100% das notas fiscais emitidas foram analisadas quanto à sua tributação correta e identificação de reduções fiscais. A evidência mostra uma eficiência real de apenas 16.8% na análise das notas, o que contradiz o relato do funcionário de verificação total. Além disso, não há demonstração sólida dos cálculos de tributação nos anexos apresentados.",
+            "gap_de_conformidade": [
+                "Falta de evidência de análise de 100% das notas fiscais.",
+                "Ausência de cálculo e verificação detalhada de tributação aplicada.",
+                "Registros de identificação de oportunidades de redução fiscal não apresentados."
+            ],
+            "ponderacao": {
+                "aderencia": 25,
+                "integridade": 10,
+                "tempestividade": 20,
+                "completude": 5
+            },
+            "relato_auditor": "Verificar e validar a tributação aplicada em 100% das notas fiscais emitidas no período auditado, confirmando conformidade com a legislação vigente e identificando oportunidades de redução fiscal.",
+            "auditado_em": "10/05/2026 18:37:06"
+        }
+    },
     "produtividade": {
         "eficiencia_real_pct": 0,
         "kpis_auditados_total": 0,
@@ -376,5 +395,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 18:31:24"
+    "ultima_atualizacao": "10/05/2026 18:37:06"
 }
