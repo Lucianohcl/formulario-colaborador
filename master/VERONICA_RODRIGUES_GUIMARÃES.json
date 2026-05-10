@@ -101,7 +101,194 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "FECHAMENTO_DE_BALANÇOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "120.0m",
+                "Eficiência vs 480m": "25.0%",
+                "Meta Auditável": "Fechar e entregar balanços com 100% de conformidade e dentro do prazo estabelecido"
+            },
+            {
+                "Atividade": "REVISÃO_DE_DEMONSTRATIVOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "80m",
+                "Impacto Diário Convertido": "80.0m",
+                "Eficiência vs 480m": "16.7%",
+                "Meta Auditável": "Revisar e validar demonstrativos financeiros garantindo que não haja erros de mais de 2%"
+            },
+            {
+                "Atividade": "ASSISTÊNCIA_A_CLIENTES",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Atender 100% dos chamados dos clientes com um feedback positivo de pelo menos 90%"
+            },
+            {
+                "Atividade": "SUPORTE_A_COLEGAS_DE_EQUIPE",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Fornecer orientação e capacitação com um tempo médio de resposta a dúvidas de 1 hora"
+            },
+            {
+                "Atividade": "REUNIÕES_DE_GESTÃO_DE_TEAM",
+                "Freq": "SEMANAL",
+                "Tempo Base": "40m",
+                "Impacto Diário Convertido": "8.0m",
+                "Eficiência vs 480m": "1.7%",
+                "Meta Auditável": "Conduzir reuniões para discutir progresso e desafios, com ação de melhoria implementada em 80% dos pontos levantados"
+            },
+            {
+                "Atividade": "MONITORAMENTO_DE_DESEMPENHO",
+                "Freq": "SEMANAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "6.0m",
+                "Eficiência vs 480m": "1.2%",
+                "Meta Auditável": "Avaliar o desempenho da equipe e identificar pontos de melhoria, com um KPI de 95% de equipe engajada"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_RELATÓRIOS_GERENCIAIS",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Produzir relatórios gerenciais detalhados com insights, aprovados pela alta gestão com 98% de efetividade"
+            },
+            {
+                "Atividade": "TREINAMENTO_CONTINUO",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Realizar treinamentos mensais com participação de pelo menos 80% da equipe e feedback de 4/5"
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "FECHAMENTO_DE_BALANÇOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "120.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-120.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REVISÃO_DE_DEMONSTRATIVOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "80.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-80.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ASSISTÊNCIA_A_CLIENTES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "SUPORTE_A_COLEGAS_DE_EQUIPE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REUNIÕES_DE_GESTÃO_DE_TEAM",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "8.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-8.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "MONITORAMENTO_DE_DESEMPENHO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "6.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-6.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_RELATÓRIOS_GERENCIAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_CONTINUO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "CONFECCIONAR DEMONSTRATIVOS URGENTES, PARA EMPRESAS QUE NÃO ESTÃO COM A ESCRITURAÇÃO CONTÁBIL EM DIA - QUE ESTÃO COM OS FECHAMENTOS MENSAIS ATRASADOS. A COMPLEXIDADE NÃO TEM RELAÇÃO COM DIFICULDADE, TEM RELAÇÃO COM O VOLUME DE ANÁLISE EM ATRASO, PARA COLOCAR EM DIA NUM PRAZO, QUE MESMO QUE NÃO TENHA SIDO MENSURADO, EU SEI QUE TEM URGÊNCIA.  ENTÃO, MENSURAR O TEMPO QUE EU GASTO NESSAS ATIVIDADES, É COMPLICADO, POIS INICIAMOS UMA, PARAMOS; PEGAMOS OUTRA, PARAMOS; VOLTAMOS À ANTERIOR - E POR AÍ VAI. SEI QUE ESSA É A ROTINA NUM ESCRITÓRIO E TAMBÉM SEI QUE AGORA É QUE ESTÁ CHEGANDO MAIS GENTE À EQUIPE, MAS COMO PRECISO DESCREVER ALGO, ISSO É O QUE CONSIDERO COMO \"ALTA COMPLEXIDADE\", DEVIDO À URGÊNCIA NUM PRAZO RELATIVAMENTE CURTO.   PREENCHEREI O CAMPO \"TEMPO\" PORQUE PRECISA SER PREENCHIDO, MAS CADA EMPRESA DESSA TEM UM TEMPO DIFERENTE - ENTÃO COLOCAREI O MÁXIMO PERMITIDO, MAS COM CERTEZA PARA ESSE TIPO DE SITUAÇÃO, PRECISO TENTAR CRONOMETRAR CADA EMPRESA FEITA.",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "68.0m",
+                "Divergência": "+68.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAR BALANCETES MENSAIS DE LUCRO REAL - EMPRESA COM POUCO MOVIMENTO (EX.: AUTO POSTO)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "32.7m",
+                "Divergência": "+32.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAR BALANCETES MENSAIS DE LUCRO REAL -  EMPRESA COM MOVIMENTO MÉDIO E QUANTIDADE DE ANÁLISES MODERADAS, POIS REQUER MAIS CONCILIAÇÕES QUE UMA DE MENOR MOVIMENTO OU COM CONTAS BÁSICAS E POUCAS PARA CONCILIAR (EX.: ATIVA COMÉRCIO- AUMENTOU O NÍVEL DE ANÁLISE DEPOIS QUE PASSAMOS A IMPORTAR OS PAGAMENTOS COM CARTÃO DE CRÉDITO).",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "65.5m",
+                "Divergência": "+65.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONFECCIONAR BALANÇOS DE EMPRESAS QUE ESTÃO COM A ESCRITURAÇÃO CONTÁBIL EM DIA - PARA ESSAS EMPRESAS AINDA NÃO CONSEGUI PERCEBER QUAL A PERIODICIDADE, ENTÃO COLOCAREI ANUAL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "8.2m",
+                "Divergência": "+8.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ESCUTAR E ORIENTAR MEUS COLEGAS, DE ACORDO COM O QUE ELES SINALIZAREM QUE É SUA DIFICULDADE OU DÚVIDA SOBRE DETERMINADA ATIVIDADE. VALE RESSALTAR, QUE POR MAIS QUE SEJA DE BAIXA COMPLEXIDADE, DEMANDA TEMPO. REQUER PARAR VÁRIAS VEZES O QUE EU ESTIVER FAZENDO, PARA ATENDÊ-LOS.  E NÃO POSSO DEIXAR PARA ATENDÊ-LOS DEPOIS, POIS NA MAIORIA DAS VEZES ELES PRECISAM DESSE RETORNO PARA DAR CONTINUIDADE AO QUE ESTÃO FAZENDO.  O ÚNICO MOMENTO EM QUE EU NÃO PARO, É SE EU ESTIVER EM UMA LIGAÇÃO.  EXCETO POR ISSO, PARO SIM, PORQUE ENTENDO QUE É NECESSÁRIO - PARA ISSO, HOJE EU SINTO QUE É DIFÍCIL MENSURAR TEMPO, POIS ACABAMOS DE ADMITIR UMA ANALISTA E ELA TEM CONHECIMENTO, TALVEZ INTERMEDIÁRIO E PRECISA DE BASTANTE ORIENTAÇÃO. ENTÃO O TEMPO GASTO COM ELA, MESMO CONSIDERANDO QUE ELA ASSISTIU ALGUNS VÍDEOS, COM CERTEZA É MAIOR DO QUE ALGUÉM QUE TEM MAIS EXPERIÊNCIA. E PAREI DIVERSAS VEZES, TANTO PARA EXPLICAR, COMO PARA FAZER COM ELA E DEPOIS E CONFERIR, PARA ELA CORRIGIR O QUE PRECISAVA.  DIFÍCIL MENSURAR TEMPO, PORQUE TAMBÉM VARIA.",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "300.0m",
+                "Divergência": "+300.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATENDER ÀS LIGAÇÕES E LIGAR PARA OS CLIENTES:  O TEMPO PARA ISSO É RELATIVO.  ENQUANTO NÃO COLOCARMOS AS EMPRESAS EM DIA, PARA CONSEGUIRMOS REPASSAR RELATÓRIOS E MARCAR COM OS CLIENTES PARA DISCUTIR SEUS NÚMEROS, HOJE AS LIGAÇÕES SÃO PARA TIRAR DÚVIDAS OU SOLICITAR DOCUMENTOS.  ENTÃO, ENTENDO QUE HOJE O TEMPO GASTO COM LIGAÇÕES É BEM POUCO.",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "12.0m",
+                "Divergência": "+12.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 69.5,
+        "total_pop_min": 338.1,
+        "total_real_min": 486.3,
+        "risco_operacional": "ALTO",
+        "cargo_auditado": "Analista Contábil Sênior",
+        "gerado_em": "10/05/2026 19:21:36"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -116,5 +303,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "10/05/2026 19:21:36"
 }
