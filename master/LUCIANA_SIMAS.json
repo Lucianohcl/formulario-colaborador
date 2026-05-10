@@ -245,7 +245,38 @@
         "cargo_auditado": "Assistente ",
         "gerado_em": "10/05/2026 15:34:41"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise dos dados do colaborador Luciana Simas revela que há uma boa correlação entre seu objetivo de calcular tributos e executar as tarefas com excelência, e as atividades descritas, notadamente em apuração de impostos e Simples Nacional. Contudo, a formação em Ciências Contábeis parece não estar plenamente utilizada nas tarefas operacionais que exigem menos formação, como emissão de faturamento e notas fiscais. Luciana apresenta um perfil DISC predominantemente 'C', indicado por oito das respostas, sugerindo que ela é detalhista e gosta de seguir regras, o que é favorável para atividades fiscais. No entanto, a presença de características 'D' e 'A' sugere que também possui potencial de liderança e adaptação, que podem não estar plenamente explorados. A carga de trabalho é reportada como equivalente a mais de 480 minutos/dia para atividades principais, o que sinaliza um risco de burnout mascarado, especialmente na ausência de pausas ou atividades diversificadas. A sugestão de um estagiário no setor reforça a necessidade de alívio da carga diária atribuída a Luciana.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Apuração de impostos",
+                "Freq": "DVD",
+                "Tempo": "515 min",
+                "Meta": "Reduzir carga para 300 min por dia"
+            },
+            {
+                "Atividade": "Simples Nacional",
+                "Freq": "DVD",
+                "Tempo": "515 min",
+                "Meta": "Criar suporte automatizado"
+            },
+            {
+                "Atividade": "Emitir faturamento",
+                "Freq": "D",
+                "Tempo": "10 min",
+                "Meta": "Delegar atividade"
+            },
+            {
+                "Atividade": "A missão de nota fiscal",
+                "Freq": "DVD",
+                "Tempo": "10 min",
+                "Meta": "Automatizar processo"
+            }
+        ],
+        "veredito_final": "Para otimizar o desempenho de Luciana e mitigar riscos de burnout, é crucial implementar um plano de ação que realoque atividades menos exigentes para estagiários ou através de automação. As atividades principais devem ser revistas para reduzir a carga diária abaixo de 480 minutos e potencializar o uso de sua formação. Dever-se-á ainda alinhar melhor as características de liderança e adaptação do perfil DISC dela, criando oportunidades para atuar em projetos especiais ou em funções que exijam mais tomada de decisão. Dessa forma, o foco imediato deve ser em estratégias para otimização e desafogamento de carga de trabalho, enquanto desenvolve o capital humano disponível.",
+        "cargo_auditado": "Assistente ",
+        "gerado_em": "10/05/2026 15:34:55"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -259,5 +290,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 15:34:41"
+    "ultima_atualizacao": "10/05/2026 15:34:55"
 }
