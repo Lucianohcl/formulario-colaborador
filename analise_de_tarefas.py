@@ -7558,7 +7558,10 @@ if st.session_state.get("pagina") == "central_inteligencia":
     st.markdown("<p style='color:#1E293B;font-size:11px;text-align:center;'>Controles da Central</p>",
                 unsafe_allow_html=True)
 
-    ctrl1, ctrl2, ctrl3, ctrl4, ctrl5 = st.columns(5)
+
+
+# ── Linha 1: Seleção e Laudo ─────────────────────────────
+    ctrl1, ctrl2, ctrl3 = st.columns(3)
 
     with ctrl1:
         nomes_ctrl = [m.get("colaborador", f"Col {i+1}") for i, m in enumerate(masters)]
@@ -7570,10 +7573,9 @@ if st.session_state.get("pagina") == "central_inteligencia":
             st.session_state.central_colab_idx = novo_idx
             st.rerun()
 
-
     with ctrl2:
         if laudo_exibir:
-            st.info("✅ Laudo gerado")
+            st.info("✅ Laudo já gerado")
         else:
             if st.button("🔬 Gerar Laudo", use_container_width=True, key="ctrl_btn_laudo"):
                 with st.spinner(f"🧠 Gerando laudo de {colab_sel}... (20-40s)"):
@@ -7594,44 +7596,12 @@ if st.session_state.get("pagina") == "central_inteligencia":
                 if f"laudo_ind_{colab_sel}" in st.session_state:
                     del st.session_state[f"laudo_ind_{colab_sel}"]
                 st.rerun()
-        else:
-            if st.button("🚀 Gerar Parecer", use_container_width=True, key="ctrl_btn_parecer"):
-                with st.spinner("🧠 Gerando parecer... (30-60s)"):
-                    resumo = {
-                        "total_colaboradores": total_colab,
-                        "roi_total_auditado":  round(roi_total, 2),
-                        "horas_recuperaveis":  round(horas_total, 2),
-                        "ganho_dias":          round(horas_total / 8, 1),
-                        "cultura_dominante":   cultura,
-                        "em_sobrecarga":       sobrecargas,
-                        "colaboradores": [{
-                            "nome":           m.get("colaborador"),
-                            "cargo":          (m.get("campos") or {}).get("cargo", "N/A"),
-                            "disc":           m.get("disc",  {}).get("perfil_dominante",  "N/A"),
-                            "aderencia":      m.get("disc",  {}).get("veredito_aderencia","N/A"),
-                            "roi":            m.get("roi",   {}).get("auditado",           0),
-                            "horas_recup":    m.get("roi",   {}).get("horas_recuperaveis", 0),
-                            "nexo_status":    m.get("nexo_causal",  {}).get("status",      "N/A"),
-                            "horas_dia":      m.get("nexo_causal",  {}).get("horas_dia",    0),
-                            "eficiencia_pct": m.get("produtividade",{}).get("eficiencia_real_pct", 0),
-                            "kpi_critico":    m.get("produtividade",{}).get("kpi_critico", "N/A"),
-                            "parecer_360":    m.get("parecer_360",  {}).get("veredito_final",""),
-                            "evidencias":     list(m.get("evidencias_kpi", {}).get("documentos_por_kpi", {}).keys()),
-                        } for m in masters]
-                    }
-                    parecer = gerar_parecer_executivo_equipe_ia(json.dumps(resumo, indent=2, ensure_ascii=False))
-                    salvar_master_equipe({
-                        "parecer_executivo": {"texto": parecer,
-                                             "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
-                    })
-                    st.session_state["parecer_eq_central"] = parecer
-                    st.success("✅ Parecer gerado!")
-                    st.rerun()
 
+    # ── Linha 2: Parecer e Downloads ─────────────────────────
     ctrl4, ctrl5, ctrl6 = st.columns(3)
 
     with ctrl4:
-        if st.button("🚀 Gerar Parecer", use_container_width=True, key="ctrl_btn_parecer2"):
+        if st.button("🚀 Gerar Parecer Equipe", use_container_width=True, key="ctrl_btn_parecer"):
             with st.spinner("🧠 Gerando parecer... (30-60s)"):
                 resumo = {
                     "total_colaboradores": total_colab,
