@@ -289,7 +289,38 @@
         "cargo_auditado": "Analista Contábil Sênior",
         "gerado_em": "10/05/2026 19:22:12"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise dos dados fornecidos sobre as atividades e responsabilidades de Veronica Rodrigues Guimarães, Analista Contábil Sênior, indica uma adequação parcial entre o objetivo do cargo e as tarefas executadas. O objetivo formalizado de assegurar clareza e completude das informações entregues ao cliente é compatível com as atividades relatadas de fechamento de balanços e assistência aos colegas. No entanto, há um sinal de desperdício de formação em tarefas operacionais, particularmente em atividades de baixa complexidade que consomem tempo significativo, como atender ligações e orientação contínua, dado o nível acadêmico e profissional da colaboradora. O perfil DISC de Veronica, com predominância dos fatores D (Dominance) e A (Atentiveness), sugere que ela é orientada a resultados e atenta às necessidades dos outros, o que pode torná-la eficiente na execução das tarefas, mas também pode exigir uma gestão cuidadosa para evitar sobrecarga. A cronanálise revela que algumas atividades individuais, como a confecção de demonstrativos urgentes, podem ultrapassar 480 minutos diários, apontando risco de Burnout Mascarado se não equilibrado adequadamente.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Fechamento de balancetes de lucro real - auto posto",
+                "Freq": "M",
+                "Tempo": "720 min",
+                "Meta": "660 min"
+            },
+            {
+                "Atividade": "Fechar balancetes mensais de lucro real - empresa movimento médio",
+                "Freq": "M",
+                "Tempo": "1440 min",
+                "Meta": "1200 min"
+            },
+            {
+                "Atividade": "Confeccionar demonstrativos urgentes",
+                "Freq": "A",
+                "Tempo": "1495 min",
+                "Meta": "1080 min"
+            },
+            {
+                "Atividade": "Escutar e orientar colegas",
+                "Freq": "DVD",
+                "Tempo": "300 min",
+                "Meta": "240 min"
+            }
+        ],
+        "veredito_final": "Para otimizar a produtividade e prevenir risco de burnout: PARAR de executar atividades de escuta e orientação sem agendamento prévio; DELEGAR a cobrança de documentos e controles administrativos a um estagiário ou assistente para liberar Veronica para atividades de maior valor agregado; e, FOCO IMEDIATO na implementação de controle mais rigoroso de cronograma de atividades para priorizar tarefas de alta complexidade e urgência.",
+        "cargo_auditado": "Analista Contábil Sênior",
+        "gerado_em": "10/05/2026 19:22:23"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -303,5 +334,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:22:12"
+    "ultima_atualizacao": "10/05/2026 19:22:23"
 }
