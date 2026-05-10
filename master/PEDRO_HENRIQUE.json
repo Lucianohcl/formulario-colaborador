@@ -333,7 +333,44 @@
         "cargo_auditado": "Analista Fiscal I",
         "gerado_em": "10/05/2026 18:46:35"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "Após a análise dos dados fornecidos, constatamos um desalinhamento entre o objetivo do cargo de 'Analista Fiscal I' e as tarefas de alta prioridade realizadas, que são frequentemente operacionais. As atividades principais, como 'Apuração do ICMS' e 'Apuração do PIS e COFINS', estão listadas com zero tempo dedicado, indicando possível subutilização ou eficiência em processos automatizados. Isso levanta uma preocupação sobre a alocação de tempo e habilidades, especialmente considerando os cursos realizados ('Planejamento Tributário', 'Reforma Tributária'), que são de alto nível e estratégico. O perfil DISC, predominantemente 'C' e 'B', sugere que o colaborador é metódico, detalhista e orientado a processos, características valiosas para análise crítica de processos tributários, mas pode enfrentar desafios em ambientes de alta pressão ou mudanças repentinas, como dificuldades relatadas de sistema e internet instáveis. A soma das atividades reportadas não indica riscos de Burnout devido ao baixo número de horas efetivamente relatadas; no entanto, a falta de atribuição clara das horas pode mascarar a real carga de trabalho e pressão enfrentada nos períodos de pico. Sugestões sobre otimização com sistemas para reduzir tempo de trabalho estão alinhadas com a necessidade de melhoria de eficiência.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Apuração do ICMS",
+                "Freq": "M",
+                "Tempo": "120 min",
+                "Meta": "Precisão de 98%"
+            },
+            {
+                "Atividade": "Apuração do PIS e COFINS",
+                "Freq": "M",
+                "Tempo": "90 min",
+                "Meta": "Conformidade 100%"
+            },
+            {
+                "Atividade": "Apuração IRPJ e CSLL",
+                "Freq": "T",
+                "Tempo": "180 min",
+                "Meta": "Conformidade 100%"
+            },
+            {
+                "Atividade": "Atendimento ao Cliente",
+                "Freq": "DVD",
+                "Tempo": "45 min",
+                "Meta": "Satisfação 90%"
+            },
+            {
+                "Atividade": "Emissão de Nota Fiscal",
+                "Freq": "D",
+                "Tempo": "20 min",
+                "Meta": "Agilidade"
+            }
+        ],
+        "veredito_final": "Recomenda-se interromper a alocação de tarefas operacionais sem valor agregado estratégico elevado que não aproveitam a formação completa do colaborador. Delegar atividades repetitivas e administrativas para sistemas automatizados ou assistentes administrativos, liberando assim o colaborador para focar em tarefas analíticas e de interação com clientes que exigem sua expertise, melhorando o atendimento e precisão tributária. Foco imediato deve ser dado à implementação de sistemas sugeridos para otimização de tempo e a adaptação de treinamentos comportamentais para gerenciar pressões externas, alinhando expectativas de desempenho às metas estratégicas.",
+        "cargo_auditado": "Analista Fiscal I",
+        "gerado_em": "10/05/2026 18:46:43"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -347,5 +384,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 18:46:36"
+    "ultima_atualizacao": "10/05/2026 18:46:43"
 }
