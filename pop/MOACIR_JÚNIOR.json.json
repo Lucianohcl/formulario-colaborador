@@ -1,0 +1,42 @@
+[
+  {
+    "Atividade": "ANÁLISE DE PONTOS DE CÉLULA",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Realizar análise dos pontos de célula de colaboradores para identificar desvios e inconsistências, com meta de 95% de conformidade."
+  },
+  {
+    "Atividade": "REVISÃO DE PROCEDIMENTOS DE COMPLIANCE",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Revisar e atualizar os procedimentos de compliance, visando 100% de adequação às normas vigentes."
+  },
+  {
+    "Atividade": "AUDITORIA INTERNA DE DADOS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "18.0m",
+    "Eficiência vs 480m": "3.8%",
+    "Meta Auditável": "Realizar auditoria interna dos dados do departamento pessoal, garantindo 98% de precisão nos registros."
+  },
+  {
+    "Atividade": "DESENVOLVIMENTO DE RELATÓRIOS GERENCIAIS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Criar relatórios gerenciais sobre desempenho e indicadores do departamento, com entrega semanal de pelo menos 2 relatórios."
+  },
+  {
+    "Atividade": "TREINAMENTO EM GESTÃO DE PESSOAL",
+    "Freq": "MENSAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "5.5m",
+    "Eficiência vs 480m": "1.1%",
+    "Meta Auditável": "Promover treinamento de gestão de pessoal para a equipe, assegurando que 100% dos colaboradores participem e 90% avaliem como 'satisfeito' ou 'muito satisfeito'."
+  }
+]
