@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 66.66,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "Embora o documento fornecido seja apropriado e os dados estejam de acordo com o relato, a presença de uma divergência corrigida antes do pagamento sugere uma Falha inicial no processo. Isto impacta negativamente na completude, pois o objetivo era a conformidade total sem erros iniciais. A tempestividade está correta, pois as ações corretivas ocorreram antes do pagamento. No entanto, a falha inicial impede que o objetivo de 100% de conformidade sem correções seja considerado atingido.",
+    "gap_de_conformidade": [
+        "Conformidade inicial total sem necessidade de correções"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Precisão no Cálculo de Férias e 13º Salário",
+    "colaborador": "JUAREZ QUEIROZ PEREIRA",
+    "relato_do_auditor": "Verificar e validar os cálculos de férias e 13º salário do trimestre auditado, confirmando conformidade com a CLT e acordos coletivos vigentes, sem erros ou reincidências identificadas no período."
+}
