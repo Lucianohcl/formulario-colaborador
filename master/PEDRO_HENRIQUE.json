@@ -390,10 +390,21 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 18.5,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão na Análise de Impostos",
+        "kpi_critico_score": 92.5,
+        "kpis_detalhados": {
+            "Precisão na Análise de Impostos": {
+                "percentual_alcance": 92.5,
+                "status_pericial": "CONFORME",
+                "analise_critica": "O documento apresentado confirma quase todas as declarações do funcionário e atende aos requisitos estabelecidos para o KPI. A amostra de relatórios e o detalhamento da divergência suportam a taxa de acerto relatada. Todas as correções foram feitas antes do envio ao cliente, e a comunicação foi registrada. A única falha é a falta de detalhamento sobre os 3% que não alcançaram a meta inicial de 95% antes das correções.",
+                "gap_de_conformidade": [
+                    "Falta de detalhamento sobre como foi alcançada a taxa de 97% antes das correções."
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 18:56:23"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -401,5 +412,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 18:53:47"
+    "ultima_atualizacao": "10/05/2026 18:56:23"
 }
