@@ -255,7 +255,32 @@
         "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
         "gerado_em": "10/05/2026 19:02:54"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise das atividades de Moacir Júnior revela um alinhamento parcial dos objetivos do cargo com as tarefas executadas. No entanto, a falta de dados completos sobre os objetivos e cursos concluídos impede uma análise aprofundada do nexo causal. A repetição frequente de 'dados corrompidos' levanta uma questão sobre a integridade dos dados institucionais e sua manutenção. As atividades de alta frequência e demanda operacional, como fechamento de folha e rescisões, estão alinhadas com a função de Analista de Departamento Pessoal. No entanto, a carga total de trabalho relatada ultrapassando 480 minutos diários (em tempos acumulados diários médios considerando a frequência), indica um potencial risco de burnout, principalmente com a inclusão de dificuldades relacionadas a certificados e senhas. Esta situação se agrava pela ausência de clareza sobre os cursos realizados pelo colaborador, que poderiam mitigar esse impacto negativo. O perfil DISC, amplamente inclinado para os traços 'C' (ético, responsável) e 'D' (decisivo, independente), sugere uma orientação para precisão e controle, embora os traços 'A' (influente, persuasivo) sugiram alguma habilidade em comunicação interpessoal. Isso pode explicar a sugestão de uma maior comunicação intersetorial. A sobrecarga de tarefas diárias e o perfil DISC apontam para um esgotamento premente ou mascarado a médio prazo, enfatizando a necessidade de redistribuição de responsabilidades para preservar a saúde ocupacional do colaborador e a eficiência de processos.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Fechamento de folha",
+                "Freq": "D",
+                "Tempo": "240 min",
+                "Meta": "Precisão e tempo"
+            },
+            {
+                "Atividade": "Rescisões",
+                "Freq": "D",
+                "Tempo": "130 min",
+                "Meta": "Exatidão no cumprimento legal"
+            },
+            {
+                "Atividade": "Cálculos de encargos trabalhistas",
+                "Freq": "DVD",
+                "Tempo": "120 min",
+                "Meta": "Conformidade com regulamentos"
+            }
+        ],
+        "veredito_final": "Moacir Júnior deve PARAR de centralizar tarefas que podem ser delegadas, especialmente aquelas que sofrem de complicações administrativas, como certificados e senhas. Deve DELEGAR atividades de menor prioridade ou baixo impacto, permitindo o foco em tarefas de alta materialidade para a conformidade legal e eficiência operação. O FOCO IMEDIATO deve estar em clarificar e otimizar os objetivos do cargo com os dados corretos de melhoria na comunicação intersetorial para facilitar a colaboração eficiente. Medidas extras incluem monitoramento da carga de trabalho para mitigar riscos de burnout, potencialmente redistribuindo algumas cargas para equilibrar com o perfil comportamental do colaborador.",
+        "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
+        "gerado_em": "10/05/2026 19:03:06"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -269,5 +294,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:02:54"
+    "ultima_atualizacao": "10/05/2026 19:03:06"
 }
