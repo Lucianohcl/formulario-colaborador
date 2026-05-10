@@ -296,10 +296,21 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 15.4,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão dos Cálculos de Tributos",
+        "kpi_critico_score": 77.0,
+        "kpis_detalhados": {
+            "Precisão dos Cálculos de Tributos": {
+                "percentual_alcance": 77.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O relatório fornece uma análise dos tributos calculados e recolhidos durante o período auditado, relatando uma divergência que foi corrigida. A aderência está conforme o esperado, pois o documento entregou um relatório de conferência tributária, confirmando os dados descritos no relato sobre o cálculo e recolhimento de tributos. No entanto, a integridade é questionada por conta da taxa de erro inicial ser de 6,6%, ligeiramente maior que a margem aceitável de 5%, mesmo que após correção a taxa tenha sido ajustada para 0%. A tempestividade é adequada, pois os dados apresentados estão dentro do prazo e os erros foram corrigidos antes do fechamento. A completude é insuficiente pois, apesar de ter corrigido o problema relatado, a evidência de que a questão foi abordada efetivamente está baseada em uma taxa de erro inicialmente alta.",
+                "gap_de_conformidade": [
+                    "Demonstração de taxa de erro inicialmente abaixo de 5%, conforme objetivo esperado."
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 15:49:50"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -307,5 +318,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 15:48:20"
+    "ultima_atualizacao": "10/05/2026 15:49:51"
 }
