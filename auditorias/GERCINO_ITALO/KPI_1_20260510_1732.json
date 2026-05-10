@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 75,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento apresentado atende parcialmente aos requisitos para avaliação do KPI de Eficiência na Análise de Demandas. Embora o funcionário tenha demonstrado consistência no registro e priorização das demandas, refletido em uma aderência adequada e integridade das informações, a completude das evidências apresentadas deixa a desejar. Há presença de uma ocorrência de registro parcial, o que, mesmo com justificativa e correção subsequente, impede que o objetivo de 100% de dias com 5 prioridades plenamente documentadas seja atingido.",
+    "gap_de_conformidade": [
+        "Ausência de 100% de dias com 5 prioridades documentadas"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Eficiência na Análise de Demandas",
+    "colaborador": "GERCINO ITALO",
+    "relato_do_auditor": "Avaliar, classificar e documentar as demandas contábeis recebidas de clientes e da equipe interna no período de fevereiro a abril de 2026, garantindo que as 5 principais prioridades diárias estejam registradas no sistema de gestão com status atualizado, prazo definido e responsável identificado, sem pendências não tratadas ao final do dia\n\n"
+}
