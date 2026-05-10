@@ -167,7 +167,226 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "ANÁLISE DE DEMANDAS DIÁRIAS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Avaliar e priorizar as demandas de clientes e internos, com documentação das 5 principais prioridades do dia."
+            },
+            {
+                "Atividade": "ELABORAÇÃO DE RELATÓRIOS DE DESSEMPENHO",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Compilar e analisar dados financeiros, gerando relatórios semanais de desempenho com KPI's definidos. Taxa de erro abaixo de 2%."
+            },
+            {
+                "Atividade": "TRATATIVA COM CLIENTES",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "45m",
+                "Impacto Diário Convertido": "45.0m",
+                "Eficiência vs 480m": "9.4%",
+                "Meta Auditável": "Realizar 10 contatos com clientes para tratamento de dúvidas e solicitações, medindo satisfação do cliente em 90% nas interações."
+            },
+            {
+                "Atividade": "AUDITORIA INTERNA DE DOCUMENTOS",
+                "Freq": "SEMANAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "6.0m",
+                "Eficiência vs 480m": "1.2%",
+                "Meta Auditável": "Revisar 100% dos documentos financeiros para garantir conformidade e identificar riscos, apresentando relatório com achados."
+            },
+            {
+                "Atividade": "PLANEJAMENTO ESTRATÉGICO",
+                "Freq": "MENSAL",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "5.5m",
+                "Eficiência vs 480m": "1.1%",
+                "Meta Auditável": "Desenvolver um plano estratégico mensal com base em análise de desempenho, e apresentar para a gerência, monitorando 3 KPI's principais."
+            },
+            {
+                "Atividade": "ATUALIZAÇÃO EM NORMAS CONTÁBEIS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "15m",
+                "Impacto Diário Convertido": "15.0m",
+                "Eficiência vs 480m": "3.1%",
+                "Meta Auditável": "Estar sempre atualizado sobre as novas normas contábeis, documentando pelo menos 1 atualização relevante para a equipe semanalmente."
+            },
+            {
+                "Atividade": "TREINAMENTO DE PROCEDIMENTOS INTERNOS",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Realizar sessões de treinamento para a equipe sobre procedimentos contábeis e compliance, visando 100% de participação."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "ANÁLISE DE DEMANDAS DIÁRIAS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "360.0m",
+                "Divergência": "+300.0m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "ELABORAÇÃO DE RELATÓRIOS DE DESSEMPENHO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TRATATIVA COM CLIENTES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "45.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-45.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA INTERNA DE DOCUMENTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "6.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-6.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PLANEJAMENTO ESTRATÉGICO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "5.5m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-5.5m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ATUALIZAÇÃO EM NORMAS CONTÁBEIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "15.0m",
+                "Impacto Real": "936.0m",
+                "Divergência": "+921.0m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "TREINAMENTO DE PROCEDIMENTOS INTERNOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "RELATÓRIOS URGENTES ( FATURAMENTO PARA BANCO, DISTRIBUIÇÃO DE LUCROS, RAZÕES DE CONTAS CONTÁBEIS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "8.2m",
+                "Divergência": "+8.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "RELATÓRIOS GERENCIAIS DE APONTAMENTOS PARA O CLIENTE",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "36.0m",
+                "Divergência": "+36.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "COBRANÇAS DE DOCUMENTO AO CLIENTE ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ANALISE DE BALANCETE NÃO URGENTE ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "72.0m",
+                "Divergência": "+72.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SALVAR/RESPONDER EMAILS CORRIQUEIROS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "LANÇAMENTOS PARA ATUALIZAÇÕES DAS EMPRESAS ( FOLHA, NOTAS FISCAIS, PROVISÕES, FINANCEIRO, IMPOSTOS, RECEITAS, APLICAÇÕES...",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "180.0m",
+                "Divergência": "+180.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "AUXILIAR PARCEIROS DE EQUIPE",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "24.0m",
+                "Divergência": "+24.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SEPARAÇÃO DE DOCUMENTAÇÃO FISICA ( NOTAS DE ENERGIA/ NOTAS DE SERVIÇOS PARA O FISCAL, ARQUIVAMENTO DESSES DOCUMENTOS, ABERTURA DE CAIXAS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.5m",
+                "Divergência": "+5.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DEMANDAS DIVERSAS (SALVAR UM ARQUIVO, PREENCHER ALGO, VERIFICAR RECEBIMENTO, VERIFICAR RESPOSTA)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "12.0m",
+                "Divergência": "+12.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "AUXILIAR PARCEIROS DE EQUIPE",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "24.0m",
+                "Divergência": "+24.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SEPARAÇÃO DE DOCUMENTAÇÃO FISICA ( NOTAS DE ENERGIA/ NOTAS DE SERVIÇOS PARA O FISCAL, ARQUIVAMENTO DESSES DOCUMENTOS, ABERTURA DE CAIXAS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.5m",
+                "Divergência": "+5.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DEMANDAS DIVERSAS (SALVAR UM ARQUIVO, PREENCHER ALGO, VERIFICAR RECEBIMENTO, VERIFICAR RESPOSTA)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "12.0m",
+                "Divergência": "+12.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 12.8,
+        "total_pop_min": 222.9,
+        "total_real_min": 1735.1,
+        "risco_operacional": "ALTO",
+        "cargo_auditado": "Auxiliar Contábil",
+        "gerado_em": "10/05/2026 17:22:15"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -182,5 +401,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "10/05/2026 17:22:15"
 }
