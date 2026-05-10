@@ -868,11 +868,17 @@
         },
         "consolidado_em": "10/05/2026 17:01:56"
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Precisão no Cálculo de Férias e 13º Salário": "1. Espelho de Folha ERP  \n   Periodicidade: Mensal  \n   Como obter: ERP → [Folha de Pagamento] → competência → Export  \n\n2. Portal eSocial → Consulta de Eventos → competência → Export PDF  \n   Periodicidade: Mensal  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  "
+        },
+        "total_kpis": 1,
+        "gerado_em": "10/05/2026 17:04:19"
+    },
     "comparativo_cargo": {},
     "laudo_central": {
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 17:01:56"
+    "ultima_atualizacao": "10/05/2026 17:04:19"
 }
