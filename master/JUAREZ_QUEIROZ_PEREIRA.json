@@ -852,10 +852,21 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 13.3,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão no Cálculo de Férias e 13º Salário",
+        "kpi_critico_score": 66.7,
+        "kpis_detalhados": {
+            "Precisão no Cálculo de Férias e 13º Salário": {
+                "percentual_alcance": 66.66,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "Embora o documento fornecido seja apropriado e os dados estejam de acordo com o relato, a presença de uma divergência corrigida antes do pagamento sugere uma Falha inicial no processo. Isto impacta negativamente na completude, pois o objetivo era a conformidade total sem erros iniciais. A tempestividade está correta, pois as ações corretivas ocorreram antes do pagamento. No entanto, a falha inicial impede que o objetivo de 100% de conformidade sem correções seja considerado atingido.",
+                "gap_de_conformidade": [
+                    "Conformidade inicial total sem necessidade de correções"
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 17:01:56"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -863,5 +874,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 16:59:43"
+    "ultima_atualizacao": "10/05/2026 17:01:56"
 }
