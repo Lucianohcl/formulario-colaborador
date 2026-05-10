@@ -1,0 +1,66 @@
+[
+  {
+    "Atividade": "GERENCIAMENTO_DE_EQUIPES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Coordenação e supervisão das atividades da equipe de departamento pessoal, garantindo que as metas diárias sejam cumpridas. KPI: 100% das demandas atendidas no prazo."
+  },
+  {
+    "Atividade": "ANÁLISE_DE_DESEMPENHO",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Realizar análise de desempenho dos colaboradores e equipe, gerando relatórios semanais para reuniões de feedback. KPI: 85% de satisfação nas avaliações de desempenho."
+  },
+  {
+    "Atividade": "RELATÓRIOS_DE_COMPLIANCE",
+    "Freq": "SEMANAL",
+    "Tempo Base": "70m",
+    "Impacto Diário Convertido": "14.0m",
+    "Eficiência vs 480m": "2.9%",
+    "Meta Auditável": "Elaborar relatórios de conformidade e cumprimento das normativas trabalhistas, com revisões mensais. KPI: 100% de conformidade em auditorias."
+  },
+  {
+    "Atividade": "PLANO_DE_DESENVOLVIMENTO",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Desenvolver e atualizar planos de desenvolvimento individual para os colaboradores, com reunião mensal de feedback. KPI: 90% de participação nos planos."
+  },
+  {
+    "Atividade": "AUDITORIA_DE_PROCESSOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Realizar auditorias mensais dos processos de departamento pessoal, identificando melhorias e não conformidades. KPI: 98% de identificação de não conformidades devem ser resolvidas."
+  },
+  {
+    "Atividade": "ANÁLISE_DE_CUSTOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Avaliar e propor soluções para a redução de custos operacionais no departamento pessoal. KPI: redução de 10% nos custos anuais."
+  },
+  {
+    "Atividade": "TREINAMENTO_E_DESENVOLVIMENTO",
+    "Freq": "MENSAL",
+    "Tempo Base": "40m",
+    "Impacto Diário Convertido": "1.8m",
+    "Eficiência vs 480m": "0.4%",
+    "Meta Auditável": "Organizar e coordenar treinamentos para o time de departamentos, buscando inovação e atualização de processos. KPI: 80% de aprovação nos treinamentos."
+  },
+  {
+    "Atividade": "REVISÃO_DE_POLÍTICAS",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Revisar e atualizar políticas internas do departamento pessoal para adequação à legislação vigente. KPI: 100% de atualização em conformidade com a legislação."
+  }
+]
