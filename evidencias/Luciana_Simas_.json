@@ -1,6 +1,6 @@
 [
   {
     "kpi": "Precisão dos Cálculos de Tributos",
-    "evidencias": "1. Guia de Recolhimento do FGTS e Informações à Previdência Social (GFIP)  \n   Periodicidade: Mensal |  \n   Como obter: Portal Conectividade Social → GFIP → competência → Download PDF  \n2. Extrato de Transmissões eSocial  \n   Periodicidade: Mensal |  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  "
+    "evidencias": "1. Guias de Recolhimento INSS/FGTS com conferência\nPeriodicidade: Mensal\nComo obter: Portal eSocial → Consulta de Eventos → competência → Export PDF\n\n2. Recibo de Transmissão DCTFWeb\nPeriodicidade: Mensal\nComo obter: Portal e-CAC → DCTFWeb → competência → Download PDF\n\n3. Relatório de Conferência de Cálculos Tributários\nPeriodicidade: Mensal\nComo obter: Sistema ERP → Folha de Pagamento → Relatório de Tributos → competência → Export PDF\n\n4. Comprovante de Correção de Divergências (quando houver)\nPeriodicidade: Por ocorrência\nComo obter: Registrar no sistema interno com print da correção realizada antes do fechamento + assinatura do responsável"
   }
 ]
