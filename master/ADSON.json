@@ -877,10 +877,51 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 44.7,
+        "kpis_auditados_total": 4,
+        "kpi_critico": "Eficiência da Auditoria Interna",
+        "kpi_critico_score": 52.5,
+        "kpis_detalhados": {
+            "Conformidade Legislativa": {
+                "percentual_alcance": 56.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "A documentação fornecida tem boa aderência ao escopo solicitado, contudo, há lacunas que enfraquecem seu valor comprovativo. A aderência é destacável, pois os documentos são relevantes e relacionados ao KPI discutido. Entretanto, a integridade é questionável, pois os dados apresentados no PDF não comprovam de forma robusta a execução completa conforme o relato, especialmente em relação ao cruzamento de dados da Malha Fiscal Trabalhista. A tempestividade é atendida, pois os documentos fornecidos correspondem ao período de apuração esperado. Já a completude sofre devido à ausência de indicadores mensais de conformidade e provas adicionais que confirmem o cumprimento integral dos prazos e a inexistência de passivos ocultos, o que seria necessário para atestar o cumprimento total do objetivo.",
+                "gap_de_conformidade": [
+                    "Indicadores mensais de conformidade",
+                    "Prova de inexistência de passivos ocultos",
+                    "Evidência de cruzamento de dados completo entre os proventos da folha e eSocial"
+                ]
+            },
+            "Eficiência da Auditoria Interna": {
+                "percentual_alcance": 52.5,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "A documentação apresenta algumas evidências de auditorias internas e não conformidades, porém não comprova uma redução de 15% nos erros conforme o objetivo esperado. A análise de dados e relatórios fornecidos indicam o uso correto de sistemas de monitoramento de conformidade, mas não fornecem a totalidade de provas requeridas para o objetivo proposto.",
+                "gap_de_conformidade": [
+                    "Falta de evidência concreta que demonstre a redução de 15% nos erros de folha de pagamento.",
+                    "Ausência de relatórios comparativos que validem a melhoria na acurácia dos lançamentos e aderência aos procedimentos normativos internos ao longo do tempo."
+                ]
+            },
+            "Eficiência na Auditoria de Processos": {
+                "percentual_alcance": 60.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O documento fornecido é parcialmente aderente à tarefa, já que foram verificadas discussões relacionadas à redução de erros na folha de pagamento e as deliberações para melhorias, porém, falta evidenciar diretamente a redução de 15% dos erros. Os dados fornecidos nos anexos não confirmam explicitamente uma redução mensal de 15%, faltando uma análise quantitativa contínua e comparativa. As datas dos documentos são adequadas, porém, não há comprovação suficiente de que foi alcançado o objetivo integral estabelecido de redução de 15% dos erros através das auditorias contínuas.",
+                "gap_de_conformidade": [
+                    "Faltam dados comprobatórios que demonstrem a redução de 15% nos erros da folha de pagamento.",
+                    "Relatórios semanais consistentes com análise de melhoria contínua nos processos não foram apresentados.",
+                    "Falta de prova de aderência definitiva aos procedimentos normativos internos para cada ciclo de auditoria."
+                ]
+            },
+            "Precisão na Folha de Pagamento": {
+                "percentual_alcance": 55.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "As evidências fornecidas cobrem um aspecto significativo da auditoria de precisão na folha de pagamento, mas existem lacunas em áreas essenciais. Aderência é adequada, pois os documentos apresentados correspondem ao solicitado. Quanto à integridade, os documentos ilustram parcialmente a melhoria na precisão, mas não conseguem confirmar completamente a eficácia reportada pelo funcionário. Em termos de tempestividade, as datas são atuais e relevantes. No entanto, a completude das provas sofre devido à ausência de algumas evidências obrigatórias, como relatórios semanais de conformidade que comprovem a redução consistente das não conformidades.",
+                "gap_de_conformidade": [
+                    "Relatórios semanais de conformidade para evidenciar redução consistente das não conformidades.",
+                    "Evidências adicionais que comprovem a acurácia dos lançamentos e aderência aos procedimentos normativos internos."
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 15:13:15"
     },
     "evidencias_kpi": {
         "documentos_por_kpi": {
@@ -907,5 +948,5 @@
         "texto": "# LAUDO PERICIAL INDIVIDUAL\n\n## 1. IDENTIDADE OPERACIONAL\n- **Nome:** ADSON\n- **Cargo:** GESTOR DE DP\n- **Perfil DISC Dominante:** I\n- **Status de Carga Horária:** Sobrecarga (42.47 horas/dia)\n\n## 2. DIAGNÓSTICO DE ROI AUDITADO\n- **ROI Auditado:** R$ 0.00\n- **Horas Recuperáveis:** 0.0\n- **Ganho em Dias:** 0\n\nA metodologia de auditoria pericial aplicada considera as sugestões do colaborador, classificadas em três categorias com diferentes ponderações:\n- **Transformação Digital (automação, IA, sistemas, integração)** — 85% do potencial\n- **Otimização de Processo (padronização, POP, checklist, treinamento)** — 45% do potencial\n- **Melhoria Incremental (demais melhorias operacionais)** — 20% do potencial\n\nBase de cálculo: Custo Total de Ocupação de R$ 35,00/hora. A fórmula utilizada é: \n\\[ \\text{Horas declaradas} \\times \\text{Frequência anual} \\times \\text{Fator de ponderação} \\times R\\$ 35,00 \\]\n\nO ROI auditado é menor que o bruto devido à aplicação de rigor técnico.\n\n### Sugestões Reais do Colaborador\n- **Sugestão:** NENHUMA MELHORIA\n  - **Categoria:** Dados não disponíveis\n\n## 3. ANÁLISE COMPORTAMENTAL\n- **Perfil DISC:** I\n- **Aderência ao Cargo:** Aderência Moderada (55%)\n- **Pontos Fortes:** Habilidade de comunicação, capacidade de liderança.\n- **Riscos:** Sobrecarga de trabalho, risco de burnout.\n\n## 4. AUDITORIA DE PROCESSOS E NEXO CAUSAL\n### Nexo Causal\n- **Score:** 0\n- **Horas por Dia:** 42.47\n- **Status:** Sobrecarga\n- **Desvio:** 42.47 - 8 = 34.47 horas. O impacto é significativo, indicando uma carga excessiva que pode levar a problemas de saúde e eficiência.\n\n### Aderência ao POP\n- **Percentual de Aderência ao Cargo:** 9.1%\n- **Total POP Mínimo:** 262.6\n- **Total Real Mínimo:** 2871.8\n- **Risco Operacional:** ALTO\n\n### Confronto Pericial\n#### Status ❌ AUSENTE\n- **Atividade:** REVISÃO E VALIDAÇÃO DE FOLHA DE PAGAMENTO\n  - **Impacto POP:** 70.0m\n  - **Impacto Real:** 0.0m\n  - **Divergência:** -70.0m\n\n- **Atividade:** PLANEJAMENTO ESTRATÉGICO DO DP\n  - **Impacto POP:** 2.3m\n  - **Impacto Real:** 0.0m\n  - **Divergência:** -2.3m\n\n- **Atividade:** GERENCIAMENTO DE RISCOS TRABALHISTAS E PREVIDENCIÁRIOS\n  - **Impacto POP:** 2.3m\n  - **Impacto Real:** 0.0m\n  - **Divergência:** -2.3m\n\n- **Atividade:** PLANEJAMENTO DE TRANSMISSÕES AO eSOCIAL\n  - **Impacto POP:** 6.0m\n  - **Impacto Real:** 0.0m\n  - **Divergência:** -6.0m\n\n#### Status ⚠️ FORA DO PADRÃO\n- **Atividade:** ELABORAR E VALIDAR RESPOSTAS TÉCNICAS\n  - **Impacto POP:** 0.0m\n  - **Impacto Real:** 60.0m\n  - **Divergência:** +60.0m\n\n- **Atividade:** DIAGNOSTICAR E CORRIGIR ERROS CRÍTICOS\n  - **Impacto POP:** 0.0m\n  - **Impacto Real:** 60.0m\n  - **Divergência:** +60.0m\n\n- **Atividade:** AUDITAR E VALIDAR INFORMAÇÕES\n  - **Impacto POP:** 0.0m\n  - **Impacto Real:** 60.0m\n  - **Divergência:** +60.0m\n\n- **Atividade:** SUPERVISIONAR O CORRETO PREENCHIMENTO\n  - **Impacto POP:** 0.0m\n  - **Impacto Real:** 60.0m\n  - **Divergência:** +60.0m\n\n## VEREDITO 360°\n- **PARAR:** Atividades operacionais que podem ser delegadas.\n- **DELEGAR:** Tarefas operacionais para membros da equipe, permitindo foco em atividades estratégicas.\n- **FOCAR:** Iniciativas de melhoria contínua e consultivas, aproveitando a formação acadêmica do colaborador.\n\n## 5. PRODUTIVIDADE E KPIs\n- **KPIs Auditados:** Dados não disponíveis.\n- **KPI Crítico:** Aguardando auditoria de KPIs.\n- **Eficiência Real:** 0%\n- **Gap de Conformidade:** Dados não disponíveis.\n- **Documentos por KPI:** Dados não disponíveis.\n\n## 6. VEREDITO PERICIAL\n- **PARAR:** Atividades operacionais que não agregam valor estratégico.\n- **DELEGAR:** Para membros da equipe com perfil DISC adequado.\n- **FOCAR:** Em atividades que maximizem o impacto financeiro e estratégico.\n\n## 7. PLANO DE AÇÃO ESTRATÉGICO\n### Ação 1: NENHUMA MELHORIA\n- **Categoria:** Dados não disponíveis\n- **Impacto Financeiro:** R$ 0.00\n- **Horas Recuperáveis:** 0.0\n- **Cronograma:**\n  - Semana 1-2: Dados não disponíveis\n  - Semana 3-4: Dados não disponíveis\n  - Mês 2: Dados não disponíveis\n  - Mês 3: Dados não disponíveis\n- **Responsável:** Dados não disponíveis\n- **Como medir:** Dados não disponíveis\n- **ROI acumulado ao final:** R$ 0.00",
         "gerado_em": "10/05/2026 14:50:41"
     },
-    "ultima_atualizacao": "10/05/2026 15:11:22"
+    "ultima_atualizacao": "10/05/2026 15:13:15"
 }
