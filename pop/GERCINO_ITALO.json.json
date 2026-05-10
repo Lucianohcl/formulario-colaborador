@@ -1,0 +1,58 @@
+[
+  {
+    "Atividade": "ANÁLISE DE DEMANDAS DIÁRIAS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Avaliar e priorizar as demandas de clientes e internos, com documentação das 5 principais prioridades do dia."
+  },
+  {
+    "Atividade": "ELABORAÇÃO DE RELATÓRIOS DE DESSEMPENHO",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Compilar e analisar dados financeiros, gerando relatórios semanais de desempenho com KPI's definidos. Taxa de erro abaixo de 2%."
+  },
+  {
+    "Atividade": "TRATATIVA COM CLIENTES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "45m",
+    "Impacto Diário Convertido": "45.0m",
+    "Eficiência vs 480m": "9.4%",
+    "Meta Auditável": "Realizar 10 contatos com clientes para tratamento de dúvidas e solicitações, medindo satisfação do cliente em 90% nas interações."
+  },
+  {
+    "Atividade": "AUDITORIA INTERNA DE DOCUMENTOS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "6.0m",
+    "Eficiência vs 480m": "1.2%",
+    "Meta Auditável": "Revisar 100% dos documentos financeiros para garantir conformidade e identificar riscos, apresentando relatório com achados."
+  },
+  {
+    "Atividade": "PLANEJAMENTO ESTRATÉGICO",
+    "Freq": "MENSAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "5.5m",
+    "Eficiência vs 480m": "1.1%",
+    "Meta Auditável": "Desenvolver um plano estratégico mensal com base em análise de desempenho, e apresentar para a gerência, monitorando 3 KPI's principais."
+  },
+  {
+    "Atividade": "ATUALIZAÇÃO EM NORMAS CONTÁBEIS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "15m",
+    "Impacto Diário Convertido": "15.0m",
+    "Eficiência vs 480m": "3.1%",
+    "Meta Auditável": "Estar sempre atualizado sobre as novas normas contábeis, documentando pelo menos 1 atualização relevante para a equipe semanalmente."
+  },
+  {
+    "Atividade": "TREINAMENTO DE PROCEDIMENTOS INTERNOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Realizar sessões de treinamento para a equipe sobre procedimentos contábeis e compliance, visando 100% de participação."
+  }
+]
