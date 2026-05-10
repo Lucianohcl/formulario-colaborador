@@ -321,7 +321,24 @@
         "cargo_auditado": "Analista Contábil Sênior",
         "gerado_em": "10/05/2026 19:22:23"
     },
-    "kpis_auditados": {},
+    "kpis_auditados": {
+        "Conformidade dos Balanços": {
+            "percentual_alcance": 84,
+            "status_pericial": "PARCIAL",
+            "analise_critica": "O relatório apresentado confirma em grande parte o relato do funcionário. Todos os balanços foram fechados e aprovados dentro do trimestre, com exceção de um único atraso justificado. A comunicação ao gestor sobre o atraso foi adequadamente documentada e o feedback dos clientes foi positivo. Porém, houve uma discrepância no cumprimento da meta de entrega dentro do prazo, já que 88,9% dos balanços foram entregues no prazo frente à meta de 100%. Isso indica uma ligeira falha na conformidade plena. No entanto, a justificativa formal e a documentação respaldam o atraso, demonstrando uma boa gestão de riscos e comunicação.",
+            "gap_de_conformidade": [
+                "Entrega de 100% dos balanços dentro do prazo sem atrasos justificados."
+            ],
+            "ponderacao": {
+                "aderencia": 25,
+                "integridade": 25,
+                "tempestividade": 25,
+                "completude": 20
+            },
+            "relato_auditor": "Fechar e entregar os balanços contábeis do trimestre auditado, com 97% de conformidade no prazo estabelecido. Um balanço entregue com 2 dias de atraso devido a inconsistências nos dados recebidos do cliente, com registro formal de justificativa e aprovação do gestor. Nenhuma rejeição ou solicitação de retrabalho por parte dos clientes no período.",
+            "auditado_em": "10/05/2026 19:29:42"
+        }
+    },
     "produtividade": {
         "eficiencia_real_pct": 0,
         "kpis_auditados_total": 0,
@@ -334,5 +351,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:22:23"
+    "ultima_atualizacao": "10/05/2026 19:29:42"
 }
