@@ -3,10 +3,10 @@
     "criado_em": "10/05/2026 15:51:02",
     "evidencias_kpi": {
         "documentos_por_kpi": {
-            "Precisão dos Cálculos de Tributos": "1. Guias de Recolhimento de FGTS e Informações à Previdência Social (GFIP)  \n   Periodicidade: Mensal  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  \n2. Recibo DCTFWeb  \n   Periodicidade: Trimestral  \n   Como obter: Portal e-CAC → DCTFWeb → competência → Download PDF  "
+            "Precisão dos Cálculos de Tributos": "1. Guia de Recolhimento do FGTS e Informações à Previdência Social (GFIP)  \n   Periodicidade: Mensal |  \n   Como obter: Portal Conectividade Social → GFIP → competência → Download PDF  \n2. Extrato de Transmissões eSocial  \n   Periodicidade: Mensal |  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  "
         },
         "total_kpis": 1,
-        "gerado_em": "10/05/2026 15:51:02"
+        "gerado_em": "10/05/2026 16:02:05"
     },
-    "ultima_atualizacao": "10/05/2026 15:51:02"
+    "ultima_atualizacao": "10/05/2026 16:02:06"
 }
