@@ -413,7 +413,24 @@
         "cargo_auditado": "Auxiliar Contábil",
         "gerado_em": "10/05/2026 17:23:01"
     },
-    "kpis_auditados": {},
+    "kpis_auditados": {
+        "Eficiência na Análise de Demandas": {
+            "percentual_alcance": 75,
+            "status_pericial": "PARCIAL",
+            "analise_critica": "O documento apresentado atende parcialmente aos requisitos para avaliação do KPI de Eficiência na Análise de Demandas. Embora o funcionário tenha demonstrado consistência no registro e priorização das demandas, refletido em uma aderência adequada e integridade das informações, a completude das evidências apresentadas deixa a desejar. Há presença de uma ocorrência de registro parcial, o que, mesmo com justificativa e correção subsequente, impede que o objetivo de 100% de dias com 5 prioridades plenamente documentadas seja atingido.",
+            "gap_de_conformidade": [
+                "Ausência de 100% de dias com 5 prioridades documentadas"
+            ],
+            "ponderacao": {
+                "aderencia": 25,
+                "integridade": 25,
+                "tempestividade": 25,
+                "completude": 15
+            },
+            "relato_auditor": "Avaliar, classificar e documentar as demandas contábeis recebidas de clientes e da equipe interna no período de fevereiro a abril de 2026, garantindo que as 5 principais prioridades diárias estejam registradas no sistema de gestão com status atualizado, prazo definido e responsável identificado, sem pendências não tratadas ao final do dia\n\n",
+            "auditado_em": "10/05/2026 17:32:41"
+        }
+    },
     "produtividade": {
         "eficiencia_real_pct": 0,
         "kpis_auditados_total": 0,
@@ -426,5 +443,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 17:23:01"
+    "ultima_atualizacao": "10/05/2026 17:32:42"
 }
