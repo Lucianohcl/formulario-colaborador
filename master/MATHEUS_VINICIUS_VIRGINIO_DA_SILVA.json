@@ -325,7 +325,38 @@
         "cargo_auditado": "Analista Fiscal",
         "gerado_em": "10/05/2026 18:31:17"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "Após análise dos dados fornecidos, há uma clara correspondência entre o objetivo do cargo de Analista Fiscal e as tarefas descritas, particularmente na execução de atividades de apuração e emissão relacionadas a tributos como ICMS, PIS COFINS e outros. No entanto, observa-se que apesar de uma formação acadêmica e cursos complementares robustos, o colaborador dedica parte significativa do tempo a tarefas operacionais como emissão de notas fiscais, cuja complexidade pode não justificar o nível de qualificação. Em relação ao perfil DISC, predominam os perfis A (âncora e confiável), B (analítico e metódico), e D (determinado e ativo), indicando um bom equilíbrio entre análise detalhada e execução decisiva. Este perfil contribui positivamente para o desempenho em tarefas complexas e de grande responsabilidade. A cronanálise dos dados mostra que as atividades descritas não superam 480 minutos por dia, mas o acúmulo de tarefas mensais pode indicar uma carga elevada, com potencial risco de burnout mascarado, especialmente considerando a dificuldade reportada de atraso na documentação por parte dos clientes. A incorporação de um estagiário pode mitigar este risco, trazendo agilidade. Priorizar a otimização dos processos burocráticos repetitivos pode melhorar a eficiência geral.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Emissão de notas fiscais",
+                "Freq": "D",
+                "Tempo": "15 min",
+                "Meta": "Reduzir tempo"
+            },
+            {
+                "Atividade": "Apuração ICMS",
+                "Freq": "M",
+                "Tempo": "300 min",
+                "Meta": "Otimizar processo"
+            },
+            {
+                "Atividade": "Sped ICMS",
+                "Freq": "M",
+                "Tempo": "30 min",
+                "Meta": "Automatizar"
+            },
+            {
+                "Atividade": "Envio da documentação",
+                "Freq": "M",
+                "Tempo": "30 min",
+                "Meta": "Melhorar Cronograma"
+            }
+        ],
+        "veredito_final": "PARAR tarefas que exigem baixa qualificação, DELEGAR processos rotineiros a um estagiário para aliviar carga e aumentar a eficiência, e FOCO IMEDIATO na automatização de processos fiscais e no cumprimento dos prazos de documentação para evitar sobrecargas futuras.",
+        "cargo_auditado": "Analista Fiscal",
+        "gerado_em": "10/05/2026 18:31:24"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -345,5 +376,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 18:31:18"
+    "ultima_atualizacao": "10/05/2026 18:31:24"
 }
