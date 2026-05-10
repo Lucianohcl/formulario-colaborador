@@ -1,6 +1,6 @@
 [
   {
     "kpi": "Eficiência na Análise de Demandas",
-    "evidencias": "1. Registro de Demandas do Sistema de Gestão  \n   Periodicidade: Diária  \n   Como obter: Sistema de Gestão → Menu de Demandas → Exportar PDF  \n2. Relatório de Prioridades Diárias  \n   Periodicidade: Diária  \n   Como obter: Sistema de Gestão → Menu de Relatórios → Exportar PDF  "
+    "evidencias": "1. Relatório Diário de Demandas e Prioridades\nPeriodicidade: Diária\nComo obter: Sistema de gestão (Asana) → Tarefas do dia → Export PDF ou print das 5 prioridades registradas\n\n2. Log de Atendimento de Demandas Contábeis\nPeriodicidade: Semanal\nComo obter: Asana → Relatório de tarefas concluídas → colaborador → período → Export PDF\n\n3. Registro de Reprogramações e Justificativas\nPeriodicidade: Por ocorrência\nComo obter: Asana → tarefa reprogramada → histórico de alterações → print + justificativa registrada pelo colaborador\n\n4. Confirmação do Gestor sobre Prioridades do Dia\nPeriodicidade: Diária\nComo obter: E-mail ou mensagem no sistema interno com validação do gestor sobre as prioridades definidas"
   }
 ]
