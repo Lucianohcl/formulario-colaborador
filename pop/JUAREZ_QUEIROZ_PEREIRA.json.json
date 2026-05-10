@@ -1,0 +1,90 @@
+[
+  {
+    "Atividade": "Gestão_de_Admissões_e_Demissões",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Completar todos os processos de admissão e demissão em conformidade com as legislações trabalhistas, com um índice de erro máximo de 2% nas auditorias mensais."
+  },
+  {
+    "Atividade": "Controle_de_Ponto",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Realizar o controle diário de ponto com uma precisão de 98%, garantindo a correta contabilização de horas trabalhadas e ausências."
+  },
+  {
+    "Atividade": "Processamento_da_Folha_de_Pagamento",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Elaborar, revisar e validar a folha de pagamento mensal com 100% de conformidade legal, observando os prazos estabelecidos."
+  },
+  {
+    "Atividade": "Cálculo_de_Férias_e_13º_Salário",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Garantir que todos os cálculos de férias e 13º salário sejam realizados com 100% de precisão mensal, evitando quaisquer reincidências de erro."
+  },
+  {
+    "Atividade": "Gestão_de_Benefícios",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Assegurar a correta gestão dos benefícios fornecidos, com relatórios mensais que apresentem a eficiência na utilização e satisfação dos colaboradores."
+  },
+  {
+    "Atividade": "Envio_de_Obrigações_Legais",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Realizar o envio de todas as obrigações legais, como eSocial, com 100% de conformidade e dentro dos prazos, validando relatórios trimestrais."
+  },
+  {
+    "Atividade": "Revisão_de_Processos_Legais",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Revisar processos legais e garantir que todas as mudanças na legislação trabalhista sejam implementadas adequadamente, monitorando a conformidade a cada mudança."
+  },
+  {
+    "Atividade": "Auditoria_de_Conformidade",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Realizar auditorias semanais para verificar a conformidade das atividades do departamento pessoal, com um índice de conformidade de 95% ou mais."
+  },
+  {
+    "Atividade": "Relatórios_de_Gestão",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Gerar relatórios gerenciais detalhados sobre a performance do DP e ações corretivas, com reuniões mensais para apresentação dos mesmos."
+  },
+  {
+    "Atividade": "Treinamento_e_Desenvolvimento",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Realizar sessões de treinamento para atualizações sobre legislação trabalhista e compliance, com feedback positivo de 90% dos participantes."
+  },
+  {
+    "Atividade": "Planejamento_Estratégico",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Definir e revisar estratégias do Departamento Pessoal, com indicadores de sucesso que demonstrem a melhoria dos processos em pelo menos 15% ao ano."
+  }
+]
