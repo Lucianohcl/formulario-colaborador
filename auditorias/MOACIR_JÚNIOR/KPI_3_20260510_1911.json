@@ -1,0 +1,15 @@
+{
+    "percentual_alcance": 98.75,
+    "status_pericial": "CONFORME",
+    "analise_critica": "A evidência demonstra claramente que as auditorias previstas foram realizadas conforme descrito. Todos os registros foram auditados semanalmente, e as inconsistências encontradas foram corrigidas antes do fechamento mensal, sem impacto operacional. A taxa de precisão foi superior à meta estabelecida, e há comunicação formal para cada inconsistência encontrada. O relatório cobre todo o período de fevereiro a abril de 2026, conforme solicitado.",
+    "gap_de_conformidade": [],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 24
+    },
+    "kpi_nome": "Precisão nos Registros de Dados",
+    "colaborador": "MOACIR JÚNIOR",
+    "relato_do_auditor": "Auditar e validar semanalmente os registros de dados do departamento pessoal no trimestre de fevereiro a abril de 2026, comparando informações cadastrais, eventos de folha e dados admissionais com as fontes de referência oficiais, identificando e corrigindo inconsistências antes do fechamento mensal, com taxa de precisão de 98,5% nas auditorias realizadas.\n\n"
+}
