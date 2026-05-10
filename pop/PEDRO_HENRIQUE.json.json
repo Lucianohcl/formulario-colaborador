@@ -1,0 +1,58 @@
+[
+  {
+    "Atividade": "ANÁLISE DE IMPOSTOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "120.0m",
+    "Eficiência vs 480m": "25.0%",
+    "Meta Auditável": "Realizar análise detalhada dos relatórios de impostos para identificar discrepâncias e garantir conformidade, com uma taxa de acerto mínima de 95%."
+  },
+  {
+    "Atividade": "APURAÇÃO E CONCILIAÇÃO FISCAL",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Realizar apuração e conciliação fiscal das contas relevantes, assegurando que todos os dados estejam alinhados e auditados semanalmente."
+  },
+  {
+    "Atividade": "ATENDIMENTO A CLIENTES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Oferecer suporte e esclarecer dúvidas dos clientes sobre a gestão de impostos, visando uma taxa de satisfação do cliente de 90% ou mais."
+  },
+  {
+    "Atividade": "PLANEJAMENTO TRIBUTÁRIO",
+    "Freq": "SEMANAL",
+    "Tempo Base": "80m",
+    "Impacto Diário Convertido": "16.0m",
+    "Eficiência vs 480m": "3.3%",
+    "Meta Auditável": "Desenvolver e implementar estratégias de planejamento tributário que resultem em uma redução de custo tributário mínima de 10%."
+  },
+  {
+    "Atividade": "ELABORAÇÃO DE RELATÓRIOS FISCAIS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "70m",
+    "Impacto Diário Convertido": "14.0m",
+    "Eficiência vs 480m": "2.9%",
+    "Meta Auditável": "Elaborar relatórios fiscais mensais claros e precisos, garantindo que todos os prazos sejam cumpridos e que as informações estejam completas para auditorias."
+  },
+  {
+    "Atividade": "REVISÃO E ATUALIZAÇÃO DE NORMAS FISCAIS",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Revisar e atualizar as normas e políticas fiscais da empresa de acordo com as mudanças na legislação tributária, mantendo 100% de conformidade."
+  },
+  {
+    "Atividade": "TREINAMENTO E CAPACITAÇÃO DE EQUIPE",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Realizar sessões de treinamento para a equipe sobre novas legislações e práticas fiscais, visando capacitar 100% da equipe anualmente."
+  }
+]
