@@ -363,7 +363,7 @@
         "total_real_min": 88.7,
         "risco_operacional": "BAIXO",
         "cargo_auditado": "ANALISTA DE DEPARTAMENTO PESSOAL",
-        "gerado_em": "10/05/2026 16:14:46"
+        "gerado_em": "10/05/2026 16:16:53"
     },
     "parecer_360": {
         "parecer_executivo": "Ao analisar os dados fornecidos sobre o colaborador Lucas Gabriel da Silva Santana, observamos algumas inconsistências e pontos de atenção que merecem destaque. Em relação ao nexo causal, como algumas informações, como 'objetivo' e 'cursos', estão corrompidas, é desafiador verificar completamente se o objetivo do cargo está totalmente alinhado com as tarefas realizadas. No entanto, as atividades principais registradas, como admissão, rescisão e fechamento de folha, são típicas do departamento pessoal e parecem estar em consonância com a função de Analista de Departamento Pessoal. No quesito capacidade versus entrega, a ausência de dados concretos sobre cursos dificulta a avaliação de eventual desperdício de formação em tarefas operacionais, mas o tempo dedicado a atividades mais operacionais, como atendimento e e-mails, sugere um potencial desvio de foco que poderia ser melhor gerido com base em qualificações reais. O perfil DISC apresenta predominância nas letras 'A', 'C', e 'D', indicando um perfil possivelmente analítico e detalhista, mas também voltado para execução, o que pode colaborar com a entrega de atividades detalhadas e repetitivas, porém pode indicar resistência a cenários de alta pressão ou multitarefa, impactando o performance diante da carga de trabalho prolongada. A cronoanálise evidencia que o tempo total alocado em atividades excede 480 min/dia, indicando um potencial risco de 'Burnout Mascarado', principalmente se considerarmos tempos adicionais de trabalho, como imprevistos e reuniões não refletidas nos dados. É imperativo aqui um balanceamento das tarefas para assegurar a saúde do colaborador e maximizar produtividade. Em resposta, sugere-se reduzir a carga operacional e redistribuir tarefas de menor valor estratégico.",
@@ -404,5 +404,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 16:14:54"
+    "ultima_atualizacao": "10/05/2026 16:16:53"
 }
