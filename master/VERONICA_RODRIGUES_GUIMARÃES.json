@@ -340,10 +340,21 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 16.8,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Conformidade dos Balanços",
+        "kpi_critico_score": 84.0,
+        "kpis_detalhados": {
+            "Conformidade dos Balanços": {
+                "percentual_alcance": 84.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O relatório apresentado confirma em grande parte o relato do funcionário. Todos os balanços foram fechados e aprovados dentro do trimestre, com exceção de um único atraso justificado. A comunicação ao gestor sobre o atraso foi adequadamente documentada e o feedback dos clientes foi positivo. Porém, houve uma discrepância no cumprimento da meta de entrega dentro do prazo, já que 88,9% dos balanços foram entregues no prazo frente à meta de 100%. Isso indica uma ligeira falha na conformidade plena. No entanto, a justificativa formal e a documentação respaldam o atraso, demonstrando uma boa gestão de riscos e comunicação.",
+                "gap_de_conformidade": [
+                    "Entrega de 100% dos balanços dentro do prazo sem atrasos justificados."
+                ]
+            }
+        },
+        "consolidado_em": "10/05/2026 19:31:56"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -351,5 +362,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:29:42"
+    "ultima_atualizacao": "10/05/2026 19:31:56"
 }
