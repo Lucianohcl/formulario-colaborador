@@ -793,7 +793,7 @@
         "total_real_min": 2871.8,
         "risco_operacional": "ALTO",
         "cargo_auditado": "GESTOR DE DP",
-        "gerado_em": "10/05/2026 14:40:39"
+        "gerado_em": "10/05/2026 14:47:19"
     },
     "parecer_360": {
         "parecer_executivo": "Após análise detalhada dos dados fornecidos, constata-se que o objetivo do cargo de Gestor de Departamento Pessoal é amplamente compatível com as atividades descritas nas tabelas de alta, normal e baixa prioridade. O gestor é responsável por assegurar o pleno funcionamento das rotinas de Departamento Pessoal, gerenciando desde a execução de folhas de pagamento até a gestão de equipe e atendimento consultivo a clientes. No entanto, observa-se desvio operacional na alocação de tempo em atividades rotineiras e operacionais que poderiam ser delegadas, considerando a formação avançada do colaborador, com múltiplas pós-graduações e especializações. O perfil DISC revela uma grande prevalência dos traços 'A' e 'B', o que sugere um colaborador analítico e com habilidade de comunicação, ideal para funções de liderança e planejamento estratégico. Contudo, a carga horária total das atividades diárias soma 900 minutos, muito acima dos 480 minutos considerados adequados para evitar overwork e burnout, especialmente em um cargo de gestão. O risco de Burnout Mascarado é elevado e precisa ser mitigado com ações corretivas.",
@@ -871,5 +871,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 14:40:40"
+    "ultima_atualizacao": "10/05/2026 14:47:19"
 }
