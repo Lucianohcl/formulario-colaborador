@@ -137,7 +137,194 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "ANÁLISE TRIBUTÁRIA DE NOTAS FISCAIS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Realizar análise de tributação correta em 100% das notas fiscais emitidas, garantindo a conformidade e identificação de oportunidades de redução fiscal."
+            },
+            {
+                "Atividade": "APURAÇÃO DE ICMS E DEMAIS TRIBUTOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Finalizar a apuração mensal de ICMS, PIS, COFINS, IRPJ e CSLL dentro do prazo estabelecido, assegurando 100% da conformidade e eliminação de erros."
+            },
+            {
+                "Atividade": "SUPORTE TRIBUTÁRIO A CLIENTES",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Fornecer suporte a 100% das demandas tributárias dos clientes, auditando as soluções apresentadas e aumentando a satisfação do cliente em 20%."
+            },
+            {
+                "Atividade": "EMISSÃO DE NOTAS FISCAIS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "30.0m",
+                "Eficiência vs 480m": "6.2%",
+                "Meta Auditável": "Emitir 100% das notas fiscais de maneira correta e dentro do prazo, garantindo a precisão dos dados e evitando retrabalhos."
+            },
+            {
+                "Atividade": "ENVIO DE DECLARAÇÕES ACESSÓRIAS",
+                "Freq": "SEMANAL",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "24.0m",
+                "Eficiência vs 480m": "5.0%",
+                "Meta Auditável": "Preparar e enviar 100% das declarações acessórias (Sped ICMS, Sped Contribuições, DMS, DCTFWEB, REINF, MIT) dentro dos prazos legais, reduzindo erros em 10%."
+            },
+            {
+                "Atividade": "VERIFICAÇÃO DE IMPOSTOS RETIDOS",
+                "Freq": "SEMANAL",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "24.0m",
+                "Eficiência vs 480m": "5.0%",
+                "Meta Auditável": "Realizar a verificação de impostos retidos em notas de serviço com 100% de precisão, garantindo a conformidade e a correta apuração de ISS retido e normal."
+            },
+            {
+                "Atividade": "REVISÃO E AUDITORIA DE PROCESSOS FISCAIS",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Realizar auditoria interna nos processos tributários, recomendando melhorias e assegurando a conformidade em 100% dos casos, visando eficiência e transparência."
+            },
+            {
+                "Atividade": "ESTUDO E ACOMPANHAMENTO DE REFORMA TRIBUTÁRIA",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Analisar as mudanças da reforma tributária e propor ajustes estratégicos em 100% das práticas fiscais, garantindo que as operações da empresa estejam sempre conformes."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "ANÁLISE TRIBUTÁRIA DE NOTAS FISCAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "APURAÇÃO DE ICMS E DEMAIS TRIBUTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "59.5m",
+                "Divergência": "-0.5m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "SUPORTE TRIBUTÁRIO A CLIENTES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "EMISSÃO DE NOTAS FISCAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "30.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "-15.0m",
+                "Status": "✅ IDENTIFICADO"
+            },
+            {
+                "Atividade": "ENVIO DE DECLARAÇÕES ACESSÓRIAS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "24.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-24.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "VERIFICAÇÃO DE IMPOSTOS RETIDOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "24.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-24.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REVISÃO E AUDITORIA DE PROCESSOS FISCAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ESTUDO E ACOMPANHAMENTO DE REFORMA TRIBUTÁRIA",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANALISE DE RETENÇÕES FEDERAIS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.5m",
+                "Divergência": "+5.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SPED ICMS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "1.4m",
+                "Divergência": "+1.4m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SPED PIS COFINS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "1.4m",
+                "Divergência": "+1.4m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "MIT",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.7m",
+                "Divergência": "+0.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DCTFWEB",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.2m",
+                "Divergência": "+0.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DMS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.2m",
+                "Divergência": "+0.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 348.7,
+        "total_pop_min": 292.1,
+        "total_real_min": 83.8,
+        "risco_operacional": "BAIXO",
+        "cargo_auditado": "Analista Fiscal",
+        "gerado_em": "10/05/2026 18:30:05"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -158,5 +345,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "10/05/2026 18:30:05"
 }
