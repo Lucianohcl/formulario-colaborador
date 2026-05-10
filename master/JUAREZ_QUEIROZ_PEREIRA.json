@@ -385,7 +385,410 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "Gestão_de_Admissões_e_Demissões",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Completar todos os processos de admissão e demissão em conformidade com as legislações trabalhistas, com um índice de erro máximo de 2% nas auditorias mensais."
+            },
+            {
+                "Atividade": "Controle_de_Ponto",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Realizar o controle diário de ponto com uma precisão de 98%, garantindo a correta contabilização de horas trabalhadas e ausências."
+            },
+            {
+                "Atividade": "Processamento_da_Folha_de_Pagamento",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Elaborar, revisar e validar a folha de pagamento mensal com 100% de conformidade legal, observando os prazos estabelecidos."
+            },
+            {
+                "Atividade": "Cálculo_de_Férias_e_13º_Salário",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "30.0m",
+                "Eficiência vs 480m": "6.2%",
+                "Meta Auditável": "Garantir que todos os cálculos de férias e 13º salário sejam realizados com 100% de precisão mensal, evitando quaisquer reincidências de erro."
+            },
+            {
+                "Atividade": "Gestão_de_Benefícios",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "30.0m",
+                "Eficiência vs 480m": "6.2%",
+                "Meta Auditável": "Assegurar a correta gestão dos benefícios fornecidos, com relatórios mensais que apresentem a eficiência na utilização e satisfação dos colaboradores."
+            },
+            {
+                "Atividade": "Envio_de_Obrigações_Legais",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "30.0m",
+                "Eficiência vs 480m": "6.2%",
+                "Meta Auditável": "Realizar o envio de todas as obrigações legais, como eSocial, com 100% de conformidade e dentro dos prazos, validando relatórios trimestrais."
+            },
+            {
+                "Atividade": "Revisão_de_Processos_Legais",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Revisar processos legais e garantir que todas as mudanças na legislação trabalhista sejam implementadas adequadamente, monitorando a conformidade a cada mudança."
+            },
+            {
+                "Atividade": "Auditoria_de_Conformidade",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Realizar auditorias semanais para verificar a conformidade das atividades do departamento pessoal, com um índice de conformidade de 95% ou mais."
+            },
+            {
+                "Atividade": "Relatórios_de_Gestão",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Gerar relatórios gerenciais detalhados sobre a performance do DP e ações corretivas, com reuniões mensais para apresentação dos mesmos."
+            },
+            {
+                "Atividade": "Treinamento_e_Desenvolvimento",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Realizar sessões de treinamento para atualizações sobre legislação trabalhista e compliance, com feedback positivo de 90% dos participantes."
+            },
+            {
+                "Atividade": "Planejamento_Estratégico",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Definir e revisar estratégias do Departamento Pessoal, com indicadores de sucesso que demonstrem a melhoria dos processos em pelo menos 15% ao ano."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "GESTÃO_DE_ADMISSÕES_E_DEMISSÕES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "CONTROLE_DE_PONTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PROCESSAMENTO_DA_FOLHA_DE_PAGAMENTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "CÁLCULO_DE_FÉRIAS_E_13º_SALÁRIO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "30.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-30.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "GESTÃO_DE_BENEFÍCIOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "30.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-30.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ENVIO_DE_OBRIGAÇÕES_LEGAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "30.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-30.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REVISÃO_DE_PROCESSOS_LEGAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA_DE_CONFORMIDADE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "RELATÓRIOS_DE_GESTÃO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_E_DESENVOLVIMENTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PLANEJAMENTO_ESTRATÉGICO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "FECHAMENTO DA FOLHA DE PAGAMENTO (CÁLCULO DE SALÁRIOS, ENCARGOS, BENEFÍCIOS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "35.0m",
+                "Divergência": "+35.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APURAÇÃO E CONFERÊNCIA DE ENCARGOS TRABALHISTAS (INSS, FGTS, IRRF) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "35.0m",
+                "Divergência": "+35.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ENVIO DE OBRIGAÇÕES ACESSÓRIAS (ESOCIAL, DCTFWEB, SEFIP) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONTROLE E GESTÃO DE ADMISSÕES E DEMISSÕES (RESCISÕES, HOMOLOGAÇÕES) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "INTERPRETAÇÃO E APLICAÇÃO DA LEGISLAÇÃO TRABALHISTA E CONVENÇÕES COLETIVAS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "25.0m",
+                "Divergência": "+25.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATENDIMENTO INTERNAS E EXTERNAS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ANÁLISE DE INCONSISTÊNCIAS NA FOLHA E CORREÇÃO DE DIVERGÊNCIAS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "GESTÃO DE BENEFÍCIOS (VALE-TRANSPORTE, VALE-ALIMENTAÇÃO, PLANO DE SAÚDE) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": " LANÇAMENTO DE INFORMAÇÕES PARA FOLHA DE PAGAMENTO (HORAS EXTRAS, FALTAS, ADICIONAIS) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "25.0m",
+                "Divergência": "+25.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONTROLE DE PONTO ELETRÔNICO E TRATAMENTO DE INCONSISTÊNCIAS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ADMINISTRAÇÃO DE FÉRIAS (PROGRAMAÇÃO, CÁLCULO E CONTROLE)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CADASTRO E ATUALIZAÇÃO DE DADOS DE COLABORADORES NO SISTEMA",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONTROLE DE AFASTAMENTOS (INSS, ATESTADOS MÉDICOS, LICENÇAS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATENDIMENTO A COLABORADORES PARA ESCLARECIMENTO DE DÚVIDAS TRABALHISTAS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ORGANIZAÇÃO E CONFERÊNCIA DE DOCUMENTAÇÃO ADMISSIONAL E DEMISSIONAL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APOIO NO PROCESSO DE ADMISSÃO E INTEGRAÇÃO DE NOVOS COLABORADORES ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "40.0m",
+                "Divergência": "+40.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMISSÃO DE RELATÓRIOS OPERACIONAIS (FOLHA, PONTO, BENEFÍCIOS)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONTROLE DE BENEFÍCIOS (INCLUSÃO, EXCLUSÃO E AJUSTES) ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ARQUIVAMENTO E ORGANIZAÇÃO DE DOCUMENTOS FÍSICOS E DIGITAIS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DIGITALIZAÇÃO DE DOCUMENTOS DE COLABORADORES ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATUALIZAÇÃO SIMPLES DE PLANILHAS DE CONTROLE ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONFERÊNCIA BÁSICA DE DOCUMENTOS (CHECKLIST ADMISSIONAL/DEMISSIONAL)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "20.0m",
+                "Divergência": "+20.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMISSÃO DE DOCUMENTOS PADRONIZADOS (DECLARAÇÕES, COMPROVANTES)",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "25.0m",
+                "Divergência": "+25.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APOIO NO ENVIO DE COMUNICADOS INTERNOS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SEPARAÇÃO DE DOCUMENTOS PARA PROCESSOS INTERNOS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATUALIZAÇÃO DE CADASTROS SIMPLES NO SISTEMA",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "15.0m",
+                "Divergência": "+15.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONTROLE DE RECEBIMENTO DE DOCUMENTOS PENDENTES",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 55.9,
+        "total_pop_min": 310.1,
+        "total_real_min": 555,
+        "risco_operacional": "ALTO",
+        "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
+        "gerado_em": "10/05/2026 16:51:53"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -400,5 +803,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "10/05/2026 16:51:53"
 }
