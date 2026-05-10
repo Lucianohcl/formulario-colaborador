@@ -789,7 +789,50 @@
         "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
         "gerado_em": "10/05/2026 16:52:49"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise das tarefas executadas por Juarez Queiroz Pereira como Analista de Departamento Pessoal revela um alinhamento geral entre o objetivo do cargo e as tarefas relatadas, sendo as principais atividades diretamente relacionadas à gestão administrativa e legal dos colaboradores, conforme definido pelo objetivo. No entanto, a focalização em tarefas altamente operacionais, como arquivamento e atualização de planilhas, sugere um desperdício de formação e competências, considerando a extensa lista de cursos técnicos e avançados. A presença de um perfil DISC predominantemente 'A' (ou seja, orientado para a Ação) combinado com 'C' (Consciência) e 'D' (Dominância) sugere um colaborador que é mais eficaz em ambientes dinâmicos e que possivelmente se sente subutilizado em tarefas repetitivas e de baixa complexidade. As atividades diárias totalizam 405 minutos, dentro do limite de um dia de trabalho regular de 480 minutos. No entanto, as dificuldades relatadas, como dependência de informações de outros setores e frequente necessidade de atualização devido a alterações legais, podem aumentar a carga de trabalho percebida, justificando a necessidade de intervenções. A ausência de atividades focadas em análises estratégicas destaca um desequilíbrio entre capacidades e a rotina atual. Sugere-se uma reavaliação para evitar o risco de Burnout mascarado devido a uma potencial sobrecarga cognitiva.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Fechamento da folha de pagamento",
+                "Freq": "D",
+                "Tempo": "35 min",
+                "Meta": "100% precisão, no prazo"
+            },
+            {
+                "Atividade": "Apuração de encargos trabalhistas",
+                "Freq": "D",
+                "Tempo": "35 min",
+                "Meta": "Compliance 100%"
+            },
+            {
+                "Atividade": "Envio de obrigações acessórias",
+                "Freq": "D",
+                "Tempo": "20 min",
+                "Meta": "98% envio no prazo"
+            },
+            {
+                "Atividade": "Gestão de admissões e demissões",
+                "Freq": "D",
+                "Tempo": "20 min",
+                "Meta": "100% cumprimento legal"
+            },
+            {
+                "Atividade": "Interpretação da legislação trabalhista",
+                "Freq": "D",
+                "Tempo": "25 min",
+                "Meta": "Atualização 98%"
+            },
+            {
+                "Atividade": "Controle de ponto eletrônico",
+                "Freq": "D",
+                "Tempo": "15 min",
+                "Meta": "95% consistência"
+            }
+        ],
+        "veredito_final": "A organização deve focar em parar atividades de baixa complexidade e operacionais, que desperdiçam as competências avançadas do colaborador, tais como arquivamento e digitalização de documentos, que podem ser delegadas ou automatizadas. É crucial estabelecer um foco imediato na automação de processos e na melhoria da comunicação interdepartamental para reduzir a dependência de informações externas. Juarez deve ser direcionado para atividades que reforcem seu perfil de ação e consciência estratégica, o que poderia ser um melhor aproveitamento de suas competências e energia em análises complexas e estratégicas.",
+        "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
+        "gerado_em": "10/05/2026 16:52:55"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -803,5 +846,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 16:52:49"
+    "ultima_atualizacao": "10/05/2026 16:52:55"
 }
