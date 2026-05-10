@@ -6706,11 +6706,17 @@ def salvar_master(nome_colaborador, novos_dados):
         atual.update(novos_dados)
         atual["ultima_atualizacao"] = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         conteudo = json.dumps(atual, indent=4, ensure_ascii=False)
+
         try:
             f = _repo.get_contents(caminho)
             _repo.update_file(f.path, f"master update: {nome_colaborador}", conteudo, f.sha)
-        except:
-            _repo.create_file(caminho, f"master novo: {nome_colaborador}", conteudo)
+        except Exception as _ex:
+            if "422" in str(_ex) or "sha" in str(_ex).lower():
+                f = _repo.get_contents(caminho)
+                _repo.update_file(f.path, f"master update: {nome_colaborador}", conteudo, f.sha)
+            else:
+                _repo.create_file(caminho, f"master novo: {nome_colaborador}", conteudo)
+        
         return True
     except Exception as e:
         st.toast(f"⚠️ Master não salvo: {e}", icon="⚠️")
