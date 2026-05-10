@@ -298,10 +298,19 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 19.8,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão nos Registros de Dados",
+        "kpi_critico_score": 98.8,
+        "kpis_detalhados": {
+            "Precisão nos Registros de Dados": {
+                "percentual_alcance": 98.75,
+                "status_pericial": "CONFORME",
+                "analise_critica": "A evidência demonstra claramente que as auditorias previstas foram realizadas conforme descrito. Todos os registros foram auditados semanalmente, e as inconsistências encontradas foram corrigidas antes do fechamento mensal, sem impacto operacional. A taxa de precisão foi superior à meta estabelecida, e há comunicação formal para cada inconsistência encontrada. O relatório cobre todo o período de fevereiro a abril de 2026, conforme solicitado.",
+                "gap_de_conformidade": []
+            }
+        },
+        "consolidado_em": "10/05/2026 19:14:46"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -309,5 +318,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 19:11:49"
+    "ultima_atualizacao": "10/05/2026 19:14:46"
 }
