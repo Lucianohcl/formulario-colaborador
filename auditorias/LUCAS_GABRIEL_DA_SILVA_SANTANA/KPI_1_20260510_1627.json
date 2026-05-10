@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 74.2,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento enviado é pertinente, pois trata especificamente do cumprimento de prazos de demandas, conforme o KPI analisado. Os dados confirmam a maioria do relatado pelo funcionário, com percentual de cumprimento próximo ao descrito e justificativas de atrasos razoavelmente documentadas. As datas dos documentos são adequadas e atuais. No entanto, o objetivo de alcançar 100% das demandas atendidas no prazo não foi alcançado, e as justificativas apresentadas não isentam completamente a responsabilidade do desempenho do KPI.",
+    "gap_de_conformidade": [
+        "Garantia de 100% das demandas atendidas no prazo",
+        "Justificativas mais detalhadas e validadas para cada atraso",
+        "Melhores práticas para mitigação de atrasos em períodos de volume atípico"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 23,
+        "tempestividade": 25,
+        "completude": 20
+    },
+    "kpi_nome": "Cumprimento de Prazos de Demandas",
+    "colaborador": "LUCAS GABRIEL DA SILVA SANTANA",
+    "relato_do_auditor": "Monitorar e registrar o atendimento das demandas de departamento pessoal no trimestre auditado, com cumprimento de prazos em 94% dos casos. As 6% de ocorrências fora do prazo foram decorrentes de volume atípico de demandas simultâneas no período de fechamento mensal, com registro de justificativa e ciência do gestor."
+}
