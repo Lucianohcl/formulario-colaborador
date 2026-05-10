@@ -365,7 +365,32 @@
         "cargo_auditado": "ANALISTA DE DEPARTAMENTO PESSOAL",
         "gerado_em": "10/05/2026 16:14:46"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "Ao analisar os dados fornecidos sobre o colaborador Lucas Gabriel da Silva Santana, observamos algumas inconsistências e pontos de atenção que merecem destaque. Em relação ao nexo causal, como algumas informações, como 'objetivo' e 'cursos', estão corrompidas, é desafiador verificar completamente se o objetivo do cargo está totalmente alinhado com as tarefas realizadas. No entanto, as atividades principais registradas, como admissão, rescisão e fechamento de folha, são típicas do departamento pessoal e parecem estar em consonância com a função de Analista de Departamento Pessoal. No quesito capacidade versus entrega, a ausência de dados concretos sobre cursos dificulta a avaliação de eventual desperdício de formação em tarefas operacionais, mas o tempo dedicado a atividades mais operacionais, como atendimento e e-mails, sugere um potencial desvio de foco que poderia ser melhor gerido com base em qualificações reais. O perfil DISC apresenta predominância nas letras 'A', 'C', e 'D', indicando um perfil possivelmente analítico e detalhista, mas também voltado para execução, o que pode colaborar com a entrega de atividades detalhadas e repetitivas, porém pode indicar resistência a cenários de alta pressão ou multitarefa, impactando o performance diante da carga de trabalho prolongada. A cronoanálise evidencia que o tempo total alocado em atividades excede 480 min/dia, indicando um potencial risco de 'Burnout Mascarado', principalmente se considerarmos tempos adicionais de trabalho, como imprevistos e reuniões não refletidas nos dados. É imperativo aqui um balanceamento das tarefas para assegurar a saúde do colaborador e maximizar produtividade. Em resposta, sugere-se reduzir a carga operacional e redistribuir tarefas de menor valor estratégico.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Admissão",
+                "Freq": "S",
+                "Tempo": "20 min",
+                "Meta": "15 min"
+            },
+            {
+                "Atividade": "Rescisão",
+                "Freq": "Q",
+                "Tempo": "40 min",
+                "Meta": "30 min"
+            },
+            {
+                "Atividade": "Fechamento de Folha Mensal",
+                "Freq": "M",
+                "Tempo": "60 min",
+                "Meta": "45 min"
+            }
+        ],
+        "veredito_final": "Para otimizar a eficiência e reduzir riscos de burnout, deve-se PARAR a alocação excessiva de tempo em comunicações de baixo valor agregado (e-mails e atendimentos frequentes), DELEGAR atividades administrativas básicas tais como emissões de documentos e organização de planilhas a assistentes ou recursos de automação, e FOCAR IMEDIATAMENTE na adoção de sistemas automatizados para otimizar processos de folha de pagamento e melhorar a identificação de menções em sistemas de comunicação interna para evitar sobrecarga informacional. A reavaliação das exigências de formação e o ajuste do treinamento podem auxiliar Lucas Gabriel a concentrar seus esforços em atividades mais estratégicas de impacto para a JV Contabilidade.",
+        "cargo_auditado": "ANALISTA DE DEPARTAMENTO PESSOAL",
+        "gerado_em": "10/05/2026 16:14:54"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -379,5 +404,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 16:14:46"
+    "ultima_atualizacao": "10/05/2026 16:14:54"
 }
