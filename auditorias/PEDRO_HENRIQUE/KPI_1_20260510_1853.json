@@ -1,0 +1,17 @@
+{
+    "percentual_alcance": 92.5,
+    "status_pericial": "CONFORME",
+    "analise_critica": "O documento apresentado confirma quase todas as declarações do funcionário e atende aos requisitos estabelecidos para o KPI. A amostra de relatórios e o detalhamento da divergência suportam a taxa de acerto relatada. Todas as correções foram feitas antes do envio ao cliente, e a comunicação foi registrada. A única falha é a falta de detalhamento sobre os 3% que não alcançaram a meta inicial de 95% antes das correções.",
+    "gap_de_conformidade": [
+        "Falta de detalhamento sobre como foi alcançada a taxa de 97% antes das correções."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 22.5,
+        "tempestividade": 25,
+        "completude": 20
+    },
+    "kpi_nome": "Precisão na Análise de Impostos",
+    "colaborador": "PEDRO HENRIQUE",
+    "relato_do_auditor": "Analisar e conferir os relatórios de impostos dos clientes no período de fevereiro a abril de 2026, identificando discrepâncias entre valores apurados e valores declarados, verificando alíquotas aplicadas e bases de cálculo de IRPJ, CSLL, PIS e COFINS, com taxa de acerto de 97% nas análises realizadas e correção imediata das 3% de ocorrências com divergência identificada, registradas formalmente no sistema interno."
+}
