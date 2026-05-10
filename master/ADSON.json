@@ -795,7 +795,50 @@
         "cargo_auditado": "GESTOR DE DP",
         "gerado_em": "10/05/2026 14:40:33"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "Após análise detalhada dos dados fornecidos, constata-se que o objetivo do cargo de Gestor de Departamento Pessoal é amplamente compatível com as atividades descritas nas tabelas de alta, normal e baixa prioridade. O gestor é responsável por assegurar o pleno funcionamento das rotinas de Departamento Pessoal, gerenciando desde a execução de folhas de pagamento até a gestão de equipe e atendimento consultivo a clientes. No entanto, observa-se desvio operacional na alocação de tempo em atividades rotineiras e operacionais que poderiam ser delegadas, considerando a formação avançada do colaborador, com múltiplas pós-graduações e especializações. O perfil DISC revela uma grande prevalência dos traços 'A' e 'B', o que sugere um colaborador analítico e com habilidade de comunicação, ideal para funções de liderança e planejamento estratégico. Contudo, a carga horária total das atividades diárias soma 900 minutos, muito acima dos 480 minutos considerados adequados para evitar overwork e burnout, especialmente em um cargo de gestão. O risco de Burnout Mascarado é elevado e precisa ser mitigado com ações corretivas.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Gerenciar e conferir de forma avançada as obrigações acessórias",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Conformidade eSocial"
+            },
+            {
+                "Atividade": "Conduzir o processo de onboarding de novos clientes",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Precisão de dados"
+            },
+            {
+                "Atividade": "Realizar auditoria completa de folhas de pagamento",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Zero inconsistências"
+            },
+            {
+                "Atividade": "Auditar e validar sistemas de controle",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Integridade de dados"
+            },
+            {
+                "Atividade": "Criar, implementar e acompanhar indicadores de performance",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Melhoria contínua"
+            },
+            {
+                "Atividade": "Diagnosticar e corrigir erros trabalhistas críticos",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "Conformidade legal"
+            }
+        ],
+        "veredito_final": "Recomenda-se de imediato a reavaliação das atividades do colaborador Adson, com foco na delegação das tarefas operacionais e de baixa prioridade a subordinados, permitindo que ele concentre esforços em iniciativas estratégicas e consultivas, viabilizando o máximo aproveitamento de sua formação acadêmica e habilidades gerenciais. É crucial implementar um plano de gestão de capacidade que desfaça o volume excessivo de trabalho reportado, minimizando o risco de impacto negativo na saúde do colaborador e na eficiência operacional da equipe.",
+        "cargo_auditado": "GESTOR DE DP",
+        "gerado_em": "10/05/2026 14:40:35"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -828,5 +871,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 14:40:33"
+    "ultima_atualizacao": "10/05/2026 14:40:35"
 }
