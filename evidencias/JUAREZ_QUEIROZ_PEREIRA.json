@@ -1,6 +1,6 @@
 [
   {
     "kpi": "Precisão no Cálculo de Férias e 13º Salário",
-    "evidencias": "1. Espelho de Folha ERP  \n   Periodicidade: Mensal  \n   Como obter: ERP → [Folha de Pagamento] → competência → Export  \n\n2. Portal eSocial → Consulta de Eventos → competência → Export PDF  \n   Periodicidade: Mensal  \n   Como obter: Portal eSocial → Consulta de Eventos → competência → Export PDF  "
+    "evidencias": "1. Relatório de Conferência de Férias e 13º Salário Periodicidade: Mensal Como obter: ERP → Módulo Férias/13º → competência → Relatório de Cálculos → Export PDF\n\n2. Espelho de Cálculo com Base Legal Aplicada Periodicidade: Por evento Como obter: Sistema de Folha → colaborador → Cálculo de Férias ou 13º → Export PDF com memória de cálculo\n\n3. Comprovante de Médias de Variáveis (Horas Extras, DSR, Comissões) Periodicidade: Mensal Como obter: ERP → Módulo Folha → Relatório de Médias → período dos últimos 12 meses → Export PDF\n\n4. Comprovante de Correção de Divergências (quando houver) Periodicidade: Por ocorrência Como obter: Registrar no sistema interno com print do recálculo realizado antes do pagamento + data e assinatura do responsável pela correção\n\n"
   }
 ]
