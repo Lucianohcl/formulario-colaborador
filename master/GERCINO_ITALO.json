@@ -387,7 +387,32 @@
         "cargo_auditado": "Auxiliar Contábil",
         "gerado_em": "10/05/2026 17:22:54"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise detalhada dos dados indica um nível de desalinhamento entre os objetivos do cargo de Auxiliar Contábil e as tarefas realizadas. Embora o objetivo inicial do cargo mencione 'análise' e 'tratativa com clientes', as tarefas de alta prioridade são principalmente operacionais e urgentes, envolvendo a atualização e análise de balancetes com escopo limitado ao operacional. Este desalinhamento pode sinalizar um uso ineficiente das habilidades e formação acadêmica do colaborador, especialmente considerando seu curso de 'Ciências Contábeis'. O volume de trabalho diário, calculado como sendo superior a 480 minutos quando consideradas todas as atividades com frequência diária ou semanal, implica em um risco elevado de Burnout Mascarado. Nesta análise também foi considerada a base DISC, que mostra uma dominância do perfil 'D' (Dominância), possivelmente levando o colaborador a assumir desafios e tarefas sob pressão. Este perfil pode ser vantajoso para lidar com situações críticas e urgentes mas, em excesso, pode levar ao desgaste. Assim, uma redistribuição estratégica das tarefas poderia proporcionar um melhor aproveitamento da capacidade intelectual do colaborador, além da saúde ocupacional.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Balancetes urgentes",
+                "Freq": "S",
+                "Tempo": "1440 min",
+                "Meta": "Reduzir urgência"
+            },
+            {
+                "Atividade": "Relatórios urgentes",
+                "Freq": "T/S",
+                "Tempo": "180 min",
+                "Meta": "Automatização"
+            },
+            {
+                "Atividade": "Análise de documentos físicos",
+                "Freq": "D",
+                "Tempo": "360 min",
+                "Meta": "Digitalização"
+            }
+        ],
+        "veredito_final": "PARAR: Execução de tarefas operacionais que não agregam ao desenvolvimento acadêmico e profissional. DELEGAR: Tarefas rotineiras de atualização de documentos físicos e cobranças de documentos devem ser reassociadas a sistemas automatizados ou equipe especializada. FOCO IMEDIATO: Implementação de soluções digitais para documentos e integração contábil; Realizar cursos voltados a inovação contábil e fiscal; Monitoramento redobrado do bem-estar do colaborador para prevenção de burnout.",
+        "cargo_auditado": "Auxiliar Contábil",
+        "gerado_em": "10/05/2026 17:23:01"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -401,5 +426,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 17:22:54"
+    "ultima_atualizacao": "10/05/2026 17:23:01"
 }
