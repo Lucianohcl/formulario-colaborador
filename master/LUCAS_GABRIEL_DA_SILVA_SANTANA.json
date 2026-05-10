@@ -137,7 +137,234 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "GERENCIAMENTO_DE_EQUIPES",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Coordenação e supervisão das atividades da equipe de departamento pessoal, garantindo que as metas diárias sejam cumpridas. KPI: 100% das demandas atendidas no prazo."
+            },
+            {
+                "Atividade": "ANÁLISE_DE_DESEMPENHO",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Realizar análise de desempenho dos colaboradores e equipe, gerando relatórios semanais para reuniões de feedback. KPI: 85% de satisfação nas avaliações de desempenho."
+            },
+            {
+                "Atividade": "RELATÓRIOS_DE_COMPLIANCE",
+                "Freq": "SEMANAL",
+                "Tempo Base": "70m",
+                "Impacto Diário Convertido": "14.0m",
+                "Eficiência vs 480m": "2.9%",
+                "Meta Auditável": "Elaborar relatórios de conformidade e cumprimento das normativas trabalhistas, com revisões mensais. KPI: 100% de conformidade em auditorias."
+            },
+            {
+                "Atividade": "PLANO_DE_DESENVOLVIMENTO",
+                "Freq": "SEMANAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "6.0m",
+                "Eficiência vs 480m": "1.2%",
+                "Meta Auditável": "Desenvolver e atualizar planos de desenvolvimento individual para os colaboradores, com reunião mensal de feedback. KPI: 90% de participação nos planos."
+            },
+            {
+                "Atividade": "AUDITORIA_DE_PROCESSOS",
+                "Freq": "MENSAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "2.7m",
+                "Eficiência vs 480m": "0.6%",
+                "Meta Auditável": "Realizar auditorias mensais dos processos de departamento pessoal, identificando melhorias e não conformidades. KPI: 98% de identificação de não conformidades devem ser resolvidas."
+            },
+            {
+                "Atividade": "ANÁLISE_DE_CUSTOS",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Avaliar e propor soluções para a redução de custos operacionais no departamento pessoal. KPI: redução de 10% nos custos anuais."
+            },
+            {
+                "Atividade": "TREINAMENTO_E_DESENVOLVIMENTO",
+                "Freq": "MENSAL",
+                "Tempo Base": "40m",
+                "Impacto Diário Convertido": "1.8m",
+                "Eficiência vs 480m": "0.4%",
+                "Meta Auditável": "Organizar e coordenar treinamentos para o time de departamentos, buscando inovação e atualização de processos. KPI: 80% de aprovação nos treinamentos."
+            },
+            {
+                "Atividade": "REVISÃO_DE_POLÍTICAS",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Revisar e atualizar políticas internas do departamento pessoal para adequação à legislação vigente. KPI: 100% de atualização em conformidade com a legislação."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "GERENCIAMENTO_DE_EQUIPES",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_DESEMPENHO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "RELATÓRIOS_DE_COMPLIANCE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "14.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-14.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PLANO_DE_DESENVOLVIMENTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "6.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-6.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA_DE_PROCESSOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "2.7m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-2.7m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ANÁLISE_DE_CUSTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_E_DESENVOLVIMENTO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.8m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.8m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "REVISÃO_DE_POLÍTICAS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": " ADMISSÃO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "4.0m",
+                "Divergência": "+4.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "RESCISÃO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "1.8m",
+                "Divergência": "+1.8m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA MENSAL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.7m",
+                "Divergência": "+2.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FÉRIAS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.9m",
+                "Divergência": "+0.9m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA QUINZENAL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.9m",
+                "Divergência": "+0.9m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATENDIMENTO AO CLIENTE ONECODE",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "60.0m",
+                "Divergência": "+60.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "E-MAIL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "10.0m",
+                "Divergência": "+10.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATENDIMENTO TELEFONICO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.0m",
+                "Divergência": "+5.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMISSÃO DE DOCUMENTAÇÃO DE ADMISSAO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.9m",
+                "Divergência": "+0.9m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "LANÇAMENTO DE ATESTADO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.0m",
+                "Divergência": "+2.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMISSAO DE PLANILHA PELO BI",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.5m",
+                "Divergência": "+0.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 199.8,
+        "total_pop_min": 177.3,
+        "total_real_min": 88.7,
+        "risco_operacional": "BAIXO",
+        "cargo_auditado": "ANALISTA DE DEPARTAMENTO PESSOAL",
+        "gerado_em": "10/05/2026 16:13:17"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -152,5 +379,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "10/05/2026 16:13:18"
 }
