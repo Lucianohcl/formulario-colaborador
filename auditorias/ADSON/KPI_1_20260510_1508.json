@@ -1,0 +1,19 @@
+{
+    "percentual_alcance": 56,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "A documentação fornecida tem boa aderência ao escopo solicitado, contudo, há lacunas que enfraquecem seu valor comprovativo. A aderência é destacável, pois os documentos são relevantes e relacionados ao KPI discutido. Entretanto, a integridade é questionável, pois os dados apresentados no PDF não comprovam de forma robusta a execução completa conforme o relato, especialmente em relação ao cruzamento de dados da Malha Fiscal Trabalhista. A tempestividade é atendida, pois os documentos fornecidos correspondem ao período de apuração esperado. Já a completude sofre devido à ausência de indicadores mensais de conformidade e provas adicionais que confirmem o cumprimento integral dos prazos e a inexistência de passivos ocultos, o que seria necessário para atestar o cumprimento total do objetivo.",
+    "gap_de_conformidade": [
+        "Indicadores mensais de conformidade",
+        "Prova de inexistência de passivos ocultos",
+        "Evidência de cruzamento de dados completo entre os proventos da folha e eSocial"
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 20,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Conformidade Legislativa",
+    "colaborador": "ADSON",
+    "relato_do_auditor": "Realizar auditoria preventiva de compliance sobre o ciclo operacional do [Mês/Ano]. O processo envolve a conferência da Malha Fiscal Trabalhista, cruzando os dados de proventos da Folha com as transmissões do eSocial. Validar o enquadramento de 100%, por exemplo, de rubricas como a ausência de inconsistências em eventos de afastamento (S-2230) e desligamento (S-2299). Obrigações acessórias como (e social, DTCFweb) tem que serem conciliadas com o financeiro, confirmando o cumprimento integral dos prazos legais e a inexistência de passivos ocultos no período."
+}
