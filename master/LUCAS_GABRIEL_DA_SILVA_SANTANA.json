@@ -391,7 +391,26 @@
         "cargo_auditado": "ANALISTA DE DEPARTAMENTO PESSOAL",
         "gerado_em": "10/05/2026 16:14:54"
     },
-    "kpis_auditados": {},
+    "kpis_auditados": {
+        "Cumprimento de Prazos de Demandas": {
+            "percentual_alcance": 74.2,
+            "status_pericial": "PARCIAL",
+            "analise_critica": "O documento enviado é pertinente, pois trata especificamente do cumprimento de prazos de demandas, conforme o KPI analisado. Os dados confirmam a maioria do relatado pelo funcionário, com percentual de cumprimento próximo ao descrito e justificativas de atrasos razoavelmente documentadas. As datas dos documentos são adequadas e atuais. No entanto, o objetivo de alcançar 100% das demandas atendidas no prazo não foi alcançado, e as justificativas apresentadas não isentam completamente a responsabilidade do desempenho do KPI.",
+            "gap_de_conformidade": [
+                "Garantia de 100% das demandas atendidas no prazo",
+                "Justificativas mais detalhadas e validadas para cada atraso",
+                "Melhores práticas para mitigação de atrasos em períodos de volume atípico"
+            ],
+            "ponderacao": {
+                "aderencia": 25,
+                "integridade": 23,
+                "tempestividade": 25,
+                "completude": 20
+            },
+            "relato_auditor": "Monitorar e registrar o atendimento das demandas de departamento pessoal no trimestre auditado, com cumprimento de prazos em 94% dos casos. As 6% de ocorrências fora do prazo foram decorrentes de volume atípico de demandas simultâneas no período de fechamento mensal, com registro de justificativa e ciência do gestor.",
+            "auditado_em": "10/05/2026 16:27:14"
+        }
+    },
     "produtividade": {
         "eficiencia_real_pct": 0,
         "kpis_auditados_total": 0,
@@ -404,5 +423,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 16:17:33"
+    "ultima_atualizacao": "10/05/2026 16:27:14"
 }
