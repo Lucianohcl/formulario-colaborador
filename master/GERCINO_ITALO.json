@@ -448,11 +448,17 @@
         },
         "consolidado_em": "10/05/2026 17:36:08"
     },
-    "evidencias_kpi": {},
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Eficiência na Análise de Demandas": "1. Registro de Demandas do Sistema de Gestão  \n   Periodicidade: Diária  \n   Como obter: Sistema de Gestão → Menu de Demandas → Exportar PDF  \n2. Relatório de Prioridades Diárias  \n   Periodicidade: Diária  \n   Como obter: Sistema de Gestão → Menu de Relatórios → Exportar PDF  "
+        },
+        "total_kpis": 1,
+        "gerado_em": "10/05/2026 17:39:25"
+    },
     "comparativo_cargo": {},
     "laudo_central": {
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "10/05/2026 17:36:08"
+    "ultima_atualizacao": "10/05/2026 17:39:25"
 }
