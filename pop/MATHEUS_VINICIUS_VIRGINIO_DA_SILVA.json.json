@@ -1,0 +1,66 @@
+[
+  {
+    "Atividade": "ANÁLISE TRIBUTÁRIA DE NOTAS FISCAIS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Realizar análise de tributação correta em 100% das notas fiscais emitidas, garantindo a conformidade e identificação de oportunidades de redução fiscal."
+  },
+  {
+    "Atividade": "APURAÇÃO DE ICMS E DEMAIS TRIBUTOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Finalizar a apuração mensal de ICMS, PIS, COFINS, IRPJ e CSLL dentro do prazo estabelecido, assegurando 100% da conformidade e eliminação de erros."
+  },
+  {
+    "Atividade": "SUPORTE TRIBUTÁRIO A CLIENTES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Fornecer suporte a 100% das demandas tributárias dos clientes, auditando as soluções apresentadas e aumentando a satisfação do cliente em 20%."
+  },
+  {
+    "Atividade": "EMISSÃO DE NOTAS FISCAIS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Emitir 100% das notas fiscais de maneira correta e dentro do prazo, garantindo a precisão dos dados e evitando retrabalhos."
+  },
+  {
+    "Atividade": "ENVIO DE DECLARAÇÕES ACESSÓRIAS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "24.0m",
+    "Eficiência vs 480m": "5.0%",
+    "Meta Auditável": "Preparar e enviar 100% das declarações acessórias (Sped ICMS, Sped Contribuições, DMS, DCTFWEB, REINF, MIT) dentro dos prazos legais, reduzindo erros em 10%."
+  },
+  {
+    "Atividade": "VERIFICAÇÃO DE IMPOSTOS RETIDOS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "24.0m",
+    "Eficiência vs 480m": "5.0%",
+    "Meta Auditável": "Realizar a verificação de impostos retidos em notas de serviço com 100% de precisão, garantindo a conformidade e a correta apuração de ISS retido e normal."
+  },
+  {
+    "Atividade": "REVISÃO E AUDITORIA DE PROCESSOS FISCAIS",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Realizar auditoria interna nos processos tributários, recomendando melhorias e assegurando a conformidade em 100% dos casos, visando eficiência e transparência."
+  },
+  {
+    "Atividade": "ESTUDO E ACOMPANHAMENTO DE REFORMA TRIBUTÁRIA",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Analisar as mudanças da reforma tributária e propor ajustes estratégicos em 100% das práticas fiscais, garantindo que as operações da empresa estejam sempre conformes."
+  }
+]
