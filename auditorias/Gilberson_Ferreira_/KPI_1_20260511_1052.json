@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 87.5,
+    "status_pericial": "CONFORME",
+    "analise_critica": "O relatório mostra detalhes completos das apurações fiscais realizadas, incluindo correções necessárias antes da entrega. Todos os impostos previstos foram revisados e a única divergência foi corrigida em tempo hábil. As referências legais estão claramente documentadas. No entanto, a clareza na descrição das próprias reconciliações fiscais poderia ser melhorada, embora isso não comprometa significativamente a evidência apresentada.",
+    "gap_de_conformidade": [
+        "Descrição mais detalhada das reconciliações fiscais para enriquecer a qualidade da prova.",
+        "Inclusão de notas explicativas sobre o processo de revisão com maior detalhe."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 12.5
+    },
+    "kpi_nome": "Precisão na Apuração de Impostos",
+    "colaborador": "Gilberson Ferreira ",
+    "relato_do_auditor": "Revisar e conferir os relatórios de apuração de impostos estaduais, municipais e federais dos clientes no trimestre de fevereiro a abril de 2026, validando ICMS, ISS, PIS, COFINS, IRPJ e CSLL conforme enquadramento tributário de cada cliente, com taxa de conformidade de 100% nas apurações realizadas no período."
+}
