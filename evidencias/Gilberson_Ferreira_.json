@@ -1,6 +1,6 @@
 [
   {
     "kpi": "Precisão na Apuração de Impostos",
-    "evidencias": "1. Extrato de Apuração de ICMS  \n   Periodicidade: Mensal  \n   Como obter: ERP → Módulo Fiscal → competência → Export\n\n2. Extrato de Apuração de ISS  \n   Periodicidade: Mensal  \n   Como obter: ERP → Módulo Fiscal → competência → Export"
+    "evidencias": "1. Relatório de Apuração de ICMS\nPeriodicidade: Mensal\nComo obter: ERP → Módulo Fiscal → Apuração ICMS → competência → Export PDF\n\n2. Relatório de Apuração PIS/COFINS\nPeriodicidade: Mensal\nComo obter: ERP → Módulo Fiscal → Apuração PIS/COFINS → competência → Export PDF\n\n3. Relatório de Apuração IRPJ/CSLL\nPeriodicidade: Trimestral\nComo obter: ERP → Módulo Fiscal → Apuração IRPJ/CSLL → competência → Export PDF\n\n4. Comprovante de Correção de Divergências (quando houver)\nPeriodicidade: Por ocorrência\nComo obter: Print do recálculo realizado + data + comunicação ao gestor registrada no sistema interno"
   }
 ]
