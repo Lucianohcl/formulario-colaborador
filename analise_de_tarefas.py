@@ -5110,6 +5110,7 @@ if st.session_state.get("pagina") == "parecer":
 
                         r1, r2, r3 = st.columns(3)
                         r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
+                        _total_real_secao_b = total_real_diario
                         r2.metric("Eficiência Diária Alvo", f"{(total_real_diario / 480) * 100:.1f}%")
                         r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
                         st.table(pd.DataFrame(dados_reais))
@@ -5200,7 +5201,7 @@ if st.session_state.get("pagina") == "parecer":
                                     "confronto_pericial":  confronto if 'confronto' in locals() else [],
                                     "aderencia_cargo_pct": _ader,
                                     "total_pop_min":       round(_total_pop, 1),
-                                    "total_real_min":      round(colab.get("nexo_causal", {}).get("horas_dia", 0) * 60, 1),
+                                    "total_real_min": round(_total_real_secao_b, 1),
                                     "risco_operacional":   "ALTO" if 'total_real_diario' in locals() and total_real_diario > 480 else "BAIXO",
                                     "cargo_auditado":      colab.get('campos', {}).get('cargo', 'N/A'),
                                     "gerado_em":           datetime.now().strftime("%d/%m/%Y %H:%M:%S")
