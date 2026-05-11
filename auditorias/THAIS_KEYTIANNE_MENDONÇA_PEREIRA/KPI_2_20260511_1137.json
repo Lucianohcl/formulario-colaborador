@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 75.0,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento atende à solicitação inicial e fornece evidências em relação ao relato do funcionário. A aderência está plena, pois o documento é exatamente o que foi solicitado. A integridade é elevada, já que os dados do PDF confirmam justamente as ações descritas no relato de execução do funcionário. No entanto, embora as datas estejam corretas, a completude apresenta falhas, pois das 9 melhorias propostas, somente 7 foram implementadas no período, enquanto as outras 2 ainda estavam em andamento, o que não atende plenamente aos objetivos definidos.",
+    "gap_de_conformidade": [
+        "Implementação de todas as melhorias propostas dentro do período.",
+        "Evidência de que as propostas em andamento serão concluídas no prazo."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 25,
+        "tempestividade": 25,
+        "completude": 15
+    },
+    "kpi_nome": "Efetividade da Auditoria em Processos",
+    "colaborador": "THAIS KEYTIANNE MENDONÇA PEREIRA",
+    "relato_do_auditor": "Identificar, documentar e propor no mínimo 3 melhorias mensais nos procedimentos de pagamento e contratações do departamento pessoal no trimestre de fevereiro a abril de 2026, com registro formal das propostas no sistema interno e validação pelo gestor responsável."
+}
