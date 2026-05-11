@@ -5200,7 +5200,7 @@ if st.session_state.get("pagina") == "parecer":
                                     "confronto_pericial":  confronto if 'confronto' in locals() else [],
                                     "aderencia_cargo_pct": _ader,
                                     "total_pop_min":       round(_total_pop, 1),
-                                    "total_real_min":      round(colab.get("nexo_causal", {}).get("horas_dia", 0) * 60, 1),
+                                    "total_real_min":      round(total_real_diario, 1) if 'total_real_diario' in locals() and total_real_diario > 0 else round(colab.get("nexo_causal", {}).get("horas_dia", 0) * 60, 1),
                                     "risco_operacional":   "ALTO" if 'total_real_diario' in locals() and total_real_diario > 480 else "BAIXO",
                                     "cargo_auditado":      colab.get('campos', {}).get('cargo', 'N/A'),
                                     "gerado_em":           datetime.now().strftime("%d/%m/%Y %H:%M:%S")
