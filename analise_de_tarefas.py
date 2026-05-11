@@ -934,7 +934,7 @@ btn_parecer = st.sidebar.button("📄 Parecer Estratégico")
 btn_visualizar = st.sidebar.button("👁️ Visualizar Dados")
 btn_produtividade = st.sidebar.button("🚀 Produtividade")
 btn_gerar_evidencias = st.sidebar.button("✨ Gerar Evidências")
-btn_central = st.sidebar.button("🧠 Central de Inteligência")
+btn_central = st.sidebar.button("🧬 Central de Inteligência")
 
 st.sidebar.markdown("---")
 
@@ -5331,52 +5331,13 @@ if st.session_state.get("pagina") == "parecer":
                 c2.metric("Cargo", dados_360.get('campos', {}).get('cargo'))
                 c3.metric("Unidade", dados_360.get('campos', {}).get('unidade'))
 
+                chave_360 = f"resultado_360_{escolha_360}"
+
                 if st.button("🚀 GERAR LAUDO FORENSE 360°", key="btn_360"):
                     with st.spinner("IA processando cruzamento de dados..."):
                         resultado_360 = realizar_super_pericia_ia(dados_360)
                         if resultado_360:
-                            laudo_360 = resultado_360.get('parecer_executivo', '')
-                            st.divider()
-                            st.markdown(laudo_360)
-
-                            st.download_button(
-                                "Exportar Laudo (.md)",
-                                laudo_360,
-                                file_name=f"pericia_{dados_360.get('colaborador')}.md",
-                                key="dl_md_360"
-                            )
-
-                            html_template_360 = f"""
-                            <!DOCTYPE html>
-                            <html lang="pt-BR">
-                            <head>
-                                <meta charset="UTF-8">
-                                <style>
-                                    body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
-                                    h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
-                                    table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
-                                    th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
-                                    th {{ background-color: #ecf0f1; font-weight: bold; }}
-                                    .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
-                                </style>
-                            </head>
-                            <body>
-                                {laudo_360.replace(chr(10), '<br>')}
-                                <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
-                            </body>
-                            </html>
-                            """
-
-                            st.download_button(
-                                label="🌐 Exportar em HTML (Visual Profissional)",
-                                data=html_template_360,
-                                file_name=f"pericia_{dados_360.get('colaborador', 'doc')}.html",
-                                mime="text/html",
-                                use_container_width=True,
-                                key="dl_html_360"
-                            )
-
-                            # === SALVA PARECER 360 NO JSON MESTRE ===
+                            st.session_state[chave_360] = resultado_360
                             try:
                                 _nome_360 = dados_360.get('colaborador', escolha_360.replace('.json',''))
                                 salvar_master(_nome_360, {
@@ -5390,7 +5351,39 @@ if st.session_state.get("pagina") == "parecer":
                                 })
                             except Exception as _e:
                                 st.toast(f"⚠️ Master não salvo (360): {_e}", icon="⚠️")
-                            # === FIM PATCH 5 ===    
+
+                if chave_360 in st.session_state:
+                    resultado_360 = st.session_state[chave_360]
+                    laudo_360 = resultado_360.get('parecer_executivo', '')
+                    st.divider()
+                    st.markdown(laudo_360)
+                    st.download_button(
+                        "Exportar Laudo (.md)",
+                        laudo_360,
+                        file_name=f"pericia_{dados_360.get('colaborador')}.md",
+                        key="dl_md_360"
+                    )
+                    html_template_360 = f"""<!DOCTYPE html>
+                            <html lang="pt-BR"><head><meta charset="UTF-8">
+                            <style>
+                                body {{ font-family: Arial, sans-serif; margin: 30px; line-height: 1.6; color: #333; }}
+                                h1, h2, h3 {{ color: #2c3e50; border-bottom: 2px solid #ef233c; padding-bottom: 5px; }}
+                                table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                                th, td {{ border: 1px solid #bdc3c7; padding: 12px; text-align: left; }}
+                                th {{ background-color: #ecf0f1; font-weight: bold; }}
+                                .footer {{ margin-top: 30px; font-size: 0.8em; color: #7f8c8d; text-align: center; }}
+                            </style></head><body>
+                                {laudo_360.replace(chr(10), '<br>')}
+                                <div class="footer">Gerado automaticamente por Motor de Perícia IA 360°</div>
+                            </body></html>"""
+                    st.download_button(
+                        label="🌐 Exportar em HTML (Visual Profissional)",
+                        data=html_template_360,
+                        file_name=f"pericia_{dados_360.get('colaborador', 'doc')}.html",
+                        mime="text/html",
+                        use_container_width=True,
+                        key="dl_html_360"
+                    )    
 
     # ==========================================================================
     # ABA 4: Análise de Perfil e Eficiência Operacional
