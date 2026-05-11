@@ -7609,7 +7609,7 @@ if st.session_state.get("pagina") == "central_inteligencia":
     # ── Linha 2: Parecer e Downloads ─────────────────────────
     ctrl4, ctrl5, ctrl6 = st.columns(3)
 
-with ctrl4:
+    with ctrl4:
         if parecer_exibir:
             st.info("✅ Parecer já gerado")
         else:
