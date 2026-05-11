@@ -1,0 +1,18 @@
+{
+    "percentual_alcance": 65.0,
+    "status_pericial": "PARCIAL",
+    "analise_critica": "O documento apresentado é o solicitado, permitindo a verificação das conciliações bancárias. No entanto, ainda há lacunas nas provas, como ausência de relatórios detalhados de possíveis divergências e ações corretivas tomadas em outros dias além do evidenciado no dia 02/04/2026. Embora as datas sejam consistentes e corretas, não há confirmação abrangente de que 100% das operações tiveram precisão máxima, conforme o KPI estipulado.",
+    "gap_de_conformidade": [
+        "Falta de detalhes sobre potenciais divergências e respectivas correções em outros dias além de 02/04/2026.",
+        "Comprovação adicional de que todas as conciliações foram feitas sem erro diariamente."
+    ],
+    "ponderacao_detalhada": {
+        "aderencia": 25,
+        "integridade": 15,
+        "tempestividade": 25,
+        "completude": 10
+    },
+    "kpi_nome": "Precisão nas Conciliações Bancárias",
+    "colaborador": "LETHÍCIA NUNES",
+    "relato_do_auditor": "Realizar diariamente a conciliação bancária das contas sob sua responsabilidade no período avaliado, verificando a correspondência entre extratos bancários e lançamentos contábeis/financeiros registrados no sistema, identificando, analisando e corrigindo divergências encontradas durante o processo de conferência, garantindo que as conciliações permaneçam registradas com status atualizado, sem pendências não tratadas ao final do dia, mantendo a organização e rastreabilidade dos documentos relacionados às rotinas financeiras e contribuindo para a confiabilidade das informações contábeis por meio da execução correta dos procedimentos internos estabelecidos."
+}
