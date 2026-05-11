@@ -437,7 +437,25 @@
         "cargo_auditado": "Analista",
         "gerado_em": "11/05/2026 10:40:18"
     },
-    "kpis_auditados": {},
+    "kpis_auditados": {
+        "Precisão na Apuração de Impostos": {
+            "percentual_alcance": 87.5,
+            "status_pericial": "CONFORME",
+            "analise_critica": "O relatório mostra detalhes completos das apurações fiscais realizadas, incluindo correções necessárias antes da entrega. Todos os impostos previstos foram revisados e a única divergência foi corrigida em tempo hábil. As referências legais estão claramente documentadas. No entanto, a clareza na descrição das próprias reconciliações fiscais poderia ser melhorada, embora isso não comprometa significativamente a evidência apresentada.",
+            "gap_de_conformidade": [
+                "Descrição mais detalhada das reconciliações fiscais para enriquecer a qualidade da prova.",
+                "Inclusão de notas explicativas sobre o processo de revisão com maior detalhe."
+            ],
+            "ponderacao": {
+                "aderencia": 25,
+                "integridade": 25,
+                "tempestividade": 25,
+                "completude": 12.5
+            },
+            "relato_auditor": "Revisar e conferir os relatórios de apuração de impostos estaduais, municipais e federais dos clientes no trimestre de fevereiro a abril de 2026, validando ICMS, ISS, PIS, COFINS, IRPJ e CSLL conforme enquadramento tributário de cada cliente, com taxa de conformidade de 100% nas apurações realizadas no período.",
+            "auditado_em": "11/05/2026 10:52:09"
+        }
+    },
     "produtividade": {
         "eficiencia_real_pct": 0,
         "kpis_auditados_total": 0,
@@ -450,5 +468,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 10:40:24"
+    "ultima_atualizacao": "11/05/2026 10:52:09"
 }
