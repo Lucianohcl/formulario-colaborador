@@ -457,10 +457,22 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 17.5,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão na Apuração de Impostos",
+        "kpi_critico_score": 87.5,
+        "kpis_detalhados": {
+            "Precisão na Apuração de Impostos": {
+                "percentual_alcance": 87.5,
+                "status_pericial": "CONFORME",
+                "analise_critica": "O relatório mostra detalhes completos das apurações fiscais realizadas, incluindo correções necessárias antes da entrega. Todos os impostos previstos foram revisados e a única divergência foi corrigida em tempo hábil. As referências legais estão claramente documentadas. No entanto, a clareza na descrição das próprias reconciliações fiscais poderia ser melhorada, embora isso não comprometa significativamente a evidência apresentada.",
+                "gap_de_conformidade": [
+                    "Descrição mais detalhada das reconciliações fiscais para enriquecer a qualidade da prova.",
+                    "Inclusão de notas explicativas sobre o processo de revisão com maior detalhe."
+                ]
+            }
+        },
+        "consolidado_em": "11/05/2026 10:55:45"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -468,5 +480,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 10:52:09"
+    "ultima_atualizacao": "11/05/2026 10:55:45"
 }
