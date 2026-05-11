@@ -175,7 +175,242 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "ANALISE_E_APURACAO_DE_IMPOSTOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "120.0m",
+                "Eficiência vs 480m": "25.0%",
+                "Meta Auditável": "Analisar e apurar impostos estaduais, municipais e federais com 100% de precisão, garantindo a conformidade e evitando penalizações."
+            },
+            {
+                "Atividade": "ELABORACAO_DE_NOTAS_FISCAIS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Emitir notas fiscais corretas e no prazo, redução de erros em 50% em relação ao mês anterior."
+            },
+            {
+                "Atividade": "ENTREGA_DE_DECLARACOES_MENSAL",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Finalizar e entregar todas as declarações mensais dentro do prazo, alcançando 100% de conformidade fiscal."
+            },
+            {
+                "Atividade": "ELABORACAO_DE_RELATORIOS",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Produzir relatórios detalhados sobre a situação fiscal e contábil, melhorando a tomada de decisão estratégica com base em dados."
+            },
+            {
+                "Atividade": "EXECUCAO_DE_ROTINAS_CONTABEIS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "90.0m",
+                "Eficiência vs 480m": "18.8%",
+                "Meta Auditável": "Realizar rotinas contábeis diárias com precisão e eficiência, reduzindo o tempo de retrabalho em 40%."
+            },
+            {
+                "Atividade": "PLANEJAMENTO_TRIBUTARIO",
+                "Freq": "SEMANAL",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "12.0m",
+                "Eficiência vs 480m": "2.5%",
+                "Meta Auditável": "Desenvolver e revisar o planejamento tributário visando melhorar a eficiência tributária em 30%."
+            },
+            {
+                "Atividade": "TREINAMENTO_CONTINUO",
+                "Freq": "MENSAL",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "1.4m",
+                "Eficiência vs 480m": "0.3%",
+                "Meta Auditável": "Participar de treinamentos e capacitações em atualização fiscal e contábil, com pelo menos 2 cursos ou workshops por trimestre."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "ANALISE_E_APURACAO_DE_IMPOSTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "120.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-120.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ELABORACAO_DE_NOTAS_FISCAIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ENTREGA_DE_DECLARACOES_MENSAL",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "ELABORACAO_DE_RELATORIOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "EXECUCAO_DE_ROTINAS_CONTABEIS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "90.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-90.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PLANEJAMENTO_TRIBUTARIO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "12.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-12.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "TREINAMENTO_CONTINUO",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "1.4m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-1.4m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "RETIDOS FEDERAIS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.5m",
+                "Divergência": "+5.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APURAÇÃO DE ICMS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "13.6m",
+                "Divergência": "+13.6m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ICMS FRONTEIRAS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "13.6m",
+                "Divergência": "+13.6m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APURAÇÃO TRIMESTRAL IRPJ E CSLL ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "8.2m",
+                "Divergência": "+8.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APURAÇÃO PIS  E COFINS PRESUMIDO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "8.2m",
+                "Divergência": "+8.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "APURAÇÃO PIS E COFINS REAL  ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "8.2m",
+                "Divergência": "+8.2m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "EMISSÃO DE NOTAS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "TRIBUTAÇÃO FISCAL GRUPO MARFIM ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "30.0m",
+                "Divergência": "+30.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SPED ICMS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.7m",
+                "Divergência": "+2.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SPED EFD PIS E COFINS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.7m",
+                "Divergência": "+2.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "DMS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.7m",
+                "Divergência": "+0.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ISS ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "1.4m",
+                "Divergência": "+1.4m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ISS RETIDO ",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.7m",
+                "Divergência": "+2.7m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "MIT",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "1.4m",
+                "Divergência": "+1.4m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 253.6,
+        "total_pop_min": 326.8,
+        "total_real_min": 128.9,
+        "risco_operacional": "BAIXO",
+        "cargo_auditado": "Analista",
+        "gerado_em": "11/05/2026 10:38:39"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -190,5 +425,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "11/05/2026 10:38:39"
 }
