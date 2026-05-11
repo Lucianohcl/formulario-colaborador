@@ -1,4 +1,3 @@
-
 # ============================================================
 # IMPORTS
 # ============================================================
@@ -5737,7 +5736,13 @@ def aba_produtividade_inteligente():
             # Geração de KPIs para Auditoria
             st.markdown("---")
             st.subheader("🕵️ Iniciar Perícia por KPI")
-            
+
+            if st.session_state.get('ultimo_colab_kpi') != nome_colab:
+                st.session_state['ultimo_colab_kpi'] = nome_colab
+                for i in range(5):
+                    chave = f"rel_{i}"
+                    if chave in st.session_state:
+                        del st.session_state[chave]
             if 'kpis_sessao' not in st.session_state:
                 st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
 
