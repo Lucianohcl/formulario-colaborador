@@ -7616,6 +7616,8 @@ if st.session_state.get("pagina") == "central_inteligencia":
 
     clicked = components.html(html_central, height=altura, scrolling=False)
 
+    st.caption("⬇️ Use os controles abaixo para gerar laudos, parecer e downloads.")
+
     # ── Controles reais do Streamlit (abaixo do visual) ──────
     st.markdown("---")
     st.markdown("<p style='color:#1E293B;font-size:11px;text-align:center;'>Controles da Central</p>",
