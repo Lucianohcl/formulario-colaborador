@@ -396,10 +396,22 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 15.0,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Efetividade da Auditoria em Processos",
+        "kpi_critico_score": 75.0,
+        "kpis_detalhados": {
+            "Efetividade da Auditoria em Processos": {
+                "percentual_alcance": 75.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O documento atende à solicitação inicial e fornece evidências em relação ao relato do funcionário. A aderência está plena, pois o documento é exatamente o que foi solicitado. A integridade é elevada, já que os dados do PDF confirmam justamente as ações descritas no relato de execução do funcionário. No entanto, embora as datas estejam corretas, a completude apresenta falhas, pois das 9 melhorias propostas, somente 7 foram implementadas no período, enquanto as outras 2 ainda estavam em andamento, o que não atende plenamente aos objetivos definidos.",
+                "gap_de_conformidade": [
+                    "Implementação de todas as melhorias propostas dentro do período.",
+                    "Evidência de que as propostas em andamento serão concluídas no prazo."
+                ]
+            }
+        },
+        "consolidado_em": "11/05/2026 11:40:35"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -407,5 +419,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 11:37:47"
+    "ultima_atualizacao": "11/05/2026 11:40:35"
 }
