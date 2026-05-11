@@ -247,7 +247,38 @@
         "cargo_auditado": "ANALISTA CONTÁBIL JÚNIOR",
         "gerado_em": "11/05/2026 11:48:15"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise dos dados sugere que há inconsistências no alinhamento do objetivo do cargo com as tarefas relatadas. Embora o objetivo esteja focado em conciliação e análise de balancetes, uma parte significativa do tempo da colaboradora está dedicada a atividades de fechamento de empresas e demonstrações contábeis, que podem não estar diretamente alinhadas com o objetivo primordial. Em termos de capacidade versus entrega, não há aparente desperdício significativo de formação acadêmica, já que as atividades contabilísticas requerem o conhecimento adquirido nos cursos mencionados. No entanto, a descrição das atividades sugere uma sobrecarga potencial, especialmente devido à incerteza em determinar prazos. O perfil DISC da colaboradora indica uma predominância de características associadas a conformidade e estabilidade, essencial para funções contábeis, mas isso pode impactar a eficiência e a capacidade de adaptação rápida a prazos estritos. A cronoanálise aponta para um risco latente de Burnout Mascarado, dado o total de horas dedicadas por dia em um cenário potencial de 480 minutos ou mais. Este risco é exacerbado pela indefinição de prazos claros. Portanto, é crítico que a gestão intervenha para garantir uma distribuição mais equilibrada das tarefas e proveja suporte para gerenciar expectativas e prazos de forma eficaz.",
+        "pop_benchmark": [
+            {
+                "Atividade": "Fechamento de empresas",
+                "Freq": "M",
+                "Tempo": "1440 min",
+                "Meta": "90% acuracidade"
+            },
+            {
+                "Atividade": "Fechamento das demonstrações contábeis",
+                "Freq": "M",
+                "Tempo": "1440 min",
+                "Meta": "95% completude"
+            },
+            {
+                "Atividade": "Conciliações",
+                "Freq": "D",
+                "Tempo": "120 min",
+                "Meta": "100% acuracidade"
+            },
+            {
+                "Atividade": "Envio de informações do cliente",
+                "Freq": "D",
+                "Tempo": "60 min",
+                "Meta": "100% acuracidade"
+            }
+        ],
+        "veredito_final": "PARAR: Demandas não vinculadas diretamente ao objetivo do cargo que sobrecarregam a colaboradora sem agregar valor claro. DELEGAR: Tarefas que podem ser automatizadas ou passadas para assistentes juniores para aliviar a carga da colaboradora. FOCO IMEDIATO: Revisão dos processos de fluxo de informação com clientes para garantir prazos adequados e clareza nas entregas, promovendo um ambiente de trabalho menos estressante.",
+        "cargo_auditado": "ANALISTA CONTÁBIL JÚNIOR",
+        "gerado_em": "11/05/2026 11:48:26"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -261,5 +292,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 11:48:15"
+    "ultima_atualizacao": "11/05/2026 11:48:26"
 }
