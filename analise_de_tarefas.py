@@ -5767,18 +5767,23 @@ def aba_produtividade_inteligente():
                     if f"rel_{i}" in st.session_state:
                         del st.session_state[f"rel_{i}"]
             if 'kpis_sessao' not in st.session_state:
-                if relatos_salvos:
-                    _kpis_da_auditoria = []
-                    for i, (nome_kpi, relato_txt) in enumerate(relatos_salvos.items()):
-                        _kpis_da_auditoria.append({
-                            "nome": nome_kpi,
-                            "objetivo": "",
-                            "evidencia_sugerida": ""
-                        })
-                        st.session_state[f"rel_{i}"] = relato_txt
-                    st.session_state.kpis_sessao = _kpis_da_auditoria
-                else:
-                    st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
+                _kpis_salvos = [
+                    {"nome": k, "objetivo": "", "evidencia_sugerida": ""}
+                    for k in relatos_salvos.keys()
+                ]
+                _qtd_salvos = len(_kpis_salvos)
+                if _qtd_salvos < 5:
+                    _kpis_ia = gerar_5_kpis_periciais(lista_tabela)['kpis']
+                    _nomes_salvos = [k['nome'].upper() for k in _kpis_salvos]
+                    for kpi_ia in _kpis_ia:
+                        if kpi_ia['nome'].upper() not in _nomes_salvos:
+                            _kpis_salvos.append(kpi_ia)
+                        if len(_kpis_salvos) >= 5:
+                            break
+                for i, kpi_s in enumerate(_kpis_salvos):
+                    relato_txt = relatos_salvos.get(kpi_s['nome'], "")
+                    st.session_state[f"rel_{i}"] = relato_txt
+                st.session_state.kpis_sessao = _kpis_salvos[:5]
 
             for i, kpi in enumerate(st.session_state.kpis_sessao):
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
