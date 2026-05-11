@@ -150,7 +150,194 @@
             "Analise Critica": "Aguardando auditoria — dados do formulário"
         }
     ],
-    "parecer": {},
+    "parecer": {
+        "pop_padrao_ia": [
+            {
+                "Atividade": "ANÁLISE DE CUSTOS",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Revisar e aprovar a folha de pagamento, assegurando 100% de precisão nos cálculos de salários e benefícios."
+            },
+            {
+                "Atividade": "AUDITORIA INTERNA",
+                "Freq": "SEMANAL",
+                "Tempo Base": "90m",
+                "Impacto Diário Convertido": "18.0m",
+                "Eficiência vs 480m": "3.8%",
+                "Meta Auditável": "Realizar auditoria em processos de pagamento e contratações para identificar anomalias, com um relatório mensal de no mínimo 3 melhorias propostas."
+            },
+            {
+                "Atividade": "PLANEJAMENTO DE RECURSOS",
+                "Freq": "MENSAL",
+                "Tempo Base": "120m",
+                "Impacto Diário Convertido": "5.5m",
+                "Eficiência vs 480m": "1.1%",
+                "Meta Auditável": "Elaborar e apresentar um plano de gestão de pessoas alinhado à estratégia da empresa, medido pela implementação de pelo menos 2 novas iniciativas estratégicas por trimestre."
+            },
+            {
+                "Atividade": "COMUNICAÇÃO INTERNA",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "30m",
+                "Impacto Diário Convertido": "30.0m",
+                "Eficiência vs 480m": "6.2%",
+                "Meta Auditável": "Organizar e facilitar reuniões semanais com a equipe de RH, garantindo 100% de participação e acompanhamento das ações."
+            },
+            {
+                "Atividade": "CONTROLE DE CONFORMIDADE",
+                "Freq": "DIÁRIA",
+                "Tempo Base": "60m",
+                "Impacto Diário Convertido": "60.0m",
+                "Eficiência vs 480m": "12.5%",
+                "Meta Auditável": "Realizar a verificação de conformidade com legislações trabalhistas, assegurando que 100% dos processos sigam os padrões legais estabelecidos."
+            }
+        ],
+        "confronto_pericial": [
+            {
+                "Atividade": "ANÁLISE DE CUSTOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "AUDITORIA INTERNA",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "18.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-18.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "PLANEJAMENTO DE RECURSOS",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "5.5m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-5.5m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "COMUNICAÇÃO INTERNA",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "30.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-30.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "CONTROLE DE CONFORMIDADE",
+                "Origem": "POP PADRÃO",
+                "Impacto POP": "60.0m",
+                "Impacto Real": "0.0m",
+                "Divergência": "-60.0m",
+                "Status": "❌ AUSENTE"
+            },
+            {
+                "Atividade": "INFORME DE RENDIMENTOS SOCIOS - 2025",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "6.0m",
+                "Divergência": "+6.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "SIMULAÇÃO DE RESCISÃO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "12.0m",
+                "Divergência": "+12.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA EMPRESA FILIAL",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "3.6m",
+                "Divergência": "+3.6m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "RESCISÃO PEDIDO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "5.0m",
+                "Divergência": "+5.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "RECIBO DE FERIAS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "3.0m",
+                "Divergência": "+3.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ADMISSÃO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "6.0m",
+                "Divergência": "+6.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA EMPRESA PEQUENA",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.0m",
+                "Divergência": "+2.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "RESCISAO DEMISSAO",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "12.0m",
+                "Divergência": "+12.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONSULTA FGTS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.5m",
+                "Divergência": "+0.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "CONSULTA ECAC",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "0.5m",
+                "Divergência": "+0.5m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "AVISO DE FERIAS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.0m",
+                "Divergência": "+2.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            },
+            {
+                "Atividade": "ATESTADOS",
+                "Origem": "DESVIO",
+                "Impacto POP": "0.0m",
+                "Impacto Real": "2.0m",
+                "Divergência": "+2.0m",
+                "Status": "⚠️ FORA DO PADRÃO"
+            }
+        ],
+        "aderencia_cargo_pct": 317.8,
+        "total_pop_min": 173.5,
+        "total_real_min": 54.6,
+        "risco_operacional": "BAIXO",
+        "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
+        "gerado_em": "11/05/2026 11:19:04"
+    },
     "parecer_360": {},
     "kpis_auditados": {},
     "produtividade": {
@@ -165,5 +352,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": ""
+    "ultima_atualizacao": "11/05/2026 11:19:04"
 }
