@@ -299,10 +299,22 @@
         }
     },
     "produtividade": {
-        "eficiencia_real_pct": 0,
-        "kpis_auditados_total": 0,
-        "kpi_critico": "Aguardando auditoria de KPIs",
-        "kpi_critico_score": 0
+        "eficiencia_real_pct": 13.0,
+        "kpis_auditados_total": 1,
+        "kpi_critico": "Precisão nas Conciliações Bancárias",
+        "kpi_critico_score": 65.0,
+        "kpis_detalhados": {
+            "Precisão nas Conciliações Bancárias": {
+                "percentual_alcance": 65.0,
+                "status_pericial": "PARCIAL",
+                "analise_critica": "O documento apresentado é o solicitado, permitindo a verificação das conciliações bancárias. No entanto, ainda há lacunas nas provas, como ausência de relatórios detalhados de possíveis divergências e ações corretivas tomadas em outros dias além do evidenciado no dia 02/04/2026. Embora as datas sejam consistentes e corretas, não há confirmação abrangente de que 100% das operações tiveram precisão máxima, conforme o KPI estipulado.",
+                "gap_de_conformidade": [
+                    "Falta de detalhes sobre potenciais divergências e respectivas correções em outros dias além de 02/04/2026.",
+                    "Comprovação adicional de que todas as conciliações foram feitas sem erro diariamente."
+                ]
+            }
+        },
+        "consolidado_em": "11/05/2026 12:25:17"
     },
     "evidencias_kpi": {},
     "comparativo_cargo": {},
@@ -310,5 +322,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 12:21:59"
+    "ultima_atualizacao": "11/05/2026 12:25:17"
 }
