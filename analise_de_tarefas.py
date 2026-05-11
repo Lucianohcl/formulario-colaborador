@@ -6047,26 +6047,6 @@ def aba_produtividade_inteligente():
 
                 pdf_file = gerar_pdf()
 
-                # === SALVA PDF NO GITHUB ===
-                try:
-                    if filtro_colab != "Todos":
-                        _nome_pdf = filtro_colab.replace(" ", "_").upper()
-                        _caminho_pdf = f"eficiencia_colaborador/{_nome_pdf}.pdf"
-                        _pdf_bytes = pdf_file.read()
-                        pdf_file.seek(0)
-                        import base64
-                        _pdf_b64 = base64.b64encode(_pdf_bytes).decode()
-                        _repo_pdf = Github(st.secrets["DB_TOKEN"]).get_repo(st.secrets["REPO_NOME"])
-                        try:
-                            _arq = _repo_pdf.get_contents(_caminho_pdf)
-                            _repo_pdf.update_file(_caminho_pdf, f"pdf: {_nome_pdf}", _pdf_b64, _arq.sha)
-                        except:
-                            _repo_pdf.create_file(_caminho_pdf, f"pdf: {_nome_pdf}", _pdf_b64)
-                        st.toast(f"✅ PDF salvo no GitHub!", icon="✅")
-                except Exception as _ep:
-                    st.toast(f"⚠️ PDF não salvo: {_ep}", icon="⚠️")
-                # === FIM SALVAR PDF ===
-
                 st.download_button(
                     label="📄 Baixar Relatório em PDF",
                     data=pdf_file,
