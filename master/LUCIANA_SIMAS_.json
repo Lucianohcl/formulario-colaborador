@@ -1,0 +1,12 @@
+{
+    "colaborador": "Luciana_Simas_",
+    "criado_em": "11/05/2026 10:26:03",
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Precisão dos Cálculos de Tributos": "1. Guias de Recolhimento de FGTS e INSS\n   Periodicidade: Mensal\n   Como obter: ERP → Módulo de Folha → competência → Export \n\n2. Relatório de Apuração de IRRF\n   Periodicidade: Mensal\n   Como obter: ERP → Módulo de Folha → competência → Export "
+        },
+        "total_kpis": 1,
+        "gerado_em": "11/05/2026 10:26:03"
+    },
+    "ultima_atualizacao": "11/05/2026 10:26:03"
+}
