@@ -1,1 +1,66 @@
-[]
+[
+  {
+    "Atividade": "FECHAMENTO_DE_BALANÇOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "120.0m",
+    "Eficiência vs 480m": "25.0%",
+    "Meta Auditável": "Realizar o fechamento contábil diário com 100% de precisão, assegurando que todos os lançamentos estejam conferidos e documentados."
+  },
+  {
+    "Atividade": "ANÁLISE_DE_DEMONSTRATIVOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "90.0m",
+    "Eficiência vs 480m": "18.8%",
+    "Meta Auditável": "Conferir e analisar os demonstrativos financeiros, garantindo sua clareza e completude, com feedback pontual de 100% dos clientes."
+  },
+  {
+    "Atividade": "REUNIÕES_COM_CLIENTES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Conduzir reuniões de acompanhamento com clientes para discutir resultados e esclarecimentos, garantindo 100% de satisfação."
+  },
+  {
+    "Atividade": "SUPORTE_A_EQUIPE",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Oferecer suporte e orientação a membros da equipe, assegurando que 100% das demandas sejam atendidas e monitoradas semanalmente."
+  },
+  {
+    "Atividade": "CAPACITAÇÃO_E_TREINAMENTO",
+    "Freq": "SEMANAL",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "18.0m",
+    "Eficiência vs 480m": "3.8%",
+    "Meta Auditável": "Implementar treinamentos e sessões de capacitação, garantindo que 100% da equipe participe e atinja indicadores de performance mínima."
+  },
+  {
+    "Atividade": "REVISÃO_DE_RELATÓRIOS_GERENCIAIS",
+    "Freq": "SEMANAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "12.0m",
+    "Eficiência vs 480m": "2.5%",
+    "Meta Auditável": "Revisar relatórios gerenciais de performance, assegurando que estejam alinhados com as expectativas e que 100% dos erros sejam corrigidos antes da entrega."
+  },
+  {
+    "Atividade": "AVALIAÇÃO_DE_COMPLIANCE",
+    "Freq": "MENSAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "5.5m",
+    "Eficiência vs 480m": "1.1%",
+    "Meta Auditável": "Conduzir uma avaliação mensal de compliance, garantindo que 100% dos procedimentos estejam em conformidade com normativas vigentes."
+  },
+  {
+    "Atividade": "REUNIÕES_DE_ESTRATÉGIA",
+    "Freq": "MENSAL",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "1.4m",
+    "Eficiência vs 480m": "0.3%",
+    "Meta Auditável": "Realizar reuniões estratégicas mensais com a equipe para alinhar objetivos e revisar indicadores, com participação de 100% dos colaboradores."
+  }
+]
