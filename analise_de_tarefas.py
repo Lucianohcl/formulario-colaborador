@@ -5972,7 +5972,12 @@ def aba_produtividade_inteligente():
 
                 media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
 
-                eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
+                if filtro_colab == "Todos":
+                    eficiencia_sistematica = df_ultimos.groupby('colaborador').apply(
+                        lambda x: (x['percentual_alcance'].mean() * len(x)) / total_kpis_esperados
+                    ).mean()
+                else:
+                    eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
 
                 m1.metric("Eficiência Real", f"{eficiencia_sistematica:.1f}%")
                 m2.metric("KPIs Auditados (5)", f"{qtd_kpis}/{total_kpis_esperados}")
