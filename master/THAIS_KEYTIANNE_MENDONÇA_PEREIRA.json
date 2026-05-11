@@ -338,7 +338,44 @@
         "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
         "gerado_em": "11/05/2026 11:21:00"
     },
-    "parecer_360": {},
+    "parecer_360": {
+        "parecer_executivo": "A análise das atividades realizadas pela colaboradora Thais Keytianne Mendonça Pereira no cargo de Analista de Departamento Pessoal revela alguns pontos relevantes de consideração. Em primeiro lugar, observou-se que a colaboradora está alocando tempo significativo em atividades operacionais, conforme os dados das tabelas de atividades, como fechamento de folha, simulações de rescisão e emissões diversas. A falta de informações completas sobre os cursos e objetivos do cargo, devido aos dados corrompidos, impede uma avaliação precisa da compatibilidade entre os conhecimentos adquiridos (caso haja) e as tarefas executadas, mas sugere potenciais cursos desperdiçados em atividades meramente operacionais.\n\nO perfil DISC indica uma predominância acentuada do fator 'D' (Dominância), seguido por elementos de 'C' (Conformidade) e 'A' (Ação), com pouca presença de 'B' (Estabilidade), o que pode influenciar a execução com assertividade e rapidez, mas também com menor foco em detalhes e estabilidade emocional. Isso pode justificar o engajamento em atividades operacionais, mas também sugere uma capacidade latente para tomada de decisões e melhorias de processos que podem estar subutilizadas.\n\nEm termos de cronoanálise, ao somar o tempo total das atividades nas tabelas 'alta', 'normal', e 'baixa', na frequência semanal (S), o total não ultrapassa 480 minutos por dia em média, sugerindo que, à primeira vista, há pouca indicação de Burnout mascarado por sobrecarga de trabalho. Entretanto, dificuldades relatadas como problemas com o sistema eSocial e conectividade podem adicionar estresse adicional à rotina inadequadamente percebido apenas por cargas horárias.\n\nA necessidade de cursos de atualização é uma sugestão da própria colaboradora e sublinha a importância de melhorar a capacidade técnica para impulsionar a eficiência do setor. No entanto, é crítico avaliar a real aplicação prática dos conhecimentos teóricos adquiridos por meio desses cursos nas funções diárias.",
+        "pop_benchmark": [
+            {
+                "Atividade": "INFORME DE RENDIMENTOS SOCIOS - 2025",
+                "Freq": "S",
+                "Tempo": "30 min",
+                "Meta": "Reduzir tempo para 15 min"
+            },
+            {
+                "Atividade": "SIMULAÇÃO DE RESCISÃO",
+                "Freq": "S",
+                "Tempo": "60 min",
+                "Meta": "Automatizar processo para 30 min"
+            },
+            {
+                "Atividade": "FECHAMENTO DE FOLHA EMPRESA FILIAL",
+                "Freq": "M",
+                "Tempo": "80 min",
+                "Meta": "Reduzir para 60 min"
+            },
+            {
+                "Atividade": "RESCISAO DEMISSAO",
+                "Freq": "S",
+                "Tempo": "60 min",
+                "Meta": "Automatizar para 30 min"
+            },
+            {
+                "Atividade": "CONSULTA FGTS",
+                "Freq": "M",
+                "Tempo": "10 min",
+                "Meta": "Otimizar para 5 min"
+            }
+        ],
+        "veredito_final": "PARAR: Realizar atividades que possam ser automatizadas. DELEGAR: Procedimentos de baixa criticidade como consulta FGTS e ECAC. FOCO IMEDIATO: Investir em cursos de atualização técnica com aplicação específica no sistema eSocial e processos de rescisão para melhorar a eficiência do setor e permitir um melhor aproveitamento do perfil dominância. Implementar automações nos processos repetitivos para liberar capacidade da colaboradora para atividades de maior valor estratégico.",
+        "cargo_auditado": "ANALISTA DEPARTAMENTO PESSOAL",
+        "gerado_em": "11/05/2026 11:21:15"
+    },
     "kpis_auditados": {},
     "produtividade": {
         "eficiencia_real_pct": 0,
@@ -352,5 +389,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 11:21:00"
+    "ultima_atualizacao": "11/05/2026 11:21:15"
 }
