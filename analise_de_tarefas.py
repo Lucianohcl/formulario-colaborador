@@ -6914,28 +6914,27 @@ Gere PARECER EXECUTIVO + PLANO DE AÇÃO com cronograma e resultados financeiros
 - Alinhamentos e desalinhamentos cargo x perfil
 
 ### Riscos Identificados
-3 riscos com impacto financeiro estimado em R$.
+3 riscos qualitativos SEM valores financeiros inventados. Baseie apenas nos dados reais de sobrecarga, subutilização e desalinhamento DISC. Não invente valores em R$.
 
 ### Oportunidades Imediatas
-3 oportunidades com valor em R$/ano cada.
+3 oportunidades qualitativas. Para valores use APENAS roi_anual_com_automacao e horas_recuperaveis do JSON. Não invente outros valores em R$.
 
 ---
 
 ## PLANO DE AÇÃO ESTRATÉGICO
 
 ### FASE 1 — AÇÕES IMEDIATAS (0 a 30 dias)
-- [ ] Ação | Responsável (perfil DISC) | Impacto R$ | Como medir
+- [ ] Ação | Responsável (perfil DISC) | Como medir
 
 ### FASE 2 — AÇÕES ESTRUTURAIS (30 a 90 dias)
-- [ ] Ação | Responsável | Impacto R$ | Como medir
+- [ ] Ação | Responsável (perfil DISC) | Como medir
 
 ### FASE 3 — AÇÕES ESTRATÉGICAS (90 a 180 dias)
-- [ ] Ação | Responsável | Impacto R$ | Como medir
+- [ ] Ação | Responsável (perfil DISC) | Como medir
 
 ---
 
 ## RESULTADO FINANCEIRO CONSOLIDADO
-
 | Indicador | Valor | Base de Cálculo |
 |---|---|---|
 | **ROI Total Auditado** | R$ [leia roi_total_auditado do JSON] | Sugestões reais × fator × R$ 35/hora |
