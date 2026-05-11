@@ -7609,82 +7609,85 @@ if st.session_state.get("pagina") == "central_inteligencia":
     # ── Linha 2: Parecer e Downloads ─────────────────────────
     ctrl4, ctrl5, ctrl6 = st.columns(3)
 
-    with ctrl4:
-        if st.button("🚀 Gerar Parecer Equipe", use_container_width=True, key="ctrl_btn_parecer"):
-            with st.spinner("🧠 Gerando parecer... (30-60s)"):
-                from collections import Counter
-                _discs = [m.get("disc",{}).get("perfil_dominante","") for m in masters]
-                _cultura_real = Counter(_discs).most_common(1)[0][0] if _discs else "N/A"
-                _disc_contagem = dict(Counter(_discs))
+with ctrl4:
+        if parecer_exibir:
+            st.info("✅ Parecer já gerado")
+        else:
+            if st.button("🚀 Gerar Parecer Equipe", use_container_width=True, key="ctrl_btn_parecer"):
+                with st.spinner("🧠 Gerando parecer... (30-60s)"):
+                    from collections import Counter
+                    _discs = [m.get("disc",{}).get("perfil_dominante","") for m in masters]
+                    _cultura_real = Counter(_discs).most_common(1)[0][0] if _discs else "N/A"
+                    _disc_contagem = dict(Counter(_discs))
 
-                _sobrecargas   = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"]
-                _subutilizados = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"]
-                _adequados     = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "adequado"]
+                    _sobrecargas   = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"]
+                    _subutilizados = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"]
+                    _adequados     = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "adequado"]
 
-                _roi_com_automacao = 0.0
-                for m in masters:
-                    _roi_base = m.get("roi",{}).get("auditado", 0)
-                    _sugs = m.get("sugestoes_auditadas", [])
-                    _tem_digital = any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in _sugs)
-                    _roi_com_automacao += _roi_base * 2 if _tem_digital else _roi_base
+                    _roi_com_automacao = 0.0
+                    for m in masters:
+                        _roi_base = m.get("roi",{}).get("auditado", 0)
+                        _sugs = m.get("sugestoes_auditadas", [])
+                        _tem_digital = any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in _sugs)
+                        _roi_com_automacao += _roi_base * 2 if _tem_digital else _roi_base
 
-                _roi_mensal              = round(roi_total / 12, 2)
-                _roi_mensal_automatizado = round(_roi_com_automacao / 12, 2)
-                _horas_ociosas           = sum(
-                    max(0, 8 - m.get("nexo_causal",{}).get("horas_dia", 8))
-                    for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"
-                )
-                _custo_ociosidade = round(_horas_ociosas * 220 * 35, 2)
-                _horas_extras     = sum(
-                    max(0, m.get("nexo_causal",{}).get("horas_dia", 8) - 8)
-                    for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"
-                )
-                _custo_sobrecarga = round(_horas_extras * 220 * 35, 2)
+                    _roi_mensal              = round(roi_total / 12, 2)
+                    _roi_mensal_automatizado = round(_roi_com_automacao / 12, 2)
+                    _horas_ociosas           = sum(
+                        max(0, 8 - m.get("nexo_causal",{}).get("horas_dia", 8))
+                        for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"
+                    )
+                    _custo_ociosidade = round(_horas_ociosas * 220 * 35, 2)
+                    _horas_extras     = sum(
+                        max(0, m.get("nexo_causal",{}).get("horas_dia", 8) - 8)
+                        for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"
+                    )
+                    _custo_sobrecarga = round(_horas_extras * 220 * 35, 2)
 
-                resumo = {
-                    "total_colaboradores":        total_colab,
-                    "roi_total_auditado":          round(roi_total, 2),
-                    "roi_mensal_base":             _roi_mensal,
-                    "roi_mensal_com_automacao":    _roi_mensal_automatizado,
-                    "roi_anual_com_automacao":     round(_roi_com_automacao, 2),
-                    "horas_recuperaveis":          round(horas_total, 2),
-                    "ganho_dias":                  round(horas_total / 8, 1),
-                    "cultura_dominante":           _cultura_real,
-                    "distribuicao_disc":           _disc_contagem,
-                    "em_sobrecarga":               len(_sobrecargas),
-                    "nomes_sobrecarga":            _sobrecargas,
-                    "em_subutilizacao":            len(_subutilizados),
-                    "nomes_subutilizados":         _subutilizados,
-                    "em_adequado":                 len(_adequados),
-                    "nomes_adequados":             _adequados,
-                    "custo_ociosidade_anual":      _custo_ociosidade,
-                    "custo_sobrecarga_anual":      _custo_sobrecarga,
-                    "custo_operacional_total":     round(_custo_ociosidade + _custo_sobrecarga, 2),
-                    "colaboradores": [{
-                        "nome":           m.get("colaborador"),
-                        "cargo":          (m.get("campos") or {}).get("cargo", "N/A"),
-                        "disc":           m.get("disc",  {}).get("perfil_dominante",  "N/A"),
-                        "aderencia":      m.get("disc",  {}).get("veredito_aderencia","N/A"),
-                        "roi":            m.get("roi",   {}).get("auditado",           0),
-                        "roi_mensal":     round(m.get("roi",{}).get("auditado", 0) / 12, 2),
-                        "horas_recup":    m.get("roi",   {}).get("horas_recuperaveis", 0),
-                        "nexo_status":    m.get("nexo_causal",  {}).get("status",      "N/A"),
-                        "horas_dia":      m.get("nexo_causal",  {}).get("horas_dia",    0),
-                        "eficiencia_pct": m.get("produtividade",{}).get("eficiencia_real_pct", 0),
-                        "kpi_critico":    m.get("produtividade",{}).get("kpi_critico", "N/A"),
-                        "parecer_360":    m.get("parecer_360",  {}).get("veredito_final",""),
-                        "tem_automacao":  any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in m.get("sugestoes_auditadas", [])),
-                        "evidencias":     list(m.get("evidencias_kpi", {}).get("documentos_por_kpi", {}).keys()),
-                    } for m in masters]
-                }
-                parecer = gerar_parecer_executivo_equipe_ia(json.dumps(resumo, indent=2, ensure_ascii=False))
-                salvar_master_equipe({
-                    "parecer_executivo": {"texto": parecer,
-                                         "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
-                })
-                st.session_state["parecer_eq_central"] = parecer
-                st.success("✅ Parecer gerado!")
-                st.rerun()
+                    resumo = {
+                        "total_colaboradores":        total_colab,
+                        "roi_total_auditado":          round(roi_total, 2),
+                        "roi_mensal_base":             _roi_mensal,
+                        "roi_mensal_com_automacao":    _roi_mensal_automatizado,
+                        "roi_anual_com_automacao":     round(_roi_com_automacao, 2),
+                        "horas_recuperaveis":          round(horas_total, 2),
+                        "ganho_dias":                  round(horas_total / 8, 1),
+                        "cultura_dominante":           _cultura_real,
+                        "distribuicao_disc":           _disc_contagem,
+                        "em_sobrecarga":               len(_sobrecargas),
+                        "nomes_sobrecarga":            _sobrecargas,
+                        "em_subutilizacao":            len(_subutilizados),
+                        "nomes_subutilizados":         _subutilizados,
+                        "em_adequado":                 len(_adequados),
+                        "nomes_adequados":             _adequados,
+                        "custo_ociosidade_anual":      _custo_ociosidade,
+                        "custo_sobrecarga_anual":      _custo_sobrecarga,
+                        "custo_operacional_total":     round(_custo_ociosidade + _custo_sobrecarga, 2),
+                        "colaboradores": [{
+                            "nome":           m.get("colaborador"),
+                            "cargo":          (m.get("campos") or {}).get("cargo", "N/A"),
+                            "disc":           m.get("disc",  {}).get("perfil_dominante",  "N/A"),
+                            "aderencia":      m.get("disc",  {}).get("veredito_aderencia","N/A"),
+                            "roi":            m.get("roi",   {}).get("auditado",           0),
+                            "roi_mensal":     round(m.get("roi",{}).get("auditado", 0) / 12, 2),
+                            "horas_recup":    m.get("roi",   {}).get("horas_recuperaveis", 0),
+                            "nexo_status":    m.get("nexo_causal",  {}).get("status",      "N/A"),
+                            "horas_dia":      m.get("nexo_causal",  {}).get("horas_dia",    0),
+                            "eficiencia_pct": m.get("produtividade",{}).get("eficiencia_real_pct", 0),
+                            "kpi_critico":    m.get("produtividade",{}).get("kpi_critico", "N/A"),
+                            "parecer_360":    m.get("parecer_360",  {}).get("veredito_final",""),
+                            "tem_automacao":  any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in m.get("sugestoes_auditadas", [])),
+                            "evidencias":     list(m.get("evidencias_kpi", {}).get("documentos_por_kpi", {}).keys()),
+                        } for m in masters]
+                    }
+                    parecer = gerar_parecer_executivo_equipe_ia(json.dumps(resumo, indent=2, ensure_ascii=False))
+                    salvar_master_equipe({
+                        "parecer_executivo": {"texto": parecer,
+                                             "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+                    })
+                    st.session_state["parecer_eq_central"] = parecer
+                    st.success("✅ Parecer gerado!")
+                    st.rerun()
 
     with ctrl5:
         if laudo_exibir:
@@ -7699,6 +7702,13 @@ if st.session_state.get("pagina") == "central_inteligencia":
 
     with ctrl6:
         if parecer_exibir:
+            if st.button("🔄 Resetar Parecer", use_container_width=True, key="ctrl_reset_parecer"):
+                salvar_master_equipe({
+                    "parecer_executivo": {"texto": "", "gerado_em": ""}
+                })
+                if "parecer_eq_central" in st.session_state:
+                    del st.session_state["parecer_eq_central"]
+                st.rerun()
             st.download_button(
                 "📥 Baixar Parecer",
                 data=html_export_parecer(masters, parecer_exibir,
