@@ -5743,8 +5743,7 @@ def aba_produtividade_inteligente():
                     chave = f"rel_{i}"
                     if chave in st.session_state:
                         del st.session_state[chave]
-            if 'kpis_sessao' not in st.session_state:
-                st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
+            
 
             # pré-carrega todos os relatos antes do loop
             relatos_salvos = {}
@@ -5760,6 +5759,26 @@ def aba_produtividade_inteligente():
                             relatos_salvos[kpi_nome_dado] = dado.get("relato_do_auditor", "")
             except:
                 pass
+
+            if st.session_state.get('ultimo_colab_kpi') != nome_colab:
+                st.session_state['ultimo_colab_kpi'] = nome_colab
+                st.session_state.pop('kpis_sessao', None)
+                for i in range(5):
+                    if f"rel_{i}" in st.session_state:
+                        del st.session_state[f"rel_{i}"]
+            if 'kpis_sessao' not in st.session_state:
+                if relatos_salvos:
+                    _kpis_da_auditoria = []
+                    for i, (nome_kpi, relato_txt) in enumerate(relatos_salvos.items()):
+                        _kpis_da_auditoria.append({
+                            "nome": nome_kpi,
+                            "objetivo": "",
+                            "evidencia_sugerida": ""
+                        })
+                        st.session_state[f"rel_{i}"] = relato_txt
+                    st.session_state.kpis_sessao = _kpis_da_auditoria
+                else:
+                    st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
 
             for i, kpi in enumerate(st.session_state.kpis_sessao):
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
