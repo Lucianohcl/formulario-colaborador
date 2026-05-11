@@ -5804,7 +5804,7 @@ def aba_produtividade_inteligente():
                     relato = st.text_area("Relato da conformidade:", key=chave_relato)
 
                     if st.button("🗑️ Limpar Análise", key=f"limpar_{i}"):
-                        st.session_state[chave_relato] = ""
+                        del st.session_state[chave_relato]
                         st.rerun()
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
