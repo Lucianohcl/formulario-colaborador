@@ -409,7 +409,7 @@
         "total_real_min": 128.9,
         "risco_operacional": "BAIXO",
         "cargo_auditado": "Analista",
-        "gerado_em": "11/05/2026 10:40:16"
+        "gerado_em": "11/05/2026 10:40:24"
     },
     "parecer_360": {
         "parecer_executivo": "Após análise dos dados fornecidos, é possível observar que o objetivo do cargo de Analista no setor fiscal coincide predominantemente com as tarefas de alta e normal prioridade relatadas, especialmente atividades como apuração de ICMS, emissão de notas e apuração de diversos impostos. No entanto, as tarefas de baixa prioridade, como DMS e ISS Retido, podem não maximizar as qualificações do colaborador, considerando sua formação em áreas como Ciências Contábeis e Planejamento Tributário, indicando um possível desaproveitamento de sua expertise. Ademais, o perfil comportamental DISC, que mostra um forte predomínio do fator D (Dominância), sugere uma preferência por ambientes de trabalho que ofereçam desafios e autonomia, o que pode não ser totalmente compatível com tarefas repetitivas e de baixa variedade. A cronoanálise revelou que, dadas as frequências relatadas, o tempo de trabalho diário pode exceder os 480 minutos em alguns períodos mensais, principalmente devido às atividades de alta prioridade, o que representa um risco significativo de Burnout mascarado. Estratégias de reestruturação de carga e potencial delegação de atividades são recomendadas.",
@@ -450,5 +450,5 @@
         "texto": "",
         "gerado_em": ""
     },
-    "ultima_atualizacao": "11/05/2026 10:40:18"
+    "ultima_atualizacao": "11/05/2026 10:40:24"
 }
