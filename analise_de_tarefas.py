@@ -5765,7 +5765,15 @@ def aba_produtividade_inteligente():
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
-                    relato_salvo = relatos_salvos.get(kpi['nome'].strip().upper(), "")
+
+                    _kpi_upper = kpi['nome'].strip().upper()
+                    relato_salvo = relatos_salvos.get(_kpi_upper, "")
+                    if not relato_salvo:
+                        for k, v in relatos_salvos.items():
+                            if _kpi_upper[:15] in k or k[:15] in _kpi_upper:
+                                relato_salvo = v
+                                break
+
                     chave_relato = f"rel_{i}"
                     if chave_relato not in st.session_state:
                         st.session_state[chave_relato] = relato_salvo
