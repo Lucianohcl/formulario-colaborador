@@ -1,0 +1,12 @@
+{
+    "colaborador": "Gilberson_Ferreira_",
+    "criado_em": "11/05/2026 11:06:49",
+    "evidencias_kpi": {
+        "documentos_por_kpi": {
+            "Precisão na Apuração de Impostos": "1. Extrato de Apuração de ICMS  \n   Periodicidade: Mensal  \n   Como obter: ERP → Módulo Fiscal → competência → Export\n\n2. Extrato de Apuração de ISS  \n   Periodicidade: Mensal  \n   Como obter: ERP → Módulo Fiscal → competência → Export"
+        },
+        "total_kpis": 1,
+        "gerado_em": "11/05/2026 11:06:49"
+    },
+    "ultima_atualizacao": "11/05/2026 11:06:49"
+}
