@@ -1,0 +1,66 @@
+[
+  {
+    "Atividade": "ANALISE_DE_BALANCETES",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "120.0m",
+    "Eficiência vs 480m": "25.0%",
+    "Meta Auditável": "Realizar a análise de 5 balancetes por dia, garantindo que 100% estejam em conformidade com os padrões contábeis e reportar inconsistências."
+  },
+  {
+    "Atividade": "CONCILIACAO_BANCARIA",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Concluir a conciliação de 3 contas bancárias diariamente, garantindo 100% de precisão nas reconciliações."
+  },
+  {
+    "Atividade": "RELATORIOS_DE_GESTAO",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "45m",
+    "Impacto Diário Convertido": "45.0m",
+    "Eficiência vs 480m": "9.4%",
+    "Meta Auditável": "Produzir diariamente um relatório de gestão financeiro com indicadores de performance, visando crescimento de 10% nos KPIs em um trimestre."
+  },
+  {
+    "Atividade": "AUDITORIA_INTERNA",
+    "Freq": "SEMANAL",
+    "Tempo Base": "80m",
+    "Impacto Diário Convertido": "16.0m",
+    "Eficiência vs 480m": "3.3%",
+    "Meta Auditável": "Executar auditorias em 2 áreas distintas da operação semanalmente, com o objetivo de identificar e mitigar 90% dos riscos encontrados."
+  },
+  {
+    "Atividade": "TREINAMENTO_E_CAPACITACAO",
+    "Freq": "SEMANAL",
+    "Tempo Base": "50m",
+    "Impacto Diário Convertido": "10.0m",
+    "Eficiência vs 480m": "2.1%",
+    "Meta Auditável": "Oferecer no mínimo 1 sessão de capacitação para a equipe por semana, visando aumentar a eficiência operacional em 15% nos próximos 6 meses."
+  },
+  {
+    "Atividade": "PLANEJAMENTO_ORCAMENTARIO",
+    "Freq": "MENSAL",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "2.7m",
+    "Eficiência vs 480m": "0.6%",
+    "Meta Auditável": "Desenvolver e apresentar o planejamento orçamentário mensal, com a apresentação de pelo menos 5 recomendações de melhoria baseadas em análises prévias."
+  },
+  {
+    "Atividade": "REVISAO_DE_PROCEDIMENTOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "25m",
+    "Impacto Diário Convertido": "1.1m",
+    "Eficiência vs 480m": "0.2%",
+    "Meta Auditável": "Revisar e atualizar pelo menos 3 procedimentos contábeis e operacionais, visando garantir a conformidade e eficiência das práticas."
+  },
+  {
+    "Atividade": "SEGUIMENTO_DE_COMPLIANCE",
+    "Freq": "MENSAL",
+    "Tempo Base": "50m",
+    "Impacto Diário Convertido": "2.3m",
+    "Eficiência vs 480m": "0.5%",
+    "Meta Auditável": "Realizar o seguimento e a verificação de conformidade de 4 áreas conforme políticas internas, buscando 100% de conformidade nas auditorias mensais."
+  }
+]
