@@ -6055,27 +6055,7 @@ def aba_produtividade_inteligente():
                 )
 
 
-                if st.button("☁️ Salvar PDF na Nuvem", key="btn_salvar_pdf_nuvem"):
-                    try:
-                        if filtro_colab != "Todos":
-                            _pdf2 = gerar_pdf()
-                            _bytes = _pdf2.read()
-                            import base64
-                            _b64 = base64.b64encode(_bytes).decode()
-                            _nome = filtro_colab.replace(" ", "_").upper()
-                            _path = f"eficiencia_colaborador/{_nome}.pdf"
-                            _r = Github(st.secrets["DB_TOKEN"]).get_repo(st.secrets["REPO_NOME"])
-                            try:
-                                _f = _r.get_contents(_path)
-                                _r.update_file(_path, f"pdf: {_nome}", _b64, _f.sha)
-                            except:
-                                _r.create_file(_path, f"pdf: {_nome}", _b64)
-                            st.success("✅ PDF salvo na nuvem!")
-                        else:
-                            st.warning("Selecione um colaborador específico.")
-                    except Exception as _e:
-                        st.error(f"Erro: {_e}")
-
+                
                 # --- GRÁFICOS ---
                 col_esq, col_dir = st.columns(2)
 
