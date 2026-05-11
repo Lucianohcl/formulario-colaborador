@@ -6934,17 +6934,26 @@ Gere PARECER EXECUTIVO + PLANO DE AÇÃO com cronograma e resultados financeiros
 
 ---
 
-## RESULTADO FINANCEIRO PROJETADO
+## RESULTADO FINANCEIRO CONSOLIDADO
 
-| Fase | Investimento | Retorno Esperado | ROI |
-|------|-------------|-----------------|-----|
-| Fase 1 | R$ X | R$ X | X% |
-| Fase 2 | R$ X | R$ X | X% |
-| Fase 3 | R$ X | R$ X | X% |
-| **TOTAL** | R$ X | **R$ X/ano** | **X%** |
+| Indicador | Valor | Base de Cálculo |
+|---|---|---|
+| **ROI Total Auditado** | R$ [leia roi_total_auditado do JSON] | Sugestões reais × fator × R$ 35/hora |
+| **ROI Mensal Base** | R$ [leia roi_mensal_base do JSON] | ROI total ÷ 12 meses |
+| **ROI Anual com Automação** | R$ [leia roi_anual_com_automacao do JSON] | Dobra ROI de quem tem Transformação Digital |
+| **ROI Mensal com Automação** | R$ [leia roi_mensal_com_automacao do JSON] | ROI anual automação ÷ 12 meses |
+| **Custo de Sobrecarga Anual** | R$ [leia custo_sobrecarga_anual do JSON] | Sobrecarregados × horas extras × 220 dias × R$ 35 |
+| **Custo de Ociosidade Anual** | R$ [leia custo_ociosidade_anual do JSON] | Subutilizados × horas ociosas × 220 dias × R$ 35 |
+| **Custo Operacional Total** | R$ [leia custo_operacional_total do JSON] | Sobrecarga + Ociosidade |
+| **Horas Recuperáveis** | [leia horas_recuperaveis do JSON] h/ano | Soma auditada de todos os colaboradores |
+| **Ganho em Dias Úteis** | [leia ganho_dias do JSON] dias | Horas recuperáveis ÷ 8h |
+| **Colaboradores Auditados** | [leia total_colaboradores do JSON] | Total da equipe |
+| **Em Sobrecarga** | [leia em_sobrecarga do JSON] | [leia nomes_sobrecarga do JSON] |
+| **Subutilizados** | [leia em_subutilizacao do JSON] | [leia nomes_subutilizados do JSON] |
+| **Adequados** | [leia em_adequado do JSON] | [leia nomes_adequados do JSON] |
 
-**Payback estimado:** X meses
-
+Use EXATAMENTE os valores dos campos acima — não invente nem arredonde diferente.
+Adicione uma conclusão executiva de 2 linhas conectando custo_operacional_total ao roi_anual_com_automacao.
 METODOLOGIA OBRIGATÓRIA — USE APENAS ESSES VALORES CALCULADOS:
 - ROI base mensal = roi_mensal_base (já calculado)
 - ROI mensal com automação = roi_mensal_com_automacao (já calculado — dobra ROI de quem tem tem_automacao=true)
