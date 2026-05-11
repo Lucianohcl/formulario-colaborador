@@ -1,0 +1,6 @@
+[
+  {
+    "kpi": "Precisão nas Conciliações Bancárias",
+    "evidencias": "1. Extrato de Conciliação Bancária ERP  \n   Periodicidade: Diária  \n   Como obter: ERP → Conciliação Bancária → competência → Export  \n2. Relatório de Divergências ERP  \n   Periodicidade: Por evento  \n   Como obter: ERP → Conciliação Bancária → Relatórios → Export  "
+  }
+]
