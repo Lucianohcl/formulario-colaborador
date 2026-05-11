@@ -1,0 +1,42 @@
+[
+  {
+    "Atividade": "ANÁLISE DE CUSTOS",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Revisar e aprovar a folha de pagamento, assegurando 100% de precisão nos cálculos de salários e benefícios."
+  },
+  {
+    "Atividade": "AUDITORIA INTERNA",
+    "Freq": "SEMANAL",
+    "Tempo Base": "90m",
+    "Impacto Diário Convertido": "18.0m",
+    "Eficiência vs 480m": "3.8%",
+    "Meta Auditável": "Realizar auditoria em processos de pagamento e contratações para identificar anomalias, com um relatório mensal de no mínimo 3 melhorias propostas."
+  },
+  {
+    "Atividade": "PLANEJAMENTO DE RECURSOS",
+    "Freq": "MENSAL",
+    "Tempo Base": "120m",
+    "Impacto Diário Convertido": "5.5m",
+    "Eficiência vs 480m": "1.1%",
+    "Meta Auditável": "Elaborar e apresentar um plano de gestão de pessoas alinhado à estratégia da empresa, medido pela implementação de pelo menos 2 novas iniciativas estratégicas por trimestre."
+  },
+  {
+    "Atividade": "COMUNICAÇÃO INTERNA",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "30m",
+    "Impacto Diário Convertido": "30.0m",
+    "Eficiência vs 480m": "6.2%",
+    "Meta Auditável": "Organizar e facilitar reuniões semanais com a equipe de RH, garantindo 100% de participação e acompanhamento das ações."
+  },
+  {
+    "Atividade": "CONTROLE DE CONFORMIDADE",
+    "Freq": "DIÁRIA",
+    "Tempo Base": "60m",
+    "Impacto Diário Convertido": "60.0m",
+    "Eficiência vs 480m": "12.5%",
+    "Meta Auditável": "Realizar a verificação de conformidade com legislações trabalhistas, assegurando que 100% dos processos sigam os padrões legais estabelecidos."
+  }
+]
