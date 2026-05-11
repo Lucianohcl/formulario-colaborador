@@ -5007,6 +5007,9 @@ if st.session_state.get("pagina") == "parecer":
                         st.session_state[chave_df] = df_editavel
 
                         df_calc = st.session_state[chave_df].copy()
+                        if df_calc.empty or "Impacto Diário Convertido" not in df_calc.columns:
+                            st.warning("⚠️ POP vazio. Clique em Gerar Laudo de Eficiência.")
+                            st.stop()
                         df_calc["Impacto Diário Convertido"] = (
                             df_calc["Impacto Diário Convertido"]
                             .astype(str)
