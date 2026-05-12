@@ -6581,7 +6581,7 @@ def obter_eficiencia_do_pdf_github(repo, colaborador):
             contents = [contents]
         
         for file in contents:
-            colab_norm = colaborador.lower().replace(" ", "").replace("_", "")
+            colab_norm = "eficiencia_" + colaborador.lower().replace(" ", "").replace("_", "")
             nome_file_norm = file.name.lower().replace(" ", "").replace("_", "")
             
             if file.name.endswith(".pdf") and colab_norm in nome_file_norm:
