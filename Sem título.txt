@@ -1,3 +1,4 @@
+
 # ============================================================
 # IMPORTS
 # ============================================================
@@ -5006,9 +5007,6 @@ if st.session_state.get("pagina") == "parecer":
                         st.session_state[chave_df] = df_editavel
 
                         df_calc = st.session_state[chave_df].copy()
-                        if df_calc.empty or "Impacto Diário Convertido" not in df_calc.columns:
-                            st.warning("⚠️ POP vazio. Clique em Gerar Laudo de Eficiência.")
-                            st.stop()
                         df_calc["Impacto Diário Convertido"] = (
                             df_calc["Impacto Diário Convertido"]
                             .astype(str)
@@ -5112,7 +5110,6 @@ if st.session_state.get("pagina") == "parecer":
 
                         r1, r2, r3 = st.columns(3)
                         r1.metric("Total Real Relatado", f"{total_real_diario:.1f} min")
-                        _total_real_secao_b = total_real_diario
                         r2.metric("Eficiência Diária Alvo", f"{(total_real_diario / 480) * 100:.1f}%")
                         r3.metric("Gap/Ociosidade", f"{480 - total_real_diario:.1f} min")
                         st.table(pd.DataFrame(dados_reais))
@@ -5203,7 +5200,7 @@ if st.session_state.get("pagina") == "parecer":
                                     "confronto_pericial":  confronto if 'confronto' in locals() else [],
                                     "aderencia_cargo_pct": _ader,
                                     "total_pop_min":       round(_total_pop, 1),
-                                    "total_real_min": round(_total_real_secao_b, 1),
+                                    "total_real_min":      round(total_real_diario, 1) if 'total_real_diario' in locals() else 0,
                                     "risco_operacional":   "ALTO" if 'total_real_diario' in locals() and total_real_diario > 480 else "BAIXO",
                                     "cargo_auditado":      colab.get('campos', {}).get('cargo', 'N/A'),
                                     "gerado_em":           datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -5736,14 +5733,9 @@ def aba_produtividade_inteligente():
             # Geração de KPIs para Auditoria
             st.markdown("---")
             st.subheader("🕵️ Iniciar Perícia por KPI")
-
-            if st.session_state.get('ultimo_colab_kpi') != nome_colab:
-                st.session_state['ultimo_colab_kpi'] = nome_colab
-                for i in range(5):
-                    chave = f"rel_{i}"
-                    if chave in st.session_state:
-                        del st.session_state[chave]
             
+            if 'kpis_sessao' not in st.session_state:
+                st.session_state.kpis_sessao = gerar_5_kpis_periciais(lista_tabela)['kpis']
 
             # pré-carrega todos os relatos antes do loop
             relatos_salvos = {}
@@ -5760,51 +5752,18 @@ def aba_produtividade_inteligente():
             except:
                 pass
 
-            if st.session_state.get('ultimo_colab_kpi') != nome_colab:
-                st.session_state['ultimo_colab_kpi'] = nome_colab
-                st.session_state.pop('kpis_sessao', None)
-                for i in range(5):
-                    if f"rel_{i}" in st.session_state:
-                        del st.session_state[f"rel_{i}"]
-            if 'kpis_sessao' not in st.session_state:
-                _kpis_salvos = [
-                    {"nome": k, "objetivo": "", "evidencia_sugerida": ""}
-                    for k in relatos_salvos.keys()
-                ]
-                _qtd_salvos = len(_kpis_salvos)
-                if _qtd_salvos < 5:
-                    _kpis_ia = gerar_5_kpis_periciais(lista_tabela)['kpis']
-                    _nomes_salvos = [k['nome'].upper() for k in _kpis_salvos]
-                    for kpi_ia in _kpis_ia:
-                        if kpi_ia['nome'].upper() not in _nomes_salvos:
-                            _kpis_salvos.append(kpi_ia)
-                        if len(_kpis_salvos) >= 5:
-                            break
-                for i, kpi_s in enumerate(_kpis_salvos):
-                    relato_txt = relatos_salvos.get(kpi_s['nome'], "")
-                    st.session_state[f"rel_{i}"] = relato_txt
-                st.session_state.kpis_sessao = _kpis_salvos[:5]
-
             for i, kpi in enumerate(st.session_state.kpis_sessao):
                 with st.expander(f"🚩 KPI {i+1}: {kpi['nome']}"):
                     st.write(f"**Objetivo:** {kpi['objetivo']}")
                     st.caption(f"💡 Evidência sugerida: {kpi['evidencia_sugerida']}")
-
-                    _kpi_upper = kpi['nome'].strip().upper()
-                    relato_salvo = relatos_salvos.get(_kpi_upper, "")
-                    if not relato_salvo:
-                        for k, v in relatos_salvos.items():
-                            if _kpi_upper[:15] in k or k[:15] in _kpi_upper:
-                                relato_salvo = v
-                                break
-
+                    relato_salvo = relatos_salvos.get(kpi['nome'].strip().upper(), "")
                     chave_relato = f"rel_{i}"
                     if chave_relato not in st.session_state:
                         st.session_state[chave_relato] = relato_salvo
                     relato = st.text_area("Relato da conformidade:", key=chave_relato)
 
                     if st.button("🗑️ Limpar Análise", key=f"limpar_{i}"):
-                        del st.session_state[chave_relato]
+                        st.session_state[chave_relato] = ""
                         st.rerun()
                     # =========================
                     # 📁 ORIGEM DAS EVIDÊNCIAS (POR KPI)
@@ -5972,12 +5931,7 @@ def aba_produtividade_inteligente():
 
                 media_kpis = df_ultimos['percentual_alcance'].mean() if qtd_kpis > 0 else 0
 
-                if filtro_colab == "Todos":
-                    eficiencia_sistematica = df_ultimos.groupby('colaborador').apply(
-                        lambda x: (x['percentual_alcance'].mean() * len(x)) / total_kpis_esperados
-                    ).mean()
-                else:
-                    eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
+                eficiencia_sistematica = (media_kpis * qtd_kpis) / total_kpis_esperados
 
                 m1.metric("Eficiência Real", f"{eficiencia_sistematica:.1f}%")
                 m2.metric("KPIs Auditados (5)", f"{qtd_kpis}/{total_kpis_esperados}")
@@ -6960,45 +6914,37 @@ Gere PARECER EXECUTIVO + PLANO DE AÇÃO com cronograma e resultados financeiros
 - Alinhamentos e desalinhamentos cargo x perfil
 
 ### Riscos Identificados
-3 riscos qualitativos SEM valores financeiros inventados. Baseie apenas nos dados reais de sobrecarga, subutilização e desalinhamento DISC. Não invente valores em R$.
+3 riscos com impacto financeiro estimado em R$.
 
 ### Oportunidades Imediatas
-3 oportunidades qualitativas. Para valores use APENAS roi_anual_com_automacao e horas_recuperaveis do JSON. Não invente outros valores em R$.
+3 oportunidades com valor em R$/ano cada.
 
 ---
 
 ## PLANO DE AÇÃO ESTRATÉGICO
 
 ### FASE 1 — AÇÕES IMEDIATAS (0 a 30 dias)
-- [ ] Ação | Responsável (perfil DISC) | Como medir
+- [ ] Ação | Responsável (perfil DISC) | Impacto R$ | Como medir
 
 ### FASE 2 — AÇÕES ESTRUTURAIS (30 a 90 dias)
-- [ ] Ação | Responsável (perfil DISC) | Como medir
+- [ ] Ação | Responsável | Impacto R$ | Como medir
 
 ### FASE 3 — AÇÕES ESTRATÉGICAS (90 a 180 dias)
-- [ ] Ação | Responsável (perfil DISC) | Como medir
+- [ ] Ação | Responsável | Impacto R$ | Como medir
 
 ---
 
-## RESULTADO FINANCEIRO CONSOLIDADO
-| Indicador | Valor | Base de Cálculo |
-|---|---|---|
-| **ROI Total Auditado** | R$ [leia roi_total_auditado do JSON] | Sugestões reais × fator × R$ 35/hora |
-| **ROI Mensal Base** | R$ [leia roi_mensal_base do JSON] | ROI total ÷ 12 meses |
-| **ROI Anual com Automação** | R$ [leia roi_anual_com_automacao do JSON] | Dobra ROI de quem tem Transformação Digital |
-| **ROI Mensal com Automação** | R$ [leia roi_mensal_com_automacao do JSON] | ROI anual automação ÷ 12 meses |
-| **Custo de Sobrecarga Anual** | R$ [leia custo_sobrecarga_anual do JSON] | Sobrecarregados × horas extras × 220 dias × R$ 35 |
-| **Custo de Ociosidade Anual** | R$ [leia custo_ociosidade_anual do JSON] | Subutilizados × horas ociosas × 220 dias × R$ 35 |
-| **Custo Operacional Total** | R$ [leia custo_operacional_total do JSON] | Sobrecarga + Ociosidade |
-| **Horas Recuperáveis** | [leia horas_recuperaveis do JSON] h/ano | Soma auditada de todos os colaboradores |
-| **Ganho em Dias Úteis** | [leia ganho_dias do JSON] dias | Horas recuperáveis ÷ 8h |
-| **Colaboradores Auditados** | [leia total_colaboradores do JSON] | Total da equipe |
-| **Em Sobrecarga** | [leia em_sobrecarga do JSON] | [leia nomes_sobrecarga do JSON] |
-| **Subutilizados** | [leia em_subutilizacao do JSON] | [leia nomes_subutilizados do JSON] |
-| **Adequados** | [leia em_adequado do JSON] | [leia nomes_adequados do JSON] |
+## RESULTADO FINANCEIRO PROJETADO
 
-Use EXATAMENTE os valores dos campos acima — não invente nem arredonde diferente.
-Adicione uma conclusão executiva de 2 linhas conectando custo_operacional_total ao roi_anual_com_automacao.
+| Fase | Investimento | Retorno Esperado | ROI |
+|------|-------------|-----------------|-----|
+| Fase 1 | R$ X | R$ X | X% |
+| Fase 2 | R$ X | R$ X | X% |
+| Fase 3 | R$ X | R$ X | X% |
+| **TOTAL** | R$ X | **R$ X/ano** | **X%** |
+
+**Payback estimado:** X meses
+
 METODOLOGIA OBRIGATÓRIA — USE APENAS ESSES VALORES CALCULADOS:
 - ROI base mensal = roi_mensal_base (já calculado)
 - ROI mensal com automação = roi_mensal_com_automacao (já calculado — dobra ROI de quem tem tem_automacao=true)
@@ -7616,8 +7562,6 @@ if st.session_state.get("pagina") == "central_inteligencia":
 
     clicked = components.html(html_central, height=altura, scrolling=False)
 
-    st.caption("⬇️ Use os controles abaixo para gerar laudos, parecer e downloads.")
-
     # ── Controles reais do Streamlit (abaixo do visual) ──────
     st.markdown("---")
     st.markdown("<p style='color:#1E293B;font-size:11px;text-align:center;'>Controles da Central</p>",
@@ -7662,33 +7606,44 @@ if st.session_state.get("pagina") == "central_inteligencia":
                     del st.session_state[f"laudo_ind_{colab_sel}"]
                 st.rerun()
 
-    # ── Cultura sempre calculada ──────────────────────────────
-    from collections import Counter
-    _cultura_real = Counter([m.get("disc",{}).get("perfil_dominante","") for m in masters]).most_common(1)[0][0] if masters else "N/A"
-
     # ── Linha 2: Parecer e Downloads ─────────────────────────
     ctrl4, ctrl5, ctrl6 = st.columns(3)
 
-    with ctrl4:
+with ctrl4:
         if parecer_exibir:
             st.info("✅ Parecer já gerado")
         else:
             if st.button("🚀 Gerar Parecer Equipe", use_container_width=True, key="ctrl_btn_parecer"):
                 with st.spinner("🧠 Gerando parecer... (30-60s)"):
-                    _disc_contagem = dict(Counter([m.get("disc",{}).get("perfil_dominante","") for m in masters]))
+                    from collections import Counter
+                    _discs = [m.get("disc",{}).get("perfil_dominante","") for m in masters]
+                    _cultura_real = Counter(_discs).most_common(1)[0][0] if _discs else "N/A"
+                    _disc_contagem = dict(Counter(_discs))
+
                     _sobrecargas   = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"]
                     _subutilizados = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"]
                     _adequados     = [m.get("colaborador") for m in masters if m.get("nexo_causal",{}).get("status") == "adequado"]
-                    _roi_com_automacao = sum(
-                        m.get("roi",{}).get("auditado",0) * (2 if any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in m.get("sugestoes_auditadas",[])) else 1)
-                        for m in masters
-                    )
+
+                    _roi_com_automacao = 0.0
+                    for m in masters:
+                        _roi_base = m.get("roi",{}).get("auditado", 0)
+                        _sugs = m.get("sugestoes_auditadas", [])
+                        _tem_digital = any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in _sugs)
+                        _roi_com_automacao += _roi_base * 2 if _tem_digital else _roi_base
+
                     _roi_mensal              = round(roi_total / 12, 2)
                     _roi_mensal_automatizado = round(_roi_com_automacao / 12, 2)
-                    _horas_ociosas  = sum(max(0, 8 - m.get("nexo_causal",{}).get("horas_dia",8)) for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado")
-                    _horas_extras   = sum(max(0, m.get("nexo_causal",{}).get("horas_dia",8) - 8) for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga")
+                    _horas_ociosas           = sum(
+                        max(0, 8 - m.get("nexo_causal",{}).get("horas_dia", 8))
+                        for m in masters if m.get("nexo_causal",{}).get("status") == "subutilizado"
+                    )
                     _custo_ociosidade = round(_horas_ociosas * 220 * 35, 2)
+                    _horas_extras     = sum(
+                        max(0, m.get("nexo_causal",{}).get("horas_dia", 8) - 8)
+                        for m in masters if m.get("nexo_causal",{}).get("status") == "sobrecarga"
+                    )
                     _custo_sobrecarga = round(_horas_extras * 220 * 35, 2)
+
                     resumo = {
                         "total_colaboradores":        total_colab,
                         "roi_total_auditado":          round(roi_total, 2),
@@ -7721,12 +7676,15 @@ if st.session_state.get("pagina") == "central_inteligencia":
                             "eficiencia_pct": m.get("produtividade",{}).get("eficiencia_real_pct", 0),
                             "kpi_critico":    m.get("produtividade",{}).get("kpi_critico", "N/A"),
                             "parecer_360":    m.get("parecer_360",  {}).get("veredito_final",""),
-                            "tem_automacao":  any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in m.get("sugestoes_auditadas",[])),
-                            "evidencias":     list(m.get("evidencias_kpi",{}).get("documentos_por_kpi",{}).keys()),
+                            "tem_automacao":  any(s.get("ESTRATEGIA","") == "TRANSFORMACAO DIGITAL" for s in m.get("sugestoes_auditadas", [])),
+                            "evidencias":     list(m.get("evidencias_kpi", {}).get("documentos_por_kpi", {}).keys()),
                         } for m in masters]
                     }
                     parecer = gerar_parecer_executivo_equipe_ia(json.dumps(resumo, indent=2, ensure_ascii=False))
-                    salvar_master_equipe({"parecer_executivo": {"texto": parecer, "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}})
+                    salvar_master_equipe({
+                        "parecer_executivo": {"texto": parecer,
+                                             "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")}
+                    })
                     st.session_state["parecer_eq_central"] = parecer
                     st.success("✅ Parecer gerado!")
                     st.rerun()
@@ -7745,13 +7703,16 @@ if st.session_state.get("pagina") == "central_inteligencia":
     with ctrl6:
         if parecer_exibir:
             if st.button("🔄 Resetar Parecer", use_container_width=True, key="ctrl_reset_parecer"):
-                salvar_master_equipe({"parecer_executivo": {"texto": "", "gerado_em": ""}})
+                salvar_master_equipe({
+                    "parecer_executivo": {"texto": "", "gerado_em": ""}
+                })
                 if "parecer_eq_central" in st.session_state:
                     del st.session_state["parecer_eq_central"]
                 st.rerun()
             st.download_button(
                 "📥 Baixar Parecer",
-                data=html_export_parecer(masters, parecer_exibir, roi_total, horas_total, total_colab, _cultura_real),
+                data=html_export_parecer(masters, parecer_exibir,
+                                         roi_total, horas_total, total_colab, _cultura_real),
                 file_name=f"Parecer_Equipe_{datetime.now().strftime('%d%m%Y')}.html",
                 mime="text/html",
                 use_container_width=True,
