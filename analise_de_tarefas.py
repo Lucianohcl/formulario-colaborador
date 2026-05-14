@@ -7168,13 +7168,13 @@ def build_mini_metrics_html(master_sel):
         <div class='mm-v' style='color:{nc_cor};font-size:10px'>{nc_i.capitalize()}</div></div>
     </div>"""
 
-
 def render_central_html(
     masters, master_equipe,
     roi_total, horas_total, total_colab, cultura, sobrecargas,
     colab_sel_idx,
     laudo_texto, laudo_ts,
-    parecer_texto, parecer_ts
+    parecer_texto, parecer_ts,
+    custo_sobrecarga=0, custo_ociosidade=0
 ):
     """
     Renderiza a página inteira da Central como HTML puro.
@@ -7194,9 +7194,12 @@ def render_central_html(
     # Linhas da tabela de colaboradores
     colab_rows = build_colab_rows_html(masters)
 
-    # Laudo e parecer em HTML
-    laudo_html   = md_to_html_laudo(laudo_texto)   if laudo_texto   else "<p style='color:#475569;font-size:12px;font-style:italic;'>Clique em Gerar Laudo Completo para iniciar.</p>"
-    parecer_html = md_to_html_laudo(parecer_texto) if parecer_texto else "<p style='color:#475569;font-size:12px;font-style:italic;'>Clique em Gerar Parecer Executivo + Plano para iniciar.</p>"
+    # Laudo e parecer — campos editáveis (textarea)
+    laudo_placeholder   = "Clique em Gerar Laudo Completo para iniciar."
+    parecer_placeholder = "Clique em Gerar Parecer Executivo + Plano para iniciar."
+
+    laudo_valor   = laudo_texto   or ""
+    parecer_valor = parecer_texto or ""
 
     ts_laudo   = f"⏱ Gerado em: {laudo_ts} · cache 24h"   if laudo_ts   else ""
     ts_parecer = f"⏱ Gerado em: {parecer_ts} · GPT-4o · cache 24h" if parecer_ts else ""
@@ -7212,11 +7215,11 @@ def render_central_html(
 body{{background:#07090F;font-family:'Inter',system-ui,sans-serif;color:#E2E8F0;padding:0;}}
 
 /* TOP METRICS */
-.top-metrics{{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}}
+.top-metrics{{display:grid;grid-template-columns:repeat(8,1fr);gap:10px;margin-bottom:20px}}
 .tm{{background:#1A1D27;border:1px solid rgba(255,255,255,0.07);border-radius:10px;padding:14px;text-align:center}}
 .tm-lbl{{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#4B5563;margin-bottom:5px}}
-.tm-v{{font-size:18px;font-weight:800;color:#F1F5F9}}
-.g{{color:#34D399}}.b{{color:#60A5FA}}.r{{color:#F87171}}.p{{color:#A78BFA}}
+.tm-v{{font-size:16px;font-weight:800;color:#F1F5F9}}
+.g{{color:#34D399}}.b{{color:#60A5FA}}.r{{color:#F87171}}.p{{color:#A78BFA}}.y{{color:#FCD34D}}
 
 /* DIVIDER */
 .divider{{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:16px 0}}
@@ -7269,6 +7272,40 @@ select:focus{{border-color:rgba(96,165,250,0.4)}}
 .exp-body{{padding:16px;border-top:1px solid rgba(255,255,255,0.06);
            max-height:520px;overflow-y:auto}}
 
+/* TEXTAREA EDITÁVEL */
+.textarea-laudo{{
+    width:100%;
+    height:480px;
+    background:#0F1117;
+    color:#CBD5E1;
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:6px;
+    padding:12px;
+    font-size:11px;
+    line-height:1.7;
+    resize:vertical;
+    font-family:'Inter',system-ui,sans-serif;
+    outline:none;
+}}
+.textarea-laudo:focus{{
+    border-color:rgba(96,165,250,0.3);
+}}
+.textarea-placeholder{{
+    width:100%;
+    height:80px;
+    background:#0F1117;
+    color:#475569;
+    border:1px solid rgba(255,255,255,0.05);
+    border-radius:6px;
+    padding:12px;
+    font-size:12px;
+    font-style:italic;
+    resize:none;
+    font-family:'Inter',system-ui,sans-serif;
+    outline:none;
+    cursor:not-allowed;
+}}
+
 /* EQUIPE SUMMARY BOX */
 .eq-summary{{background:rgba(27,30,93,0.15);border:1px solid rgba(27,30,93,0.4);
              border-radius:8px;padding:12px;margin-bottom:12px;
@@ -7297,13 +7334,16 @@ select:focus{{border-color:rgba(96,165,250,0.4)}}
 </head>
 <body>
 
-<!-- TOP METRICS -->
+<!-- TOP METRICS — 8 COLUNAS -->
 <div class="top-metrics">
   <div class="tm"><div class="tm-lbl">👥 Auditados</div><div class="tm-v">{total_colab}</div></div>
   <div class="tm"><div class="tm-lbl">💰 ROI Total</div><div class="tm-v g">R$&nbsp;{roi_total:,.0f}</div></div>
   <div class="tm"><div class="tm-lbl">⚡ Horas Recup.</div><div class="tm-v b">{horas_total:.0f}&nbsp;h/ano</div></div>
   <div class="tm"><div class="tm-lbl">📅 Ganho Cap.</div><div class="tm-v b">{horas_total/8:.0f}&nbsp;dias</div></div>
   <div class="tm"><div class="tm-lbl">🚨 Sobrecarga</div><div class="tm-v r">{sobrecargas}</div></div>
+  <div class="tm"><div class="tm-lbl">🧠 DISC Coletivo</div><div class="tm-v p">{cultura}</div></div>
+  <div class="tm"><div class="tm-lbl">🔴 Custo Sobrec.</div><div class="tm-v r">R$&nbsp;{custo_sobrecarga:,.0f}</div></div>
+  <div class="tm"><div class="tm-lbl">🔵 Custo Ociosid.</div><div class="tm-v b">R$&nbsp;{custo_ociosidade:,.0f}</div></div>
 </div>
 
 <hr class="divider">
@@ -7329,15 +7369,14 @@ select:focus{{border-color:rgba(96,165,250,0.4)}}
 
     <div class="expander">
       <div class="exp-head" onclick="toggleExp('exp-laudo','arr-laudo')">
-        <span>📄 Ver Laudo Completo</span>
+        <span>📄 Ver / Editar Laudo Completo</span>
         <span class="exp-arrow" id="arr-laudo">▼</span>
       </div>
       <div class="exp-body" id="exp-laudo">
-        {laudo_html}
+        {f'<textarea id="textarea-laudo" class="textarea-laudo">{laudo_valor}</textarea>' if laudo_valor else f'<textarea class="textarea-placeholder" disabled>{laudo_placeholder}</textarea>'}
       </div>
     </div>
 
-    
   </div>
 
   <!-- ═══════════════════════ COLUNA DIREITA ════════════════════════ -->
@@ -7362,15 +7401,14 @@ select:focus{{border-color:rgba(96,165,250,0.4)}}
 
     <div class="expander">
       <div class="exp-head" onclick="toggleExp('exp-parecer','arr-parecer')">
-        <span>📊 Ver Parecer + Plano Completo</span>
+        <span>📊 Ver / Editar Parecer + Plano Completo</span>
         <span class="exp-arrow" id="arr-parecer">▼</span>
       </div>
       <div class="exp-body" id="exp-parecer">
-        {parecer_html}
+        {f'<textarea id="textarea-parecer" class="textarea-laudo">{parecer_valor}</textarea>' if parecer_valor else f'<textarea class="textarea-placeholder" disabled>{parecer_placeholder}</textarea>'}
       </div>
     </div>
 
-    
   </div>
 
 </div><!-- /cols -->
@@ -7422,7 +7460,6 @@ body{{font-family:'Segoe UI',sans-serif;background:#f4f6f9;padding:40px;color:#2
 .metric label{{font-size:9px;text-transform:uppercase;letter-spacing:1px;
                color:#95a5a6;font-weight:700;display:block;margin-bottom:5px}}
 .metric span{{font-size:18px;font-weight:800;color:#1B1E5D}}
-/* redefine cores do laudo para versão light */
 .page p{{color:#34495e!important;font-size:13px!important}}
 .page div[style*="rgba(96,165,250"]{{background:#EBF5FB!important;border-left-color:#2980B9!important}}
 .page div[style*="rgba(96,165,250"] span{{color:#1B4F72!important}}
@@ -7519,7 +7556,7 @@ td{{padding:8px;border-bottom:1px solid #ecf0f1;font-size:12px;color:#34495e}}
 
 if st.session_state.get("pagina") == "central_inteligencia":
 
-    # ── CSS mínimo no Streamlit (apenas para ocultar padding extra) ──
+    # ── CSS mínimo no Streamlit ──
     st.markdown("""
     <style>
     .stApp { background-color: #07090F !important; }
@@ -7587,6 +7624,18 @@ if st.session_state.get("pagina") == "central_inteligencia":
     cultura     = master_equipe.get("disc_coletivo", {}).get("cultura_dominante", "N/A")
     sobrecargas = sum(1 for m in masters if m.get("nexo_causal", {}).get("status") == "sobrecarga")
 
+    # ── Custos calculados pelo sistema ───────────────────────
+    _horas_extras_total  = sum(
+        max(0, m.get("nexo_causal", {}).get("horas_dia", 8) - 8)
+        for m in masters if m.get("nexo_causal", {}).get("status") == "sobrecarga"
+    )
+    _horas_ociosas_total = sum(
+        max(0, 8 - m.get("nexo_causal", {}).get("horas_dia", 8))
+        for m in masters if m.get("nexo_causal", {}).get("status") == "subutilizado"
+    )
+    _custo_sobrecarga_exib = round(_horas_extras_total  * 220 * 35, 2)
+    _custo_ociosidade_exib = round(_horas_ociosas_total * 220 * 35, 2)
+
     # ── Textos de laudo e parecer ────────────────────────────
     laudo_exibir   = (st.session_state.get(f"laudo_ind_{colab_sel}") or
                       master_sel.get("laudo_central", {}).get("texto", ""))
@@ -7602,30 +7651,25 @@ if st.session_state.get("pagina") == "central_inteligencia":
         roi_total, horas_total, total_colab, cultura, sobrecargas,
         colab_sel_idx,
         laudo_exibir, laudo_ts,
-        parecer_exibir, parecer_ts
+        parecer_exibir, parecer_ts,
+        _custo_sobrecarga_exib, _custo_ociosidade_exib
     )
 
-    # Altura dinâmica baseada no conteúdo
+    # Altura dinâmica
     altura = max(900, 400 + len(masters) * 40 +
                  (len(laudo_exibir) // 6) + (len(parecer_exibir) // 6))
     altura = min(altura, 2400)
-
-    # ── Recebe eventos do HTML via query_params ──────────────
-    # O HTML envia postMessage, mas no Streamlit usamos um workaround
-    # com hidden inputs + botões Streamlit reais abaixo do componente
 
     clicked = components.html(html_central, height=altura, scrolling=False)
 
     st.caption("⬇️ Use os controles abaixo para gerar laudos, parecer e downloads.")
 
-    # ── Controles reais do Streamlit (abaixo do visual) ──────
+    # ── Controles reais do Streamlit ─────────────────────────
     st.markdown("---")
     st.markdown("<p style='color:#1E293B;font-size:11px;text-align:center;'>Controles da Central</p>",
                 unsafe_allow_html=True)
 
-
-
-# ── Linha 1: Seleção e Laudo ─────────────────────────────
+    # ── Linha 1: Seleção e Laudo ─────────────────────────────
     ctrl1, ctrl2, ctrl3 = st.columns(3)
 
     with ctrl1:
@@ -7664,7 +7708,9 @@ if st.session_state.get("pagina") == "central_inteligencia":
 
     # ── Cultura sempre calculada ──────────────────────────────
     from collections import Counter
-    _cultura_real = Counter([m.get("disc",{}).get("perfil_dominante","") for m in masters]).most_common(1)[0][0] if masters else "N/A"
+    _cultura_real = Counter(
+        [m.get("disc", {}).get("perfil_dominante", "") for m in masters]
+    ).most_common(1)[0][0] if masters else "N/A"
 
     # ── Linha 2: Parecer e Downloads ─────────────────────────
     ctrl4, ctrl5, ctrl6 = st.columns(3)
