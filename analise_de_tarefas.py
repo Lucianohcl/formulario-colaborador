@@ -7700,7 +7700,7 @@ if st.session_state.get("pagina") == "central_inteligencia":
                     })
                     st.session_state[f"laudo_ind_{colab_sel}"] = laudo
                     st.success("✅ Laudo gerado!")
-                    st.rerun()
+                    st.rerun()    
 
     with ctrl3:
         if laudo_exibir:
@@ -7709,6 +7709,26 @@ if st.session_state.get("pagina") == "central_inteligencia":
                 if f"laudo_ind_{colab_sel}" in st.session_state:
                     del st.session_state[f"laudo_ind_{colab_sel}"]
                 st.rerun()
+
+    # ── Edição do Laudo Individual ────────────────────────────
+    if laudo_exibir:
+        st.markdown("---")
+        laudo_editado = st.text_area(
+            "✏️ Editar Laudo Individual",
+            value=laudo_exibir,
+            height=300,
+            key="edit_laudo_textarea"
+        )
+        if st.button("💾 Salvar Edição do Laudo", use_container_width=True, key="ctrl_salvar_laudo"):
+            salvar_master(colab_sel, {
+                "laudo_central": {
+                    "texto": laudo_editado,
+                    "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                }
+            })
+            st.session_state[f"laudo_ind_{colab_sel}"] = laudo_editado
+            st.success("✅ Laudo salvo!")
+            st.rerun()
 
     # ── Cultura sempre calculada ──────────────────────────────
     from collections import Counter
@@ -7807,3 +7827,23 @@ if st.session_state.get("pagina") == "central_inteligencia":
                 use_container_width=True,
                 key="ctrl_dl_parecer"
             )
+
+    # ── Edição do Parecer da Equipe ───────────────────────────
+    if parecer_exibir:
+        st.markdown("---")
+        parecer_editado = st.text_area(
+            "✏️ Editar Parecer da Equipe",
+            value=parecer_exibir,
+            height=300,
+            key="edit_parecer_textarea"
+        )
+        if st.button("💾 Salvar Edição do Parecer", use_container_width=True, key="ctrl_salvar_parecer"):
+            salvar_master_equipe({
+                "parecer_executivo": {
+                    "texto": parecer_editado,
+                    "gerado_em": datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                }
+            })
+            st.session_state["parecer_eq_central"] = parecer_editado
+            st.success("✅ Parecer salvo!")
+            st.rerun()
