@@ -7621,7 +7621,11 @@ if st.session_state.get("pagina") == "central_inteligencia":
     roi_total   = sum(m.get("roi", {}).get("auditado", 0)           for m in masters)
     horas_total = sum(m.get("roi", {}).get("horas_recuperaveis", 0) for m in masters)
     total_colab = len(masters)
-    cultura     = master_equipe.get("disc_coletivo", {}).get("cultura_dominante", "N/A")
+
+    from collections import Counter
+    _perfis = [m.get("disc", {}).get("perfil_dominante", "") for m in masters if m.get("disc", {}).get("perfil_dominante", "")]
+    cultura = Counter(_perfis).most_common(1)[0][0] if _perfis else "N/A"
+
     sobrecargas = sum(1 for m in masters if m.get("nexo_causal", {}).get("status") == "sobrecarga")
 
     # ── Custos calculados pelo sistema ───────────────────────
