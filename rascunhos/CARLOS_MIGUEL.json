@@ -1,0 +1,78 @@
+{
+    "colaborador": "CARLOS MIGUEL",
+    "timestamp": "17/05/2026 23:40:45",
+    "campos": {
+        "cargo": "",
+        "dep": "",
+        "setor": "",
+        "chefe": "",
+        "unidade": "",
+        "escolaridade": "",
+        "devolver_em": "",
+        "cursos": "",
+        "objetivo": "",
+        "sistemas": ""
+    },
+    "tabelas": {
+        "alta": [
+            {
+                "Atividade": "Atualizar a planilha de custos",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Atividade": "Elaborar planejamento estratégico para despesas e custos",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "normal": [],
+        "baixa": [],
+        "dificuldades": [
+            {
+                "Dificuldade": "Informações atualizadas do financeiro",
+                "Setor Envolvido": "Financeiro",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ],
+        "sugestoes": [
+            {
+                "Sugestão": "Melhorá a integração com o departamento financeiro",
+                "Impacto Esperado": "Palmito da produtividade em 1 hora dia",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            }
+        ]
+    },
+    "disc": {
+        "0": null,
+        "1": null,
+        "2": null,
+        "3": null,
+        "4": null,
+        "5": null,
+        "6": null,
+        "7": null,
+        "8": null,
+        "9": null,
+        "10": null,
+        "11": null,
+        "12": null,
+        "13": null,
+        "14": null,
+        "15": null,
+        "16": null,
+        "17": null,
+        "18": null,
+        "19": null,
+        "20": null,
+        "21": null,
+        "22": null,
+        "23": null
+    }
+}
