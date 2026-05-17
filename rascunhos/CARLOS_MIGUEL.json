@@ -1,6 +1,6 @@
 {
     "colaborador": "CARLOS MIGUEL",
-    "timestamp": "17/05/2026 23:45:10",
+    "timestamp": "17/05/2026 20:51:05",
     "campos": {
         "cargo": "",
         "dep": "",
@@ -43,6 +43,13 @@
             {
                 "Sugestão": "Melhorar a integração com o departamento financeiro",
                 "Impacto Esperado": "Aumento Da produtividade em 1 hora dia",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Sugestão": "Automação de relatórios",
+                "Impacto Esperado": "Aumento da produtividade em 30 minutos",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
