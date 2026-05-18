@@ -1,6 +1,6 @@
 {
     "colaborador": "CARLOS MIGUEL",
-    "timestamp": "17/05/2026 20:56:14",
+    "timestamp": "18/05/2026 02:49:21",
     "campos": {
         "cargo": "",
         "dep": "",
@@ -34,6 +34,13 @@
             {
                 "Dificuldade": "Informações atualizadas do financeiro",
                 "Setor Envolvido": "Financeiro",
+                "Horas": "",
+                "Minutos": "",
+                "Frequência": ""
+            },
+            {
+                "Dificuldade": "Falta de histórico de custos",
+                "Setor Envolvido": "Controladoria",
                 "Horas": "",
                 "Minutos": "",
                 "Frequência": ""
